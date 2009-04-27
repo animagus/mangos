@@ -583,8 +583,12 @@ void InstanceSaveManager::_ResetSave(InstanceSaveHashMap::iterator &itr)
         Group *group = *(gList.begin());
         group->UnbindInstance(itr->second->GetMapId(), itr->second->GetDifficulty(), true);
     }
+    InstanceSaveHashMap::iterator next;
+    next = itr;
+    ++next;
     delete itr->second;
-    m_instanceSaveById.erase(itr++);
+    m_instanceSaveById.erase(itr);
+    itr = next;
     lock_instLists = false;
 }
 
