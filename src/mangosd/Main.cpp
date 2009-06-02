@@ -139,7 +139,7 @@ extern int main(int argc, char **argv)
 
     if (!sConfig.SetSource(cfg_file))
     {
-        sLog.outError("Could not find configuration file %s.", cfg_file);
+        sLog.outError("Could test find configuration file %s.", cfg_file);
         return 1;
     }
 
