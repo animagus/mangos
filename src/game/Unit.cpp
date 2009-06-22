@@ -1637,6 +1637,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
     // Reflect damage spells (not cast any damage spell in aura lookup)
     uint32 reflectSpell = 0;
     int32  reflectDamage = 0;
+	Aura* triggeredby = NULL;	
     // Death Prevention Aura
     SpellEntry const*  preventDeathSpell = NULL;
     int32  preventDeathAmount = 0;
@@ -1700,6 +1701,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
                     else
                         reflectDamage = currentAbsorb / 2;
                     reflectSpell = 33619;
+					triggeredby = *i;
                     break;
                 }
                 if (spellProto->Id == 39228 || // Argussian Compass
@@ -1764,13 +1766,13 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
                         {
                             case 5065:                          // Rank 1
                             case 5064:                          // Rank 2
-                            case 5063:                          // Rank 3
                             {
                                 if(RemainingDamage >= currentAbsorb)
                                     reflectDamage = (*k)->GetModifier()->m_amount * currentAbsorb/100;
                                 else
                                     reflectDamage = (*k)->GetModifier()->m_amount * RemainingDamage/100;
                                 reflectSpell = 33619;
+								triggeredby = *i;
                             } break;
                             default: break;
                         }
@@ -1871,7 +1873,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
 
     // Cast back reflect damage spell
     if (reflectSpell)
-        pVictim->CastCustomSpell(this,  reflectSpell, &reflectDamage, NULL, NULL, true);
+        pVictim->CastCustomSpell(this,  reflectSpell, &reflectDamage, NULL, NULL, true, NULL, triggeredby);
 
     // absorb by mana cost
     AuraList const& vManaShield = pVictim->GetAurasByType(SPELL_AURA_MANA_SHIELD);
@@ -7482,6 +7484,18 @@ void Unit::ModifyAuraState(AuraState flag, bool apply)
     }
 }
 
+bool Unit::HasAuraState(AuraState flag, SpellEntry const *spellProto, Unit *Caster) const
+{
+    if (Caster && spellProto)
+    {
+        Unit::AuraList const& stateAuras = Caster->GetAurasByType(SPELL_AURA_ABILITY_IGNORE_AURASTATE);
+        for(Unit::AuraList::const_iterator i = stateAuras.begin();i != stateAuras.end(); ++i)
+            if((*i)->isAffectedOnSpell(spellProto))
+                return true;
+    }
+    return HasFlag(UNIT_FIELD_AURASTATE, 1<<(flag-1));
+}
+
 Unit *Unit::GetOwner() const
 {
     if(uint64 ownerid = GetOwnerGUID())
@@ -7862,7 +7876,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     // Ice Lance
     if (spellProto->SpellFamilyName == SPELLFAMILY_MAGE && spellProto->SpellIconID == 186)
     {
-        if (pVictim->isFrozen())
+        if (pVictim->HasAuraState(AURA_STATE_FROZEN,spellProto,this))
             DoneTotalMod *= 3.0f;
     }
 
@@ -8100,9 +8114,9 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
                         continue;
                     switch((*i)->GetModifier()->m_miscvalue)
                     {
-                        case  849: if (pVictim->isFrozen()) crit_chance+= 17.0f; break; //Shatter Rank 1
-                        case  910: if (pVictim->isFrozen()) crit_chance+= 34.0f; break; //Shatter Rank 2
-                        case  911: if (pVictim->isFrozen()) crit_chance+= 50.0f; break; //Shatter Rank 3
+                        case  849: if (pVictim->HasAuraState(AURA_STATE_FROZEN,spellProto,this)) crit_chance+= 17.0f; break; //Shatter Rank 1
+                        case  910: if (pVictim->HasAuraState(AURA_STATE_FROZEN,spellProto,this)) crit_chance+= 34.0f; break; //Shatter Rank 2
+                        case  911: if (pVictim->HasAuraState(AURA_STATE_FROZEN,spellProto,this)) crit_chance+= 50.0f; break; //Shatter Rank 3
                         case 7917: // Glyph of Shadowburn
                             if (pVictim->HasAuraState(AURA_STATE_HEALTHLESS_35_PERCENT))
                                 crit_chance+=(*i)->GetModifier()->m_amount;
