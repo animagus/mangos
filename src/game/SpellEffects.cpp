@@ -344,6 +344,14 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
                             damage = 200;
                         break;
                     }
+					// Exsanguinate. Deal 66% health (minimum 2000) to target.
+					case 51013:
+					{
+						damage = unitTarget->GetHealth() * 0.66f;
+						if (damage < 2000)
+							damage = 2000;
+						break;
+					}
                     // Intercept (warrior spell trigger)
                     case 20253:
                     case 61491:
