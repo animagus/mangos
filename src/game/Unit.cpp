@@ -3467,6 +3467,13 @@ bool Unit::AddAura(Aura *Aur)
                     case SPELL_AURA_OBS_MOD_MANA:
                     case SPELL_AURA_POWER_BURN_MANA:
                         break;
+                    case SPELL_AURA_MOD_DAMAGE_TAKEN:
+                        if (i2->second->GetId() == 45770) // Shadow Bolt Volley by Hand of the Deciever.
+                        {
+                            i2->second->modStackAmount(1);
+                            delete Aur;
+                            return false;
+                        }
                     default:                            // not allow
                         // can be only single (this check done at _each_ aura add
                         RemoveAura(i2,AURA_REMOVE_BY_STACK);
