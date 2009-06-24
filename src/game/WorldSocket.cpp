@@ -975,6 +975,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                 account.c_str (),
                 address.c_str ());
 
+/*
     // Update the last_ip in the database
     // No SQL injection, username escaped.
     loginDatabase.escape_string (address);
@@ -984,6 +985,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                             "WHERE username = '%s'",
                             address.c_str (),
                             safe_account.c_str ());
+*/
 
     // NOTE ATM the socket is single-threaded, have this in mind ...
     ACE_NEW_RETURN (m_Session, WorldSession (id, this, AccountTypes(security), expansion, mutetime, locale), -1);
