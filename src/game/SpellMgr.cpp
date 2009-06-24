@@ -1189,6 +1189,11 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     if( (spellInfo_1->Id == 8326 && spellInfo_2->Id == 20584) ||
                         (spellInfo_2->Id == 8326 && spellInfo_1->Id == 20584) )
                          return false;
+					
+					// Fire Bloom
+                    if( (spellInfo_1->Id == 45641 && spellInfo_2->Id == 45642) ||
+                        (spellInfo_2->Id == 45642 && spellInfo_1->Id == 45641) )
+                         return false;
 
                     break;
                 }
