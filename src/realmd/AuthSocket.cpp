@@ -386,19 +386,49 @@ bool AuthSocket::_HandleLogonChallenge()
 
     ///- Verify that this IP is not in the ip_banned table
     // No SQL injection possible (paste the IP address as passed by the socket)
-    loginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
+   // loginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
 
     std::string address = GetRemoteAddress();
     loginDatabase.escape_string(address);
-    QueryResult *result = loginDatabase.PQuery(  "SELECT * FROM ip_banned WHERE ip = '%s'",address.c_str());
-    if(result)
+    //QueryResult *result = loginDatabase.PQuery(  "SELECT * FROM ip_banned WHERE ip = '%s'",address.c_str());
+	
+    // COUNT ACTIVE, CURRENT BANS
+    QueryResult *result = loginDatabase.PQuery(
+        "SELECT COUNT(*) FROM `hosts_banned` WHERE "
+        "INET_ATON( SUBSTRING_INDEX( `ip_mask`, '/', 1 ) ) = "
+        "INET_ATON( '%s' ) >> 32-SUBSTRING_INDEX( `ip_mask` , '/', -1 ) << 32-SUBSTRING_INDEX( `ip_mask` , '/', -1 ) "
+        "AND (`date_from` < NOW() OR `date_from` IS NULL) AND (`date_to` > NOW() OR `date_to` IS NULL) "
+        "AND `is_active` > 0"
+        , address.c_str()
+    );
+	
+    // COUNT IF WE HAVE RIGHTS TO CONNECT
+    QueryResult *accessresult = loginDatabase.PQuery(
+        "SELECT COUNT(*) FROM `hosts_subnets` AS hs INNER JOIN `net_groups` AS ng ON (hs.`net_group` = ng.`id`) "
+        "WHERE INET_ATON( SUBSTRING_INDEX( hs.`ip_mask`, '/', 1 ) ) = "
+        "INET_ATON( '%s' ) >> 32-SUBSTRING_INDEX( hs.`ip_mask` , '/', -1 ) << 32-SUBSTRING_INDEX( hs.`ip_mask` , '/', -1 ) "
+        "AND (ng.`max_connections` IS NULL OR ng.`max_connections` > 0) "
+        "ORDER BY hs.`priority` DESC, hs.`id` ASC"
+        , GetRemoteAddress().c_str()
+    );
+	
+	
+    if(!(*accessresult)[0].GetBool() || (*result)[0].GetBool())
     {
         pkt << (uint8)REALM_AUTH_ACCOUNT_BANNED;
         sLog.outBasic("[AuthChallenge] Banned ip %s tries to login!",GetRemoteAddress().c_str ());
-        delete result;
+        if(result)
+            delete result;
+        if(accessresult)
+            delete accessresult;
     }
     else
     {
+        if(accessresult)
+            delete accessresult;
+        if(result)
+            delete result;
+		
         ///- Get the account details from the account table
         // No SQL injection (escaped user name)
 
@@ -429,10 +459,21 @@ bool AuthSocket::_HandleLogonChallenge()
 
             if (!locked)
             {
-                //set expired bans to inactive
-                loginDatabase.Execute("UPDATE account_banned SET active = 0 WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
+                //set expired bans to inactive - TODO: implement
+                // loginDatabase.Execute("UPDATE account_banned SET active = 0 WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
                 ///- If the account is banned, reject the logon attempt
-                QueryResult *banresult = loginDatabase.PQuery("SELECT bandate,unbandate FROM account_banned WHERE id = %u AND active = 1", (*result)[1].GetUInt32());
+                QueryResult *banresult = loginDatabase.PQuery(
+                	"SELECT "
+                	"IF(`date_from` IS NULL, 0, UNIX_TIMESTAMP(`date_from`)), "
+                	"IF(`date_to` IS NULL, 0, UNIX_TIMESTAMP(`date_to`)) "
+                	"FROM `accounts_banned` "
+                	"WHERE `is_active` > 0 "
+                	"AND (`date_from` < NOW() OR `date_from` IS NULL) "
+                	"AND (`date_to` > NOW() OR `date_to` IS NULL) "
+                	"AND `account_id` = %u "
+                	"ORDER BY `date_to` DESC, `date_from` DESC, `id` DESC"
+	               	, (*result)[1].GetUInt32()
+                );                
                 if(banresult)
                 {
                     if((*banresult)[0].GetUInt64() == (*banresult)[1].GetUInt64())
@@ -697,8 +738,11 @@ bool AuthSocket::_HandleLogonProof()
                     if(WrongPassBanType)
                     {
                         uint32 acc_id = fields[0].GetUInt32();
-                        loginDatabase.PExecute("INSERT INTO account_banned VALUES ('%u',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+'%u','MaNGOS realmd','Failed login autoban',1)",
-                            acc_id, WrongPassBanTime);
+                        loginDatabase.PExecute(
+                        	"INSERT `accounts_banned` VALUES"
+                        	"(NULL, '%u', NOW(), NOW() + INTERVAL %u SECONDS , 1, 'MaNGOS realmd - Failed login autoban', 'MaNGOS realmd - Failed login autoban') "
+                        	", acc_id "
+                        	", WrongPassBanTime");
                         sLog.outBasic("[AuthChallenge] account %s got banned for '%u' seconds because it failed to authenticate '%u' times",
                             _login.c_str(), WrongPassBanTime, failed_logins);
                     }
@@ -706,8 +750,11 @@ bool AuthSocket::_HandleLogonProof()
                     {
                         std::string current_ip = GetRemoteAddress();
                         loginDatabase.escape_string(current_ip);
-                        loginDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+'%u','MaNGOS realmd','Failed login autoban')",
-                            current_ip.c_str(), WrongPassBanTime);
+                        loginDatabase.PExecute(
+                            "INSERT `hosts_banned` VALUES "
+                            "(NULL, '%s', NOW(), NOW() + INTERVAL %u SECONDS, 1, 'MaNGOS realmd - Failed login autoban', 'MaNGOS realmd - Failed login autoban')"
+                            ", current_ip.c_str()"
+                            ", WrongPassBanTime");
                         sLog.outBasic("[AuthChallenge] IP %s got banned for '%u' seconds because account %s failed to authenticate '%u' times",
                             current_ip.c_str(), WrongPassBanTime, _login.c_str(), failed_logins);
                     }
@@ -873,7 +920,31 @@ bool AuthSocket::_HandleRealmList()
         pkt << lock;                                        // if 1, then realm locked
         pkt << i->second.color;                             // if 2, then realm is offline
         pkt << i->first;
-        pkt << i->second.address;
+        // World server address hack
+        result = loginDatabase.PQuery(
+            "SELECT ng.`world_server_ip`, ng.`world_server_port` "
+            "FROM `hosts_subnets` AS hs INNER JOIN `net_groups` AS ng ON (hs.`net_group` = ng.`id`) "
+            "WHERE INET_ATON( SUBSTRING_INDEX( hs.`ip_mask`, '/', 1 ) ) = "
+            "INET_ATON( '%s' )  >> 32-SUBSTRING_INDEX( hs.`ip_mask` , '/', -1 ) << 32-SUBSTRING_INDEX( hs.`ip_mask` , '/', -1 ) "
+            "AND (ng.`max_connections` IS NULL OR ng.`max_connections` > 0) "
+            "ORDER BY hs.`priority` DESC, hs.`id` ASC"
+            , GetRemoteAddress().c_str()
+        );
+        if (result)
+        {
+            const char * server_ip = (*result)[0].GetString();
+            unsigned int port = (*result)[1].GetUInt16();
+            
+            char buff[32];
+            snprintf(buff, 32, "%s:%u", server_ip, port);
+            
+            pkt << buff;
+            delete result;
+        }
+        else
+        {
+          pkt << i->second.address;
+        }
         pkt << i->second.populationLevel;
         pkt << AmountOfCharacters;
         pkt << i->second.timezone;                          // realm category
