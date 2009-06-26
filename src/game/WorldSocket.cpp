@@ -872,6 +872,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     OPENSSL_free ((void*) sStr);
     OPENSSL_free ((void*) vStr);
 
+	/*
     ///- Re-check ip locking (same check as in realmd).
     if (fields[4].GetUInt8 () == 1) // if ip is locked
     {
@@ -886,6 +887,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
             return -1;
         }
     }
+	*/
 
     id = fields[0].GetUInt32 ();
     security = fields[1].GetUInt16 ();
@@ -904,13 +906,18 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
 
     // Re-check account ban (same check as in realmd)
     QueryResult *banresult =
-          loginDatabase.PQuery ("SELECT "
-                                "bandate, "
-                                "unbandate "
-                                "FROM account_banned "
-                                "WHERE id = '%u' "
-                                "AND active = 1",
-                                id);
+		loginDatabase.PQuery(
+							"SELECT "
+							"IF(`date_from` IS NULL, 0, UNIX_TIMESTAMP(`date_from`)), "
+							"IF(`date_to` IS NULL, 0, UNIX_TIMESTAMP(`date_to`)) "
+							"FROM `accounts_banned` "
+							"WHERE `is_active` > 0 "
+							"AND (`date_from` < NOW() OR `date_from` IS NULL) "
+							"AND (`date_to` > NOW() OR `date_to` IS NULL) "
+							"AND `account_id` = %u "
+							"ORDER BY `date_to` DESC, `date_from` DESC, `id` DESC"
+							, id
+						);
 
     if (banresult) // if account banned
     {
@@ -968,6 +975,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                 account.c_str (),
                 address.c_str ());
 
+/*
     // Update the last_ip in the database
     // No SQL injection, username escaped.
     loginDatabase.escape_string (address);
@@ -977,6 +985,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
                             "WHERE username = '%s'",
                             address.c_str (),
                             safe_account.c_str ());
+*/
 
     // NOTE ATM the socket is single-threaded, have this in mind ...
     ACE_NEW_RETURN (m_Session, WorldSession (id, this, AccountTypes(security), expansion, mutetime, locale), -1);
