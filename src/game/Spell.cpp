@@ -3681,6 +3681,10 @@ SpellCastResult Spell::CheckCast(bool strict)
             return SPELL_FAILED_AFFECTING_COMBAT;
     }
 
+	// Heroism not have excludeCasterAuraSpell
+	if (m_spellInfo->Id == 32182 && m_caster->HasAura(57723))
+		return SPELL_FAILED_CASTER_AURASTATE;
+
     // cancel autorepeat spells if cast start when moving
     // (not wand currently autorepeat cast delayed to moving stop anyway in spell update code)
     if( m_caster->GetTypeId()==TYPEID_PLAYER && ((Player*)m_caster)->isMoving() )
