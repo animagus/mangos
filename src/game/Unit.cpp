@@ -728,12 +728,15 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
                 // if not have main target then attack state with target (including AI call)
                 //start melee attacks only after melee hit
 				bool isCombat = true;
-				for(uint8 i = 0; i < 3;i++)
+				if (spellProto)
 				{
-					if(spellProto->EffectImplicitTargetB[i] == TARGET_ALL_FRIENDLY_UNITS_AROUND_CASTER)
+					for(uint8 i = 0; i < 3;i++)
 					{
-						isCombat = false;
-						break;
+						if(spellProto->EffectImplicitTargetB[i] == TARGET_ALL_FRIENDLY_UNITS_AROUND_CASTER)
+						{
+							isCombat = false;
+							break;
+						}
 					}
 				}
 				if (isCombat)
