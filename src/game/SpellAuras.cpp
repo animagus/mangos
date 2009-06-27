@@ -1999,6 +1999,12 @@ void Aura::TriggerSpell()
                 caster->CastCustomSpell(target, trigger_spell_id, &m_modifier.m_amount, NULL, NULL, true, NULL, this);
                 return;
             }
+			case 45641:
+			{
+				caster = target;
+				caster->CastSpell(target, triggeredSpellInfo, true, 0, this, target->GetGUID());
+				return;
+			}
         }
     }
 

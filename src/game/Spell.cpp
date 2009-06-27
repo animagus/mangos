@@ -1402,6 +1402,10 @@ void Spell::SetTargetMap(uint32 i,uint32 cur,UnitList& TagUnitMap)
             if (m_spellInfo->SpellFamilyFlags2 & UI64LIT(0x00000100))
                 unMaxTargets = 2;
             break;
+		case SPELLFAMILY_GENERIC:
+			if (m_spellInfo->SpellIconID == 2128)
+				unMaxTargets = 5;
+			break;
         default:
             break;
     }
