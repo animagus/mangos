@@ -4873,6 +4873,15 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     unitTarget->CastSpell(unitTarget, 44870, true);
                     break;
                 }
+                // Power of the Blue Fight
+                case 45833:
+                {
+                    m_caster->CastSpell(m_caster, 45838, true); // Possess Drake Immune
+
+                    if(unitTarget)
+                        unitTarget->CastSpell(unitTarget, 45838, true);
+                    break;
+                }
                 // Goblin Weather Machine
                 case 46203:
                 {
