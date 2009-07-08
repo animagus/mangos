@@ -513,7 +513,7 @@ void ThreatManager::processThreatEvent(ThreatRefStatusChangeEvent* threatRefStat
     }
 }
 
-+bool ThreatManager::isNeedUpdateToClient(uint32 time)
+bool ThreatManager::isNeedUpdateToClient(uint32 time)
 {
     if (isThreatListEmpty())
         return false;
