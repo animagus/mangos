@@ -7011,7 +7011,27 @@ void Player::CastItemCombatSpell(Unit* Target, WeaponAttackType attType)
                 continue;
             }
 
-            float chance = pEnchant->amount[s] != 0 ? float(pEnchant->amount[s]) : GetWeaponProcChance();
+			float chance = 0;
+			for(uint32 i = 1; i < sSpellStore.GetNumRows(); ++i)
+			{
+				SpellEntry const * spell = sSpellStore.LookupEntry(i);
+				if(spell)
+				{
+					for(int j=0; j<3; ++j)
+					{
+						if(spell->Effect[j]==SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY && spell->EffectMiscValue[j] == pEnchant->ID)
+						{
+							chance = spell->procChance;
+							break;
+						}
+					}
+				}
+				if (chance != 0)
+					break;
+			}
+
+            chance = chance != 0 ? chance : GetWeaponProcChance();
+			//sLog.outError("Enchant: %i, for spell %i and amount = %i and chans = %f", pEnchant->ID, pEnchant->spellid[s], pEnchant->amount[s],chance);
             if (roll_chance_f(chance))
             {
                 if(IsPositiveSpell(pEnchant->spellid[s]))
