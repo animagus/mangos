@@ -3204,6 +3204,7 @@ void Spell::EffectSummonType(uint32 i)
             break;
         case SUMMON_TYPE_SUMMON:
         case SUMMON_TYPE_ELEMENTAL:
+		case SUMMON_TYPE_UNKNOWN6:
             EffectSummon(i);
             break;
         case SUMMON_TYPE_CRITTER:
