@@ -434,10 +434,10 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 
         return 0;
     }
-    if (!spellProto || !IsAuraAddedBySpell(SPELL_AURA_MOD_FEAR, spellProto->Id))
+    if (!spellProto || !IsSpellHaveAura(spellProto,SPELL_AURA_MOD_FEAR))
         pVictim->RemoveSpellbyDamageTaken(SPELL_AURA_MOD_FEAR, damage);
     // root type spells do not dispel the root effect
-    if (!spellProto || !(spellProto->Mechanic == MECHANIC_ROOT || IsAuraAddedBySpell(SPELL_AURA_MOD_ROOT, spellProto->Id)))
+    if (!spellProto || !(spellProto->Mechanic == MECHANIC_ROOT || IsSpellHaveAura(spellProto,SPELL_AURA_MOD_ROOT)))
         pVictim->RemoveSpellbyDamageTaken(SPELL_AURA_MOD_ROOT, damage);
 
     // no xp,health if type 8 /critters/
@@ -453,7 +453,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 
         // some critters required for quests
         if(GetTypeId() == TYPEID_PLAYER)
-            ((Player*)this)->KilledMonster(pVictim->GetEntry(),pVictim->GetGUID());
+            ((Player*)this)->KilledMonster(cInfo ,pVictim->GetGUID());
 
         return damage;
     }
@@ -5310,7 +5310,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         triggered_spell_id = 40446;
                         chance = 25.0f;
                     }
-                    // Mangle (cat/bear)
+                    // Mangle (Bear) and Mangle (Cat)
                     else if (procSpell->SpellFamilyFlags & UI64LIT(0x0000044000000000))
                     {
                         triggered_spell_id = 40452;
@@ -7494,6 +7494,34 @@ void Unit::RemoveAllAttackers()
     }
 }
 
+bool Unit::HasAuraStateForCaster(AuraState flag, uint64 caster) const
+{
+    if(!HasAuraState(flag))
+        return false;
+
+    // single per-caster aura state
+    if(flag == AURA_STATE_CONFLAGRATE)
+    {
+        Unit::AuraList const& dotList = GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+        for(Unit::AuraList::const_iterator i = dotList.begin(); i != dotList.end(); ++i)
+        {
+            if ((*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK &&
+                (*i)->GetCasterGUID() == caster &&
+                //  Immolate
+                (((*i)->GetSpellProto()->SpellFamilyFlags & UI64LIT(0x0000000000000004)) ||
+                // Shadowflame
+                ((*i)->GetSpellProto()->SpellFamilyFlags2 & 0x00000002)))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    return true;
+}
+
 void Unit::ModifyAuraState(AuraState flag, bool apply)
 {
     if (apply)
@@ -7690,19 +7718,24 @@ int32 Unit::DealHeal(Unit *pVictim, uint32 addhealth, SpellEntry const *spellPro
 {
     int32 gain = pVictim->ModifyHealth(int32(addhealth));
 
-    if (GetTypeId()==TYPEID_PLAYER)
+    Unit* unit = this;
+
+    if( GetTypeId()==TYPEID_UNIT && ((Creature*)this)->isTotem() && ((Totem*)this)->GetTotemType()!=TOTEM_STATUE)
+        unit = GetOwner();
+
+    if (unit->GetTypeId()==TYPEID_PLAYER)
     {
         // overheal = addhealth - gain
-        SendHealSpellLog(pVictim, spellProto->Id, addhealth, addhealth - gain, critical);
+        unit->SendHealSpellLog(pVictim, spellProto->Id, addhealth, addhealth - gain, critical);
 
-        if (BattleGround *bg = ((Player*)this)->GetBattleGround())
-            bg->UpdatePlayerScore((Player*)this, SCORE_HEALING_DONE, gain);
+        if (BattleGround *bg = ((Player*)unit)->GetBattleGround())
+            bg->UpdatePlayerScore((Player*)unit, SCORE_HEALING_DONE, gain);
 
         // use the actual gain, as the overheal shall not be counted, skip gain 0 (it ignored anyway in to criteria)
         if (gain)
-            ((Player*)this)->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HEALING_DONE, gain, 0, pVictim);
+            ((Player*)unit)->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HEALING_DONE, gain, 0, pVictim);
 
-        ((Player*)this)->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_HEAL_CASTED, addhealth);
+        ((Player*)unit)->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_HEAL_CASTED, addhealth);
     }
 
     if (pVictim->GetTypeId()==TYPEID_PLAYER)
@@ -7966,8 +7999,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             TakenTotalMod *= ((*i)->GetModifier()->m_amount+100.0f)/100.0f;
 
     // Mod damage from spell mechanic
-    uint32 mechanicMask = GetAllSpellMechanicMask(spellProto);
-    if (mechanicMask)
+    if (uint32 mechanicMask = GetAllSpellMechanicMask(spellProto))
     {
         AuraList const& mDamageDoneMechanic = pVictim->GetAurasByType(SPELL_AURA_MOD_MECHANIC_DAMAGE_TAKEN_PERCENT);
         for(AuraList::const_iterator i = mDamageDoneMechanic.begin();i != mDamageDoneMechanic.end(); ++i)
@@ -8769,6 +8801,25 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
         if((*i)->GetModifier()->m_miscvalue & GetMeleeDamageSchoolMask())
             TakenTotalMod *= ((*i)->GetModifier()->m_amount+100.0f)/100.0f;
 
+    // .. taken pct (special attacks)
+    if (spellProto)
+    {
+        uint32 mechanicMask = GetAllSpellMechanicMask(spellProto);
+
+        // Shred also have bonus as MECHANIC_BLEED damages
+        if(spellProto->SpellFamilyName==SPELLFAMILY_DRUID && (spellProto->SpellFamilyFlags & UI64LIT(0x00008000)))
+            mechanicMask |= (1 << MECHANIC_BLEED);
+
+        // Mod damage from spell mechanic
+        if (mechanicMask)
+        {
+            AuraList const& mDamageDoneMechanic = pVictim->GetAurasByType(SPELL_AURA_MOD_MECHANIC_DAMAGE_TAKEN_PERCENT);
+            for(AuraList::const_iterator i = mDamageDoneMechanic.begin();i != mDamageDoneMechanic.end(); ++i)
+                if(mechanicMask & uint32(1<<((*i)->GetModifier()->m_miscvalue)))
+                    TakenTotalMod *= ((*i)->GetModifier()->m_amount+100.0f)/100.0f;
+        }
+    }
+
     // .. taken pct: dummy auras
     AuraList const& mDummyAuras = pVictim->GetAurasByType(SPELL_AURA_DUMMY);
     for(AuraList::const_iterator i = mDummyAuras.begin(); i != mDummyAuras.end(); ++i)
@@ -8786,14 +8837,6 @@ void Unit::MeleeDamageBonus(Unit *pVictim, uint32 *pdamage,WeaponAttackType attT
                         mod = (*i)->GetModifier()->m_amount;
                     TakenTotalMod *= (mod+100.0f)/100.0f;
                 }
-                break;
-            //Mangle
-            case 2312:
-                if(spellProto==NULL)
-                    break;
-                // Should increase Shred (initial Damage of Lacerate and Rake handled in Spell::EffectSchoolDMG)
-                if(spellProto->SpellFamilyName==SPELLFAMILY_DRUID && (spellProto->SpellFamilyFlags == UI64LIT(0x00008000)))
-                    TakenTotalMod *= (100.0f+(*i)->GetModifier()->m_amount)/100.0f;
                 break;
         }
     }
@@ -9307,7 +9350,7 @@ bool Unit::isVisibleForOrDetect(Unit const* u, bool detect, bool inVisibleList, 
         //based on wowwiki every 5 mod we have 1 more level diff in calculation
         visibleDistance += (int32(u->GetTotalAuraModifier(SPELL_AURA_MOD_DETECT)) - stealthMod)/5.0f;
 
-        if(!IsWithinDist(u,visibleDistance))
+        if(visibleDistance <= 0 || !IsWithinDist(u,visibleDistance))
             return false;
     }
 

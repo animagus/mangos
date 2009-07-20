@@ -1411,6 +1411,8 @@ class MANGOS_DLL_SPEC Unit : public WorldObject
         float GetAPMultiplier(WeaponAttackType attType, bool normalized);
         void ModifyAuraState(AuraState flag, bool apply);
         bool HasAuraState(AuraState flag, SpellEntry const *spellProto = NULL, Unit *Caster = NULL) const;
+        bool HasAuraStateForCaster(AuraState flag, uint64 caster) const;
+
         void UnsummonAllTotems();
         Unit* SelectMagnetTarget(Unit *victim, SpellEntry const *spellInfo = NULL);
         int32 SpellBaseDamageBonus(SpellSchoolMask schoolMask);
