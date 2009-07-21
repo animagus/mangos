@@ -5523,7 +5523,11 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     Unit *caster = triggeredByAura->GetCaster();
                     if (!caster)
                         return false;
-                    pVictim->CastSpell(pVictim, 20267, true, NULL, triggeredByAura);
+					float ap   = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+					int32 holy = caster->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_HOLY) +
+						         caster->SpellBaseDamageBonusForVictim(SPELL_SCHOOL_MASK_HOLY, this);
+					basepoints0 = int32(ap*0.10f + 0.10f*holy);
+                    pVictim->CastCustomSpell(pVictim, 20267, &basepoints0, NULL, NULL, true, NULL, triggeredByAura);
                     return true;
                 }
                 // Judgement of Wisdom
