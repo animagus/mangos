@@ -7487,9 +7487,9 @@ void Unit::RemoveAllAttackers()
     }
 }
 
-bool Unit::HasAuraStateForCaster(AuraState flag, uint64 caster) const
+bool Unit::HasAuraStateForCaster(AuraState flag, SpellEntry const *spellProto, uint64 caster) const
 {
-    if(!HasAuraState(flag))
+    if(!HasAuraState(flag, spellProto, GetUnit(*this, caster))
         return false;
 
     // single per-caster aura state
