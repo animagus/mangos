@@ -5488,7 +5488,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             if ((dummySpell->SpellFamilyFlags & UI64LIT(0x000000008000000)) && effIndex==0)
             {
                 triggered_spell_id = 25742;
-				basepoints0 = GetAttackTime(BASE_ATTACK);
+				basepoints0 = GetAttackTime(BASE_ATTACK) / 1000;
                 break;
             }
             // Sacred Shield
