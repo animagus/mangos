@@ -5523,7 +5523,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     Unit *caster = triggeredByAura->GetCaster();
                     if (!caster)
                         return false;
-                    pVictim->CastSpell(pVictim, 20267,true, triggeredByAura);
+                    pVictim->CastSpell(pVictim, 20267, true, NULL, triggeredByAura);
                     return true;
                 }
                 // Judgement of Wisdom
