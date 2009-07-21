@@ -5488,10 +5488,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             if ((dummySpell->SpellFamilyFlags & UI64LIT(0x000000008000000)) && effIndex==0)
             {
                 triggered_spell_id = 25742;
-                float ap = GetTotalAttackPowerValue(BASE_ATTACK);
-                int32 holy = SpellBaseDamageBonus(SPELL_SCHOOL_MASK_HOLY) +
-                             SpellBaseDamageBonusForVictim(SPELL_SCHOOL_MASK_HOLY, pVictim);
-                basepoints0 = GetAttackTime(BASE_ATTACK) * int32(ap*0.022f + 0.044f * holy) / 1000;
+				basepoints0 = GetAttackTime(BASE_ATTACK);
                 break;
             }
             // Sacred Shield
@@ -5526,11 +5523,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     Unit *caster = triggeredByAura->GetCaster();
                     if (!caster)
                         return false;
-                    float ap   = caster->GetTotalAttackPowerValue(BASE_ATTACK);
-                    int32 holy = caster->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_HOLY) +
-                                 caster->SpellBaseDamageBonusForVictim(SPELL_SCHOOL_MASK_HOLY, this);
-                    basepoints0 = int32(ap*0.10f + 0.10f*holy);
-                    pVictim->CastCustomSpell(pVictim, 20267, &basepoints0, NULL, NULL, true, NULL, triggeredByAura);
+                    pVictim->pVictim->CastSpell(pVictim, 20267,true, triggeredByAura);
                     return true;
                 }
                 // Judgement of Wisdom

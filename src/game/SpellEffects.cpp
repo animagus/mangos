@@ -644,14 +644,6 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
                                  m_caster->SpellBaseDamageBonusForVictim(GetSpellSchoolMask(m_spellInfo), unitTarget);
                     damage += int32(ap * 0.07f) + int32(holy * 7 / 100);
                 }
-                // Hammer of Wrath ($m1+0.15*$SPH+0.15*$AP) - ranged type sdb future fix
-                else if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000008000000000))
-                {
-                    float ap = m_caster->GetTotalAttackPowerValue(BASE_ATTACK);
-                    int32 holy = m_caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellInfo)) +
-                                 m_caster->SpellBaseDamageBonusForVictim(GetSpellSchoolMask(m_spellInfo), unitTarget);
-                    damage += int32(ap * 0.15f) + int32(holy * 15 / 100);
-                }
                 // Hammer of the Righteous
                 else if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0004000000000000))
                 {
@@ -1684,14 +1676,6 @@ void Spell::EffectDummy(uint32 i)
 
             switch(m_spellInfo->Id)
             {
-                // Judgement of Righteousness (0.2*$AP+0.32*$SPH) holy added in spellDamagBonus
-                case 20187:
-                {
-                    if (!unitTarget)
-                        return;
-                    m_damage+=int32(0.2f*m_caster->GetTotalAttackPowerValue(BASE_ATTACK));
-                    return;
-                }
                 case 31789:                                 // Righteous Defense (step 1)
                 {
                     // 31989 -> dummy effect (step 1) + dummy effect (step 2) -> 31709 (taunt like spell for each target)
@@ -4489,16 +4473,7 @@ void Spell::EffectWeaponDmg(uint32 i)
             break;
         }
         case SPELLFAMILY_PALADIN:
-        {
-            // Seal of Command - receive benefit from Spell Damage and Healing
-            if(m_spellInfo->SpellFamilyFlags & UI64LIT(0x00000002000000))
-            {
-                spellBonusNeedWeaponDamagePercentMod = true;// apply weaponDamagePercentMod to spell_bonus (and then to all bonus, fixes and weapon already have applied)
-                spell_bonus += int32(0.23f*m_caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellInfo)));
-                spell_bonus += int32(0.29f*m_caster->SpellBaseDamageBonusForVictim(GetSpellSchoolMask(m_spellInfo), unitTarget));
-            }
             break;
-        }
         case SPELLFAMILY_SHAMAN:
         {
             // Skyshatter Harness item set bonus
