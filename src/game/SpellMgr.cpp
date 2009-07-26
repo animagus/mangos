@@ -303,7 +303,9 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 37675:                                         // Chaos Blast
             return false;
         case 36032:                                         // Arcane Blast
-            return true;
+		case 47314:
+		case 45848:                                         // Shield of the Blue
+			return true;
     }
 
     switch(spellproto->Effect[effIndex])

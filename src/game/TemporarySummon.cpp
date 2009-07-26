@@ -177,3 +177,8 @@ void TemporarySummon::UnSummon()
 void TemporarySummon::SaveToDB()
 {
 }
+
+Unit* TemporarySummon::GetSummoner() const
+{
+	return m_summoner ? ObjectAccessor::GetUnit(*this, m_summoner) : NULL;
+}
