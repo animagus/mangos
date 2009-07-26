@@ -1274,8 +1274,8 @@ void Player::Update( uint32 p_time )
     {
         if (p_time >= m_DetectInvTimer)
         {
-            m_DetectInvTimer = 3000;
             HandleStealthedUnitsDetection();
+            m_DetectInvTimer = 3000;
         }
         else
             m_DetectInvTimer -= p_time;
@@ -6997,7 +6997,7 @@ void Player::CastItemCombatSpell(Unit* Target, WeaponAttackType attType)
 
         if(spellData.SpellPPMRate)
         {
-            uint32 WeaponSpeed = GetAttackTime(attType);
+            uint32 WeaponSpeed = proto->Delay;
             chance = GetPPMProcChance(WeaponSpeed, spellData.SpellPPMRate);
         }
         else if(chance > 100.0f)
@@ -7027,27 +7027,17 @@ void Player::CastItemCombatSpell(Unit* Target, WeaponAttackType attType)
                 continue;
             }
 
-			float chance = 0;
-			for(uint32 i = 1; i < sSpellStore.GetNumRows(); ++i)
-			{
-				SpellEntry const * spell = sSpellStore.LookupEntry(i);
-				if(spell)
-				{
-					for(int j=0; j<3; ++j)
-					{
-						if(spell->Effect[j]==SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY && spell->EffectMiscValue[j] == pEnchant->ID)
-						{
-							chance = spell->procChance;
-							break;
-						}
-					}
-				}
-				if (chance != 0)
-					break;
-			}
+            // Use first rank to access spell item enchant procs
+            float ppmRate = spellmgr.GetItemEnchantProcChance(spellInfo->Id);
 
-            chance = chance != 0 ? chance : GetWeaponProcChance();
-			//sLog.outError("Enchant: %i, for spell %i and amount = %i and chans = %f", pEnchant->ID, pEnchant->spellid[s], pEnchant->amount[s],chance);
+            float chance = ppmRate
+                ? GetPPMProcChance(proto->Delay, ppmRate)
+                : pEnchant->amount[s] != 0 ? float(pEnchant->amount[s]) : GetWeaponProcChance();
+
+
+            ApplySpellMod(spellInfo->Id,SPELLMOD_CHANCE_OF_SUCCESS,chance);
+            ApplySpellMod(spellInfo->Id,SPELLMOD_FREQUENCY_OF_SUCCESS,chance);
+
             if (roll_chance_f(chance))
             {
                 if(IsPositiveSpell(pEnchant->spellid[s]))
@@ -12521,7 +12511,7 @@ void Player::AddQuest( Quest const *pQuest, Object *questGiver )
 
     //starting initial quest script
     if(questGiver && pQuest->GetQuestStartScript()!=0)
-        sWorld.ScriptsStart(sQuestStartScripts, pQuest->GetQuestStartScript(), questGiver, this);
+        GetMap()->ScriptsStart(sQuestStartScripts, pQuest->GetQuestStartScript(), questGiver, this);
 
     // Some spells applied at quest activation
     SpellAreaForQuestMapBounds saBounds = spellmgr.GetSpellAreaForQuestMapBounds(quest_id,true);
@@ -13779,7 +13769,7 @@ void Player::SendQuestReward( Quest const *pQuest, uint32 XP, Object * questGive
     GetSession()->SendPacket( &data );
 
     if (pQuest->GetQuestCompleteScript() != 0)
-        sWorld.ScriptsStart(sQuestEndScripts, pQuest->GetQuestCompleteScript(), questGiver, this);
+        GetMap()->ScriptsStart(sQuestEndScripts, pQuest->GetQuestCompleteScript(), questGiver, this);
 }
 
 void Player::SendQuestFailed( uint32 quest_id )
@@ -16896,35 +16886,40 @@ void Player::HandleStealthedUnitsDetection()
     cell_lock->Visit(cell_lock, world_unit_searcher, *GetMap());
     cell_lock->Visit(cell_lock, grid_unit_searcher, *GetMap());
 
-    for (std::list<Unit*>::iterator i = stealthedUnits.begin(); i != stealthedUnits.end();)
+    for (std::list<Unit*>::const_iterator i = stealthedUnits.begin(); i != stealthedUnits.end(); ++i)
     {
         if((*i)==this)
-        {
-            i = stealthedUnits.erase(i);
             continue;
-        }
 
-        if ((*i)->isVisibleForOrDetect(this,true))
+        bool hasAtClient = HaveAtClient((*i));
+        bool hasDetected = (*i)->isVisibleForOrDetect(this, true);
+
+        if (hasDetected)
         {
+            if(!hasAtClient)
+            {
+                (*i)->SendUpdateToPlayer(this);
+                m_clientGUIDs.insert((*i)->GetGUID());
 
-            (*i)->SendUpdateToPlayer(this);
-            m_clientGUIDs.insert((*i)->GetGUID());
+                #ifdef MANGOS_DEBUG
+                if((sLog.getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
+                    sLog.outDebug("Object %u (Type: %u) is detected in stealth by player %u. Distance = %f",(*i)->GetGUIDLow(),(*i)->GetTypeId(),GetGUIDLow(),GetDistance(*i));
+                #endif
 
-            #ifdef MANGOS_DEBUG
-            if((sLog.getLogFilter() & LOG_FILTER_VISIBILITY_CHANGES)==0)
-                sLog.outDebug("Object %u (Type: %u) is detected in stealth by player %u. Distance = %f",(*i)->GetGUIDLow(),(*i)->GetTypeId(),GetGUIDLow(),GetDistance(*i));
-            #endif
-
-            // target aura duration for caster show only if target exist at caster client
-            // send data at target visibility change (adding to client)
-            if((*i)!=this && (*i)->isType(TYPEMASK_UNIT))
-                SendAurasForTarget(*i);
-
-            i = stealthedUnits.erase(i);
-            continue;
+                // target aura duration for caster show only if target exist at caster client
+                // send data at target visibility change (adding to client)
+                if((*i)!=this && (*i)->isType(TYPEMASK_UNIT))
+                    SendAurasForTarget(*i);
+            }
         }
-
-        ++i;
+        else
+        {
+            if(hasAtClient)
+            {
+                (*i)->DestroyForPlayer(this);
+                m_clientGUIDs.erase((*i)->GetGUID());
+            }
+        }
     }
 }
 
@@ -19684,13 +19679,19 @@ bool Player::IsAllowUseFlyMountsHere() const
     return v_map == 530 || v_map == 571 && HasSpell(54197);
 }
 
+struct DoPlayerLearnSpell
+{
+    DoPlayerLearnSpell(Player& _player) : player(_player) {}
+    void operator() (uint32 spell_id) { player.learnSpell(spell_id,false); }
+    Player& player;
+};
+
 void Player::learnSpellHighRank(uint32 spellid)
 {
     learnSpell(spellid,false);
 
-    SpellChainMapNext const& nextMap = spellmgr.GetSpellChainNext();
-    for(SpellChainMapNext::const_iterator itr = nextMap.lower_bound(spellid); itr != nextMap.upper_bound(spellid); ++itr)
-        learnSpellHighRank(itr->second);
+    DoPlayerLearnSpell worker(*this);
+    spellmgr.doForHighRanks(spellid,worker);
 }
 
 void Player::_LoadSkills()
