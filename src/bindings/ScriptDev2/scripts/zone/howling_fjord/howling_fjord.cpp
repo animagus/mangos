@@ -56,7 +56,8 @@ struct  MANGOS_DLL_DECL mob_protodrakeAI : public ScriptedAI
 
 	if( eatTimer < diff )
 	  {
-		if( Player* plr = objmgr.GetPlayer( PlayerGUID ) )
+		  
+		if( Player* plr = (Player*)Unit::GetUnit((*m_creature), PlayerGUID)) 
 		  plr->KilledMonsterCredit( 24170,  m_creature->GetGUID() );
 
 	  }else eatTimer -= diff;

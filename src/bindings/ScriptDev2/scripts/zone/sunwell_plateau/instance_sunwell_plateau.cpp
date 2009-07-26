@@ -25,7 +25,7 @@ struct MANGOS_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
 {
     instance_sunwell_plateau(Map* pMap) : ScriptedInstance(pMap) {Initialize();};
 
-    uint32 m_uiEncounter[ENCOUNTERS];
+    uint32 m_uiEncounter[MAX_ENCOUNTER];
     std::string strInstData;
 
     // Creatures
@@ -87,7 +87,7 @@ struct MANGOS_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
         m_uiDoorTheThirdGateGUID        = 0;
 
         // Encounters
-        for(uint8 i = 0; i < ENCOUNTERS; ++i)
+        for(uint8 i = 0; i < MAX_ENCOUNTER; ++i)
             m_uiEncounter[i] = NOT_STARTED;
 
         // Misc
@@ -96,7 +96,7 @@ struct MANGOS_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
 
     bool IsEncounterInProgress() const
     {
-        for(uint8 i = 0; i < ENCOUNTERS; ++i)
+        for(uint8 i = 0; i < MAX_ENCOUNTER; ++i)
             if (m_uiEncounter[i] == IN_PROGRESS)
                 return true;
 
@@ -358,7 +358,7 @@ struct MANGOS_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
         loadStream >> m_uiEncounter[0] >> m_uiEncounter[1] >> m_uiEncounter[2] >>
             m_uiEncounter[3] >> m_uiEncounter[4] >> m_uiEncounter[5];
 
-        for(uint8 i = 0; i < ENCOUNTERS; ++i)
+        for(uint8 i = 0; i < MAX_ENCOUNTER; ++i)
         {
             if (m_uiEncounter[i] == IN_PROGRESS)
                 m_uiEncounter[i] = NOT_STARTED;
