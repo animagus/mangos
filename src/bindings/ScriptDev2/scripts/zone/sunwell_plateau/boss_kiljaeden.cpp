@@ -40,7 +40,8 @@ enum
     SAY_KJ_SLAY2                            = -1580063,
     SAY_KJ_REFLECTION1                      = -1580064,
     SAY_KJ_REFLECTION2                      = -1580065,
-    SAY_KJ_DARKNESS1                        = -1580066,
+    SAY_KJ_DARKNESS                         = -1580087,
+	SAY_KJ_DARKNESS1                        = -1580066,
     SAY_KJ_DARKNESS2                        = -1580067,
     SAY_KJ_DARKNESS3                        = -1580068,
     SAY_KJ_CANNOT_WIN                       = -1580070,
@@ -217,8 +218,8 @@ struct MANGOS_DLL_DECL mob_kalecgosAI : public ScriptedAI
                 {
                     case 0: DoScriptText(SAY_KALECGOS_ORB1, m_creature);break;
                     case 1: DoScriptText(SAY_KALECGOS_ORB2, m_creature);break;
-                    case 2: DoScriptText(SAY_KALECGOS_ORB3, m_creature);break;
-                    case 3: DoScriptText(SAY_KALECGOS_ORB4, m_creature);break;
+                    case 2: DoScriptText(SAY_KALECGOS_ORB4, m_creature);break;
+                    case 3: DoScriptText(SAY_KALECGOS_ORB3, m_creature);break;
                 }
 
                 EmpowerOrb(ui_OrbsEmpowered);
@@ -252,25 +253,50 @@ struct MANGOS_DLL_DECL mob_kalecgosAI : public ScriptedAI
 
     void EmpowerOrb(uint32 ui_ActiveOrb)
     {
-        if (ui_ActiveOrb < 4)
+        if (ui_ActiveOrb < 3)
     	{
-            GameObject* pOrb = m_pInstance->instance->GetGameObject(ui_Orb[ui_ActiveOrb]);
-            if(!pOrb)
-                return;
+			if (ui_ActiveOrb == 2)
+			{
+				for (int i=0;i<4;i++)
+				{
+					GameObject* pOrb = m_pInstance->instance->GetGameObject(ui_Orb[i]);
+					if(!pOrb)
+						return;
+					// workaround effect
+					if (Unit* pSummon = m_creature->SummonCreature(25708, pOrb->GetPositionX(), pOrb->GetPositionY(), pOrb->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN, 300000))
+					{
+						pSummon->SetDisplayId(11686);
+						pSummon->setFaction(35);
+						pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+						pSummon->CastSpell(pSummon, SPELL_RING_OF_BLUE_FLAME, true);
+						pOrbVisuals[i] = pSummon;
+					}
 
-            // workaround effect
-            if (Unit* pSummon = m_creature->SummonCreature(25708, pOrb->GetPositionX(), pOrb->GetPositionY(), pOrb->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN, 300000))
-            {
-                pSummon->SetDisplayId(11686);
-                pSummon->setFaction(35);
-                pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                pSummon->CastSpell(pSummon, SPELL_RING_OF_BLUE_FLAME, true);
-                pOrbVisuals[ui_ActiveOrb] = pSummon;
-            }
+					//m_creature->CastSpell(orb, SPELL_RING_OF_BLUE_FLAME, true);
+					pOrb->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+					pOrb->Refresh();
+				}
+			}
+			else
+			{
+				GameObject* pOrb = m_pInstance->instance->GetGameObject(ui_Orb[ui_ActiveOrb]);
+				if(!pOrb)
+					return;
 
-            //m_creature->CastSpell(orb, SPELL_RING_OF_BLUE_FLAME, true);
-            pOrb->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
-            pOrb->Refresh();
+				// workaround effect
+				if (Unit* pSummon = m_creature->SummonCreature(25708, pOrb->GetPositionX(), pOrb->GetPositionY(), pOrb->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN, 300000))
+				{
+					pSummon->SetDisplayId(11686);
+					pSummon->setFaction(35);
+					pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+					pSummon->CastSpell(pSummon, SPELL_RING_OF_BLUE_FLAME, true);
+					pOrbVisuals[ui_ActiveOrb] = pSummon;
+				}
+
+				//m_creature->CastSpell(orb, SPELL_RING_OF_BLUE_FLAME, true);
+				pOrb->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+				pOrb->Refresh();
+			}
         }
     }
 };
@@ -641,8 +667,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
         ui_ShadowSpikeCount       = 30000;
 
         ui_Armageddon_Timer       = 10000;
-
-	ui_FireBloom_Count        = 5;
+		//ui_FireBloom_Count        = 5; -- in core
 
         ui_Phase = PHASE_NOTSTART;
     }
@@ -684,10 +709,10 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
                 //pSummon->SetHealth(pTarget->GetMaxHealth()); // WTF ?
                 pSummon->CastSpell(pTarget, SPELL_SINISTER_REFLECTION_CLASS, true);
                 pSummon->CastSpell(pTarget, SPELL_SINISTER_REFLECTION_CLONE, true);
-                pSummon->CastSpell(pTarget, SPELL_COPY_WEAPON, true);
-                pSummon->CastSpell(pTarget, SPELL_COPY_WEAPON2, true);
-                pSummon->CastSpell(pTarget, SPELL_COPY_OFFHAND, true);
-                pSummon->CastSpell(pTarget, SPELL_COPY_OFFHAND_WEAPON, true);
+                //pSummon->CastSpell(pTarget, SPELL_COPY_WEAPON, true);
+                //pSummon->CastSpell(pTarget, SPELL_COPY_WEAPON2, true);
+                //pSummon->CastSpell(pTarget, SPELL_COPY_OFFHAND, true);
+                //pSummon->CastSpell(pTarget, SPELL_COPY_OFFHAND_WEAPON, true);
 
                 ((mob_sinister_reflectionAI*)((Creature*)pSummon)->AI())->ui_class = pTarget->getClass();
             }
@@ -795,6 +820,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
         // Darkness of a Thousand Souls : Begins to channel for 8 seconds, then deals 50'000 damage to all raid members.
         if(ui_Darkness_Timer < diff)
         {
+			DoScriptText(SAY_KJ_DARKNESS, m_creature);
             m_creature->InterruptNonMeleeSpells(true);
             //DoCast(m_creature, SPELL_DARKNESS_OF_A_THOUSAND_SOULS);
             m_creature->CastSpell(m_creature, SPELL_DARKNESS_OF_A_THOUSAND_SOULS, true);
@@ -805,15 +831,8 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
             ui_FlameDart_Timer       += 9000;
             if(ui_Phase >= PHASE_ARMAGEDDON)
                 ui_Armageddon_Timer  += 9000; // Armageddon on the other hand, can be casted now, if Anveena has already sacrificed
-            ui_SoulFlay_Timer         = 9000;
-            ui_DarknessBomb_Timer     = 8000; // Darkness of a Thousand Souls effect timer
-
-            switch(rand()%3)
-            {
-                case 0: DoScriptText(SAY_KJ_DARKNESS1, m_creature);break;
-                case 1: DoScriptText(SAY_KJ_DARKNESS2, m_creature);break;
-                case 2: DoScriptText(SAY_KJ_DARKNESS3, m_creature);break;
-            }
+            ui_SoulFlay_Timer         = 9400;
+            ui_DarknessBomb_Timer     = 8300; // Darkness of a Thousand Souls effect timer
 
             ui_Darkness_Timer = (ui_Phase == PHASE_SACRIFICE) ? 20000 + rand()%15000 : 40000 + rand()%30000;
         }else ui_Darkness_Timer -= diff;
@@ -822,7 +841,14 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
         if (ui_DarknessBomb_Timer)
             if(ui_DarknessBomb_Timer < diff)
             {
+				m_creature->InterruptNonMeleeSpells(true);
                 DoCast(m_creature, SPELL_DARKNESS_OF_A_THOUSAND_SOULS_EFFECT);
+				switch(rand()%3)
+				{
+				case 0: DoScriptText(SAY_KJ_DARKNESS1, m_creature);break;
+				case 1: DoScriptText(SAY_KJ_DARKNESS2, m_creature);break;
+				case 2: DoScriptText(SAY_KJ_DARKNESS3, m_creature);break;
+				}
                 ui_DarknessBomb_Timer = 0;
             }else ui_DarknessBomb_Timer -= diff;
 
@@ -844,7 +870,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
             ui_FireBloom_Timer       += 30000;
             ui_SummonShieldOrb_Timer += 30000;
             ui_FlameDart_Timer       += 30000;
-            ui_Darkness_Timer        += 30000;
+            ui_Darkness_Timer        += 35000;
             ui_Armageddon_Timer      += 30000;
             ui_ShadowSpikeCount      = 30000; // shadow spike visual timer
 
@@ -865,7 +891,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
                 pTarget->GetPosition(x, y, z);
                 if(Creature* Armageddon = m_creature->SummonCreature(NPC_ARMAGEDDON_TARGET, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 5000))
                 {
-		    Armageddon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+					Armageddon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     m_creature->CastSpell(Armageddon, SPELL_ARMAGEDDON, true);
                     Armageddon->CastSpell(Armageddon, SPELL_ARMAGEDDON_VISUAL, true);
                 }
@@ -892,7 +918,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
             ui_FireBloom_Timer       += 30000;
             ui_SummonShieldOrb_Timer += 30000;
             ui_FlameDart_Timer       += 30000;
-            ui_Darkness_Timer        += 30000;
+            ui_Darkness_Timer        += 35000;
             ui_Armageddon_Timer      += 30000;
             ui_ShadowSpikeCount      = 30000; // shadow spike visual timer
 
@@ -960,6 +986,7 @@ struct MANGOS_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementAI
 
     uint32 ui_Phase;
     uint32 ui_Event_Timer;
+	uint32 ui_Reset_Timer;
     uint32 ui_AnveenaSpeech_Timer;
     uint32 ui_AnveenaSpeechCounter;
 
@@ -971,10 +998,12 @@ struct MANGOS_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementAI
 
         ui_Phase = PHASE_NOTSTART;
         ui_Event_Timer          = 1000;
+		ui_Reset_Timer          = 120000;
         ui_AnveenaSpeech_Timer  = 0;
         ui_AnveenaSpeechCounter = 0;
 
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+		m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
         if (m_pInstance)
         {
@@ -990,6 +1019,16 @@ struct MANGOS_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementAI
 
     void UpdateAI(const uint32 diff)
     {
+		if (m_pInstance)
+		{
+			if (m_pInstance->GetData(TYPE_KILJAEDEN) == NOT_STARTED && ui_Phase >= PHASE_NORMAL)
+			{
+				if(ui_Reset_Timer < diff)
+					Reset();
+				else ui_Reset_Timer -=diff;
+			}
+		}
+				
         if(ui_Event_Timer < diff)
         {
             if (ui_Phase == PHASE_NOTSTART)
@@ -1041,7 +1080,7 @@ struct MANGOS_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementAI
                             pAnveena->Relocate(1698.45, 628.03, 28.1989);
                             //pAnveena->GetMotionMaster()->MovePoint(0, 1698.45, 628.03, 70.1989);
 
-                    m_creature->SetInCombatWithZone();
+                    //m_creature->SetInCombatWithZone();
                     ui_Phase = PHASE_DECEIVERS;
                 }
                 // no aggro, do channeling
@@ -1087,13 +1126,13 @@ struct MANGOS_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementAI
                     ui_Phase = PHASE_NORMAL;
                     ui_AnveenaSpeech_Timer = 25000; // first speech after 25 secs
 
-                    if(Creature* KJ = DoSpawnCreature(NPC_KILJAEDEN, 0, 0,0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 2000))
+                    if(Creature* KJ = DoSpawnCreature(NPC_KILJAEDEN, 0, 0,0, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1800000))
                     {
- 			if (m_pInstance)
+						if (m_pInstance)
                             m_pInstance->SetData(TYPE_KILJAEDEN, IN_PROGRESS);
 
                         KJ->CastSpell(KJ, SPELL_REBIRTH, false);
-			m_creature->CastSpell(m_creature, SPELL_QUAKE, true);
+						m_creature->CastSpell(m_creature, SPELL_QUAKE, true);
                         //KJ->AddThreat(m_creature->getVictim(), 1.0f);
                         //((boss_kiljaedenAI*)KJ->AI())->AttackStart(m_creature->getVictim());
                         DoScriptText(SAY_KJ_EMERGE, KJ);
@@ -1110,7 +1149,7 @@ struct MANGOS_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementAI
                     if (pKiljaeden->isAlive())
                     	if (m_pInstance && m_pInstance->GetData(TYPE_KILJAEDEN) == NOT_STARTED)
                     	{
-			    error_log("SD2: Sunwell: Reset event 2");
+							error_log("SD2: Sunwell: Reset event 2");
                             ui_Phase = PHASE_NOTSTART;
                             Reset();
                             return;
@@ -1454,6 +1493,9 @@ struct MANGOS_DLL_DECL mob_blue_flightAI : public ScriptedAI
     {
     }
 
+	void AttackStart(Unit* pWho) {}
+	void MoveInLineOfSight(Unit* pWho) {}
+
     void Aggro(Unit *who)
     {
         DoResetThreat();
@@ -1467,7 +1509,6 @@ struct MANGOS_DLL_DECL mob_blue_flightAI : public ScriptedAI
             player->RemoveAurasDueToSpell(45833);
             player->RemoveAurasDueToSpell(45838);
             player->RemoveAurasDueToSpell(45839);
-
         }
     }
 };

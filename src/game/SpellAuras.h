@@ -212,6 +212,7 @@ class MANGOS_DLL_SPEC Aura
         void HandleNoReagentUseAura(bool Apply, bool Real);
         void HandlePhase(bool Apply, bool Real);
 		void HandleAbilityIgnoreAurastate(bool Apply, bool Real);
+    
 
         virtual ~Aura();
 

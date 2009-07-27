@@ -1149,6 +1149,10 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     if (!unit || !effectMask)
         return;
 
+	if (unit->GetTypeId() != TYPEID_PLAYER && unit->GetEntry() == 25653)
+		if (m_spellInfo->Id!=45848 &&  m_spellInfo->Id!=45839)
+			return;
+
     Unit* realCaster = m_originalCaster ? m_originalCaster : m_caster;
 
     // Recheck immune (only for delayed spells)
@@ -1817,6 +1821,12 @@ void Spell::SetTargetMap(uint32 i,uint32 cur,UnitList& TagUnitMap)
             FillAreaTargets(TagUnitMap,m_caster->GetPositionX(), m_caster->GetPositionY(),radius,inFront ? PUSH_IN_FRONT : PUSH_IN_BACK,SPELL_TARGETS_AOE_DAMAGE);
             break;
         }
+		case TARGET_FRIENDLY_IN_FRONT_OF_CASTER:
+		{
+			FillAreaTargets(TagUnitMap,m_caster->GetPositionX(), m_caster->GetPositionY(),radius,PUSH_IN_FRONT,SPELL_TARGETS_FRIENDLY);
+			TagUnitMap.remove(m_caster);
+			break;
+		}
         case TARGET_DUELVSPLAYER:
         {
             Unit *target = m_targets.getUnitTarget();
@@ -3272,14 +3282,17 @@ void Spell::SendChannelStart(uint32 duration)
         }
     }
 
-    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+    if (m_caster)
     {
         WorldPacket data( MSG_CHANNEL_START, (8+4+4) );
         data.append(m_caster->GetPackGUID());
         data << uint32(m_spellInfo->Id);
         data << uint32(duration);
 
-        ((Player*)m_caster)->GetSession()->SendPacket( &data );
+        m_caster->SendMessageToSet(&data, false);
+		if (m_caster->GetTypeId() == TYPEID_PLAYER)
+			((Player*)m_caster)->GetSession()->SendPacket( &data );
+
     }
 
     m_timer = duration;

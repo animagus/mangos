@@ -305,6 +305,9 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 36032:                                         // Arcane Blast
 		case 47314:
 		case 45848:                                         // Shield of the Blue
+		case 45860:                                         // Breath: Revitalize
+		case 45856:                                         // Breath: Haste
+		case 45862:                                         // Blink
 			return true;
     }
 

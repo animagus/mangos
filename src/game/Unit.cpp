@@ -7742,6 +7742,9 @@ void Unit::UnsummonAllTotems()
 
 int32 Unit::DealHeal(Unit *pVictim, uint32 addhealth, SpellEntry const *spellProto, bool critical)
 {
+	if (pVictim->GetTypeId() != TYPEID_PLAYER && pVictim->GetEntry() == 25653)
+		return 0;
+
     int32 gain = pVictim->ModifyHealth(int32(addhealth));
 
     Unit* unit = this;

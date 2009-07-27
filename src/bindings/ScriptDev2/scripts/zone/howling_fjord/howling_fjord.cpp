@@ -6,22 +6,14 @@ struct  MANGOS_DLL_DECL mob_protodrakeAI : public ScriptedAI
   mob_protodrakeAI( Creature* pCreature ) : ScriptedAI( pCreature ) { Reset(); } 
 
   uint64 PlayerGUID;
-
   bool canEat;
-
-
   uint32 eatTimer;
 
   void Reset()
   {
-
     PlayerGUID = 0;
-
     canEat = false;
-
-
     eatTimer = 5000;
-
   }
 
   void BeginEvent(Player* pPlayer)
@@ -41,10 +33,10 @@ struct  MANGOS_DLL_DECL mob_protodrakeAI : public ScriptedAI
       return;
 
     if(id == 1)
-      {
-	canEat = true;
-	m_creature->HandleEmoteCommand( EMOTE_ONESHOT_ATTACKUNARMED );
-      }
+	{
+		canEat = true;
+		m_creature->HandleEmoteCommand( EMOTE_ONESHOT_ATTACKUNARMED );
+	}
   }
 
 
@@ -52,18 +44,15 @@ struct  MANGOS_DLL_DECL mob_protodrakeAI : public ScriptedAI
   {
 
     if(canEat)
-      {
-
-	if( eatTimer < diff )
-	  {
-		  
-		if( Player* plr = (Player*)Unit::GetUnit((*m_creature), PlayerGUID)) 
-		  plr->KilledMonsterCredit( 24170,  m_creature->GetGUID() );
-
-	  }else eatTimer -= diff;
-      }
-
-        if ( !m_creature->SelectHostilTarget() || !m_creature->getVictim() )
+	{
+		  if( eatTimer < diff )
+		  {
+			  if( Player* plr = (Player*)Unit::GetUnit((*m_creature), PlayerGUID)) 
+				  plr->KilledMonsterCredit( 24170,  m_creature->GetGUID() );
+		  }else eatTimer -= diff;
+	}
+	
+	if ( !m_creature->SelectHostilTarget() || !m_creature->getVictim() )
             return;
 
 	DoMeleeAttackIfReady();
@@ -76,17 +65,14 @@ CreatureAI* GetAI_mob_protodrakeAI( Creature* pCreature )
   return new mob_protodrakeAI( pCreature );
 }
 
-
-
 bool ItemUse_item_Tillinghast_Plagued_Meat(Player* pPlayer, Item* pItem, const SpellCastTargets &pTargets)
 {
 
   if(pPlayer->GetQuestStatus(11280) == QUEST_STATUS_INCOMPLETE)
-    {
-     Creature* pCreature =  pPlayer->SummonCreature(23689, pPlayer->GetPositionX(), pPlayer->GetPositionY() + 10, pPlayer->GetPositionZ() + 20 , 0, TEMPSUMMON_TIMED_DESPAWN, 180000);
-    ((mob_protodrakeAI*)pCreature->AI())->BeginEvent(pPlayer);
-
-    }
+  {
+	  Creature* pCreature =  pPlayer->SummonCreature(23689, pPlayer->GetPositionX(), pPlayer->GetPositionY() + 10, pPlayer->GetPositionZ() + 20 , 0, TEMPSUMMON_TIMED_DESPAWN, 180000);
+	  ((mob_protodrakeAI*)pCreature->AI())->BeginEvent(pPlayer);
+  }
 
   return true;
 }
@@ -94,7 +80,6 @@ bool ItemUse_item_Tillinghast_Plagued_Meat(Player* pPlayer, Item* pItem, const S
 
 void AddSC_howling_fjord()
 {
-
     Script *newscript;
 
     newscript = new Script;
