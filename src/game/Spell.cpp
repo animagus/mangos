@@ -1150,7 +1150,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         return;
 
 	if (unit->GetTypeId() != TYPEID_PLAYER && unit->GetEntry() == 25653)
-		if (m_spellInfo->Id!=45848 &&  m_spellInfo->Id!=45839)
+		if (m_spellInfo->Id!=45848 &&  m_spellInfo->Id!=45839 && m_spellInfo->Id!=45838)
 			return;
 
     Unit* realCaster = m_originalCaster ? m_originalCaster : m_caster;

@@ -1640,7 +1640,8 @@ bool GOHello_orb_of_the_blue_flight(Player* pPlayer, GameObject* pGo)
     {
         pPlayer->CastSpell(pPlayer, SPELL_SUMMON_BLUE_DRAKE, true);
         pPlayer->CastSpell(pPlayer, SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT, true);
-        pPlayer->CastSpell(pPlayer, SPELL_POWER_OF_THE_BLUE_FLIGHT, true);
+		pPlayer->CastSpell(pPlayer, SPELL_POWER_OF_THE_BLUE_FLIGHT, true);
+		pPlayer->CastSpell(pPlayer, 45838, true); //Realy add immune to charmer
 
 
         pGo->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);

@@ -4948,8 +4948,8 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 {
                     m_caster->CastSpell(m_caster, 45838, true); // Possess Drake Immune
 
-                    if(unitTarget)
-                        unitTarget->CastSpell(unitTarget, 45838, true);
+                    if(Unit* charmed = m_caster->GetCharm())
+                        m_caster->CastSpell(charmed, 45838, true);
                     break;
                 }
                 // Goblin Weather Machine
