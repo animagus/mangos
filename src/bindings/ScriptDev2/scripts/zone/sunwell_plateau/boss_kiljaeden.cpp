@@ -680,6 +680,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
         // Reset the controller
         if(m_pInstance)
             m_pInstance->SetData(TYPE_KILJAEDEN, NOT_STARTED);
+		m_creature->setDeathState(JUST_DIED);
     }
 
     void Aggro(Unit* who)
