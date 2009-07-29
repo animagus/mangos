@@ -836,7 +836,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
             ui_SoulFlay_Timer         = 9400;
             ui_DarknessBomb_Timer     = 8300; // Darkness of a Thousand Souls effect timer
 
-            ui_Darkness_Timer = (ui_Phase == PHASE_SACRIFICE) ? 20000 + rand()%15000 : 40000 + rand()%30000;
+            ui_Darkness_Timer = (ui_Phase == PHASE_SACRIFICE) ? 25000 + rand()%15000 : 45000 + rand()%30000;
         }else ui_Darkness_Timer -= diff;
 
         // Darkness of a Thousand Souls Effect
@@ -872,7 +872,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
             ui_FireBloom_Timer       += 30000;
             ui_SummonShieldOrb_Timer += 30000;
             ui_FlameDart_Timer       += 30000;
-            ui_Darkness_Timer        += 35000;
+            ui_Darkness_Timer        += 45000;
             ui_Armageddon_Timer      += 30000;
             ui_ShadowSpikeCount      = 30000; // shadow spike visual timer
 
@@ -920,7 +920,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
             ui_FireBloom_Timer       += 30000;
             ui_SummonShieldOrb_Timer += 30000;
             ui_FlameDart_Timer       += 30000;
-            ui_Darkness_Timer        += 35000;
+            ui_Darkness_Timer        += 45000;
             ui_Armageddon_Timer      += 30000;
             ui_ShadowSpikeCount      = 30000; // shadow spike visual timer
 
