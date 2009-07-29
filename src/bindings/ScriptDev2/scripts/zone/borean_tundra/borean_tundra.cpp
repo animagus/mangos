@@ -87,6 +87,60 @@ bool GossipSelect_npc_surristrasz(Player* pPlayer, Creature* pCreature, uint32 s
     return true;
 }
 
+// quest 11608
+
+struct  MANGOS_DLL_DECL mob_seaforiumdepthchargeAI : public ScriptedAI
+{
+	mob_seaforiumdepthchargeAI( Creature* pCreature ) : ScriptedAI( pCreature ) { Reset(); } 
+
+	enum
+	{
+		SPELL_BOOM          = 45502,
+	};
+
+	uint32 m_boomTimer;
+	uint32 m_killcredit;
+
+	void Reset()
+	{
+		m_boomTimer = 6000;
+		m_killcredit = 0;
+		//m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+		//m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+	}
+
+	void UpdateAI(const uint32 diff)
+	{
+		// todo: need text
+		if( m_boomTimer < diff )
+		{
+			m_creature->CastSpell(m_creature,SPELL_BOOM,true);
+
+			for (int i = 0; i < 4; i++)
+			{
+				if (GetClosestCreatureWithEntry(m_creature,25402+i,10))
+				{
+					m_killcredit = 25402+i;
+					break;
+				}
+			}
+
+			Unit *player = m_creature->GetOwner() ;
+			if (player && m_killcredit)
+				((Player*)player)->KilledMonsterCredit(m_killcredit,m_creature->GetGUID());
+
+			((TemporarySummon *)m_creature)->UnSummon();
+
+		}else m_boomTimer -= diff;
+	}
+
+};
+
+CreatureAI* GetAI_mob_seaforiumdepthcharge( Creature* pCreature )
+{
+	return new mob_seaforiumdepthchargeAI( pCreature );
+}
+
 void AddSC_borean_tundra()
 {
     Script *newscript;
@@ -102,4 +156,9 @@ void AddSC_borean_tundra()
     newscript->pGossipHello =  &GossipHello_npc_surristrasz;
     newscript->pGossipSelect = &GossipSelect_npc_surristrasz;
     newscript->RegisterSelf();
+
+	newscript = new Script;
+	newscript->Name = "mob_seaforiumdepthcharge";
+	newscript->GetAI = &GetAI_mob_seaforiumdepthcharge;
+	newscript->RegisterSelf();
 }
