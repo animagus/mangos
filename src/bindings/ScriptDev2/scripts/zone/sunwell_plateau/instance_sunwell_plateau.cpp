@@ -90,7 +90,7 @@ struct MANGOS_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
 
         // Encounters
         for(uint8 i = 0; i < MAX_ENCOUNTER; ++i)
-            m_uiEncounter[i] = NOT_STARTED;
+            m_auiEncounter[i] = NOT_STARTED;
 
         // Misc
         m_uiSpectralRealmTimer = 5000;
