@@ -1410,6 +1410,8 @@ void Spell::SetTargetMap(uint32 i,uint32 cur,UnitList& TagUnitMap)
             // Starfall
             if (m_spellInfo->SpellFamilyFlags2 & UI64LIT(0x00000100))
                 unMaxTargets = 2;
+			else if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0400000000000000))
+				unMaxTargets = m_spellInfo->m_currentBasePoints[2];
             break;
 		case SPELLFAMILY_GENERIC:
 			if (m_spellInfo->SpellIconID == 2128)
