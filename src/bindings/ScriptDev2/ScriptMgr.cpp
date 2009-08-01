@@ -402,6 +402,7 @@ extern void AddSC_boss_anomalus();
 extern void AddSC_boss_keristrasza();
 extern void AddSC_boss_ormorok();
 extern void AddSC_boss_telestra();
+extern void AddSC_instance_nexus();
 
 //Oculus
 
@@ -1300,6 +1301,7 @@ void ScriptsInit()
     AddSC_boss_keristrasza();
     AddSC_boss_ormorok();
     AddSC_boss_telestra();
+    AddSC_instance_nexus();
 
     //Oculus
 
