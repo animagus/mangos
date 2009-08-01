@@ -650,7 +650,8 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
             if(!cVictim->isPet())
             {
                 cVictim->DeleteThreatList();
-                cVictim->SetUInt32Value(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+				if (cVictim->GetCreatureInfo()->lootid || cVictim->GetCreatureInfo()->maxgold > 0)
+					cVictim->SetUInt32Value(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
             }
             // Call creature just died function
             if (cVictim->AI())
@@ -5669,6 +5670,26 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     }
                     else
                         return true;
+                    break;
+                }
+                // Light's Beacon
+                case 53651:
+                {
+                    if(!pVictim || pVictim == this)
+                        return false;
+
+                    Unit* caster = triggeredByAura->GetCaster();
+
+                    if (caster)
+                    {
+                        Aura * dummy = caster->GetDummyAura(53563);
+                        if(dummy && dummy->GetCasterGUID() == pVictim->GetGUID())
+                        {
+                            triggered_spell_id = 53652;
+                            basepoints0 = triggeredByAura->GetModifier()->m_amount*damage/100;
+                            target = caster;
+                        }
+                    }
                     break;
                 }
                 // Seal of the Martyr do damage trigger
