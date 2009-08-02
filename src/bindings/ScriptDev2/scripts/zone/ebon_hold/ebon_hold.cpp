@@ -31,6 +31,28 @@ EndContentData */
 
 #include "precompiled.h"
 #include "../../npc/npc_escortAI.h"
+#include "WorldPacket.h"
+
+enum zone
+{
+    SPELL_UNDYING_RESOLVE         = 51915,
+    SPELL_UNDYING_RESOLVE_VISUAL  = 51916,
+    NPC_VALKYR_BATTLE_MAIDEN      = 28534
+};
+
+void UpdateWorldState(Map *map, uint32 id, uint32 state)
+{
+    Map::PlayerList const& players = map->GetPlayers();
+
+    if (!players.isEmpty())
+    {
+        for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+        {
+            if (Player* pPlayer = itr->getSource())
+                pPlayer->SendUpdateWorldState(id,state);
+        }
+    }
+}
 
 /*######
 ## npc_a_special_surprise
