@@ -1028,6 +1028,22 @@ DisplayToSpell m_aDisplayToSpell[] =
     {25373, 51551}                                          // belf M
 };
 
+uint32 acherus_soul_prison[12] =
+{
+    191577,
+    191580,
+    191581,
+    191582,
+    191583,
+    191584,
+    191585,
+    191586,
+    191587,
+    191588,
+    191589,
+    191590
+};
+
 /*######
 ## npc_unworthy_initiate_anchor
 ######*/
@@ -1131,6 +1147,16 @@ struct MANGOS_DLL_DECL npc_unworthy_initiateAI : public ScriptedAI
 
     void SetAnchor()
     {
+
+		for (int x = 0; x<12; x++)
+		{
+			GameObject* pGo = GetClosestGameObjectWithEntry(m_creature,acherus_soul_prison[x],7.0f);
+			if (!pGo)
+				continue;
+			pGo->ResetDoorOrButton();
+			break;
+		}
+
         if (Creature* pAnchor = GetClosestCreatureWithEntry(m_creature, NPC_ANCHOR, INTERACTION_DISTANCE*2))
         {
             ((npc_unworthy_initiate_anchorAI*)pAnchor->AI())->RegisterCloseInitiate(m_creature->GetGUID());
