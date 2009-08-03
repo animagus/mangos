@@ -4134,6 +4134,11 @@ SpellCastResult Spell::CheckCast(bool strict)
                     if(m_targets.getUnitTarget() && !m_caster->IsFriendlyTo(m_targets.getUnitTarget()) && !m_caster->HasInArc( M_PI, m_targets.getUnitTarget() ))
                         return SPELL_FAILED_UNIT_NOT_INFRONT;
                 }
+                else if(m_spellInfo->Id == 43286)          //Use Grick's Bonesaw
+                {
+                    if(m_targets.getUnitTarget()->isAlive())
+                        return SPELL_FAILED_BAD_TARGETS;
+                }
                 break;
             }
             case SPELL_EFFECT_SCHOOL_DAMAGE:
