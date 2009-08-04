@@ -4979,6 +4979,30 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
                     break;
                 }
+				// Unholy Union
+				case 47703:
+				{
+					if(m_caster->GetTypeId() != TYPEID_PLAYER)
+						return;
+					m_caster->CastSpell(m_caster,50254,true);
+					break;
+				}
+				// Frost Draw
+				case 47724:
+				{
+					if(m_caster->GetTypeId() != TYPEID_PLAYER)
+						return;
+					m_caster->CastSpell(m_caster,50239,true);
+					break;
+				}
+				// Blood Draw
+				case 50252:
+				{
+					if(m_caster->GetTypeId() != TYPEID_PLAYER)
+						return;
+					m_caster->CastSpell(m_caster,50250,true);
+					break;
+				}
                 // Emblazon Runeblade
                 case 51770:
                 {
