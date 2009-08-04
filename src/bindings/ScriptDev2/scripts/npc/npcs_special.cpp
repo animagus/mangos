@@ -1293,10 +1293,10 @@ bool GossipHello_Bat_Handler_Camille(Player* pPlayer, Creature* pCreature)
 {
 
   if(pPlayer->IsActiveQuest(11170) && pPlayer->GetQuestStatus(11170) != QUEST_STATUS_COMPLETE)
-    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "I`m ready to strike alliance reinforcements!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "I`m ready to strike alliance reinforcements!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF +1);
 
   if(pPlayer->IsActiveQuest(11229))
-    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "I need to fly to the Windrunner Official business!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "I need to fly to the Windrunner Official business!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
 
     pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
     return true;
@@ -1310,13 +1310,15 @@ bool GossipSelect_Bat_Handler_Camille(Player* pPlayer, Creature* pCreature, uint
   switch(action)
     {
 
-    case GOSSIP_ACTION_INFO_DEF: spellId = 43136; break;
+    case GOSSIP_ACTION_INFO_DEF + 1: spellId = 43136; break;
 
-    case GOSSIP_ACTION_INFO_DEF + 1: spellId = 43074; break;
+    case GOSSIP_ACTION_INFO_DEF + 2 : spellId = 43074; break;
     }
 
+   pPlayer->CLOSE_GOSSIP_MENU();
+
   if(spellId)
-    pCreature->CastSpell(pPlayer, spellId, true);
+    pPlayer->CastSpell(pPlayer, spellId, true);
 
   return true;
 }
@@ -1325,7 +1327,7 @@ bool GossipHello_Greer_OreHammer(Player* pPlayer, Creature* pCreature)
 {
 
   if(pPlayer->GetQuestStatus(11332) == QUEST_STATUS_INCOMPLETE)
-    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "I am here to destroy the tanks with the plague!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "I am here to destroy the tanks with the plague!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
 
   pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
@@ -1337,7 +1339,7 @@ bool GossipHello_Greer_OreHammer(Player* pPlayer, Creature* pCreature)
 bool GossipSelect_Greer_OreHammer(Player* pPlayer, Creature* pCreature, uint32 sender,  uint32 action)
 {
 
-  if(action == GOSSIP_ACTION_INFO_DEF)
+  if(action == GOSSIP_ACTION_INFO_DEF+1)
     {
 
       uint32  noSpaceForCount = 0;
@@ -1353,7 +1355,7 @@ bool GossipSelect_Greer_OreHammer(Player* pPlayer, Creature* pCreature, uint32 s
       Item* bomb = pPlayer->StoreNewItem( dest, 33634, true, Item::GenerateItemRandomPropertyId(33634) );
 
       pPlayer->SendNewItem(bomb, 10, true, false);
-
+      pPlayer->CLOSE_GOSSIP_MENU();
       pPlayer->ActivateTaxiPathTo(745, 0); //can not find spell for this taxipath.  
    }
 
