@@ -227,7 +227,7 @@ bool GossipSelect_npc_woodlands_walker(Player* pPlayer, Creature* pCreature, uin
 		else
 		{
 			pCreature->setFaction(14);
-			((Creature*)pCreature)->AttackStart(pPlayer);
+			((Creature*)pCreature)->Attack(pPlayer)
 		}
 	}
 	return true;
