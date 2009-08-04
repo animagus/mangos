@@ -188,6 +188,62 @@ bool GossipSelect_npc_torastrasza(Player* pPlayer, Creature* pCreature, uint32 u
     return true;
 }
 
+/*######
+## Woodlands Walker quests Strengthen the Ancients
+######*/
+
+enum
+{
+	SPELL_ADD_ITEM             = 47550
+};
+
+#define GOSSIP_ITEM_GIVE_ITEM           "I would like to see Lord Of Afrasastrasz, in the middle of the temple."
+#define SAY_AGREE                       "Breaking off a piece of its bark, the Woodlands Walker hands it to you before departing."
+#define SAY_DECIDE                      "The Woodlands Walker is angered by your request and attacks!."
+
+bool GossipHello_npc_woodlands_walker(Player* pPlayer, Creature* pCreature)
+{
+	if (pCreature->isQuestGiver())
+		pPlayer->PrepareQuestMenu(pCreature->GetGUID());
+
+	if (pPlayer->GetQuestStatus(12096) == QUEST_STATUS_INCOMPLETE || pPlayer->GetQuestStatus(12092) == QUEST_STATUS_INCOMPLETE)
+		pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GIVE_ITEM, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+
+	pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
+	return true;
+}
+
+bool GossipSelect_npc_woodlands_walker(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+{
+	if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
+	{
+		pPlayer->CLOSE_GOSSIP_MENU();
+		if (rand()%2)
+		{
+			pPlayer->CastSpell(pPlayer, SPELL_ADD_ITEM, true);
+			pCreature->SetVisibility(VISIBILITY_RESPAWN);
+			pCreature->ForcedDespawn();
+		}
+		else
+		{
+			pCreature->setFaction(14);
+			pCreature->AttackStart(pPlayer);
+		}
+	}
+	return true;
+}
+
+struct MANGOS_DLL_DECL npc_woodlands_walkerAI : public ScriptedAI
+{
+	npc_woodlands_walkerAI(Creature* pCreature) : ScriptedAI(pCreature) { Reset(); }
+	void Reset() { m_creature->setFaction(35);}
+};
+
+CreatureAI* GetAI_npc_woodlands_walker(Creature* pCreature)
+{
+	return new npc_woodlands_walkerAI (pCreature);
+}
+
 void AddSC_dragonblight()
 {
     Script *newscript;
@@ -215,4 +271,11 @@ void AddSC_dragonblight()
     newscript->pGossipHello = &GossipHello_npc_torastrasza;
     newscript->pGossipSelect = &GossipSelect_npc_torastrasza;
     newscript->RegisterSelf();
+
+	newscript = new Script;
+	newscript->Name = "npc_woodlands_walker";
+	newscript->GetAI = &GetAI_npc_woodlands_walker;
+	newscript->pGossipHello = &GossipHello_npc_woodlands_walker;
+	newscript->pGossipSelect = &GossipSelect_npc_woodlands_walker;
+	newscript->RegisterSelf();
 }
