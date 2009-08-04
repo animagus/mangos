@@ -582,6 +582,10 @@ extern void AddSC_boss_skarvald_and_dalronn();
 extern void AddSC_instance_utgarde_keep();
 extern void AddSC_utgarde_keep();
 
+//Vault of Archavon
+extern void AddSC_instance_vault_of_archavon();
+extern void AddSC_boss_emalon();
+
 //Wailing caverns
 
 //Western plaguelands
@@ -1481,7 +1485,11 @@ void ScriptsInit()
     AddSC_instance_utgarde_keep();
     AddSC_utgarde_keep();
 
-    //Wailing caverns
+    //Vault of Archavon
+    AddSC_instance_vault_of_archavon();
+    AddSC_boss_emalon();
+    
+	//Wailing caverns
 
     //Western plaguelands
     AddSC_western_plaguelands();
