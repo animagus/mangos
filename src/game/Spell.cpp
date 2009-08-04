@@ -4052,6 +4052,12 @@ SpellCastResult Spell::CheckCast(bool strict)
                                 goScriptTarget = NULL;
                                 range = u_check.GetLastRange();
                             }
+                            else if(IsPositiveSpell(m_spellInfo->Id) && m_caster->GetPet() && m_caster->GetPet()->GetEntry() == i_spellST->second.targetEntry)
+                            {
+                                 creatureScriptTarget = (Creature*)m_caster->GetPet();
+                                 goScriptTarget = NULL;
+                                 range = u_check.GetLastRange();
+                            }
                             break;
                         }
                     }
