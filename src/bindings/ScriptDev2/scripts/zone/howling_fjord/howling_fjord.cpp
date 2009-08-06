@@ -7,24 +7,30 @@ struct  MANGOS_DLL_DECL mob_protodrakeAI : public ScriptedAI
 
   uint64 PlayerGUID;
   bool canEat;
+  bool canFly;
   uint32 eatTimer;
+  uint32 flyTimer;
+  float z,y,z;
 
   void Reset()
   {
     PlayerGUID = 0;
     canEat = false;
     eatTimer = 5000;
+    flyTimer = 0;
+    x = 0;
+    y = 0;
+    z = 0;
   }
 
   void BeginEvent(Player* pPlayer)
   {
     PlayerGUID = pPlayer->GetGUID();
-    float x,y,z;
     x = pPlayer->GetPositionX();
     y = pPlayer->GetPositionY();
     z = pPlayer->GetPositionZ();
 
-    m_creature->GetMotionMaster()->MovePoint(1, x,y,z);
+    canFly = true;
   } 
 
   void MovementInform(uint32 type, uint32 id)
@@ -43,14 +49,21 @@ struct  MANGOS_DLL_DECL mob_protodrakeAI : public ScriptedAI
   void UpdateAI(const uint32 diff)
   {
 
-    if(canEat)
-	{
+    if(canFly)
+      {
+	if(flyTimer < diff)
+	  {
+	    m_creature->GetMotionMaster()->MovePoint(1, x,y,z);
+	    if(canEat)
+	      {
 		  if( eatTimer < diff )
 		  {
 			  if( Player* plr = (Player*)Unit::GetUnit((*m_creature), PlayerGUID)) 
 				  plr->KilledMonsterCredit( 24170,  m_creature->GetGUID() );
 		  }else eatTimer -= diff;
-	}
+	      }
+	  }else flyTimer -= diff;
+      }
 	
 	if ( !m_creature->SelectHostilTarget() || !m_creature->getVictim() )
             return;
