@@ -5560,7 +5560,7 @@ bool Spell::CheckTarget( Unit* target, uint32 eff )
     if (target != m_caster && target->GetCharmerOrOwnerGUID() != m_caster->GetGUID())
     {
         // any unattackable target skipped
-        if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
+        if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NON_ATTACKABLE_2))
             return false;
 
         // unselectable targets skipped in all cases except TARGET_SCRIPT targeting
