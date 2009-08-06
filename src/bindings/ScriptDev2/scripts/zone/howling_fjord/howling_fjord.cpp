@@ -16,8 +16,9 @@ struct  MANGOS_DLL_DECL mob_protodrakeAI : public ScriptedAI
   {
     PlayerGUID = 0;
     canEat = false;
+    canFly = false;
     eatTimer = 5000;
-    flyTimer = 0;
+    flyTimer = 5000;
     x = 0;
     y = 0;
     z = 0;
