@@ -10,7 +10,7 @@ struct  MANGOS_DLL_DECL mob_protodrakeAI : public ScriptedAI
   bool canFly;
   uint32 eatTimer;
   uint32 flyTimer;
-  float z,y,z;
+  float x,y,z;
 
   void Reset()
   {
