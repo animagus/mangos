@@ -500,7 +500,7 @@ enum UnitFlags
     UNIT_FLAG_UNK_6            = 0x00000040,
     UNIT_FLAG_NOT_ATTACKABLE_1 = 0x00000080,                // ?? (UNIT_FLAG_PVP_ATTACKABLE | UNIT_FLAG_NOT_ATTACKABLE_1) is NON_PVP_ATTACKABLE
     UNIT_FLAG_NON_ATTACKABLE_2 = 0x00000100,                // 2.0.8 often used with UNIT_FLAG_UNK_15
-    UNIT_FLAG_UNK_9            = 0x00000200,                // 3.0.3 - makes you unable to attack everything
+    UNIT_FLAG_CIVILIAN         = 0x00000200,                // 3.0.3 - civilian / need more testing
     UNIT_FLAG_LOOTING          = 0x00000400,                // loot animation
     UNIT_FLAG_PET_IN_COMBAT    = 0x00000800,                // in combat?, 2.0.8
     UNIT_FLAG_PVP              = 0x00001000,                // changed in 3.0.3
