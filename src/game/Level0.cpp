@@ -179,6 +179,8 @@ bool ChatHandler::HandleGMListIngameCommand(const char* /*args*/)
 
 bool ChatHandler::HandleAccountPasswordCommand(const char* args)
 {
+	// disable function
+    return false;
     if(!*args)
         return false;
 
