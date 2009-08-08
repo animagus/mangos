@@ -1575,7 +1575,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
 			bIsBattle = false;
 			uiStep = 0;
 			uiPhase_timer = 3000;
-			uiFight_duration = 300000; // 5 minutes
+			uiFight_duration = 150000; // 5 minutes
 			uiTotal_dawn = ENCOUNTER_TOTAL_DAWN;
 			uiTotal_scourge = ENCOUNTER_TOTAL_SCOURGE;
 			uiSummon_counter = 0;
@@ -2535,6 +2535,24 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
 					}
 					m_creature->SetVisibility(VISIBILITY_OFF); // respawns another Darion for quest turn in
 					m_creature->SummonCreature(NPC_HIGHLORD_DARION_MOGRAINE, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 180000);
+                    if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKoltiraGUID)))
+                    {
+                        if (pTemp->isAlive())
+                        {
+                            pTemp->SetVisibility(VISIBILITY_OFF);
+                            pTemp->DealDamage(pTemp, pTemp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        }
+                    }
+
+                    if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiThassarianGUID)))
+                    {
+                        if (pTemp->isAlive())
+                        {
+                            pTemp->SetVisibility(VISIBILITY_OFF);
+                            pTemp->DealDamage(pTemp, pTemp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        }
+                    }
+
 					JumpToNextStep(1000);
 					break;
 
@@ -2626,7 +2644,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
 				NPCChangeTarget(uiOrbazGUID);
 				NPCChangeTarget(uiThassarianGUID);
 
-				uiTargetcheck = 10000;
+				uiTargetcheck = 7000;
 			}else uiTargetcheck -= diff;
 
 			// Battle end
@@ -2644,7 +2662,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
 			if (uiFight_duration < diff)
 			{
 				bIsBattle = false;
-				uiFight_duration = 300000;
+				uiFight_duration = 150000;
 
 				if (m_creature->HasAura(SPELL_THE_MIGHT_OF_MOGRAINE, 0))
 					m_creature->RemoveAurasDueToSpell(SPELL_THE_MIGHT_OF_MOGRAINE);
