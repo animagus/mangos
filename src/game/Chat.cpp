@@ -869,7 +869,7 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
                         GetLogNameForGuid(sel_guid),GUID_LOPART(sel_guid));
                     
                     Creature* c = p->GetMap()->GetCreature(sel_guid);
-                    loginDatabase.escape_string(fullcmd);
+                    WorldDatabase.escape_string(fullcmd.c_str());
                     WorldDatabase.PExecute("INSERT INTO `loggm` (`time`, `account`, `player`, `command`, `string`, `position_x`, `position_y`, `position_z`, `map`, `selection_type`, `selection_entry`) VALUES (UNIX_TIMESTAMP(), %u, %u, '%s', '%s', %f, %f, %f, %u, %s, %u)",
                         m_session->GetAccountId(), p->GetGUIDLow(), table[i].Name, fullcmd.c_str(), p->GetPositionX(), p->GetPositionY(),p->GetPositionZ(), p->GetMapId(),
                         (c ? "'creature'" : (GUID_HIPART(p->GetSelection()) == HIGHGUID_PLAYER ? "'player'" : "NULL")),
