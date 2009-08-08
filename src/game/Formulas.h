@@ -120,7 +120,7 @@ namespace MaNGOS
                 return 0;
 
             if(u->GetTypeId()==TYPEID_UNIT && ((Creature*)u)->isElite())
-                xp_gain *= 4;  // Wowacadem value
+                xp_gain *= 2;
 
             return (uint32)(xp_gain*sWorld.getRate(RATE_XP_KILL));
         }
