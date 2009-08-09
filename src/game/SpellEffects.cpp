@@ -5144,14 +5144,8 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 case 45205: // Copy Offhand Weapon 
                 case 41054: // Copy Weapon 
                      m_caster->CastSpell(unitTarget, damage, false); 
-                     break;*/
-				case 61551:
-				{
-					if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
-						return;
-					unitTarget->HandleEmoteCommand(EMOTE_ONESHOT_TRAIN);
-					return;
-				}
+                     break;
+                     */
             }
             break;
         }

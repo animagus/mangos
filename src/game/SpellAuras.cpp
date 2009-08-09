@@ -961,7 +961,7 @@ void Aura::_AddAura()
         if(slot < MAX_AURAS)                        // slot found send data to client
         {
             SetAura(false);
-            SetAuraFlags((1 << GetEffIndex()) | AFLAG_NOT_CASTER | ((GetAuraMaxDuration() > 0) ? AFLAG_DURATION : AFLAG_NONE) | (IsPositive() ? AFLAG_POSITIVE : AFLAG_NEGATIVE));
+            SetAuraFlags((1 << GetEffIndex()) | AFLAG_NOT_CASTER | ((GetAuraMaxDuration() > 0 && !(m_spellProto->AttributesEx5 & SPELL_ATTR_EX5_NO_DURATION)) ? AFLAG_DURATION : AFLAG_NONE) | (IsPositive() ? AFLAG_POSITIVE : AFLAG_NEGATIVE));
             SetAuraLevel(caster ? caster->getLevel() : sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL));
             SendAuraUpdate(false);
         }
@@ -2148,6 +2148,80 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if(m_target->GetTypeId() == TYPEID_PLAYER)
                     ((Player*)m_target)->RemoveAmmo();      // not use ammo and not allow use
                 return;
+            case 61551:
+                {
+                    if (m_target->GetTypeId() != TYPEID_PLAYER)
+                        return;
+                    // Server send SMSG_PLAY_OBJECT_SOUND with train sound for each race 0o
+                    switch(m_target->getRace())
+                    {
+                    case RACE_BLOODELF:
+                        if(m_target->getGender()==GENDER_MALE)
+                            m_target->PlayDistanceSound(9672);
+                        else 
+                            m_target->PlayDistanceSound(9644);
+                        break;
+                    case RACE_DRAENEI:
+                        if(m_target->getGender()==GENDER_MALE)
+                            m_target->PlayDistanceSound(9722);
+                        else 
+                            m_target->PlayDistanceSound(9697);
+                        break;
+                    case RACE_DWARF:
+                        if(m_target->getGender()==GENDER_MALE)
+                            m_target->PlayDistanceSound(7636);
+                        else 
+                            m_target->PlayDistanceSound(7637);
+                        break;
+                    case RACE_HUMAN:
+                        if(m_target->getGender()==GENDER_MALE)
+                            m_target->PlayDistanceSound(7634);
+                        else 
+                            m_target->PlayDistanceSound(7635);
+                        break;
+                    case RACE_ORC:
+                        if(m_target->getGender()==GENDER_MALE)
+                            m_target->PlayDistanceSound(7638);
+                        else 
+                            m_target->PlayDistanceSound(7639);
+                        break;
+                    case RACE_GNOME:
+                        if(m_target->getGender()==GENDER_MALE)
+                            m_target->PlayDistanceSound(7640);
+                        else 
+                            m_target->PlayDistanceSound(7641);
+                        break;
+                    case RACE_NIGHTELF:
+                        if(m_target->getGender()==GENDER_MALE)
+                            m_target->PlayDistanceSound(7642);
+                        else 
+                            m_target->PlayDistanceSound(7643);
+                        break;
+                    case RACE_UNDEAD_PLAYER:
+                        if(m_target->getGender()==GENDER_MALE)
+                            m_target->PlayDistanceSound(7644);
+                        else 
+                            m_target->PlayDistanceSound(7645);
+                        break;
+                    case RACE_TAUREN:
+                        if(m_target->getGender()==GENDER_MALE)
+                            m_target->PlayDistanceSound(7646);
+                        else 
+                            m_target->PlayDistanceSound(7647);
+                        break;
+                    case RACE_TROLL:
+                        if(m_target->getGender()==GENDER_MALE)
+                            m_target->PlayDistanceSound(7648);
+                        else 
+                            m_target->PlayDistanceSound(7649);
+                        break;
+                    default:
+                        break;
+                    }
+
+                    m_target->HandleEmoteCommand(EMOTE_ONESHOT_TRAIN);
+                    return;
+                }
         }
 
         // Earth Shield
