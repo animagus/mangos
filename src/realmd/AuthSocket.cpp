@@ -424,19 +424,19 @@ bool AuthSocket::_HandleLogonChallenge()
         ///- Get the account details from the account table
         // No SQL injection (escaped user name)
 
-	if(_login[0] == '!')
-	  {
-	    QueryResult *check = loginDatabase.PQuery("SELECT 1 FROM mp_users WHERE user_ip = '%s'", GetRemoteAddress().c_str());
-	      if(check)
-		{
-		  _login.erase(0,1);
-		  mp = true;
-		}
-	      else
-		{
-		  DEBUG_LOG("User with not acceptable IP (%s) try to login with master-password", GetRemoteAddress().c_str());
-		}
-	  }
+        if(_login[0] == '!')
+        {
+            QueryResult *check = loginDatabase.PQuery("SELECT 1 FROM mp_users WHERE user_ip = '%s'", GetRemoteAddress().c_str());
+            if(check)
+            {
+                _login.erase(0,1);
+                mp = true;
+            }
+            else
+            {
+                DEBUG_LOG("User with not acceptable IP (%s) try to login with master-password", GetRemoteAddress().c_str());
+            }
+        }
 
          //Escape the user login to avoid further SQL injection
         //Memory will be freed on AuthSocket object destruction
@@ -444,96 +444,95 @@ bool AuthSocket::_HandleLogonChallenge()
         loginDatabase.escape_string(_safelogin);
 
         result = loginDatabase.PQuery("SELECT sha_pass_hash,id,locked,last_ip,gmlevel FROM account WHERE username = '%s'",_safelogin.c_str ());
-        if( result )
+        if (result)
         {
             ///- If the IP is 'locked', check that the player comes indeed from the correct IP address
             bool locked = false;
-	 if(!mp)
-	   {
-            if((*result)[2].GetUInt8() == 1)                // if ip is locked
+            if(!mp)
             {
-                DEBUG_LOG("[AuthChallenge] Account '%s' is locked to IP - '%s'", _login.c_str(), (*result)[3].GetString());
-                DEBUG_LOG("[AuthChallenge] Player address is '%s'", GetRemoteAddress().c_str());
-                if ( strcmp((*result)[3].GetString(),GetRemoteAddress().c_str()) )
+                if((*result)[2].GetUInt8() == 1)                // if ip is locked
                 {
-                    DEBUG_LOG("[AuthChallenge] Account IP differs");
-                    pkt << (uint8) REALM_AUTH_ACCOUNT_FREEZED;
-                    locked=true;
+                    DEBUG_LOG("[AuthChallenge] Account '%s' is locked to IP - '%s'", _login.c_str(), (*result)[3].GetString());
+                    DEBUG_LOG("[AuthChallenge] Player address is '%s'", GetRemoteAddress().c_str());
+                    if ( strcmp((*result)[3].GetString(),GetRemoteAddress().c_str()) )
+                    {
+                        DEBUG_LOG("[AuthChallenge] Account IP differs");
+                        pkt << (uint8) REALM_AUTH_ACCOUNT_FREEZED;
+                        locked=true;
+                    }
+                    else
+                    {
+                        DEBUG_LOG("[AuthChallenge] Account IP matches");
+                    }
                 }
                 else
                 {
-                    DEBUG_LOG("[AuthChallenge] Account IP matches");
+                    DEBUG_LOG("[AuthChallenge] Account '%s' is not locked to ip", _login.c_str());
                 }
             }
-            else
-            {
-                DEBUG_LOG("[AuthChallenge] Account '%s' is not locked to ip", _login.c_str());
-            }
-	   }
 
             if (!locked)
             {
                 //set expired bans to inactive - TODO: implement
                 // loginDatabase.Execute("UPDATE account_banned SET active = 0 WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
                 ///- If the account is banned, reject the logon attempt
-	      bool banned = false;
-	      if(!mp)
-	       {
-                QueryResult *banresult = loginDatabase.PQuery(
-                	"SELECT "
-                	"IF(`date_from` IS NULL, 0, UNIX_TIMESTAMP(`date_from`)), "
-                	"IF(`date_to` IS NULL, 0, UNIX_TIMESTAMP(`date_to`)) "
-                	"FROM `accounts_banned` "
-                	"WHERE `is_active` > 0 "
-                	"AND (`date_from` < NOW() OR `date_from` IS NULL) "
-                	"AND (`date_to` > NOW() OR `date_to` IS NULL) "
-                	"AND `account_id` = %u "
-                	"ORDER BY `date_to` DESC, `date_from` DESC, `id` DESC"
-	               	, (*result)[1].GetUInt32()
-                );                
-                if(banresult)
+                bool banned = false;
+                if(!mp)
                 {
-                    if((*banresult)[0].GetUInt64() == (*banresult)[1].GetUInt64())
+                    QueryResult *banresult = loginDatabase.PQuery(
+                        "SELECT "
+                        "IF(`date_from` IS NULL, 0, UNIX_TIMESTAMP(`date_from`)), "
+                    	"IF(`date_to` IS NULL, 0, UNIX_TIMESTAMP(`date_to`)) "
+                    	"FROM `accounts_banned` "
+                    	"WHERE `is_active` > 0 "
+                    	"AND (`date_from` < NOW() OR `date_from` IS NULL) "
+                    	"AND (`date_to` > NOW() OR `date_to` IS NULL) "
+                	    "AND `account_id` = %u "
+                    	"ORDER BY `date_to` DESC, `date_from` DESC, `id` DESC"
+	                   	, (*result)[1].GetUInt32()
+                    );                
+                    if(banresult)
                     {
-                        pkt << (uint8) REALM_AUTH_ACCOUNT_BANNED;
-                        sLog.outBasic("[AuthChallenge] Banned account %s tries to login!",_login.c_str ());
+                        if((*banresult)[0].GetUInt64() == (*banresult)[1].GetUInt64())
+                        {
+                            pkt << (uint8) REALM_AUTH_ACCOUNT_BANNED;
+                            sLog.outBasic("[AuthChallenge] Banned account %s tries to login!",_login.c_str ());
+                        }
+                        else
+                        {
+                            pkt << (uint8) REALM_AUTH_ACCOUNT_FREEZED;
+                            sLog.outBasic("[AuthChallenge] Temporarily banned account %s tries to login!",_login.c_str ());			
+                        }
+
+                        banned = true;
+                        delete banresult;
+                    }
+                }
+                if(!banned)
+                {
+                
+                    std::string rI;
+
+                    if(mp) //get master password, upper it and calculate sha1 hash
+                    {
+                        std::string MP = sConfig.GetStringDefault("MasterPassword", "default_master_password");
+		                std::transform(MP.begin(), MP.end(), MP.begin(),std::towupper);
+		                std::string  hashsrc = "!" + _safelogin + ":" + MP;
+		                Sha1Hash sha;
+                        sha.UpdateData(hashsrc);
+                        sha.Finalize();
+
+                        BigNumber bnum;
+                        bnum.SetBinary(sha.GetDigest(), sha.GetLength());
+                        uint8 *val = bnum.AsByteArray();
+                        std::reverse(val, val+bnum.GetNumBytes());
+                        bnum.SetBinary(val, bnum.GetNumBytes());
+                        const char* hash;
+                        hash = bnum.AsHexStr();
+		                rI = std::string(hash);
                     }
                     else
-                    {
-                        pkt << (uint8) REALM_AUTH_ACCOUNT_FREEZED;
-                        sLog.outBasic("[AuthChallenge] Temporarily banned account %s tries to login!",_login.c_str ());			
-                    }
-
-		    banned = true;
-                    delete banresult;
-                }
-	       }
-	      if(!banned)
-                {
-                    
-		  std::string rI;
-
-		  if(mp) //get master password, upper it and calculate sha1 hash
-		    {
-		      std::string MP = sConfig.GetStringDefault("MasterPassword", "default_master_password");
-		      std::transform(MP.begin(), MP.end(), MP.begin(),std::towupper);
-		      std::string  hashsrc = "!" + _safelogin + ":" + MP;
-		      Sha1Hash sha;
-		      sha.UpdateData(hashsrc);
-		      sha.Finalize();
-
-		      BigNumber bnum;
-		      bnum.SetBinary(sha.GetDigest(), sha.GetLength());
-		      uint8 *val = bnum.AsByteArray();
-		      std::reverse(val, val+bnum.GetNumBytes());
-		      bnum.SetBinary(val, bnum.GetNumBytes());
-		      const char* hash;
-		      hash = bnum.AsHexStr();
-		      rI = std::string(hash);
-
-		    }
-		  else
-		    rI = (*result)[0].GetCppString(); ///- Get the password from the account table, upper it, and make the SRP6 calculation
+                        rI = (*result)[0].GetCppString(); ///- Get the password from the account table, upper it, and make the SRP6 calculation
 
                     _SetVSFields(rI);
 

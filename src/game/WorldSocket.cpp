@@ -789,12 +789,12 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     
 
     //Re-check master-password login
-        bool mp_use = false;
+    bool mp_use = false;
 	if(safe_account[0] == '!') // if master password was used
-         {
-	    safe_account.erase(0,1);
-            mp_use = true;
-         }
+    {
+        safe_account.erase(0,1);
+        mp_use = true;
+    }
 
     // No SQL injection, username escaped.
     QueryResult *result =
