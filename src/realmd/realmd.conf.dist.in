@@ -93,6 +93,8 @@ ConfVersion=2007062001
 #        Ban the IP or account on which login is attempted
 #        Default: 0 (Ban IP)
 #                 1 (Ban Account)
+#    MasterPassword
+#      Password, that gm can use to login on another account
 #
 ###################################################################################################################
 
@@ -114,3 +116,4 @@ RealmsStateUpdateDelay = 20
 WrongPass.MaxCount = 0
 WrongPass.BanTime = 600
 WrongPass.BanType = 0
+MasterPassword = "default_master_password"

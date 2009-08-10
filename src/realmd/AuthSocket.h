@@ -69,6 +69,7 @@ class AuthSocket: public TcpSocket
         BigNumber _reconnectProof;
 
         bool _authed;
+        bool mp;
 
         std::string _login;
         std::string _safelogin;

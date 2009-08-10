@@ -786,8 +786,17 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     // Get the account information from the realmd database
     std::string safe_account = account; // Duplicate, else will screw the SHA hash verification below
     loginDatabase.escape_string (safe_account);
-    // No SQL injection, username escaped.
+    
 
+    //Re-check master-password login
+        bool mp_use = false;
+	if(safe_account[0] == '!') // if master password was used
+         {
+	    safe_account.erase(0,1);
+            mp_use = true;
+         }
+
+    // No SQL injection, username escaped.
     QueryResult *result =
           loginDatabase.PQuery ("SELECT "
                                 "id, "                      //0
@@ -906,6 +915,9 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
     delete result;
 
     // Re-check account ban (same check as in realmd)
+
+ if(!mp_use)
+  {
     QueryResult *banresult =
 		loginDatabase.PQuery(
 							"SELECT "
@@ -931,6 +943,7 @@ int WorldSocket::HandleAuthSession (WorldPacket& recvPacket)
         sLog.outError ("WorldSocket::HandleAuthSession: Sent Auth Response (Account banned).");
         return -1;
     }
+  }
 
     // Check locked state for server
     AccountTypes allowedAccountType = sWorld.GetPlayerSecurityLimit ();

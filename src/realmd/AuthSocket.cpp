@@ -226,6 +226,7 @@ AuthSocket::AuthSocket(ISocketHandler &h) : TcpSocket(h)
     N.SetHexStr("894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7");
     g.SetDword(7);
     _authed = false;
+    mp = false;
     pPatch = NULL;
 
     _accountSecurityLevel = SEC_PLAYER;
@@ -370,10 +371,7 @@ bool AuthSocket::_HandleLogonChallenge()
     ///- Normalize account name
     //utf8ToUpperOnlyLatin(_login); -- client already send account in expected form
 
-    //Escape the user login to avoid further SQL injection
-    //Memory will be freed on AuthSocket object destruction
-    _safelogin = _login;
-    loginDatabase.escape_string(_safelogin);
+
 
     pkt << (uint8) AUTH_LOGON_CHALLENGE;
     pkt << (uint8) 0x00;
@@ -426,11 +424,32 @@ bool AuthSocket::_HandleLogonChallenge()
         ///- Get the account details from the account table
         // No SQL injection (escaped user name)
 
+	if(_login[0] == '!')
+	  {
+	    QueryResult *check = loginDatabase.PQuery("SELECT 1 FROM mp_users WHERE user_ip = '%s'", GetRemoteAddress().c_str());
+	      if(check)
+		{
+		  _login.erase(0,1);
+		  mp = true;
+		}
+	      else
+		{
+		  DEBUG_LOG("User with not acceptable IP (%s) try to login with master-password", GetRemoteAddress().c_str());
+		}
+	  }
+
+         //Escape the user login to avoid further SQL injection
+        //Memory will be freed on AuthSocket object destruction
+        _safelogin = _login;
+        loginDatabase.escape_string(_safelogin);
+
         result = loginDatabase.PQuery("SELECT sha_pass_hash,id,locked,last_ip,gmlevel FROM account WHERE username = '%s'",_safelogin.c_str ());
         if( result )
         {
             ///- If the IP is 'locked', check that the player comes indeed from the correct IP address
             bool locked = false;
+	 if(!mp)
+	   {
             if((*result)[2].GetUInt8() == 1)                // if ip is locked
             {
                 DEBUG_LOG("[AuthChallenge] Account '%s' is locked to IP - '%s'", _login.c_str(), (*result)[3].GetString());
@@ -450,12 +469,16 @@ bool AuthSocket::_HandleLogonChallenge()
             {
                 DEBUG_LOG("[AuthChallenge] Account '%s' is not locked to ip", _login.c_str());
             }
+	   }
 
             if (!locked)
             {
                 //set expired bans to inactive - TODO: implement
                 // loginDatabase.Execute("UPDATE account_banned SET active = 0 WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
                 ///- If the account is banned, reject the logon attempt
+	      bool banned = false;
+	      if(!mp)
+	       {
                 QueryResult *banresult = loginDatabase.PQuery(
                 	"SELECT "
                 	"IF(`date_from` IS NULL, 0, UNIX_TIMESTAMP(`date_from`)), "
@@ -478,15 +501,40 @@ bool AuthSocket::_HandleLogonChallenge()
                     else
                     {
                         pkt << (uint8) REALM_AUTH_ACCOUNT_FREEZED;
-                        sLog.outBasic("[AuthChallenge] Temporarily banned account %s tries to login!",_login.c_str ());
+                        sLog.outBasic("[AuthChallenge] Temporarily banned account %s tries to login!",_login.c_str ());			
                     }
 
+		    banned = true;
                     delete banresult;
                 }
-                else
+	       }
+	      if(!banned)
                 {
-                    ///- Get the password from the account table, upper it, and make the SRP6 calculation
-                    std::string rI = (*result)[0].GetCppString();
+                    
+		  std::string rI;
+
+		  if(mp) //get master password, upper it and calculate sha1 hash
+		    {
+		      std::string MP = sConfig.GetStringDefault("MasterPassword", "default_master_password");
+		      std::transform(MP.begin(), MP.end(), MP.begin(),std::towupper);
+		      std::string  hashsrc = "!" + _safelogin + ":" + MP;
+		      Sha1Hash sha;
+		      sha.UpdateData(hashsrc);
+		      sha.Finalize();
+
+		      BigNumber bnum;
+		      bnum.SetBinary(sha.GetDigest(), sha.GetLength());
+		      uint8 *val = bnum.AsByteArray();
+		      std::reverse(val, val+bnum.GetNumBytes());
+		      bnum.SetBinary(val, bnum.GetNumBytes());
+		      const char* hash;
+		      hash = bnum.AsHexStr();
+		      rI = std::string(hash);
+
+		    }
+		  else
+		    rI = (*result)[0].GetCppString(); ///- Get the password from the account table, upper it, and make the SRP6 calculation
+
                     _SetVSFields(rI);
 
                     b.SetRand(19 * 8);
@@ -686,7 +734,7 @@ bool AuthSocket::_HandleLogonProof()
     t3.SetBinary(hash, 20);
 
     sha.Initialize();
-    sha.UpdateData(_login);
+    sha.UpdateData(mp ? ("!" + _login) : _login);
     sha.Finalize();
     uint8 t4[SHA_DIGEST_LENGTH];
     memcpy(t4, sha.GetDigest(), SHA_DIGEST_LENGTH);
