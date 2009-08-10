@@ -756,8 +756,8 @@ bool AuthSocket::_HandleLogonProof()
         const char* K_hex = K.AsHexStr();
         loginDatabase.PExecute("UPDATE account SET sessionkey = '%s', last_login = NOW(), locale = '%u', failed_logins = 0 WHERE username = '%s'", K_hex, GetLocaleByName(_localizationName), _safelogin.c_str() );
 
-	if(!mp)
-	  loginDatabase.PExecute("UPDATE account SET last_ip = '%s' WHERE username = '%s'", GetRemoteAddress().c_str(), _safelogin.c_str());
+        if(!mp)
+            loginDatabase.PExecute("UPDATE account SET last_ip = '%s' WHERE username = '%s'", GetRemoteAddress().c_str(), _safelogin.c_str());
 
         OPENSSL_free((void*)K_hex);
 
