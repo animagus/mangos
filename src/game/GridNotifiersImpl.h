@@ -142,15 +142,15 @@ inline void MaNGOS::DynamicObjectUpdater::VisitHelper(Unit* target)
         return;
 
     //Check targets for not_selectable unit flag and remove
-    if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE))
+    if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE_2))
         return;
 
     // Evade target
-    if( target->GetTypeId()==TYPEID_UNIT && ((Creature*)target)->IsInEvadeMode() )
+    if (target->GetTypeId()==TYPEID_UNIT && ((Creature*)target)->IsInEvadeMode())
         return;
 
     //Check player targets and remove if in GM mode or GM invisibility (for not self casting case)
-    if( target->GetTypeId()==TYPEID_PLAYER && target != i_check && (((Player*)target)->isGameMaster() || ((Player*)target)->GetVisibility()==VISIBILITY_OFF) )
+    if (target->GetTypeId()==TYPEID_PLAYER && target != i_check && (((Player*)target)->isGameMaster() || ((Player*)target)->GetVisibility()==VISIBILITY_OFF))
         return;
 
 	SpellEntry const *spellInfo = sSpellStore.LookupEntry(i_dynobject.GetSpellId());

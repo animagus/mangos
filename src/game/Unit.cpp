@@ -3432,6 +3432,7 @@ bool Unit::AddAura(Aura *Aur)
 
     // ghost spell check, allow apply any auras at player loading in ghost mode (will be cleanup after load)
     if( !isAlive() && !IsDeathPersistentSpell(aurSpellInfo) &&
+        Aur->GetId() != 2584 &&                             // Waiting to Resurrect (not have death persistence flag)
         (GetTypeId()!=TYPEID_PLAYER || !((Player*)this)->GetSession()->PlayerLoading()) )
     {
         delete Aur;
@@ -4500,7 +4501,7 @@ bool Unit::HandleHasteAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 case 13877:
                 case 33735:
                 {
-                    target = SelectNearbyTarget();
+                    target = SelectNearbyTarget(pVictim);
                     if(!target)
                         return false;
                     basepoints0 = damage;
@@ -4581,7 +4582,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     if(procSpell && procSpell->Id == 26654)
                         return false;
 
-                    target = SelectNearbyTarget();
+                    target = SelectNearbyTarget(pVictim);
                     if(!target)
                         return false;
 
@@ -5112,7 +5113,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 if(procSpell && procSpell->Id == 26654)
                     return false;
 
-                target = SelectNearbyTarget();
+                target = SelectNearbyTarget(pVictim);
                 if(!target)
                     return false;
 
@@ -5772,8 +5773,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         triggered_spell_id = 40471;
                         chance = 15.0f;
                     }
-                    // Judgement
-                    else if (procSpell->SpellFamilyFlags & UI64LIT(0x0000000000800000))
+                    // Judgement (any)
+                    else if (GetSpellSpecific(procSpell->Id)==SPELL_JUDGEMENT)
                     {
                         triggered_spell_id = 40472;
                         chance = 50.0f;
@@ -5988,6 +5989,13 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 case 51524:
                     triggered_spell_id = 63532;
                     break;
+                // Shaman T8 Elemental 4P Bonus
+                case 64928:
+                {
+                    basepoints0 = int32( triggerAmount * damage / 100 );
+                    triggered_spell_id = 64930;            // Electrified
+                    break;
+                }
             }
             // Storm, Earth and Fire
             if (dummySpell->SpellIconID == 3063)
@@ -6217,6 +6225,12 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     return false;
                 basepoints0 = triggerAmount * damage / 100;
                 triggered_spell_id = 50526;
+                break;
+            }
+            // Blood-Caked Blade
+            if (dummySpell->SpellIconID == 138)
+            {
+                triggered_spell_id = dummySpell->EffectTriggerSpell[effIndex];
                 break;
             }
             break;
@@ -8350,10 +8364,9 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
                             break;
                         }
                         // Exorcism
-                        else if(spellProto->SpellFamilyFlags & UI64LIT(0x0200000000))
+                        else if (spellProto->Category == 19)
                         {
-                            if(pVictim->GetCreatureType() == CREATURE_TYPE_DEMON
-                                || pVictim->GetCreatureType() == CREATURE_TYPE_UNDEAD)
+                            if (pVictim->GetCreatureTypeMask() & CREATURE_TYPEMASK_DEMON_OR_UNDEAD)
                                 return true;
                             break;
                         }
@@ -9165,7 +9178,7 @@ bool Unit::isTargetableForAttack() const
     if (GetTypeId()==TYPEID_PLAYER && ((Player *)this)->isGameMaster())
         return false;
 
-    if(HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE))
+    if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE))
         return false;
 
     return IsInWorld() && isAlive() && !hasUnitState(UNIT_STAT_DIED)&& !isInFlight() /*&& !isStealth()*/;
@@ -9959,11 +9972,11 @@ bool Unit::SelectHostilTarget()
     // it in combat but attacker not make any damage and not enter to aggro radius to have record in threat list
     // for example at owner command to pet attack some far away creature
     // Note: creature not have targeted movement generator but have attacker in this case
-    if( GetMotionMaster()->GetCurrentMovementGeneratorType() != TARGETED_MOTION_TYPE )
+    if (GetMotionMaster()->GetCurrentMovementGeneratorType() != TARGETED_MOTION_TYPE || hasUnitState(UNIT_STAT_FOLLOW))
     {
         for(AttackerSet::const_iterator itr = m_attackers.begin(); itr != m_attackers.end(); ++itr)
         {
-            if( (*itr)->IsInMap(this) && (*itr)->isTargetableForAttack() && (*itr)->isInAccessablePlaceFor((Creature*)this) )
+            if ((*itr)->IsInMap(this) && (*itr)->isTargetableForAttack() && (*itr)->isInAccessablePlaceFor((Creature*)this))
                 return false;
         }
     }
@@ -11485,7 +11498,7 @@ void Unit::UpdateReactives( uint32 p_time )
     }
 }
 
-Unit* Unit::SelectNearbyTarget() const
+Unit* Unit::SelectNearbyTarget(Unit* except /*= NULL*/) const
 {
     CellPair p(MaNGOS::ComputeCellPair(GetPositionX(), GetPositionY()));
     Cell cell(p);
@@ -11507,8 +11520,8 @@ Unit* Unit::SelectNearbyTarget() const
     }
 
     // remove current target
-    if(getVictim())
-        targets.remove(getVictim());
+    if(except)
+        targets.remove(except);
 
     // remove not LoS targets
     for(std::list<Unit *>::iterator tIter = targets.begin(); tIter != targets.end();)

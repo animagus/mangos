@@ -386,7 +386,7 @@ enum ItemQualities
 #define SPELL_ATTR_EX5_UNK7                       0x00000080            // 7
 #define SPELL_ATTR_EX5_UNK8                       0x00000100            // 8
 #define SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY    0x00000200            // 9  begin periodic tick at aura apply
-#define SPELL_ATTR_EX5_UNK10                      0x00000400            // 10
+#define SPELL_ATTR_EX5_NO_DURATION                0x00000400            // 10 possibly not send duration to client
 #define SPELL_ATTR_EX5_UNK11                      0x00000800            // 11
 #define SPELL_ATTR_EX5_UNK12                      0x00001000            // 12
 #define SPELL_ATTR_EX5_UNK13                      0x00002000            // 13
@@ -1783,6 +1783,7 @@ enum CreatureType
     CREATURE_TYPE_GAS_CLOUD        = 13
 };
 
+uint32 const CREATURE_TYPEMASK_DEMON_OR_UNDEAD = (1 << (CREATURE_TYPE_DEMON-1)) | (1 << (CREATURE_TYPE_UNDEAD-1));
 uint32 const CREATURE_TYPEMASK_HUMANOID_OR_UNDEAD = (1 << (CREATURE_TYPE_HUMANOID-1)) | (1 << (CREATURE_TYPE_UNDEAD-1));
 uint32 const CREATURE_TYPEMASK_MECHANICAL_OR_ELEMENTAL = (1 << (CREATURE_TYPE_MECHANICAL-1)) | (1 << (CREATURE_TYPE_ELEMENTAL-1));
 

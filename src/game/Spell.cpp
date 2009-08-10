@@ -1199,10 +1199,21 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
                 return;
             }
 
-            unit->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+            // not break stealth by cast targeting
+            if (!(m_spellInfo->AttributesEx & SPELL_ATTR_EX_NOT_BREAK_STEALTH))
+                unit->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
 
-            if (!(m_spellInfo->AttributesEx & SPELL_ATTR_EX_NO_INITIAL_AGGRO))
+            // can cause back attack (if detected)
+            if (!(m_spellInfo->AttributesEx & SPELL_ATTR_EX_NO_INITIAL_AGGRO) &&
+                m_caster->isVisibleForOrDetect(unit,false)) // stealth removed at Spell::cast if spell break it
             {
+                // use speedup check to avoid re-remove after above lines
+                if (m_spellInfo->AttributesEx & SPELL_ATTR_EX_NOT_BREAK_STEALTH)
+                    unit->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+
+                // caster can be detected but have stealth aura
+                m_caster->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
+
                 if (!unit->IsStandState() && !unit->hasUnitState(UNIT_STAT_STUNNED))
                     unit->SetStandState(UNIT_STAND_STATE_STAND);
 
@@ -5504,9 +5515,10 @@ bool Spell::CheckTargetCreatureType(Unit* target) const
 {
     uint32 spellCreatureTargetMask = m_spellInfo->TargetCreatureType;
 
-    // Curse of Doom : not find another way to fix spell target check :/
-    if(m_spellInfo->SpellFamilyName==SPELLFAMILY_WARLOCK && m_spellInfo->SpellFamilyFlags == UI64LIT(0x0200000000)
-        || m_spellInfo->SpellFamilyName==SPELLFAMILY_PALADIN && m_spellInfo->SpellFamilyFlags == UI64LIT(0x0200000000))
+    // Curse of Doom & Exorcism: not find another way to fix spell target check :/
+    if (m_spellInfo->SpellFamilyName==SPELLFAMILY_WARLOCK && m_spellInfo->Category == 1179 ||
+        // TODO: will be removed in 3.2.x
+        m_spellInfo->SpellFamilyName==SPELLFAMILY_PALADIN && m_spellInfo->Category == 19)
     {
         // not allow cast at player
         if(target->GetTypeId()==TYPEID_PLAYER)
@@ -5565,12 +5577,16 @@ bool Spell::CheckTarget( Unit* target, uint32 eff )
 
         // unselectable targets skipped in all cases except TARGET_SCRIPT targeting
         // in case TARGET_SCRIPT target selected by server always and can't be cheated
-        if( (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE) &&
+        if ((target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE) &&
             m_spellInfo->EffectImplicitTargetA[eff] != TARGET_SCRIPT &&
             m_spellInfo->EffectImplicitTargetB[eff] != TARGET_SCRIPT) &&
 			!(m_spellInfo->SpellIconID == 45 &&
 			m_spellInfo->EffectImplicitTargetA[eff] == TARGET_EFFECT_SELECT))
             return false;
+
+        if (m_caster->GetTypeId()==TYPEID_PLAYER && !((Player *)m_caster)->isGameMaster())
+            if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE_2))
+                return false;
     }
 
     //Check player targets and remove if in GM mode or GM invisibility (for not self casting case)

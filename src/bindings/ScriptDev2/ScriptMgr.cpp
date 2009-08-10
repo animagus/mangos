@@ -583,8 +583,9 @@ extern void AddSC_instance_utgarde_keep();
 extern void AddSC_utgarde_keep();
 
 //Vault of Archavon
-extern void AddSC_instance_vault_of_archavon();
+extern void AddSC_boss_archavon();
 extern void AddSC_boss_emalon();
+extern void AddSC_instance_vault_of_archavon();
 
 //Wailing caverns
 
@@ -1486,8 +1487,9 @@ void ScriptsInit()
     AddSC_utgarde_keep();
 
     //Vault of Archavon
-    AddSC_instance_vault_of_archavon();
+    AddSC_boss_archavon();
     AddSC_boss_emalon();
+    AddSC_instance_vault_of_archavon();
     
 	//Wailing caverns
 

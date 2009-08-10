@@ -132,7 +132,7 @@ struct MANGOS_DLL_DECL npc_a_special_surpriseAI : public ScriptedAI
         m_uiExecuteSpeech_Counter = 0;
         m_uiPlayerGUID = 0;
 
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_8);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE_2);
     }
 
     bool MeetQuestCondition(Unit* pPlayer)
@@ -229,7 +229,7 @@ struct MANGOS_DLL_DECL npc_a_special_surpriseAI : public ScriptedAI
                             case 9:
                                 DoScriptText(SAY_EXEC_TIME_6, m_creature, pPlayer);
                                 m_creature->SetStandState(UNIT_STAND_STATE_KNEEL);
-                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_8);
+                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE_2);
                                 break;
                             case 10: DoScriptText(SAY_EXEC_WAITING, m_creature, pPlayer); break;
                             case 11:
@@ -257,7 +257,7 @@ struct MANGOS_DLL_DECL npc_a_special_surpriseAI : public ScriptedAI
                             case 9:
                                 DoScriptText(SAY_EXEC_TIME_8, m_creature, pPlayer);
                                 m_creature->SetStandState(UNIT_STAND_STATE_KNEEL);
-                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_8);
+                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE_2);
                                 break;
                             case 10: DoScriptText(SAY_EXEC_WAITING, m_creature, pPlayer); break;
                             case 11:
@@ -285,7 +285,7 @@ struct MANGOS_DLL_DECL npc_a_special_surpriseAI : public ScriptedAI
                             case 9:
                                 DoScriptText(SAY_EXEC_TIME_3, m_creature, pPlayer);
                                 m_creature->SetStandState(UNIT_STAND_STATE_KNEEL);
-                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_8);
+                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE_2);
                                 break;
                             case 10: DoScriptText(SAY_EXEC_WAITING, m_creature, pPlayer); break;
                             case 11:
@@ -313,7 +313,7 @@ struct MANGOS_DLL_DECL npc_a_special_surpriseAI : public ScriptedAI
                             case 9:
                                 DoScriptText(SAY_EXEC_TIME_7, m_creature, pPlayer);
                                 m_creature->SetStandState(UNIT_STAND_STATE_KNEEL);
-                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_8);
+                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE_2);
                                 break;
                             case 10: DoScriptText(SAY_EXEC_WAITING, m_creature, pPlayer); break;
                             case 11:
@@ -341,7 +341,7 @@ struct MANGOS_DLL_DECL npc_a_special_surpriseAI : public ScriptedAI
                             case 9:
                                 DoScriptText(SAY_EXEC_TIME_4, m_creature, pPlayer);
                                 m_creature->SetStandState(UNIT_STAND_STATE_KNEEL);
-                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_8);
+                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE_2);
                                 break;
                             case 10: DoScriptText(SAY_EXEC_WAITING, m_creature, pPlayer); break;
                             case 11:
@@ -369,7 +369,7 @@ struct MANGOS_DLL_DECL npc_a_special_surpriseAI : public ScriptedAI
                             case 9:
                                 DoScriptText(SAY_EXEC_TIME_9, m_creature, pPlayer);
                                 m_creature->SetStandState(UNIT_STAND_STATE_KNEEL);
-                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_8);
+                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE_2);
                                 break;
                             case 10: DoScriptText(SAY_EXEC_WAITING, m_creature, pPlayer); break;
                             case 11:
@@ -397,7 +397,7 @@ struct MANGOS_DLL_DECL npc_a_special_surpriseAI : public ScriptedAI
                             case 9:
                                 DoScriptText(SAY_EXEC_TIME_5, m_creature, pPlayer);
                                 m_creature->SetStandState(UNIT_STAND_STATE_KNEEL);
-                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_8);
+                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE_2);
                                 break;
                             case 10: DoScriptText(SAY_EXEC_WAITING, m_creature, pPlayer); break;
                             case 11:
@@ -425,7 +425,7 @@ struct MANGOS_DLL_DECL npc_a_special_surpriseAI : public ScriptedAI
                             case 9:
                                 DoScriptText(SAY_EXEC_TIME_10, m_creature, pPlayer);
                                 m_creature->SetStandState(UNIT_STAND_STATE_KNEEL);
-                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_8);
+                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE_2);
                                 break;
                             case 10: DoScriptText(SAY_EXEC_WAITING, m_creature, pPlayer); break;
                             case 11:
@@ -453,7 +453,7 @@ struct MANGOS_DLL_DECL npc_a_special_surpriseAI : public ScriptedAI
                             case 9:
                                 DoScriptText(SAY_EXEC_TIME_1, m_creature, pPlayer);
                                 m_creature->SetStandState(UNIT_STAND_STATE_KNEEL);
-                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_8);
+                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE_2);
                                 break;
                             case 10: DoScriptText(SAY_EXEC_WAITING, m_creature, pPlayer); break;
                             case 11:
@@ -481,7 +481,7 @@ struct MANGOS_DLL_DECL npc_a_special_surpriseAI : public ScriptedAI
                             case 9:
                                 DoScriptText(SAY_EXEC_TIME_2, m_creature, pPlayer);
                                 m_creature->SetStandState(UNIT_STAND_STATE_KNEEL);
-                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_8);
+                                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE_2);
                                 break;
                             case 10: DoScriptText(SAY_EXEC_WAITING, m_creature, pPlayer); break;
                             case 11:
@@ -1132,7 +1132,7 @@ struct MANGOS_DLL_DECL npc_unworthy_initiateAI : public ScriptedAI
         m_uiIcyTouch_Timer = 2000;
         m_uiPlagueStrike_Timer = 5000;
 
-        m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_UNK_8);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE_2);
     }
 
     void JustReachedHome()
@@ -1240,7 +1240,7 @@ struct MANGOS_DLL_DECL npc_unworthy_initiateAI : public ScriptedAI
                 }
                 else
                 {
-                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_UNK_8);
+                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE_2);
                     m_creature->setFaction(FACTION_MONSTER);
 
                     m_uiPhase = PHASE_INACTIVE_OR_COMBAT;
@@ -1575,7 +1575,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
 			bIsBattle = false;
 			uiStep = 0;
 			uiPhase_timer = 3000;
-			uiFight_duration = 300000; // 5 minutes
+			uiFight_duration = 150000; // 5 minutes
 			uiTotal_dawn = ENCOUNTER_TOTAL_DAWN;
 			uiTotal_scourge = ENCOUNTER_TOTAL_SCOURGE;
 			uiSummon_counter = 0;
@@ -2535,6 +2535,24 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
 					}
 					m_creature->SetVisibility(VISIBILITY_OFF); // respawns another Darion for quest turn in
 					m_creature->SummonCreature(NPC_HIGHLORD_DARION_MOGRAINE, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 180000);
+                    if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiKoltiraGUID)))
+                    {
+                        if (pTemp->isAlive())
+                        {
+                            pTemp->SetVisibility(VISIBILITY_OFF);
+                            pTemp->DealDamage(pTemp, pTemp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        }
+                    }
+
+                    if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), uiThassarianGUID)))
+                    {
+                        if (pTemp->isAlive())
+                        {
+                            pTemp->SetVisibility(VISIBILITY_OFF);
+                            pTemp->DealDamage(pTemp, pTemp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        }
+                    }
+
 					JumpToNextStep(1000);
 					break;
 
@@ -2626,7 +2644,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
 				NPCChangeTarget(uiOrbazGUID);
 				NPCChangeTarget(uiThassarianGUID);
 
-				uiTargetcheck = 10000;
+				uiTargetcheck = 7000;
 			}else uiTargetcheck -= diff;
 
 			// Battle end
@@ -2644,7 +2662,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
 			if (uiFight_duration < diff)
 			{
 				bIsBattle = false;
-				uiFight_duration = 300000;
+				uiFight_duration = 150000;
 
 				if (m_creature->HasAura(SPELL_THE_MIGHT_OF_MOGRAINE, 0))
 					m_creature->RemoveAurasDueToSpell(SPELL_THE_MIGHT_OF_MOGRAINE);

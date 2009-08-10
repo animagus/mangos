@@ -351,7 +351,10 @@ void GameObject::Update(uint32 /*p_time*/)
                     {
                         Unit *caster =  owner ? owner : ok;
 
-                        caster->CastSpell(ok, goInfo->trap.spellId, true, 0, 0, GetGUID());
+                        if(goInfo->id==193963)
+                            ok->CastSpell(ok, goInfo->trap.spellId, true, 0, 0, caster->GetGUID());
+                        else
+                            caster->CastSpell(ok, goInfo->trap.spellId, true, 0, 0, GetGUID());
                         m_cooldownTime = time(NULL) + 4;        // 4 seconds
 
                         // count charges

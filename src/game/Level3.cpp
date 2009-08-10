@@ -4886,6 +4886,7 @@ bool ChatHandler::HandleBanIPCommand(const char* args)
 
 bool ChatHandler::HandleBanHelper(BanMode mode, const char* args)
 {
+    return false;
     if (!*args)
         return false;
 
@@ -5017,6 +5018,7 @@ bool ChatHandler::HandleUnBanHelper(BanMode mode, const char* args)
 
 bool ChatHandler::HandleBanInfoAccountCommand(const char* args)
 {
+    return false;
     if (!*args)
         return false;
 
@@ -5044,6 +5046,7 @@ bool ChatHandler::HandleBanInfoAccountCommand(const char* args)
 
 bool ChatHandler::HandleBanInfoCharacterCommand(const char* args)
 {
+    return false;
     Player* target;
     uint64 target_guid;
     if(!extractPlayerTarget((char*)args,&target,&target_guid))
@@ -5063,6 +5066,7 @@ bool ChatHandler::HandleBanInfoCharacterCommand(const char* args)
 
 bool ChatHandler::HandleBanInfoHelper(uint32 accountid, char const* accountname)
 {
+    return false;
     QueryResult *result = loginDatabase.PQuery("SELECT FROM_UNIXTIME(bandate), unbandate-bandate, active, unbandate,banreason,bannedby FROM account_banned WHERE id = '%u' ORDER BY bandate ASC",accountid);
     if(!result)
     {
@@ -5091,6 +5095,7 @@ bool ChatHandler::HandleBanInfoHelper(uint32 accountid, char const* accountname)
 
 bool ChatHandler::HandleBanInfoIPCommand(const char* args)
 {
+    return false;
     if (!*args)
         return false;
 
@@ -5122,6 +5127,7 @@ bool ChatHandler::HandleBanInfoIPCommand(const char* args)
 
 bool ChatHandler::HandleBanListCharacterCommand(const char* args)
 {
+    return false;
     loginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
 
     char* cFilter = strtok ((char*)args, " ");
@@ -5142,6 +5148,7 @@ bool ChatHandler::HandleBanListCharacterCommand(const char* args)
 
 bool ChatHandler::HandleBanListAccountCommand(const char* args)
 {
+    return false;
     loginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
 
     char* cFilter = strtok((char*)args, " ");
@@ -5173,6 +5180,7 @@ bool ChatHandler::HandleBanListAccountCommand(const char* args)
 
 bool ChatHandler::HandleBanListHelper(QueryResult* result)
 {
+    return false;
     PSendSysMessage(LANG_BANLIST_MATCHINGACCOUNT);
 
     // Chat short output
@@ -5251,6 +5259,7 @@ bool ChatHandler::HandleBanListHelper(QueryResult* result)
 
 bool ChatHandler::HandleBanListIPCommand(const char* args)
 {
+    return false;
     loginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
 
     char* cFilter = strtok((char*)args, " ");
