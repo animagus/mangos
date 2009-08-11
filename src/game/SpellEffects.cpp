@@ -358,6 +358,14 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
                     case 38441:
                         damage = unitTarget->GetMaxHealth() / 2;
                         break;
+                    // Lightning Nova (Emalon, Heroic)
+                    case 65279:
+                    {
+                        float distance = m_caster->GetDistance2d(unitTarget);
+                        if (distance > 20.0f)
+                            damage = (int32)((float) damage * 10.0f / (10.0f + distance));
+                        break;
+                    }
                 }
                 break;
             }
