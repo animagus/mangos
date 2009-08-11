@@ -18370,7 +18370,11 @@ void Player::SendAurasForTarget(Unit *target)
 
                     if(!(auraFlags & AFLAG_NOT_CASTER))
                     {
-                        data << uint8(0);                   // packed GUID of someone (caster?)
+                        Unit* m_caster = aura->GetCaster();
+                        if (m_caster)
+                            data.append(m_caster->GetPackGUID());
+                        else
+                            data << uint8(0);                                   // pguid
                     }
 
                     if(auraFlags & AFLAG_DURATION)          // include aura duration
