@@ -136,6 +136,7 @@ public:
             delete WorldDatabase.Query ("SELECT 1 FROM command LIMIT 1");
             delete loginDatabase.Query ("SELECT 1 FROM realmlist LIMIT 1");
             delete CharacterDatabase.Query ("SELECT 1 FROM bugreport LIMIT 1");
+            delete LogDatabase.Query ("SELECT 1 FROM gmlog LIMIT 1");
         }
     }
 
@@ -337,6 +338,7 @@ int Master::Run()
     CharacterDatabase.HaltDelayThread();
     WorldDatabase.HaltDelayThread();
     loginDatabase.HaltDelayThread();
+    LogDatabase.HaltDelayThread();
 
     sLog.outString( "Halting process..." );
 
@@ -428,6 +430,20 @@ bool Master::_StartDB()
     if(!CharacterDatabase.Initialize(dbstring.c_str()))
     {
         sLog.outError("Cannot connect to Character database %s",dbstring.c_str());
+        return false;
+    }
+
+    ///- Initialise the Log database
+    if(!sConfig.GetString("LogDatabaseInfo", &dbstring))
+    {
+        sLog.outError("log database not specified in configuration file");
+        return false;
+    }
+    sLog.outString("log Database: %s", dbstring.c_str());
+
+    if(!LogDatabase.Initialize(dbstring.c_str()))
+    {
+        sLog.outError("Cannot connect to log database %s", dbstring.c_str());
         return false;
     }
 
