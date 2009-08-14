@@ -224,8 +224,8 @@ int Master::Run()
     _HookSignals();
 
     ///- Launch WorldRunnable thread
-    ACE_Based::Thread t(new WorldRunnable);
-    t.setPriority(ACE_Based::Highest);
+    ACE_Based::Thread world_thread(new WorldRunnable);
+    world_thread.setPriority(ACE_Based::Highest);
 
     // set server online
     loginDatabase.PExecute("UPDATE realmlist SET color = 0, population = 0 WHERE id = '%d'",realmID);
@@ -242,7 +242,7 @@ int Master::Run()
         cliThread = new ACE_Based::Thread(new CliRunnable);
     }
 
-    ACE_Based::Thread td2(new RARunnable);
+    ACE_Based::Thread rar_thread(new RARunnable);
 
     ///- Handle affinity for multiple processors and process priority on Windows
     #ifdef WIN32
@@ -298,13 +298,12 @@ int Master::Run()
     uint32 loopCounter = 0;
 
     ///- Start up freeze catcher thread
-    uint32 freeze_delay = sConfig.GetIntDefault("MaxCoreStuckTime", 0);
-    if(freeze_delay)
+    if(uint32 freeze_delay = sConfig.GetIntDefault("MaxCoreStuckTime", 0))
     {
         FreezeDetectorRunnable *fdr = new FreezeDetectorRunnable();
         fdr->SetDelayTime(freeze_delay*1000);
-        ACE_Based::Thread t(fdr);
-        t.setPriority(ACE_Based::Highest);
+        ACE_Based::Thread freeze_thread(fdr);
+        freeze_thread.setPriority(ACE_Based::Highest);
     }
 
     ///- Launch the world listener socket
@@ -328,8 +327,8 @@ int Master::Run()
 
     // when the main thread closes the singletons get unloaded
     // since worldrunnable uses them, it will crash if unloaded after master
-    t.wait();
-    td2.wait ();
+    world_thread.wait();
+    rar_thread.wait ();
 
     ///- Clean database before leaving
     clearOnlineAccounts();
@@ -342,7 +341,7 @@ int Master::Run()
 
     sLog.outString( "Halting process..." );
 
-    if(cliThread)
+    if (cliThread)
     {
         #ifdef WIN32
 
@@ -493,7 +492,7 @@ void Master::clearOnlineAccounts()
     CharacterDatabase.Execute("UPDATE characters SET online = 0 WHERE online<>0");
 
     // Battleground instance ids reset at server restart
-    CharacterDatabase.Execute("UPDATE characters SET bgid = 0 WHERE bgid<>0");
+    CharacterDatabase.Execute("UPDATE character_battleground_data SET instance_id = 0");
 }
 
 /// Handle termination signals
