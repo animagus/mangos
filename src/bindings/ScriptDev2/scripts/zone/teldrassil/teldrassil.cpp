@@ -132,7 +132,7 @@ struct MANGOS_DLL_DECL npc_mistAI : public ScriptedAI
     void JustDied(Unit* pKiller)
     {
         if (Unit* pUnit = Unit::GetUnit(*m_creature,m_uiPlayerGUID))
-            pPlayer->FailQuest(QUEST_MIST);
+            pUnit->FailQuest(QUEST_MIST);
 
         m_uiPlayerGUID = 0;
         m_creature->GetMotionMaster()->MovementExpired();
