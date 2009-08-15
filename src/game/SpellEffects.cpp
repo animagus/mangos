@@ -2386,6 +2386,10 @@ void Spell::EffectApplyAura(uint32 i)
     unitTarget->ApplyDiminishingToDuration(m_diminishGroup, duration, m_caster, m_diminishLevel,limitduration);
     Aur->setDiminishGroup(m_diminishGroup);
 
+    if (spellmgr.GetSpellElixirSpecific(m_spellInfo->Id))                   // table spell_elixer have it all
+        if (unitTarget->HasAura(53042) && unitTarget->HasSpell(m_spellInfo->EffectTriggerSpell[0]))
+            duration *= 2;
+
     // if Aura removed and deleted, do not continue.
     if(duration== 0 && !(Aur->IsPermanent()))
     {
