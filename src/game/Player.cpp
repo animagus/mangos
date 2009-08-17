@@ -8811,7 +8811,7 @@ bool Player::HasItemOrGemWithLimitCategoryEquipped( uint32 limitCategory, uint32
                 return true;
         }
 
-        if( pProto->Socket[0].Color)
+        if (pProto->Socket[0].Color)
         {
             tempcount += pItem->GetGemCountWithLimitCategory(limitCategory);
             if( tempcount >= count )
@@ -8822,10 +8822,109 @@ bool Player::HasItemOrGemWithLimitCategoryEquipped( uint32 limitCategory, uint32
     return false;
 }
 
+uint32 Player::CountItemWithLimitCategory(uint32 limitCategory, Item* skipItem) const
+{
+    uint32 tempcount = 0;
+    for(int i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_ITEM_END; ++i)
+    {
+        Item *pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i );
+        if (!pItem)
+            continue;
+
+        if (pItem == skipItem)
+            continue;
+
+        ItemPrototype const *pProto = pItem->GetProto();
+        if (!pProto)
+            continue;
+
+        if (pProto->ItemLimitCategory == limitCategory)
+            tempcount += pItem->GetCount();
+    }
+
+    for(int i = KEYRING_SLOT_START; i < CURRENCYTOKEN_SLOT_END; ++i)
+    {
+        Item *pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i );
+        if (!pItem)
+            continue;
+
+        if (pItem == skipItem)
+            continue;
+
+        ItemPrototype const *pProto = pItem->GetProto();
+        if (!pProto)
+            continue;
+
+        if (pProto->ItemLimitCategory == limitCategory)
+            tempcount += pItem->GetCount();
+    }
+
+    for(int i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i)
+    {
+        Bag* pBag = (Bag*)GetItemByPos( INVENTORY_SLOT_BAG_0, i );
+        if (!pBag)
+            continue;
+
+        for(uint32 j = 0; j < pBag->GetBagSize(); ++j)
+        {
+            Item *pItem = GetItemByPos( i, j );
+
+            if (!pItem)
+                continue;
+
+            if (pItem == skipItem)
+                continue;
+
+            if (pItem->GetProto()->ItemLimitCategory == limitCategory)
+                tempcount += pItem->GetCount();
+        }
+    }
+
+    for(int i = BANK_SLOT_ITEM_START; i < BANK_SLOT_ITEM_END; ++i)
+    {
+        Item *pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i );
+        if (!pItem)
+            continue;
+
+        if (pItem == skipItem)
+            continue;
+
+        ItemPrototype const *pProto = pItem->GetProto();
+        if (!pProto)
+            continue;
+
+        if (pProto->ItemLimitCategory == limitCategory)
+            tempcount += pItem->GetCount();
+    }
+
+    for(int i = BANK_SLOT_BAG_START; i < BANK_SLOT_BAG_END; ++i)
+    {
+        Bag* pBag = (Bag*)GetItemByPos( INVENTORY_SLOT_BAG_0, i );
+        if (!pBag)
+            continue;
+
+        for(uint32 j = 0; j < pBag->GetBagSize(); ++j)
+        {
+            Item *pItem = GetItemByPos( i, j );
+
+            if(!pItem)
+                continue;
+
+            if(pItem == skipItem)
+                continue;
+
+            if(pItem->GetProto()->ItemLimitCategory == limitCategory)
+                tempcount += pItem->GetCount();
+        }
+    }
+
+    return tempcount;
+}
+
 uint8 Player::_CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count ) const
 {
     ItemPrototype const *pProto = objmgr.GetItemPrototype(entry);
-    if( !pProto )
+    if (!pProto)
     {
         if(no_space_count)
             *no_space_count = count;
@@ -8833,16 +8932,34 @@ uint8 Player::_CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, 
     }
 
     // no maximum
-    if(pProto->MaxCount <= 0)
+    if (pProto->MaxCount <= 0 && pProto->ItemLimitCategory == 0)
         return EQUIP_ERR_OK;
 
-    uint32 curcount = GetItemCount(pProto->ItemId,true,pItem);
+    uint32 curcount;
+    if (pProto->ItemLimitCategory)
+        curcount = CountItemWithLimitCategory(pProto->ItemLimitCategory,pItem);
+    else
+        curcount = GetItemCount(pProto->ItemId,true,pItem);
 
-    if (curcount + count > uint32(pProto->MaxCount))
+    if ((curcount + count > uint32(pProto->MaxCount)) && !(pProto->ItemLimitCategory))
     {
         if(no_space_count)
             *no_space_count = count +curcount - pProto->MaxCount;
         return EQUIP_ERR_CANT_CARRY_MORE_OF_THIS;
+    }
+
+    if (pProto->ItemLimitCategory && pProto->Class!=ITEM_CLASS_GEM) // gem have equip check
+    {
+        ItemLimitCategoryEntry const* limitEntry = sItemLimitCategoryStore.LookupEntry(pProto->ItemLimitCategory);
+        if(!limitEntry)
+            return EQUIP_ERR_CANT_CARRY_MORE_OF_THIS;
+
+        if (curcount + count > limitEntry->maxCount)
+        {
+            if(no_space_count)
+                *no_space_count = count + curcount - limitEntry->maxCount;       
+            return EQUIP_ERR_CANT_CARRY_MORE_OF_THIS;         // attempt add too many limit category items
+        }
     }
 
     return EQUIP_ERR_OK;
