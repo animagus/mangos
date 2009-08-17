@@ -6867,16 +6867,24 @@ void Spell::EffectRechargeManaGem(uint32 i)
     if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    Player *plr = (Player*)m_caster;
+    Player *player = (Player*)m_caster;
+
+    if (!player)
+        return;
 
     uint32 item_id = m_spellInfo->EffectItemType[0];
     
     ItemPrototype const *pProto = objmgr.GetItemPrototype(item_id);
     if(!pProto)
     {
-        plr->SendEquipError( EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL );
+        player->SendEquipError( EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL );
         return;
     }
     
-    plr->RechargeItems(item_id);    
+    if (Item* pItem = player->GetItemByEntry(item_id))
+    {
+        for(int x = 0; x < MAX_ITEM_PROTO_SPELLS; ++x)
+            pItem->SetSpellCharges(x,pProto->Spells[x].SpellCharges);
+        pItem->SetState(ITEM_CHANGED,player);
+    }
 }

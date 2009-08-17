@@ -8835,10 +8835,7 @@ uint32 Player::CountItemWithLimitCategory(uint32 limitCategory, Item* skipItem) 
             continue;
 
         ItemPrototype const *pProto = pItem->GetProto();
-        if (!pProto)
-            continue;
-
-        if (pProto->ItemLimitCategory == limitCategory)
+        if (pProto && pProto->ItemLimitCategory == limitCategory)
             tempcount += pItem->GetCount();
     }
 
@@ -8852,10 +8849,7 @@ uint32 Player::CountItemWithLimitCategory(uint32 limitCategory, Item* skipItem) 
             continue;
 
         ItemPrototype const *pProto = pItem->GetProto();
-        if (!pProto)
-            continue;
-
-        if (pProto->ItemLimitCategory == limitCategory)
+        if (pProto && pProto->ItemLimitCategory == limitCategory)
             tempcount += pItem->GetCount();
     }
 
@@ -8890,10 +8884,7 @@ uint32 Player::CountItemWithLimitCategory(uint32 limitCategory, Item* skipItem) 
             continue;
 
         ItemPrototype const *pProto = pItem->GetProto();
-        if (!pProto)
-            continue;
-
-        if (pProto->ItemLimitCategory == limitCategory)
+        if (pProto && pProto->ItemLimitCategory == limitCategory)
             tempcount += pItem->GetCount();
     }
 
@@ -11070,66 +11061,39 @@ void Player::DestroyConjuredItems( bool update )
                 DestroyItem( INVENTORY_SLOT_BAG_0, i, update);
 }
 
-void Player::RechargeItems(uint32 entry)
+Item* Player::GetItemByEntry(uint32 entry) const
 {
-    Item* found =  NULL;
-    ItemPrototype const *pProto = objmgr.GetItemPrototype(entry); // check in spell effect code
-
     // in inventory
     for(int i = INVENTORY_SLOT_ITEM_START; i < INVENTORY_SLOT_ITEM_END; ++i)
     {
         if (Item* pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i ))
-        {
             if (pItem->GetEntry() == entry)
-            {
-                found = pItem;
-                break;
-            }
-        }
+                return pItem;
     }
 
-    if (!found)
+
+    for(int i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i)
     {
-        for(int i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i)
+        if (Bag* pBag = (Bag*)GetItemByPos( INVENTORY_SLOT_BAG_0, i ))
         {
-            if (Bag* pBag = (Bag*)GetItemByPos( INVENTORY_SLOT_BAG_0, i ))
+            for(uint32 j = 0; j < pBag->GetBagSize(); ++j)
             {
-                for(uint32 j = 0; j < pBag->GetBagSize(); ++j)
-                {
-                    if (Item* pItem = pBag->GetItemByPos(j))
-                    {
-                        if (pItem->GetEntry()==entry)
-                        {
-                            found = pItem;
-                            break;
-                        }
-                    }
-                }
+                if (Item* pItem = pBag->GetItemByPos(j))
+                    if (pItem->GetEntry()==entry)
+                        return pItem;
             }
         }
     }
     
-    if(!found)
+
+    for(int i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_BAG_END; ++i)
     {
-        for(int i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_BAG_END; ++i)
-        {
-            if (Item* pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i ))
-            {
-                if (pItem->GetEntry()==entry)
-                {
-                    found=pItem;
-                    break;
-                }
-            }
-        }
+        if (Item* pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i ))
+            if (pItem->GetEntry()==entry)
+                return pItem;
     }
     
-    if (found)
-    {
-        for(int i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
-            found->SetSpellCharges(i,pProto->Spells[i].SpellCharges);
-        found->SetState(ITEM_CHANGED,this);
-    }
+   return NULL;
 }
 
 void Player::DestroyItemCount( Item* pItem, uint32 &count, bool update )
