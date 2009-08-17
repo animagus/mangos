@@ -2382,6 +2382,9 @@ void Spell::cast(bool skipCheck)
             // Ice Block
             if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000008000000000))
                 AddPrecastSpell(41425);                     // Hypothermia
+/*            // Recharge Mana Gems
+            if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000000040000000))
+                AddPrecastSpell(m_spellInfo->EffectBasePoints[1]);                     */
             break;
         }
         case SPELLFAMILY_PRIEST:
@@ -5260,10 +5263,18 @@ SpellCastResult Spell::CheckItems()
                 {
                     ItemPosCountVec dest;
                     uint8 msg = p_caster->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, m_spellInfo->EffectItemType[i], 1 );
-                    if (msg != EQUIP_ERR_OK )
+                    if (msg != EQUIP_ERR_OK)
                     {
-                        p_caster->SendEquipError( msg, NULL, NULL );
-                        return SPELL_FAILED_DONT_REPORT;
+                        if (!(m_spellInfo->SpellFamilyName == SPELLFAMILY_MAGE && (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000000040000000))))
+                        {
+                            p_caster->SendEquipError( msg, NULL, NULL );
+                            return SPELL_FAILED_DONT_REPORT;
+                        }
+                        else
+                        {
+                            p_caster->CastSpell(m_caster,m_spellInfo->CalculateSimpleValue(1),false);
+                            return SPELL_FAILED_DONT_REPORT;                            
+                        }
                     }
                 }
                 break;

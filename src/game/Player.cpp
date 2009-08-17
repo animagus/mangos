@@ -11070,6 +11070,68 @@ void Player::DestroyConjuredItems( bool update )
                 DestroyItem( INVENTORY_SLOT_BAG_0, i, update);
 }
 
+void Player::RechargeItems(uint32 entry)
+{
+    Item* found =  NULL;
+    ItemPrototype const *pProto = objmgr.GetItemPrototype(entry); // check in spell effect code
+
+    // in inventory
+    for(int i = INVENTORY_SLOT_ITEM_START; i < INVENTORY_SLOT_ITEM_END; ++i)
+    {
+        if (Item* pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i ))
+        {
+            if (pItem->GetEntry() == entry)
+            {
+                found = pItem;
+                break;
+            }
+        }
+    }
+
+    if (!found)
+    {
+        for(int i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; ++i)
+        {
+            if (Bag* pBag = (Bag*)GetItemByPos( INVENTORY_SLOT_BAG_0, i ))
+            {
+                for(uint32 j = 0; j < pBag->GetBagSize(); ++j)
+                {
+                    if (Item* pItem = pBag->GetItemByPos(j))
+                    {
+                        if (pItem->GetEntry()==entry)
+                        {
+                            found = pItem;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    if(!found)
+    {
+        for(int i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_BAG_END; ++i)
+        {
+            if (Item* pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i ))
+            {
+                if (pItem->GetEntry()==entry)
+                {
+                    found=pItem;
+                    break;
+                }
+            }
+        }
+    }
+    
+    if (found)
+    {
+        for(int i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
+            found->SetSpellCharges(i,pProto->Spells[i].SpellCharges);
+        found->SetState(ITEM_CHANGED,this);
+    }
+}
+
 void Player::DestroyItemCount( Item* pItem, uint32 &count, bool update )
 {
     if(!pItem)

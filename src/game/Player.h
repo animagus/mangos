@@ -1209,6 +1209,7 @@ class MANGOS_DLL_SPEC Player : public Unit
         void DestroyItemCount( Item* item, uint32& count, bool update );
         void DestroyConjuredItems( bool update );
         void DestroyZoneLimitedItem( bool update, uint32 new_zone );
+        void RechargeItems( uint32 entry );
         void SplitItem( uint16 src, uint16 dst, uint32 count );
         void SwapItem( uint16 src, uint16 dst );
         void AddItemToBuyBackSlot( Item *pItem );
