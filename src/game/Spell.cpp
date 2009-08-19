@@ -5293,9 +5293,19 @@ SpellCastResult Spell::CheckItems()
                         else
                         {
                             if (!(m_spellInfo->SpellFamilyName == SPELLFAMILY_MAGE && (m_spellInfo->SpellFamilyFlags & UI64LIT(0x40000000))))
-                                return SPELL_FAILED_TOO_MANY_OF_ITEM;
+                                if (msg != EQUIP_ERR_CANT_CARRY_MORE_OF_THIS)
+                                {
+                                    p_caster->SendEquipError( msg, NULL, NULL );
+                                    return SPELL_FAILED_DONT_REPORT;
+                                }else
+                                    return SPELL_FAILED_TOO_MANY_OF_ITEM;
                             else if (!(p_caster->HasItemCount(m_spellInfo->EffectItemType[i],1)))
-                                return SPELL_FAILED_TOO_MANY_OF_ITEM;
+                                if (msg != EQUIP_ERR_CANT_CARRY_MORE_OF_THIS)
+                                {
+                                    p_caster->SendEquipError( msg, NULL, NULL );
+                                    return SPELL_FAILED_DONT_REPORT;
+                                }else
+                                    return SPELL_FAILED_TOO_MANY_OF_ITEM;
                             else
                                 p_caster->CastSpell(m_caster,m_spellInfo->CalculateSimpleValue(1),false);        // move this to anywhere
                             return SPELL_FAILED_DONT_REPORT;
