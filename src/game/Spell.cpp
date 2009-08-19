@@ -5137,7 +5137,18 @@ SpellCastResult Spell::CheckItems()
                     Powers power = Powers(m_spellInfo->EffectMiscValue[i]);
                     if (m_targets.getUnitTarget()->GetPower(power) == m_targets.getUnitTarget()->GetMaxPower(power))
                     {
-                        failReason = SPELL_FAILED_ALREADY_AT_FULL_POWER;
+                        switch (power)
+                        {
+                        case POWER_MANA:
+                            failReason = SPELL_FAILED_ALREADY_AT_FULL_MANA;
+                            break;
+                        case POWER_HEALTH:
+                            failReason = SPELL_FAILED_ALREADY_AT_FULL_HEALTH;
+                            break;
+                        default:
+                            failReason = SPELL_FAILED_ALREADY_AT_FULL_POWER;
+                            break;
+                        }
                         continue;
                     }
                     else
