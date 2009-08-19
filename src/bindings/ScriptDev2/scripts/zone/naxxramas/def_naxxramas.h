@@ -51,6 +51,10 @@ enum
     GUID_ANUBREKHAN   = 100,
     GUID_FAERLINA     = 101,
     GUID_MAEXXNA      = 102,
+    GUID_WORSHIPPER1  = 20,
+    GUID_WORSHIPPER2  = 21,
+    GUID_WORSHIPPER3  = 22,
+    GUID_WORSHIPPER4  = 23,
 
     //Abomination Wing
     GUID_PATCHWERK    = 103,

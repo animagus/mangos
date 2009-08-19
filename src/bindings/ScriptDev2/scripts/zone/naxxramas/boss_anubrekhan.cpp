@@ -42,7 +42,9 @@ enum
 {
 //Anub'Rekhan spels
     SPELL_IMPALE       = 28783,                           //May be wrong spell id. Causes more dmg than I expect
+    SPELL_IMPALE_H     = 56090,
     SPELL_LOCUSTSWARM  = 28785,                           //This is a self buff that triggers the dmg debuff
+    SPELL_LOCUSTSWARM_H = 54021,
     SPELL_BERSERK      = 46587,                           
     SPELL_SELF_SPAWN_5 = 29105,                           //This spawns 5 corpse scarabs ontop of us (most likely the player casts this on death)
 
@@ -65,6 +67,7 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
     boss_anubrekhanAI(Creature *c) : ScriptedAI(c) 
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        m_bIsHeroic = c->GetMap()->IsHeroic();
         
         for (int i = 0; i < MAX_CRYPT_GUARDS; i++)
             guidCryptGuards[i] = 0;
@@ -74,11 +77,13 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
 
     ScriptedInstance *pInstance;
 
+    bool m_bIsHeroic;
     uint32 Impale_Timer;
     uint32 LocustSwarm_Timer;
     uint32 SummonFirst_Timer;
     uint32 Berserk_Timer;
     uint32 RiseFromCorpse_Timer;
+    uint32 m_uiEvadeCheckCooldown;
 
     uint64 guidCryptGuards[MAX_CRYPT_GUARDS];
     uint32 CryptGuard_count;
@@ -88,9 +93,10 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
 
     void Reset()
     {
+        m_uiEvadeCheckCooldown = 2000;
         Impale_Timer = 15000;                               //15 seconds
         LocustSwarm_Timer = 80000 + (rand()%40000);         //Random time between 80 seconds and 2 minutes for initial cast
-        SummonFirst_Timer = 20000;                            //45 seconds after initial locust swarm
+        SummonFirst_Timer = 15000;                            //45 seconds after initial locust swarm
         Berserk_Timer = 600000;
         RiseFromCorpse_Timer = 20000 + (rand()%20000);
         swarm = false;
@@ -207,6 +213,15 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
         if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
             return;
 
+        if (m_uiEvadeCheckCooldown < diff)
+        {
+            if (m_creature->GetDistance2d(3307.02f, -3476.27f) > 125.0f)
+                EnterEvadeMode();
+            m_uiEvadeCheckCooldown = 2000;
+        }
+        else
+            m_uiEvadeCheckCooldown -= diff;
+
         //Berserk_Timer
         if (Berserk_Timer < diff)
         {
@@ -214,13 +229,16 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
             Berserk_Timer = 300000;
         }else Berserk_Timer -= diff;
 
-        //SumonFirstCryptGuard_Timer
-        if (SummonFirst_Timer < diff)
+        if (!m_bIsHeroic)
         {
-            if (CryptGuard_count < MAX_CRYPT_GUARDS)
-                DoSpawnCreature(MOB_CRYPT_GUARD,0,0,0,0,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,10000);
-            SummonFirst_Timer = 2000000;
-        }else SummonFirst_Timer -= diff;
+            //SumonFirstCryptGuard_Timer
+            if (SummonFirst_Timer < diff)
+            {
+                if (CryptGuard_count < MAX_CRYPT_GUARDS)
+                    m_creature->SummonCreature(MOB_CRYPT_GUARD,3330,-3477,288,3.2,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,10000);
+                SummonFirst_Timer = 2000000;
+            }else SummonFirst_Timer -= diff;
+        }
 
         //RiseFromCorpse_Timer
         if (RiseFromCorpse_Timer < diff)
@@ -260,7 +278,7 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
                 //Do NOT cast it when we are afflicted by locust swarm
                 if (!m_creature->HasAura(SPELL_LOCUSTSWARM,1))
                     if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1))
-                        DoCast(target,SPELL_IMPALE);
+                        DoCast(target,m_bIsHeroic?SPELL_IMPALE_H:SPELL_IMPALE);
                 Impale_Timer = 15000;
             }else Impale_Timer -= diff;
 
@@ -268,11 +286,11 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
             if (LocustSwarm_Timer < diff)
             {
                 //Cast Locust Swarm buff on ourselves
-                DoCast(m_creature, SPELL_LOCUSTSWARM);
+                DoCast(m_creature, m_bIsHeroic?SPELL_LOCUSTSWARM_H:SPELL_LOCUSTSWARM);
                 swarm = true;
                 //Summon Crypt Guard immidietly after Locust Swarm
                 if (CryptGuard_count < MAX_CRYPT_GUARDS)
-                    DoSpawnCreature(MOB_CRYPT_GUARD,0,0,0,0,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,10000);
+                    m_creature->SummonCreature(MOB_CRYPT_GUARD,3330,-3477,288,3.2,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,10000);
                 LocustSwarm_Timer = 20000;
             }else LocustSwarm_Timer -= diff;
         }
@@ -281,7 +299,7 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
             if (LocustSwarm_Timer < diff)
             {            
                 swarm = false;
-                LocustSwarm_Timer = 60000 + rand()%20000;
+                LocustSwarm_Timer = 85000;
             }else LocustSwarm_Timer -= diff;
         }
 

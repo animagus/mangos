@@ -91,6 +91,11 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
     uint64 guid_anubrekhan;
     uint64 guid_faerlina;
     uint64 guid_maexxna;
+    uint64 m_uiworshipper1GUID;
+    uint64 m_uiworshipper2GUID;
+    uint64 m_uiworshipper3GUID;
+    uint64 m_uiworshipper4GUID;
+    uint8 m_uiworshipper;
 
     uint32 Encounters[ENCOUNTERS];
 
@@ -135,10 +140,12 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
     {
         guid_anubrekhan    = 0;
         guid_faerlina      = 0;
-        guid_maexxna       = 0;   
-
-        for(uint8 i = 0; i < ENCOUNTERS; i++)
-            Encounters[i] = NOT_STARTED;
+        guid_maexxna       = 0;
+        uint64 m_uiworshipper1GUID  = 0;
+        uint64 m_uiworshipper2GUID  = 0;
+        uint64 m_uiworshipper3GUID  = 0;
+        uint64 m_uiworshipper4GUID  = 0;
+        uint8 m_uiworshipper = 0;
     }
 
     //Currently we will check bosses only for Spider Wing
@@ -150,8 +157,30 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case 15953: guid_faerlina   = creature->GetGUID();   break;
             case 15956: guid_anubrekhan = creature->GetGUID();   break;
             case 15952: guid_maexxna    = creature->GetGUID();   break;
+            case 16506:
+                ++m_uiworshipper;
+                switch (m_uiworshipper)
+                {
+                case 1:
+                    m_uiworshipper1GUID = creature->GetGUID();
+                    break;
+                case 2:
+                    m_uiworshipper2GUID = creature->GetGUID();
+                    break;
+                case 3:
+                    m_uiworshipper3GUID = creature->GetGUID();
+                    break;
+                case 4:
+                    m_uiworshipper4GUID = creature->GetGUID();
+                    break;
+                case 5:
+                    m_uiworshipper = 0;
+                    break;
+                }
+                break;
         }
     }
+
 
     //Currently we will check GOs only for Spider Wing
     void OnObjectCreate(GameObject *go)
@@ -179,6 +208,10 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case GUID_ANUBREKHAN: return guid_anubrekhan;        break;
             case GUID_FAERLINA:   return guid_faerlina;          break;
             case GUID_MAEXXNA:    return guid_maexxna;           break;
+            case GUID_WORSHIPPER1: return m_uiworshipper1GUID;   break;
+            case GUID_WORSHIPPER2: return m_uiworshipper2GUID;   break;
+            case GUID_WORSHIPPER3: return m_uiworshipper3GUID;   break;
+            case GUID_WORSHIPPER4: return m_uiworshipper4GUID;   break;
             default:
                 return 0;
         }
