@@ -2751,18 +2751,12 @@ void Spell::DoCreateItem(uint32 i, uint32 itemtype)
     {
         // convert to possible store amount
         if( msg == EQUIP_ERR_INVENTORY_FULL || msg == EQUIP_ERR_CANT_CARRY_MORE_OF_THIS )
-        {
             num_to_add -= no_space;
+        else
+        {
             // if not created by another reason from full inventory or unique items amount limitation
             player->SendEquipError( msg, NULL, NULL );
-            //return;
-        }
-
-        // for battleground marks send by mail if not add all expected
-        if(no_space > 0 && bgType)
-        {
-            if(BattleGround* bg = sBattleGroundMgr.GetBattleGroundTemplate(BattleGroundTypeId(bgType)))
-                bg->SendRewardMarkByMail(player, newitemid, no_space);
+            return;
         }
     }
 
@@ -2789,6 +2783,13 @@ void Spell::DoCreateItem(uint32 i, uint32 itemtype)
         // we succeeded in creating at least one item, so a levelup is possible
         if(bgType == 0)
             player->UpdateCraftSkill(m_spellInfo->Id);
+    }
+
+    // for battleground marks send by mail if not add all expected
+    if(no_space > 0 && bgType)
+    {
+        if(BattleGround* bg = sBattleGroundMgr.GetBattleGroundTemplate(BattleGroundTypeId(bgType)))
+            bg->SendRewardMarkByMail(player, newitemid, no_space);
     }
 }
 

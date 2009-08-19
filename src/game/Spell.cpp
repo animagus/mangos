@@ -5282,7 +5282,7 @@ SpellCastResult Spell::CheckItems()
                 {
                     ItemPosCountVec dest;
                     uint8 msg = p_caster->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, m_spellInfo->EffectItemType[i], 1 );
-                    if (msg != EQUIP_ERR_OK && msg != EQUIP_ERR_INVENTORY_FULL)
+                    if (msg != EQUIP_ERR_OK)
                     {
                         ItemPrototype const *pProto = objmgr.GetItemPrototype(m_spellInfo->EffectItemType[i]);
                         if (pProto && !(pProto->ItemLimitCategory))
