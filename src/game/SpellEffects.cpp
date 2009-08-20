@@ -3450,6 +3450,10 @@ void Spell::EffectDispel(uint32 i)
     if(!unitTarget)
         return;
 
+    // Cleansing Totem Effect have damage 0
+    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN && (m_spellInfo->SpellFamilyFlags & UI64LIT(0x4000000)))
+        damage = 1.0f;
+
     // Fill possible dispell list
     std::vector <Aura *> dispel_list;
 

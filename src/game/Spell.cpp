@@ -808,6 +808,9 @@ void Spell::prepareDataForTriggerSystem()
                 // Clearcasting trigger need do it
                 else if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000000200000000) && m_spellInfo->SpellFamilyFlags2 & 0x8)
                     m_canTrigger = true;
+                // Replenish Mana used by item
+                else if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x10000000000))
+                    m_canTrigger = true;
                 break;
             case SPELLFAMILY_WARLOCK: // For Hellfire Effect / Rain of Fire / Seed of Corruption triggers need do it
                 if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000800000000060))

@@ -56,6 +56,7 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
 	{
 		pInstance = ((ScriptedInstance*)c->GetInstanceData());
         m_bIsHeroicMode = c->GetMap()->IsHeroic();
+        HasTaunted = false;
 		Reset();
 	}
 

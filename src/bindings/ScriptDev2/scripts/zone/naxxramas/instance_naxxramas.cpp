@@ -115,8 +115,8 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
         if(GO.tempGo)
             GO.tempGo->SetGoState(GO_STATE_READY);
     }
-    void CloseDoor(notDirectGO &GO) { Close(GO); Enable(GO); }
-    void OpenDoor(notDirectGO &GO) { Open(GO); Disable(GO); }
+    void CloseDoor(notDirectGO &GO) { Close(GO); Enable(GO);}
+    void OpenDoor(notDirectGO &GO) { Open(GO); Disable(GO);}
     //Enable/Disable GO (for interaction)
     void Disable(notDirectGO &GO)
     {
@@ -141,17 +141,17 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
         guid_anubrekhan    = 0;
         guid_faerlina      = 0;
         guid_maexxna       = 0;
-        uint64 m_uiworshipper1GUID  = 0;
-        uint64 m_uiworshipper2GUID  = 0;
-        uint64 m_uiworshipper3GUID  = 0;
-        uint64 m_uiworshipper4GUID  = 0;
-        uint8 m_uiworshipper = 0;
+        m_uiworshipper1GUID  = 0;
+        m_uiworshipper2GUID  = 0;
+        m_uiworshipper3GUID  = 0;
+        m_uiworshipper4GUID  = 0;
+        m_uiworshipper = 0;
     }
 
     //Currently we will check bosses only for Spider Wing
-    void OnCreatureCreate(Creature *creature, uint32 creature_entry)
+    void OnCreatureCreate(Creature *creature)
     {
-        switch(creature_entry)
+        switch(creature->GetEntry())
         {
             //Spiderwing ------------------------------------
             case 15953: guid_faerlina   = creature->GetGUID();   break;
@@ -190,7 +190,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             //Spiderwing ------------------------------------
             case 181126: go_anubrekhan_door. Init(go);           break;
             case 181195: go_anubrekhan_gate.Init(go);            break;
-            case 181167: go_faerlina_door.Init(go);              break;
+            case 194022: go_faerlina_door.Init(go);              break;
             case 181235: go_faerlina_web.Init(go);               break;
             case 181209: go_maexxna_outerweb.Init(go);           break;
             case 181197: go_maexxna_innerweb.Init(go);           break;
