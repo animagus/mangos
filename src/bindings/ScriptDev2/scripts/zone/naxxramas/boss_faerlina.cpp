@@ -141,6 +141,20 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
         }
     }
 
+    void SpellHit(Unit *caster, const SpellEntry *spell)
+    {
+        if (spell->Id==28732)
+        {
+            if (m_creature->HasAura(SPELL_ENRAGE))
+                Enrage_Timer = 60000;
+            else
+                Enrage_Timer = 31000;
+
+            m_creature->RemoveAurasByCasterSpell(SPELL_ENRAGE,m_creature->GetGUID());
+            PoisonBoltVolley_Timer = 30000;
+        }
+    }
+
     void JustDied(Unit* Killer)
     {
 		//Faerlina is slayed -> open all doors to Maexxna
@@ -155,7 +169,7 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
         if (m_creature->HasAura(SPELL_ENRAGE))
             Enrage_Timer = 60000;
         else
-            Enrage_Timer = 30000;
+            Enrage_Timer = 31000;
 
         m_creature->RemoveAurasByCasterSpell(SPELL_ENRAGE,m_creature->GetGUID());
         PoisonBoltVolley_Timer = 30000;
@@ -234,10 +248,12 @@ struct MANGOS_DLL_DECL mob_faerlina_worshipperAI : public ScriptedAI
     void Aggro(Unit *who){}
     void JustDied(Unit* Killer)
     {
-     //   DoCast(m_creature,SPELL_WIDOWS_EMBRACE,true);
-		Creature* Faerlina = (Creature*)Unit::GetUnit((*m_creature), pInstance->GetData64(GUID_FAERLINA));
-		if(Faerlina)
-			((boss_faerlinaAI*)Faerlina->AI())->KillWorshipper();
+        if(!m_bIsHeroic) // in heroic need use mc
+        {
+            Creature* Faerlina = (Creature*)Unit::GetUnit((*m_creature), pInstance->GetData64(GUID_FAERLINA));
+            if(Faerlina)
+                ((boss_faerlinaAI*)Faerlina->AI())->KillWorshipper();
+        }		
     }
 
     void UpdateAI(const uint32 diff)

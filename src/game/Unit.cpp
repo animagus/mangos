@@ -3426,6 +3426,35 @@ bool Unit::AddAura(Aura *Aur)
 
     AuraType aurName = Aur->GetModifier()->m_auraname;
 
+    AuraList const& mModStat = GetAurasByType(aurName);
+    for(AuraList::const_iterator i = mModStat.begin(); i != mModStat.end(); ++i)
+    {
+        Modifier *i_mod = (*i)->GetModifier();
+        if (i_mod->m_miscvalue != Aur->GetModifier()->m_miscvalue)
+            continue;
+        if ((*i)->IsPassive() || spellmgr.GetSpellElixirSpecific((*i)->GetSpellProto()->Id) ||
+            Aur->IsPassive() || spellmgr.GetSpellElixirSpecific(aurSpellInfo->Id))
+            continue;
+
+        switch (aurName)
+        {
+        case SPELL_AURA_MOD_STAT:
+            {
+                if (i_mod->m_amount <= 0 || Aur->GetModifier()->m_amount < 0)     // dont check negative and proved auras
+                    continue;
+                if (i_mod->m_amount > Aur->GetModifier()->m_amount)
+                    Aur->SetModifier(aurName,0,Aur->GetModifier()->periodictime,Aur->GetModifier()->m_miscvalue);
+                else
+                {
+                    (*i)->ApplyModifier(false,false);
+                    (*i)->SetModifier(aurName,0,i_mod->periodictime,i_mod->m_miscvalue);
+                }
+                break;
+            }
+
+        }
+    }
+
     spellEffectPair spair = spellEffectPair(Aur->GetId(), Aur->GetEffIndex());
     AuraMap::iterator i = m_Auras.find( spair );
 
@@ -3552,6 +3581,55 @@ bool Unit::AddAura(Aura *Aur)
         Aur->HandleSpellSpecificBoosts(true);
 
     return true;
+}
+
+void Unit::ReapplyModifers(Aura *Aur)
+{
+    SpellEntry const* aurSpellInfo = Aur->GetSpellProto();
+    AuraType aurName = Aur->GetModifier()->m_auraname;
+    Aura *temp = NULL;
+    int32 damage, damage_temp = 0;
+
+    AuraList const& mModStat = GetAurasByType(aurName);
+    for(AuraList::const_iterator i = mModStat.begin(); i != mModStat.end(); ++i)
+    {
+        if (Aur == (*i))                                //don't reapply self
+            continue;
+
+        if ((*i)->IsPassive() || spellmgr.GetSpellElixirSpecific((*i)->GetSpellProto()->Id) ||
+            Aur->IsPassive() || spellmgr.GetSpellElixirSpecific(aurSpellInfo->Id))
+            continue;
+
+        switch (aurName)
+        {
+        case SPELL_AURA_MOD_STAT:
+            {
+                if ((*i)->GetModifier()->m_miscvalue != Aur->GetModifier()->m_miscvalue)
+                    continue;
+                if (Aur->GetModifier()->m_amount < (*i)->GetModifier()->m_amount)   // don't reapply upper aura 
+                    break;
+
+                if((*i)->GetCaster())
+                    damage = (*i)->GetCaster()->CalculateSpellDamage(aurSpellInfo,(*i)->GetEffIndex(),(*i)->GetBasePoints(),this);
+                else
+                    damage = (*i)->GetBasePoints()+1;
+
+                if (damage>damage_temp)
+                {
+                    damage_temp = damage;
+                    temp = (*i);
+                }
+                break;
+            }
+        default:
+            break;
+        }
+    }
+    if (temp)
+    {
+        temp->SetModifier(aurName,damage,temp->GetModifier()->periodictime,temp->GetModifier()->m_miscvalue);
+        temp->ApplyModifier(true,true);
+    }
 }
 
 void Unit::RemoveRankAurasDueToSpell(uint32 spellId)
@@ -3999,6 +4077,7 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
 
     sLog.outDebug("Aura %u now is remove mode %d",Aur->GetModifier()->m_auraname, mode);
     Aur->ApplyModifier(false,true);
+    Aur->GetTarget()->ReapplyModifers(Aur);
 
     if(Aur->_RemoveAura())
     {
