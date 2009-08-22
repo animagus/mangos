@@ -3592,7 +3592,6 @@ bool Unit::AddAura(Aura *Aur)
 
 void Unit::ReapplyModifers(Aura *Aur)
 {
-    SpellEntry const* aurSpellInfo = Aur->GetSpellProto();
     AuraType aurName = Aur->GetModifier()->m_auraname;
     Aura *temp = NULL;
     int32 damage, damage_temp = 0;
@@ -3605,7 +3604,7 @@ void Unit::ReapplyModifers(Aura *Aur)
             continue;
 
         if ((*i)->IsPassive() || spellmgr.GetSpellElixirSpecific((*i)->GetSpellProto()->Id) ||
-            Aur->IsPassive() || spellmgr.GetSpellElixirSpecific(aurSpellInfo->Id))
+            Aur->IsPassive() || spellmgr.GetSpellElixirSpecific(Aur->GetSpellProto()->Id))
             continue;
 
         if (Aur->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION || 
@@ -4091,7 +4090,8 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
 
     sLog.outDebug("Aura %u now is remove mode %d",Aur->GetModifier()->m_auraname, mode);
     Aur->ApplyModifier(false,true);
-    Aur->GetTarget()->ReapplyModifers(Aur);
+    if (Aur->GetTarget())
+        Aur->GetTarget()->ReapplyModifers(Aur);
 
     if(Aur->_RemoveAura())
     {
