@@ -428,7 +428,7 @@ m_isRemovedOnShapeLost(true), m_in_use(0), m_deleted(false)
     sLog.outDebug("Aura: construct Spellid : %u, Aura : %u Duration : %d Target : %d Damage : %d", m_spellProto->Id, m_spellProto->EffectApplyAuraName[eff], m_maxduration, m_spellProto->EffectImplicitTargetA[eff],damage);
 
     m_effIndex = eff;
-    SetModifier(AuraType(m_spellProto->EffectApplyAuraName[eff]), damage, m_spellProto->EffectAmplitude[eff], m_spellProto->EffectMiscValue[eff]);
+    SetModifier(AuraType(m_spellProto->EffectApplyAuraName[eff]), damage, m_spellProto->EffectAmplitude[eff], m_spellProto->EffectMiscValue[eff], damage);
 
     // Apply periodic time mod
     if(modOwner && m_modifier.periodictime)
@@ -559,10 +559,11 @@ Unit* Aura::GetCaster() const
     return unit && unit->IsInWorld() ? unit : NULL;
 }
 
-void Aura::SetModifier(AuraType t, int32 a, uint32 pt, int32 miscValue)
+void Aura::SetModifier(AuraType t, int32 a, uint32 pt, int32 miscValue, int32 a2)
 {
     m_modifier.m_auraname = t;
     m_modifier.m_amount = a;
+    m_modifier.m_amount2 = a2;
     m_modifier.m_miscvalue = miscValue;
     m_modifier.periodictime = pt;
 }
