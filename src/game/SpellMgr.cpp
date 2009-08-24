@@ -1236,8 +1236,13 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
 					
 					// Fire Bloom
                     if( (spellInfo_1->Id == 45641 && spellInfo_2->Id == 45642) ||
-                        (spellInfo_2->Id == 45642 && spellInfo_1->Id == 45641) )
+                        (spellInfo_2->Id == 45641 && spellInfo_1->Id == 45642) )
                          return false;
+
+                    // Forge Ember && Sundial of the Exiled
+                    if( (spellInfo_1->Id == 60064 && spellInfo_2->Id == 60479) ||
+                        (spellInfo_2->Id == 60064 && spellInfo_1->Id == 60479) )
+                        return false;
 
                     break;
                 }
