@@ -3545,6 +3545,8 @@ bool Unit::AddAura(Aura *Aur)
         if (Aur->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION || 
             (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION)
             continue;
+        if (Aur->GetCastItemGUID() || (*i)->GetCastItemGUID())
+            continue;
 
         switch (aurName)
         {
@@ -3611,6 +3613,8 @@ void Unit::ReapplyModifers(Aura *Aur)
         if (Aur->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION || 
             (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION)
             continue;
+        if (Aur->GetCastItemGUID() || (*i)->GetCastItemGUID())
+            continue;
 
         switch (aurName)
         {
@@ -3643,7 +3647,7 @@ void Unit::ReapplyModifers(Aura *Aur)
     }
     if (temp && !found)
     {
-        temp->SetModifier(aurName,damage,temp->GetModifier()->periodictime,temp->GetModifier()->m_miscvalue,damage);
+        temp->SetModifier(aurName,damage_temp,temp->GetModifier()->periodictime,temp->GetModifier()->m_miscvalue,damage_temp);
         temp->ApplyModifier(true,true);
     }
 }
