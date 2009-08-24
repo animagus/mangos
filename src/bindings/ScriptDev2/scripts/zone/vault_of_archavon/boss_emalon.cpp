@@ -221,6 +221,7 @@ struct MANGOS_DLL_DECL boss_emalonAI : public ScriptedAI
     uint32 m_uiLightningNovaTimer;
     uint32 m_uiOverchargeTimer;
     uint32 m_uiEnrageTimer;
+    uint32 m_uiEvadeCheckTimer;
 
     void Reset()
     {
@@ -230,6 +231,7 @@ struct MANGOS_DLL_DECL boss_emalonAI : public ScriptedAI
         m_uiLightningNovaTimer = 20000;
         m_uiOverchargeTimer = 45000;
         m_uiEnrageTimer = 360000;
+	m_uiEvadeCheckTimer = 0;
 
         if (m_pInstance)
         {
@@ -286,6 +288,15 @@ struct MANGOS_DLL_DECL boss_emalonAI : public ScriptedAI
     {
         if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
             return;
+
+	if(m_uiEvadeCheckTimer < uiDiff)
+	  {
+	    if(m_creature->GetDistance2d(-229.11f, -289.03f) > 80.0f)
+	      EnterEvadeMode();
+	    m_uiEvadeCheckTimer = 2000;
+	  }
+	else
+	  m_uiEvadeCheckTimer -= uiDiff;
 
         if(m_uiOverchargeTimer < uiDiff)
         {
