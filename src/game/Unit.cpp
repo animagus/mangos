@@ -3548,6 +3548,8 @@ bool Unit::AddAura(Aura *Aur)
 
         switch (aurName)
         {
+        case SPELL_AURA_MOD_RANGED_ATTACK_POWER:
+        case SPELL_AURA_MOD_ATTACK_POWER:
         case SPELL_AURA_MOD_STAT:
             {
                 if (i_mod->m_amount <= 0 || a_mod->m_amount < 0)     // don't check negative and proved auras
@@ -3563,7 +3565,6 @@ bool Unit::AddAura(Aura *Aur)
             }
         default:
             break;
-
         }
     }
 
@@ -3613,6 +3614,8 @@ void Unit::ReapplyModifers(Aura *Aur)
 
         switch (aurName)
         {
+        case SPELL_AURA_MOD_RANGED_ATTACK_POWER:
+        case SPELL_AURA_MOD_ATTACK_POWER:
         case SPELL_AURA_MOD_STAT:
             {
                 if ((*i)->GetModifier()->m_miscvalue != Aur->GetModifier()->m_miscvalue)

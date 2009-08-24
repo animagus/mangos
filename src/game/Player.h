@@ -1863,6 +1863,7 @@ class MANGOS_DLL_SPEC Player : public Unit
 
         uint32 GetDeathTimer() const { return m_deathTimer; }
         uint32 GetCorpseReclaimDelay(bool pvp) const;
+        time_t GetReclaimDelay() const { return m_corpseReclaimDelay; }
         void UpdateCorpseReclaimDelay();
         void SendCorpseReclaimDelay(bool load = false);
 
@@ -2390,6 +2391,7 @@ class MANGOS_DLL_SPEC Player : public Unit
 
         uint32 m_deathTimer;
         time_t m_deathExpireTime;
+        time_t m_corpseReclaimDelay;
 
         uint32 m_restTime;
 

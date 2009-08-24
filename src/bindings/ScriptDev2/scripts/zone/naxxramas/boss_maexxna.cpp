@@ -57,6 +57,12 @@ struct MANGOS_DLL_DECL mob_webwrapAI : public ScriptedAI
     uint64 victimGUID;
     void Reset()
     {
+        victimGUID = 0;
+    }
+
+    void Aggro(Unit *who)
+    {
+        return;
     }
 
     void SetVictim(Unit* victim)
@@ -139,12 +145,12 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
 
         // Remove all Spiderlings
         Spiderlings_count = 0;
-        for (int i = 0; i < MAX_SPIDERLINGS; i++)
+        /*for (int i = 0; i < MAX_SPIDERLINGS; i++)
         {
             if (Unit* pUnit = Unit::GetUnit((*m_creature), guidSpiderlings[i]))
                 pUnit->AddObjectToRemoveList();
             guidSpiderlings[i] = 0;
-        }
+        }*/
         
         for (int i = 0; i < MAX_PLAYERS_WEB_WRAP; i++)
             WWplayers[i] = 0;
@@ -173,7 +179,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
             return;
 
         //Summoned Spiderling will target random player
-        guidSpiderlings[Spiderlings_count++] = temp->GetGUID();
+        //guidSpiderlings[Spiderlings_count++] = temp->GetGUID();
         if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1))
         {
             temp->AddThreat(target,0.2f);
@@ -281,8 +287,9 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         {
             //Cast(m_creature, SPELL_SUMMON_SPIDERLING);
             for (int i = 0; i < 8 ; i++)
-                if (Spiderlings_count < MAX_SPIDERLINGS)
-                    DoSpawnCreature(MOB_SPIDERLING,0,0,0,0,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,120000);
+            {
+                DoSpawnCreature(MOB_SPIDERLING,0,0,0,0,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,120000);
+            }
             SummonSpiderling_Timer = 40000;
         }else SummonSpiderling_Timer -= diff;
 

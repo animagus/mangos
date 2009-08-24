@@ -114,9 +114,9 @@ enum CharacterFlags
 
 // corpse reclaim times
 #define DEATH_EXPIRE_STEP (5*MINUTE)
-#define MAX_DEATH_COUNT 3
+#define MAX_DEATH_COUNT 4
 
-static uint32 copseReclaimDelay[MAX_DEATH_COUNT] = { 30, 60, 120 };
+static uint32 copseReclaimDelay[MAX_DEATH_COUNT] = { 0, 30, 60, 120 };
 
 //== PlayerTaxi ================================================
 
@@ -365,6 +365,7 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     m_restTime = 0;
     m_deathTimer = 0;
     m_deathExpireTime = 0;
+    m_corpseReclaimDelay = 0;
 
     m_swingErrorMsg = 0;
 
@@ -4112,8 +4113,6 @@ void Player::BuildPlayerRepop()
     // BG - remove insignia related
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
 
-    SendCorpseReclaimDelay();
-
     // to prevent cheating
     corpse->ResetGhostTime();
 
@@ -4222,6 +4221,8 @@ void Player::KillPlayer()
     m_deathTimer = 6*MINUTE*IN_MILISECONDS;
 
     UpdateCorpseReclaimDelay();                             // dependent at use SetDeathPvP() call before kill
+    SendCorpseReclaimDelay();
+
 
     // don't create corpse at this moment, player might be falling
 
@@ -19322,7 +19323,9 @@ uint32 Player::GetCorpseReclaimDelay(bool pvp) const
 
     time_t now = time(NULL);
     // 0..2 full period
-    uint32 count = (now < m_deathExpireTime) ? (m_deathExpireTime - now)/DEATH_EXPIRE_STEP : 0;
+    uint32 count = (now < m_deathExpireTime) ? (m_deathExpireTime - now - 1)/DEATH_EXPIRE_STEP : 0;
+    if(count>=MAX_DEATH_COUNT)
+        count = MAX_DEATH_COUNT-1;
     return copseReclaimDelay[count];
 }
 
@@ -19351,11 +19354,9 @@ void Player::UpdateCorpseReclaimDelay()
 void Player::SendCorpseReclaimDelay(bool load)
 {
     Corpse* corpse = GetCorpse();
-    if(!corpse)
-        return;
 
     uint32 delay;
-    if(load)
+    if(load && corpse)
     {
         if(corpse->GetGhostTime() > m_deathExpireTime)
             return;
@@ -19382,12 +19383,16 @@ void Player::SendCorpseReclaimDelay(bool load)
         delay = expected_time-now;
     }
     else
-        delay = GetCorpseReclaimDelay(corpse->GetType()==CORPSE_RESURRECTABLE_PVP);
+        delay = GetCorpseReclaimDelay(m_ExtraFlags & PLAYER_EXTRA_PVP_DEATH);
 
-    //! corpse reclaim delay 30 * 1000ms or longer at often deaths
-    WorldPacket data(SMSG_CORPSE_RECLAIM_DELAY, 4);
-    data << uint32(delay*IN_MILISECONDS);
-    GetSession()->SendPacket( &data );
+    if (delay)
+    {
+        m_corpseReclaimDelay = time(NULL)+delay;
+        //! corpse reclaim delay 30 * 1000ms or longer at often deaths
+        WorldPacket data(SMSG_CORPSE_RECLAIM_DELAY, 4);
+        data << uint32(delay*IN_MILISECONDS);
+        GetSession()->SendPacket( &data );
+    }
 }
 
 Player* Player::GetNextRandomRaidMember(float radius)

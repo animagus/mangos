@@ -3397,13 +3397,18 @@ void Spell::SendResurrectRequest(Player* target)
     // However, the packet structure differs slightly
 
     const char* sentName = m_caster->GetTypeId() == TYPEID_PLAYER ? "" : m_caster->GetNameForLocaleIdx(target->GetSession()->GetSessionDbLocaleIndex());
+    int32 delay;
+    if(target->GetReclaimDelay())
+        delay = target->GetReclaimDelay() - time(NULL);
+    else
+        delay = 0;
 
     WorldPacket data(SMSG_RESURRECT_REQUEST, (8+4+strlen(sentName)+1+1+1));
     data << uint64(m_caster->GetGUID());
     data << uint32(strlen(sentName) + 1);
 
     data << sentName;
-    data << uint8(0);
+    data << uint8(delay?delay*IN_MILISECONDS:0);
 
     data << uint8(m_caster->GetTypeId() == TYPEID_PLAYER ? 0 : 1);
     target->GetSession()->SendPacket(&data);
@@ -4768,7 +4773,7 @@ SpellCastResult Spell::CheckPetCast(Unit* target)
             if(!_target->isAlive())
                 return SPELL_FAILED_BAD_TARGETS;
 
-            if(IsPositiveSpell(m_spellInfo->Id))
+            /*if(IsPositiveSpell(m_spellInfo->Id))
             {
                 if(m_caster->IsHostileTo(_target))
                     return SPELL_FAILED_BAD_TARGETS;
@@ -4784,8 +4789,8 @@ SpellCastResult Spell::CheckPetCast(Unit* target)
                 if(m_caster->IsFriendlyTo(target) && !duelvsplayertar && m_spellInfo->Id!=45848)
                 {
                     return SPELL_FAILED_BAD_TARGETS;
-                }
-            }
+                }  // This code not correct.
+            }*/
         }
                                                             //cooldown
         if(((Creature*)m_caster)->HasSpellCooldown(m_spellInfo->Id))

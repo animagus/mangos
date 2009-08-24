@@ -3855,7 +3855,7 @@ void Aura::HandleInvisibility(bool apply, bool Real)
 
          m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
 
-        if(Real && m_target->GetTypeId()==TYPEID_PLAYER)
+        if(Real && m_target->GetTypeId()==TYPEID_PLAYER && m_spellProto->Id!=SPELL_ARENA_PREPARATION)
         {
             // apply glow vision
             m_target->SetFlag(PLAYER_FIELD_BYTES2,PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
@@ -3882,7 +3882,7 @@ void Aura::HandleInvisibility(bool apply, bool Real)
         if(Real && m_target->m_invisibilityMask == 0)
         {
             // remove glow vision
-            if(m_target->GetTypeId() == TYPEID_PLAYER)
+            if(m_target->GetTypeId() == TYPEID_PLAYER && m_spellProto->Id!=SPELL_ARENA_PREPARATION)
                 m_target->RemoveFlag(PLAYER_FIELD_BYTES2,PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
 
             // apply only if not in GM invisibility & not stealthed while invisible
