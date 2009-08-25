@@ -952,7 +952,18 @@ void Aura::_AddAura()
         if(slot < MAX_AURAS)                        // slot found send data to client
         {
             SetAura(false);
-            SetAuraFlags((1 << GetEffIndex()) | (caster==m_target ? AFLAG_NOT_CASTER : AFLAG_NONE) | ((GetAuraMaxDuration() > 0 && !(m_spellProto->AttributesEx5 & SPELL_ATTR_EX5_NO_DURATION)) ? AFLAG_DURATION : AFLAG_NONE) | (IsPositive() ? AFLAG_POSITIVE : AFLAG_NEGATIVE));
+
+            // In fact SendAuraUpdate must be sent only for first (parent) aura of spell.
+            // Default aura flags calculation is wrong. This is a temp hack to allow abilities work.
+            uint8 effMask = (1 << GetEffIndex());
+            if (m_spellProto->EffectApplyAuraName[GetEffIndex()] == SPELL_AURA_ABILITY_IGNORE_AURASTATE ||
+                m_spellProto->Id == 51713)
+                for (int i = 0; i < 3; ++i)
+                    if (m_spellProto->Effect[i] == SPELL_EFFECT_APPLY_AURA)
+                        effMask |= (1 << i);
+
+            SetAuraFlags(effMask | (caster==m_target ? AFLAG_NOT_CASTER : AFLAG_NONE) | ((GetAuraMaxDuration() > 0 && !(m_spellProto->AttributesEx5 & SPELL_ATTR_EX5_NO_DURATION)) ? AFLAG_DURATION : AFLAG_NONE) | 
+                (IsPositive() ? AFLAG_POSITIVE : AFLAG_NEGATIVE));
             SetAuraLevel(caster ? caster->getLevel() : sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL));
             SendAuraUpdate(false);
         }
@@ -2410,6 +2421,29 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                         else
                             ((Player*)owner)->RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true);
                     }
+                    return;
+                }
+                case 57819: // Argent Champion
+                case 57820: // Ebon Champion
+                case 57821: // Champion of the Kirin Tor
+                case 57822: // Wyrmrest Champion
+                {
+                    if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    uint32 FactionID = 0;
+
+                    if (apply)
+                    {
+                        switch(m_spellProto->Id)
+                        {
+                            case 57819: FactionID = 1106; break; // Argent Crusade
+                            case 57820: FactionID = 1098; break; // Knights of the Ebon Blade
+                            case 57821: FactionID = 1090; break; // Kirin Tor
+                            case 57822: FactionID = 1091; break; // The Wyrmrest Accord
+                        }
+                    }
+                    ((Player*)caster)->SetChampioningFaction(FactionID);
                     return;
                 }
                 // LK Intro VO (1)
