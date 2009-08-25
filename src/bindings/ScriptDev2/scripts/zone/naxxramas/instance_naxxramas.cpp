@@ -148,6 +148,14 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
         m_uiworshipper = 0;
     }
 
+    bool IsEncounterInProgress() const
+    {
+        for(uint8 i = 0; i < ENCOUNTERS; ++i)
+            if (Encounters[i] == IN_PROGRESS)
+                return true;
+        return false;
+    }
+
     //Currently we will check bosses only for Spider Wing
     void OnCreatureCreate(Creature *creature)
     {
