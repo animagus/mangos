@@ -60,6 +60,7 @@ struct MANGOS_DLL_DECL npc_tempest_minionAI : public ScriptedAI
 
     uint32 m_uiShockTimer;
     uint32 m_uiRespawnTimer;
+    uint32 m_uiEvadeCheckTimer;
     bool m_bDead;
     bool m_bTimeToDie;
     float m_fDefaultX;
@@ -73,6 +74,7 @@ struct MANGOS_DLL_DECL npc_tempest_minionAI : public ScriptedAI
         m_bDead = false;
         m_bTimeToDie = false;
         m_uiRespawnTimer = 4000;
+	m_uiEvadeCheckTimer = 0;
 
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetStandState(UNIT_STAND_STATE_STAND);
@@ -194,6 +196,16 @@ struct MANGOS_DLL_DECL npc_tempest_minionAI : public ScriptedAI
         else
             m_uiShockTimer -= uiDiff;
 
+	if(m_uiEvadeCheckTimer < uiDiff)
+	  {
+	    if(m_creature->GetDistance2d(-229.11f, -289.03f) > 70.0f)
+	      EnterEvadeMode();
+
+	    m_uiEvadeCheckTimer = 2000;
+	  }
+	else
+	  m_uiEvadeCheckTimer -= uiDiff;
+
         DoMeleeAttackIfReady();
     }
 };
@@ -291,7 +303,7 @@ struct MANGOS_DLL_DECL boss_emalonAI : public ScriptedAI
 
 	if(m_uiEvadeCheckTimer < uiDiff)
 	  {
-	    if(m_creature->GetDistance2d(-229.11f, -289.03f) > 80.0f)
+	    if(m_creature->GetDistance2d(-229.11f, -289.03f) > 70.0f)
 	      EnterEvadeMode();
 	    m_uiEvadeCheckTimer = 2000;
 	  }
