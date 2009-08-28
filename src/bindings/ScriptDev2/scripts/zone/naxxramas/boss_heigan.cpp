@@ -191,7 +191,12 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
         }else Ach_Timer -= diff;
 
         //Don't let Heigan walk thru the door
-        if (m_creature->GetDistance2d(2822.93f, -3685.3f) < 2.0f)
+        if (m_creature->GetPositionX()>2822 && m_creature->GetPositionY()>(-3700))
+        {
+            EnterEvadeMode();
+            return;
+        }
+        if (m_creature->GetPositionY()<(-3739))
         {
             EnterEvadeMode();
             return;
