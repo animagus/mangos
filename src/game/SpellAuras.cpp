@@ -4678,9 +4678,9 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
             m_target->CastSpell(m_target, 41915, true);
 
         if (m_spellProto->Id == 55053)
-            m_target->CastSpell(m_target,55601,true,0,0,caster);
+            m_target->CastSpell(m_target,55601,true,0,0,caster->GetGUID());
         if (m_spellProto->Id == 29865)
-            m_target->CastSpell(m_target,55594,true,0,0,caster);
+            m_target->CastSpell(m_target,55594,true,0,0,caster->GetGUID());
     }
 }
 
