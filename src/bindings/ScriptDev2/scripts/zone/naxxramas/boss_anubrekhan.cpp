@@ -77,7 +77,11 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
 
     ScriptedInstance *pInstance;
 
+    bool m_ach_10ppl;
+    bool m_ach_25ppl;
     bool m_bIsHeroic;
+    uint32 m_count_ppl;
+    uint32 Ach_Timer;
     uint32 Impale_Timer;
     uint32 LocustSwarm_Timer;
     uint32 SummonFirst_Timer;
@@ -93,6 +97,10 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
 
     void Reset()
     {
+        m_ach_10ppl = true;
+        m_ach_25ppl = true;
+        Ach_Timer = 10000;
+        m_count_ppl = 0;
         m_uiEvadeCheckCooldown = 2000;
         Impale_Timer = 15000;                               //15 seconds
         LocustSwarm_Timer = 80000 + (rand()%40000);         //Random time between 80 seconds and 2 minutes for initial cast
@@ -125,14 +133,62 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
 
     void JustDied(Unit*)
     {
+        if (!pInstance)
+            return;
         //Anubrekhan is slayed -> open all doors to Faerlina
-        if(pInstance)
-            pInstance->SetData(ENCOUNT_ANUBREKHAN, DONE);
+        pInstance->SetData(ENCOUNT_ANUBREKHAN, DONE);
+
+        Map::PlayerList const &PlList = pInstance->instance->GetPlayers();
+        if (PlList.isEmpty())
+            return;
+        for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+        {
+            if (Player* pPlayer = i->getSource())
+            {
+                if (!m_creature->IsWithinDistInMap(pPlayer,200))
+                    continue;
+
+                if (!m_bIsHeroic && m_ach_10ppl)
+                    pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7146);
+                else if (m_bIsHeroic && m_ach_25ppl)
+                    pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7159);
+            }
+        }
     }
 
     void KilledUnit(Unit* Victim)
     {
         DoScriptText(SAY_SLAY, m_creature);
+    }
+
+    void CheckAch()
+    {
+        if (!pInstance)
+            return;
+
+        m_count_ppl = 0;
+        Map::PlayerList const &PlList = pInstance->instance->GetPlayers();
+        if (PlList.isEmpty())
+            return;
+        for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+        {
+            if (Player* pPlayer = i->getSource())
+            {
+                if (pPlayer->isGameMaster())
+                    continue;
+                ++m_count_ppl;
+            }
+        }
+        if (!m_bIsHeroic)
+        {
+            if(m_count_ppl>8)
+                m_ach_10ppl = false;
+        }
+        else
+        {
+            if(m_count_ppl>20)
+                m_ach_25ppl = false;
+        }
     }
 
     void Aggro(Unit *who)
@@ -147,6 +203,7 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
             case 1: DoScriptText(SAY_AGGRO2, m_creature); break;
             case 2: DoScriptText(SAY_AGGRO3, m_creature); break;
         }
+        CheckAch();
     }
     
     bool IsVisible(Unit* who) const
@@ -302,6 +359,15 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
                 LocustSwarm_Timer = 85000;
             }else LocustSwarm_Timer -= diff;
         }
+
+        if (Ach_Timer<diff)
+        {
+            if (!m_bIsHeroic && m_ach_10ppl)
+                CheckAch();
+            else if (m_bIsHeroic && m_ach_25ppl)
+                CheckAch();
+            Ach_Timer = 10000;
+        }else Ach_Timer -= diff;            
 
         DoMeleeAttackIfReady();
     }

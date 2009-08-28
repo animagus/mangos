@@ -32,9 +32,12 @@ enum
     SPELL_WEBWRAP_SELF    = 28622,                       // Spell is normally used by the webwrap on the wall NOT by Maexxna
 
     SPELL_WEBSPRAY        = 29484,
+    SPELL_WEBSPRAY_H      = 54125,
     SPELL_POISONSHOCK     = 28741,
+    SPELL_POISONSHOCK_H   = 54122,
     SPELL_NECROTICPOISON  = 28776,
     SPELL_FRENZY          = 54123,
+    SPELL_FRENZY_H        = 54124,
 
     MOB_WEBWRAP           = 16486,
     MOB_SPIDERLING        = 17055
@@ -95,9 +98,10 @@ struct MANGOS_DLL_DECL mob_webwrapAI : public ScriptedAI
                 m_creature->DealDamage(m_creature,m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             return;
         }
-        if (m_creature->getVictim()->HasAura(SPELL_WEBSPRAY))
+        if (m_creature->getVictim()->HasAura(SPELL_WEBSPRAY) || m_creature->getVictim()->HasAura(SPELL_WEBSPRAY_H))
         {
             m_creature->getVictim()->RemoveAurasDueToSpell(SPELL_WEBSPRAY);
+            m_creature->getVictim()->RemoveAurasDueToSpell(SPELL_WEBSPRAY_H);
             m_creature->getVictim()->CastSpell(m_creature->getVictim(), SPELL_WEBWRAP_SELF, true);
         }
         m_creature->GetMotionMaster()->MovePoint(0,m_creature->getVictim()->GetPositionX(),m_creature->getVictim()->GetPositionY(),m_creature->getVictim()->GetPositionZ());
@@ -110,6 +114,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
 {
     boss_maexxnaAI(Creature *c) : ScriptedAI(c)
 	{
+        m_bIsHeroicMode = c->GetMap()->IsHeroic();
 		pInstance = ((ScriptedInstance*)c->GetInstanceData());
         for (int i = 0; i < MAX_PLAYERS_WEB_WRAP; i++)
             WWplayers[i] = 0;
@@ -119,6 +124,15 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
 	}
 
 	ScriptedInstance *pInstance;
+    bool m_bIsHeroicMode;
+
+    bool m_ach_10ppl;
+    bool m_ach_25ppl;
+    bool m_ach_arahna_10;
+    bool m_ach_arahna_25;
+    uint32 m_count_ppl;
+    uint32 Ach_Timer;
+    time_t m_arahna_timer;
 
     uint32 WebWrap_Timer;
     uint32 WebSpray_Timer;
@@ -136,6 +150,13 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
 
     void Reset()
     {
+        m_ach_10ppl = true;
+        m_ach_25ppl = true;
+        m_ach_arahna_10 = false;
+        m_ach_arahna_25 = false;
+        m_count_ppl = 0;
+        Ach_Timer = 10000;
+
         WebWrap_Timer = 20000;                              //20 sec init, 40 sec normal
         WebSpray_Timer = 40000;                             //40 seconds
         PoisonShock_Timer = 20000;                          //20 seconds
@@ -159,18 +180,50 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
 			m_creature->isDead() ? (pInstance->SetData(ENCOUNT_MAEXXNA, DONE)):(pInstance->SetData(ENCOUNT_MAEXXNA, NOT_STARTED));
     }
 
-    void EnterCombat(Unit *who)
+    void Aggro(Unit* who)
     {
-		//Close the room for boss fight
-		if(pInstance)
+        //Close the room for boss fight
+        if(pInstance)
             pInstance->SetData(ENCOUNT_MAEXXNA, IN_PROGRESS);
+
+        CheckAch();
     }
 
     void JustDied(Unit* Killer)
     {
+        if (!pInstance)
+            return;
 		//Faerlina is slayed -> open all doors to Maexxna
-		if(pInstance)
-            pInstance->SetData(ENCOUNT_MAEXXNA, DONE);
+        pInstance->SetData(ENCOUNT_MAEXXNA, DONE);
+
+        /*if ((time(NULL) - m_arahna_timer)<1200)
+        {
+            m_ach_arahna_10 = true;
+            m_ach_arahna_25 = true;
+        }*/
+
+        Map::PlayerList const &PlList = pInstance->instance->GetPlayers();
+        if (PlList.isEmpty())
+            return;
+        for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+        {
+            if (Player* pPlayer = i->getSource())
+            {
+                if (!m_creature->IsWithinDistInMap(pPlayer,200))
+                    continue;
+
+                if (!m_bIsHeroicMode && m_ach_10ppl)
+                    pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7148);
+                else if (m_bIsHeroicMode && m_ach_25ppl)
+                    pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7161);
+
+                if (!m_bIsHeroicMode && m_ach_arahna_10)
+                    pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7128);
+                else if (m_bIsHeroicMode && m_ach_arahna_25)
+                    pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7129);
+            }
+        }
+
     }
 
     void JustSummoned(Creature* temp) 
@@ -184,6 +237,36 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         {
             temp->AddThreat(target,0.2f);
             m_creature->SetInCombatWithZone();
+        }
+    }
+
+    void CheckAch()
+    {
+        if (!pInstance)
+            return;
+
+        m_count_ppl = 0;
+        Map::PlayerList const &PlList = pInstance->instance->GetPlayers();
+        if (PlList.isEmpty())
+            return;
+        for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+        {
+            if (Player* pPlayer = i->getSource())
+            {
+                if (pPlayer->isGameMaster())
+                    continue;
+                ++m_count_ppl;
+            }
+        }
+        if (!m_bIsHeroicMode)
+        {
+            if(m_count_ppl>8)
+                m_ach_10ppl = false;
+        }
+        else
+        {
+            if(m_count_ppl>20)
+                m_ach_25ppl = false;
         }
     }
 
@@ -214,6 +297,10 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        if (!pInstance)
+            return;
+        /*if (pInstance->GetData(ENCOUNT_ANUBREKHAN) == DONE && !m_arahna_timer)
+            m_arahna_timer = time(NULL);*/
         if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
             return;
 
@@ -254,7 +341,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         //WebSpray_Timer
         if (WebSpray_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_WEBSPRAY);
+            DoCast(m_creature->getVictim(), m_bIsHeroicMode?SPELL_WEBSPRAY_H:SPELL_WEBSPRAY);
             for (int i = 0; i < MAX_PLAYERS_WEB_WRAP; i++)
                 if (WWplayers[i])
                 {
@@ -271,7 +358,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         //PoisonShock_Timer
         if (PoisonShock_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_POISONSHOCK);
+            DoCast(m_creature->getVictim(), m_bIsHeroicMode?SPELL_POISONSHOCK_H:SPELL_POISONSHOCK);
             PoisonShock_Timer = 20000;
         }else PoisonShock_Timer -= diff;
 
@@ -296,9 +383,18 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         //Enrage if not already enraged and below 30%
         if (!Enraged && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 30)
         {
-            DoCast(m_creature,SPELL_FRENZY);
+            DoCast(m_creature,m_bIsHeroicMode?SPELL_FRENZY_H:SPELL_FRENZY);
             Enraged = true;
         }
+
+        if (Ach_Timer<diff)
+        {
+            if (!m_bIsHeroicMode && m_ach_10ppl)
+                CheckAch();
+            else if (m_bIsHeroicMode && m_ach_25ppl)
+                CheckAch();
+            Ach_Timer = 10000;
+        }else Ach_Timer -= diff;  
 
         DoMeleeAttackIfReady();
     }

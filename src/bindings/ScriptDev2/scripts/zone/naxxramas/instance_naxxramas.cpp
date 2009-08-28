@@ -88,9 +88,21 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
     notDirectGO go_spiderwing_eye_ramp;
     notDirectGO go_spiderwing_portal;
 
+    notDirectGO go_noth_door;
+    notDirectGO go_noth_exit;
+    notDirectGO go_heigan_entry;
+    notDirectGO go_heigan_outerdoor;
+    notDirectGO go_heigan_exitgate;
+    notDirectGO go_loatheb_door;
+    notDirectGO go_plaguewing_eye_boss;
+    notDirectGO go_plaguewing_eye_ramp;
+    notDirectGO go_plaguewing_portal;
+
+
     uint64 guid_anubrekhan;
     uint64 guid_faerlina;
     uint64 guid_maexxna;
+    uint64 guid_heigan;
     uint64 m_uiworshipper1GUID;
     uint64 m_uiworshipper2GUID;
     uint64 m_uiworshipper3GUID;
@@ -146,6 +158,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
         m_uiworshipper3GUID  = 0;
         m_uiworshipper4GUID  = 0;
         m_uiworshipper = 0;
+        guid_heigan        = 0;
     }
 
     bool IsEncounterInProgress() const
@@ -165,6 +178,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case 15953: guid_faerlina   = creature->GetGUID();   break;
             case 15956: guid_anubrekhan = creature->GetGUID();   break;
             case 15952: guid_maexxna    = creature->GetGUID();   break;
+            case 15936: guid_heigan     = creature->GetGUID();   break;
             case 16506:
                 ++m_uiworshipper;
                 switch (m_uiworshipper)
@@ -196,7 +210,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
         switch(go->GetEntry())
         {
             //Spiderwing ------------------------------------
-            case 181126: go_anubrekhan_door. Init(go);           break;
+            case 181126: go_anubrekhan_door.Init(go);           break;
             case 181195: go_anubrekhan_gate.Init(go);            break;
             case 194022: go_faerlina_door.Init(go);              break;
             case 181235: go_faerlina_web.Init(go);               break;
@@ -204,7 +218,16 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case 181197: go_maexxna_innerweb.Init(go);           break;
             case 181233: go_spiderwing_eye_boss.Init(go);        break;
             case 181212: go_spiderwing_eye_ramp.Init(go);        break;
-            case 181577: go_spiderwing_portal.Init(go);          break;
+            case 181576: go_spiderwing_portal.Init(go);          break;
+            case 181200: go_noth_door.Init(go);                  break;
+            case 181201: go_noth_exit.Init(go);                  break;
+            case 181202: go_heigan_entry.Init(go);               break;
+            case 181203: go_heigan_outerdoor.Init(go);           break;
+            case 181496: go_heigan_exitgate.Init(go);            break;
+            case 181241: go_loatheb_door.Init(go);               break;
+            case 181231: go_plaguewing_eye_boss.Init(go);        break;
+            case 181211: go_plaguewing_eye_ramp.Init(go);        break;
+            case 181577: go_plaguewing_portal.Init(go);          break;
         }
     }
 
@@ -220,6 +243,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case GUID_WORSHIPPER2: return m_uiworshipper2GUID;   break;
             case GUID_WORSHIPPER3: return m_uiworshipper3GUID;   break;
             case GUID_WORSHIPPER4: return m_uiworshipper4GUID;   break;
+            case GUID_HEIGAN:     return guid_heigan;            break;
             default:
                 return 0;
         }
@@ -291,14 +315,72 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
                         break;
                 }
                 break;
-        }
+                //Plaguewing ------------------------------------
+            case ENCOUNT_NOTH:
+                Encounters[ENCOUNT_NOTH] = data;
+                switch(data)
+                {
+                case NOT_STARTED:
+                    Open(go_noth_door);
+                    Close(go_noth_exit);
+                    break;
+                case IN_PROGRESS:
+                    Close(go_noth_door);
+                    break;
+                case DONE:
+                    Open(go_noth_door);
+                    Open(go_noth_exit);
+                    break;
+                }
+                break;
+            case ENCOUNT_HEIGAN:
+                Encounters[ENCOUNT_HEIGAN] = data;
+                switch(data)
+                {
+                    case NOT_STARTED:
+                        Open(go_heigan_entry);
+                        Close(go_heigan_outerdoor);
+                        Close(go_heigan_exitgate);
+                        break;
+                    case IN_PROGRESS:
+                        Close(go_heigan_entry);
+                        break;
+                    case DONE:
+                        Open(go_heigan_entry);
+                        Open(go_heigan_outerdoor);
+                        Open(go_heigan_exitgate);
+                        break;
+                }
+            case ENCOUNT_LOATHEB:
+                Encounters[ENCOUNT_LOATHEB] = data;
+                switch (data)
+                {
+                case NOT_STARTED:
+                    Open(go_loatheb_door);
+                    Disable(go_plaguewing_portal);
+                    Close(go_plaguewing_eye_boss);
+                    Close(go_plaguewing_eye_ramp);
+                    break;
+                case IN_PROGRESS:
+                    Close(go_loatheb_door);
+                    break;
+                case DONE:
+                    Open(go_loatheb_door);
+                    Open(go_plaguewing_eye_boss);
+                    Open(go_plaguewing_eye_ramp);
+                    Enable(go_plaguewing_portal);
+                    break;
+                }
+                break;
+            }
 
         if (data == DONE)
         {
             OUT_SAVE_INST_DATA;
 
             std::ostringstream saveStream;
-            saveStream << Encounters[0] << " " << Encounters[1] << " " << Encounters[2];
+            saveStream << Encounters[0] << " " << Encounters[1] << " " << Encounters[2] << " " << Encounters[10]
+            << " " << Encounters[11] << " " << Encounters[12];
 
             str_data = saveStream.str();
 
@@ -315,6 +397,9 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case ENCOUNT_ANUBREKHAN:    return Encounters[0]; break;
             case ENCOUNT_FAERLINA:      return Encounters[1]; break;
             case ENCOUNT_MAEXXNA:       return Encounters[2]; break;
+            case ENCOUNT_NOTH:          return Encounters[10]; break;
+            case ENCOUNT_HEIGAN:        return Encounters[11]; break;
+            case ENCOUNT_LOATHEB:       return Encounters[12]; break;
 
             default: return 0;
         }
@@ -336,7 +421,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
         OUT_LOAD_INST_DATA(in);
 
         std::istringstream loadStream(in);
-        loadStream >> Encounters[0] >> Encounters[1] >> Encounters[2];
+        loadStream >> Encounters[0] >> Encounters[1] >> Encounters[2] >> Encounters[10] >> Encounters[11] >> Encounters[12];
         for(uint32 i = 0; i < ENCOUNTERS; i++)
         {
             if (Encounters[i] == IN_PROGRESS)               // Do not load an encounter as "In Progress" - reset it instead.

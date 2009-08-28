@@ -4544,6 +4544,8 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
                     m_modifier.m_amount += int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 3 / 100);
                     return;
                 }
+                if (m_spellProto->Id == 55053)
+                    m_modifier.m_amount = 400;
                 break;
             }
             case SPELLFAMILY_WARRIOR:
@@ -4667,9 +4669,18 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
     // remove time effects
     else
     {
+        Unit *caster = GetCaster();
+        if (!caster)
+            return;
+
         // Parasitic Shadowfiend - handle summoning of two Shadowfiends on DoT expire
         if(m_spellProto->Id == 41917)
             m_target->CastSpell(m_target, 41915, true);
+
+        if (m_spellProto->Id == 55053)
+            m_target->CastSpell(m_target,55601,true,0,0,caster);
+        if (m_spellProto->Id == 29865)
+            m_target->CastSpell(m_target,55594,true,0,0,caster);
     }
 }
 

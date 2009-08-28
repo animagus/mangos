@@ -63,6 +63,12 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
 	ScriptedInstance *pInstance;
     bool m_bIsHeroicMode;
 
+    bool m_ach_10ppl;
+    bool m_ach_25ppl;
+    bool momma_said_10;
+    bool momma_said_25;
+    uint32 m_count_ppl;
+    uint32 Ach_Timer;
 	uint32 PoisonBoltVolley_Timer;
     uint32 RainOfFire_Timer;
     uint32 Enrage_Timer;
@@ -77,6 +83,12 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
         m_uiEvadeCheckCooldown = 2000;
         RainOfFire_Timer = 16000;
         Enrage_Timer = 60000;
+        m_ach_10ppl = true;
+        m_ach_25ppl = true;
+        momma_said_10 = true;
+        momma_said_25 = true;
+        Ach_Timer = 10000;
+        m_count_ppl = 0;
         
         if(pInstance && m_creature->isAlive())
 			pInstance->SetData(ENCOUNT_FAERLINA, NOT_STARTED);
@@ -118,6 +130,7 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
                 pMinion->AI()->AttackStart(who);
         }
 
+        CheckAch();
 		DoScriptText(SAY_AGGRO, m_creature);
     }
 
@@ -150,6 +163,8 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
             else
                 Enrage_Timer = 31000;
 
+            momma_said_10 = false;
+            momma_said_25 = false;
             m_creature->RemoveAurasByCasterSpell(SPELL_ENRAGE,m_creature->GetGUID());
             PoisonBoltVolley_Timer = 30000;
         }
@@ -158,10 +173,34 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
 		//Faerlina is slayed -> open all doors to Maexxna
-		if(pInstance)
-            pInstance->SetData(ENCOUNT_FAERLINA, DONE);
+		if(!pInstance)
+            return;
+        
+        pInstance->SetData(ENCOUNT_FAERLINA, DONE);
 
 		DoScriptText(SAY_DEATH, m_creature);
+
+        Map::PlayerList const &PlList = pInstance->instance->GetPlayers();
+        if (PlList.isEmpty())
+            return;
+        for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+        {
+            if (Player* pPlayer = i->getSource())
+            {
+                if (!m_creature->IsWithinDistInMap(pPlayer,200))
+                    continue;
+
+                if (!m_bIsHeroicMode && m_ach_10ppl)
+                    pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7147);
+                else if (m_bIsHeroicMode && m_ach_25ppl)
+                    pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7160);
+
+                if (!m_bIsHeroicMode && momma_said_10)
+                    pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7265);
+                else if (m_bIsHeroicMode && momma_said_25)
+                    pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7549);
+            }
+        }
     }
 
     void KillWorshipper()
@@ -171,8 +210,41 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
         else
             Enrage_Timer = 31000;
 
+        momma_said_10 = false;
+        momma_said_25 = false;
+
         m_creature->RemoveAurasByCasterSpell(SPELL_ENRAGE,m_creature->GetGUID());
         PoisonBoltVolley_Timer = 30000;
+    }
+
+    void CheckAch()
+    {
+        if (!pInstance)
+            return;
+
+        m_count_ppl = 0;
+        Map::PlayerList const &PlList = pInstance->instance->GetPlayers();
+        if (PlList.isEmpty())
+            return;
+        for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+        {
+            if (Player* pPlayer = i->getSource())
+            {
+                if (pPlayer->isGameMaster())
+                    continue;
+                ++m_count_ppl;
+            }
+        }
+        if (!m_bIsHeroicMode)
+        {
+            if(m_count_ppl>8)
+                m_ach_10ppl = false;
+        }
+        else
+        {
+            if(m_count_ppl>20)
+                m_ach_25ppl = false;
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -217,6 +289,15 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
             DoCast(m_creature,SPELL_ENRAGE);
             Enrage_Timer = 61000;
         }else Enrage_Timer -= diff;
+
+        if (Ach_Timer<diff)
+        {
+            if (!m_bIsHeroicMode && m_ach_10ppl)
+                CheckAch();
+            else if (m_bIsHeroicMode && m_ach_25ppl)
+                CheckAch();
+            Ach_Timer = 10000;
+        }else Ach_Timer -= diff;   
 
         DoMeleeAttackIfReady();
     }

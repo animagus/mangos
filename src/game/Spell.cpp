@@ -1430,6 +1430,10 @@ void Spell::SetTargetMap(uint32 i,uint32 cur,UnitList& TagUnitMap)
 		case SPELLFAMILY_GENERIC:
 			if (m_spellInfo->SpellIconID == 2128)
 				unMaxTargets = 5;
+            if (m_spellInfo->Id == 29213)
+                unMaxTargets = 3;
+            if (m_spellInfo->Id == 54835)
+                unMaxTargets = 10;
 			break;
         default:
             break;

@@ -33,11 +33,13 @@ http://www.noob-club.ru/index.php?page=23#Loatheb
 off-players stories
 */
 #include "precompiled.h"
-
+#include "def_naxxramas.h"
 //Boss Loatheb spells
 #define SPELL_NECROTIC_AURA         55593
 #define SPELL_DEATHBLOOM            29865
+#define SPELL_DEATHBLOOM_H          55053
 #define SPELL_INEVITABLE_DOOM       29204
+#define SPELL_INEVITABLE_DOOM_H     55052
 
 //Mob Loatheb Spore and his spell
 #define MOB_LOATHEB_SPORE			16286
@@ -58,8 +60,22 @@ off-players stories
 
 struct MANGOS_DLL_DECL boss_loathebAI : public ScriptedAI
 {
-	boss_loathebAI(Creature *c) : ScriptedAI(c) {Reset();}
+    boss_loathebAI(Creature *c) : ScriptedAI(c) 
+    {
+        m_pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        m_bIsHeroic = c->GetMap()->IsHeroic();
+        Reset();
+    }
 
+    ScriptedInstance* m_pInstance;
+    bool m_bIsHeroic;
+
+    bool m_ach_10ppl;
+    bool m_ach_25ppl;
+    uint32 m_count_ppl;
+    uint32 Ach_Timer;
+    bool ach_spore_10;
+    bool ach_spore_25;
     uint32 NecroticAura_Timer;
     uint32 Deathbloom_Timer;
     uint32 InevitableDoom_Timer;
@@ -68,6 +84,15 @@ struct MANGOS_DLL_DECL boss_loathebAI : public ScriptedAI
 
     void Reset()
     {
+        if(m_pInstance)
+            m_pInstance->SetData(ENCOUNT_LOATHEB, NOT_STARTED);
+
+        ach_spore_10 = true;
+        ach_spore_25 = true;
+        m_ach_10ppl = true;
+        m_ach_25ppl = true;
+        Ach_Timer = 10000;
+        m_count_ppl = 0;
         NecroticAura_Timer = 20000;
         Deathbloom_Timer = 30000;
         InevitableDoom_Timer = 120000;
@@ -78,6 +103,76 @@ struct MANGOS_DLL_DECL boss_loathebAI : public ScriptedAI
 
 	void Aggro(Unit *who)
     {
+        if(m_pInstance)
+            m_pInstance->SetData(ENCOUNT_LOATHEB, IN_PROGRESS);
+        CheckAch();
+    }
+
+    void KillSpore()
+    {
+        bool ach_spore_10 = false;
+        bool ach_spore_25 = false;
+    }
+
+    void JustDied(Unit* who)
+    {
+
+        if (!m_pInstance)
+            return;
+        
+        m_pInstance->SetData(ENCOUNT_LOATHEB, DONE);
+        
+        Map::PlayerList const &PlList = m_pInstance->instance->GetPlayers();
+        if (PlList.isEmpty())
+            return;
+        for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+        {
+            if (Player* pPlayer = i->getSource())
+            {
+                if (!m_creature->IsWithinDistInMap(pPlayer,200))
+                    continue;
+
+                if (!m_bIsHeroic && m_ach_10ppl)
+                    pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7155);
+                else if (m_bIsHeroic && m_ach_25ppl)
+                    pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7168);
+
+                if (!m_bIsHeroic && ach_spore_10)
+                    pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7612);
+                else if (m_bIsHeroic && ach_spore_25)
+                    pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7613);
+            }
+        }
+    }
+
+    void CheckAch()
+    {
+        if (!m_pInstance)
+            return;
+
+        m_count_ppl = 0;
+        Map::PlayerList const &PlList = m_pInstance->instance->GetPlayers();
+        if (PlList.isEmpty())
+            return;
+        for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+        {
+            if (Player* pPlayer = i->getSource())
+            {
+                if (pPlayer->isGameMaster())
+                    continue;
+                ++m_count_ppl;
+            }
+        }
+        if (!m_bIsHeroic)
+        {
+            if(m_count_ppl>8)
+                m_ach_10ppl = false;
+        }
+        else
+        {
+            if(m_count_ppl>20)
+                m_ach_25ppl = false;
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -95,14 +190,14 @@ struct MANGOS_DLL_DECL boss_loathebAI : public ScriptedAI
         //Deathbloom_Timer
         if (Deathbloom_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_DEATHBLOOM);
+            DoCast(m_creature->getVictim(),m_bIsHeroic?SPELL_DEATHBLOOM_H:SPELL_DEATHBLOOM);
             Deathbloom_Timer = 30000;
         }else Deathbloom_Timer -= diff;
 
         //InevitableDoom_Timer
         if (InevitableDoom_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_INEVITABLE_DOOM);
+            DoCast(m_creature->getVictim(),m_bIsHeroic?SPELL_INEVITABLE_DOOM_H:SPELL_INEVITABLE_DOOM);
             InevitableDoom_Timer = InevitableDoom_Cooldown;
 			if (InevitableDoom_Cooldown > 15000)
 				InevitableDoom_Cooldown -= 5000;
@@ -134,6 +229,15 @@ struct MANGOS_DLL_DECL boss_loathebAI : public ScriptedAI
             Summon_Timer = 24000;
         } else Summon_Timer -= diff;
 
+        if (Ach_Timer<diff)
+        {
+            if (!m_bIsHeroic && m_ach_10ppl)
+                CheckAch();
+            else if (m_bIsHeroic && m_ach_25ppl)
+                CheckAch();
+            Ach_Timer = 10000;
+        }else Ach_Timer -= diff;  
+
         DoMeleeAttackIfReady();
     }
 };
@@ -144,8 +248,13 @@ CreatureAI* GetAI_boss_loatheb(Creature *_Creature)
 
 struct MANGOS_DLL_DECL mob_loatheb_sporesAI : public ScriptedAI
 {
-    mob_loatheb_sporesAI(Creature *c) : ScriptedAI(c){Reset();}
+    mob_loatheb_sporesAI(Creature *c) : ScriptedAI(c)\
+    {
+        m_pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        Reset();
+    }
 
+    ScriptedInstance* m_pInstance;
     bool InCombat;
     void Reset(){}
 
@@ -153,7 +262,17 @@ struct MANGOS_DLL_DECL mob_loatheb_sporesAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoCast(m_creature,SPELL_FUNGAL_CREEP,true);
+        Creature* Loatheb = (Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_LOATHEB));
+        if(Loatheb)
+            ((boss_loathebAI*)Loatheb->AI())->KillSpore();
+
     }
+
+    /*void DamageTaken(Unit* pDoneBy, uint32& uiDamage)
+    {
+        if (m_creature->GetHealth()-uiDamage > m_creature->GetMaxHealth()*0.01)
+            DoCast(m_creature,SPELL_FUNGAL_CREEP,true);
+    }*/
 
     void UpdateAI(const uint32 diff)
     {
