@@ -5779,7 +5779,8 @@ bool Spell::CheckTarget( Unit* target, uint32 eff )
                 caster = m_caster->GetMap()->GetGameObject(m_originalCasterGUID);
             if (!caster)
                 caster = m_caster;
-            if(target != m_caster && !target->IsWithinLOSInMap(caster))
+            if(target != m_caster && !target->IsWithinLOSInMap(caster) && 
+                !(m_spellInfo->AttributesEx & SPELL_ATTR_EX_IGNORE_LOS))
                 return false;
             break;
     }
