@@ -316,6 +316,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
 		case 45860:                                         // Breath: Revitalize
 		case 45856:                                         // Breath: Haste
 		case 45862:                                         // Blink
+        case 43730:                                         // Electrified
 			return true;
     }
 

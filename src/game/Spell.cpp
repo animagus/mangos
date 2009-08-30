@@ -1428,7 +1428,7 @@ void Spell::SetTargetMap(uint32 i,uint32 cur,UnitList& TagUnitMap)
 				unMaxTargets = m_spellInfo->EffectBasePoints[2];
             break;
 		case SPELLFAMILY_GENERIC:
-			if (m_spellInfo->SpellIconID == 2128)
+			if (m_spellInfo->Id == 45641)
 				unMaxTargets = 5;
             if (m_spellInfo->Id == 29213)
                 unMaxTargets = 3;

@@ -6753,6 +6753,7 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
     if (!steal_list.empty())
     {
         std::list < std::pair<uint32,uint64> > success_list;
+        std::list < uint32 > fail_list;                     // spell_id
         int32 list_size = steal_list.size();
         // Dispell N = damage buffs (or while exist buffs for dispel)
         for (int32 count=0; count < damage && list_size > 0; ++count)
@@ -6761,7 +6762,21 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
             Aura *aur = steal_list[urand(0, list_size-1)];
             // Not use chance for steal
             // TODO possible need do it
-            success_list.push_back( std::pair<uint32,uint64>(aur->GetId(),aur->GetCasterGUID()));
+            SpellEntry const* spellInfo = aur->GetSpellProto();
+            // Base dispel chance
+            // TODO: possible chance depend from spell level??
+            int32 miss_chance = 0;
+            // Apply dispel mod from aura caster
+            if (Unit *caster = aur->GetCaster())
+            {
+                if ( Player* modOwner = caster->GetSpellModOwner() )
+                    modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_RESIST_DISPEL_CHANCE, miss_chance, this);
+            }
+            // Try dispel
+            if (roll_chance_i(miss_chance))
+                fail_list.push_back(aur->GetId());
+            else
+                success_list.push_back( std::pair<uint32,uint64>(aur->GetId(),aur->GetCasterGUID()));
 
             // Remove buff from list for prevent doubles
             for (std::vector<Aura *>::iterator j = steal_list.begin(); j != steal_list.end(); )

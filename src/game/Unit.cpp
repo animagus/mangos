@@ -3550,6 +3550,7 @@ bool Unit::AddAura(Aura *Aur)
 
         switch (aurName)
         {
+        case SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN:
         case SPELL_AURA_MOD_RANGED_ATTACK_POWER:
         case SPELL_AURA_MOD_ATTACK_POWER:
         case SPELL_AURA_MOD_STAT:
@@ -3618,6 +3619,7 @@ void Unit::ReapplyModifers(Aura *Aur)
 
         switch (aurName)
         {
+        case SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN:
         case SPELL_AURA_MOD_RANGED_ATTACK_POWER:
         case SPELL_AURA_MOD_ATTACK_POWER:
         case SPELL_AURA_MOD_STAT:
@@ -8609,9 +8611,22 @@ uint32 Unit::SpellCriticalHealingBonus(SpellEntry const *spellProto, uint32 dama
 
 uint32 Unit::SpellHealingBonus(Unit *pVictim, SpellEntry const *spellProto, uint32 healamount, DamageEffectType damagetype, uint32 stack)
 {
+    float  TakenTotalMod = 1.0f;
     // No heal amount for this class spells
     if (spellProto->DmgClass == SPELL_DAMAGE_CLASS_NONE)
-        return healamount;
+    {
+        float minval = pVictim->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
+        if(minval)
+            TakenTotalMod *= (100.0f + minval) / 100.0f;
+
+        float maxval = pVictim->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
+        if(maxval)
+            TakenTotalMod *= (100.0f + maxval) / 100.0f;
+
+        healamount = healamount  * TakenTotalMod;
+
+        return healamount < 0 ? 0 : uint32(healamount);
+    }
 
     // For totems get healing bonus from owner (statue isn't totem in fact)
     if( GetTypeId()==TYPEID_UNIT && ((Creature*)this)->isTotem() && ((Totem*)this)->GetTotemType()!=TOTEM_STATUE)
@@ -8621,7 +8636,6 @@ uint32 Unit::SpellHealingBonus(Unit *pVictim, SpellEntry const *spellProto, uint
     // Healing Done
     // Taken/Done total percent damage auras
     float  DoneTotalMod = 1.0f;
-    float  TakenTotalMod = 1.0f;
     int32  DoneTotal = 0;
     int32  TakenTotal = 0;
 
