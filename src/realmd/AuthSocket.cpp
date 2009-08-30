@@ -442,7 +442,7 @@ bool AuthSocket::_HandleLogonChallenge()
         //Memory will be freed on AuthSocket object destruction
         _safelogin = _login;
         loginDatabase.escape_string(_safelogin);
-
+	//                                        0          1   2      3       4
         result = loginDatabase.PQuery("SELECT sha_pass_hash,id,locked,last_ip,gmlevel FROM account WHERE username = '%s'",_safelogin.c_str ());
         if (result)
         {
@@ -470,6 +470,14 @@ bool AuthSocket::_HandleLogonChallenge()
                     DEBUG_LOG("[AuthChallenge] Account '%s' is not locked to ip", _login.c_str());
                 }
             }
+	    else if((*result)[4].GetUInt8() > SEC_PLAYER)
+	      {
+		if(strcmp((*result)[3].GetString(), GetRemoteAddress().c_str()))
+		  {
+		    pkt<< (uint8) REALM_AUTH_ACCOUNT_FREEZED;
+		    locked = true;
+		  }
+	      }
 
             if (!locked)
             {
