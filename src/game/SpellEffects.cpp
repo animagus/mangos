@@ -6760,11 +6760,7 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
         {
             // Random select buff for dispel
             Aura *aur = steal_list[urand(0, list_size-1)];
-            // Not use chance for steal
-            // TODO possible need do it
             SpellEntry const* spellInfo = aur->GetSpellProto();
-            // Base dispel chance
-            // TODO: possible chance depend from spell level??
             int32 miss_chance = 0;
             // Apply dispel mod from aura caster
             if (Unit *caster = aur->GetCaster())
