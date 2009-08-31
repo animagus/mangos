@@ -86,8 +86,8 @@ void BattleGroundRL::RemovePlayer(Player* /*plr*/, uint64 /*guid*/)
     if (GetStatus() == STATUS_WAIT_LEAVE)
         return;
 
-    UpdateWorldState(0xbb8, GetAlivePlayersCountByTeam(ALLIANCE));
-    UpdateWorldState(0xbb9, GetAlivePlayersCountByTeam(HORDE));
+    UpdateWorldState(0xe11, GetAlivePlayersCountByTeam(ALLIANCE));
+    UpdateWorldState(0xe10, GetAlivePlayersCountByTeam(HORDE));
 
     CheckArenaWinConditions();
 }
@@ -105,8 +105,8 @@ void BattleGroundRL::HandleKillPlayer(Player *player, Player *killer)
 
     BattleGround::HandleKillPlayer(player,killer);
 
-    UpdateWorldState(0xbb8, GetAlivePlayersCountByTeam(ALLIANCE));
-    UpdateWorldState(0xbb9, GetAlivePlayersCountByTeam(HORDE));
+    UpdateWorldState(0xe11, GetAlivePlayersCountByTeam(ALLIANCE));
+    UpdateWorldState(0xe10, GetAlivePlayersCountByTeam(HORDE));
 
     CheckArenaWinConditions();
 }
@@ -142,8 +142,8 @@ void BattleGroundRL::HandleAreaTrigger(Player *Source, uint32 Trigger)
 
 void BattleGroundRL::FillInitialWorldStates(WorldPacket &data)
 {
-    data << uint32(0xbb8) << uint32(GetAlivePlayersCountByTeam(ALLIANCE));           // 7
-    data << uint32(0xbb9) << uint32(GetAlivePlayersCountByTeam(HORDE));           // 8
+    data << uint32(0xe11) << uint32(GetAlivePlayersCountByTeam(ALLIANCE));           // 7
+    data << uint32(0xe10) << uint32(GetAlivePlayersCountByTeam(HORDE));           // 8
     data << uint32(0xbba) << uint32(1);           // 9
 }
 
