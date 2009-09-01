@@ -162,6 +162,17 @@ struct MANGOS_DLL_DECL boss_nothAI : public ScriptedAI
         if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
             return;
 
+        if (m_creature->GetPositionX()>(2737))
+        {
+            EnterEvadeMode();
+            return;
+        }
+        if (m_creature->GetPositionY()<(-3560))
+        {
+            EnterEvadeMode();
+            return;
+        }
+
         switch(Stage)
         {
         case 1:

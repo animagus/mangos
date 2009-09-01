@@ -110,8 +110,8 @@ struct MANGOS_DLL_DECL boss_loathebAI : public ScriptedAI
 
     void KillSpore()
     {
-        bool ach_spore_10 = false;
-        bool ach_spore_25 = false;
+        ach_spore_10 = false;
+        ach_spore_25 = false;
     }
 
     void JustDied(Unit* who)
@@ -191,7 +191,10 @@ struct MANGOS_DLL_DECL boss_loathebAI : public ScriptedAI
         if (Deathbloom_Timer < diff)
         {
             DoCast(m_creature->getVictim(),m_bIsHeroic?SPELL_DEATHBLOOM_H:SPELL_DEATHBLOOM);
-            Deathbloom_Timer = 30000;
+            if (m_pInstance && m_pInstance->GetData(ENCOUNT_HEIGAN) < DONE)
+                Deathbloom_Timer = 18000;
+            else
+                Deathbloom_Timer = 25000;
         }else Deathbloom_Timer -= diff;
 
         //InevitableDoom_Timer

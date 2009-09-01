@@ -817,6 +817,9 @@ void BattleGround::RewardMark(Player *plr,uint32 count)
         RewardSpellCast(plr,mark);
     else
         RewardItem(plr,mark,count);
+
+    if (mark == ITEM_EY_MARK_OF_HONOR || mark == SPELL_AB_MARK_WINNER || mark == SPELL_WS_MARK_WINNER)
+        RewardItem(plr,43589,2);
 }
 
 void BattleGround::RewardSpellCast(Player *plr, uint32 spell_id)
@@ -833,12 +836,6 @@ void BattleGround::RewardSpellCast(Player *plr, uint32 spell_id)
     }
 
     plr->CastSpell(plr, spellInfo, true);
-    if (spell_id == SPELL_AV_MARK_WINNER || spell_id == SPELL_AB_MARK_WINNER || spell_id == SPELL_WS_MARK_WINNER)
-    {
-        SpellEntry const *spell = sSpellStore.LookupEntry(56902);
-        if (spell)
-            plr->CastSpell(plr,spell,true);
-    }
 }
 
 void BattleGround::RewardItem(Player *plr, uint32 item_id, uint32 count)
