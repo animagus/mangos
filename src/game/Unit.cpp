@@ -5896,6 +5896,43 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         return false;
 
                     triggered_spell_id = 31803;
+
+                    // Add 5-stack effect
+                    int8 stacks = 0;
+                    AuraList const& auras = target->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+                    for(AuraList::const_iterator itr = auras.begin(); itr!=auras.end(); ++itr)
+                    {
+                        if( ((*itr)->GetId() == 31803) && (*itr)->GetCasterGUID()==GetGUID())
+                        {
+                            stacks = (*itr)->GetStackAmount();
+                            break;
+                        }
+                    }
+                    if(stacks >= 5)
+                        CastSpell(target,42463,true,NULL,triggeredByAura);
+                    break;
+                }
+                // Seal of Corruption (damage calc on apply aura)
+                case 53736:
+                {
+                    if(effIndex != 0)                       // effect 1,2 used by seal unleashing code
+                        return false;
+
+                    triggered_spell_id = 53742;
+
+                    // Add 5-stack effect
+                    int8 stacks = 0;
+                    AuraList const& auras = target->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+                    for(AuraList::const_iterator itr = auras.begin(); itr!=auras.end(); ++itr)
+                    {
+                        if( ((*itr)->GetId() == 53742) && (*itr)->GetCasterGUID()==GetGUID())
+                        {
+                            stacks = (*itr)->GetStackAmount();
+                            break;
+                        }
+                    }
+                    if(stacks >= 5)
+                        CastSpell(target,53739,true,NULL,triggeredByAura);
                     break;
                 }
                 // Spiritual Attunement
@@ -5915,7 +5952,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 // Seal of Blood do damage trigger
                 case 31892:
                 {
-                    if (effIndex == 0)       // 0 effect - is proc on enemy
+                    // 0 effect - is proc on enemy
+                    if (effIndex == 0 && (procFlag & PROC_FLAG_SUCCESSFUL_MILEE_HIT))
                         triggered_spell_id = 31893;
                     else
                         return true;
@@ -5944,7 +5982,8 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 // Seal of the Martyr do damage trigger
                 case 53720:
                 {
-                    if (effIndex == 0)      // 0 effect - is proc on enemy
+                    // 0 effect - is proc on enemy
+                    if (effIndex == 0 && (procFlag & PROC_FLAG_SUCCESSFUL_MILEE_HIT))
                         triggered_spell_id = 53719;
                     else
                         return true;
@@ -8641,12 +8680,22 @@ bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
                             break;
                         }
                     break;
-
                 }
             }
             break;
         }
         case SPELL_DAMAGE_CLASS_MELEE:
+        {
+            // Judgement of Command proc always crits on stunned target
+            if(spellProto->SpellFamilyName == SPELLFAMILY_PALADIN)
+            {
+                if(spellProto->SpellFamilyFlags & 0x0000000000800000LL && spellProto->SpellIconID == 561)
+                {
+                    if(pVictim->hasUnitState(UNIT_STAT_STUNNED))
+                        return true;
+                }
+            }
+        }
         case SPELL_DAMAGE_CLASS_RANGED:
         {
             if (pVictim)
