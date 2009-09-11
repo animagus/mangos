@@ -214,7 +214,7 @@ class MANGOS_DLL_SPEC Aura
         void HandlePhase(bool Apply, bool Real);
 		void HandleAbilityIgnoreAurastate(bool Apply, bool Real);
         void HandleAllowOnlyAbility(bool Apply, bool Real);
-    
+        void HandleModTargetArmorPct(bool Apply, bool Real);
 
         virtual ~Aura();
 
@@ -345,6 +345,7 @@ class MANGOS_DLL_SPEC Aura
         void PeriodicDummyTick();
 
         bool IsCritFromAbilityAura(Unit* caster, uint32& damage);
+        void ReapplyAffectedPassiveAuras(Unit* target);
 
         Modifier m_modifier;
         SpellModifier *m_spellmod;

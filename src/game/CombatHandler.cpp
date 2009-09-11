@@ -26,8 +26,6 @@
 
 void WorldSession::HandleAttackSwingOpcode( WorldPacket & recv_data )
 {
-    CHECK_PACKET_SIZE(recv_data,8);
-
     uint64 guid;
     recv_data >> guid;
 
@@ -47,7 +45,7 @@ void WorldSession::HandleAttackSwingOpcode( WorldPacket & recv_data )
         return;
     }
 
-    if(_player->IsFriendlyTo(pEnemy) || pEnemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE_2))
+    if(_player->IsFriendlyTo(pEnemy) || pEnemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_OOC_NOT_ATTACKABLE))
     {
         sLog.outError( "WORLD: Enemy %s %u is friendly",(IS_PLAYER_GUID(guid) ? "player" : "creature"),GUID_LOPART(guid));
 
@@ -74,8 +72,6 @@ void WorldSession::HandleAttackStopOpcode( WorldPacket & /*recv_data*/ )
 
 void WorldSession::HandleSetSheathedOpcode( WorldPacket & recv_data )
 {
-    CHECK_PACKET_SIZE(recv_data,4);
-
     uint32 sheathed;
     recv_data >> sheathed;
 
