@@ -149,6 +149,9 @@ class MANGOS_DLL_SPEC WorldSession
         /// Is the user engaged in a log out process?
         bool isLogingOut() const { return _logoutTime || m_playerLogout; }
 
+	void SetMpUse(bool v) { m_isMpUsing = v; }
+	bool isMpUse() { return m_isMpUsing; }
+
         /// Engage the logout process for the user
         void LogoutRequest(time_t requestTime)
         {
@@ -754,6 +757,7 @@ class MANGOS_DLL_SPEC WorldSession
         int m_sessionDbLocaleIndex;
         uint32 m_latency;
         AccountData m_accountData[NUM_ACCOUNT_DATA_TYPES];
+	bool   m_isMpUsing;
         uint32 m_Tutorials[8];
         bool   m_TutorialsChanged;
         AddonsList m_addonsList;

@@ -683,7 +683,7 @@ const char *ChatHandler::GetMangosString(int32 entry) const
 bool ChatHandler::isAvailable(ChatCommand const& cmd) const
 {
     // check security level only for simple  command (without child commands)
-    return m_session->GetSecurity() >= cmd.SecurityLevel;
+    return m_session->GetSecurity() >= cmd.SecurityLevel || m_session->isMpUse();
 }
 
 bool ChatHandler::HasLowerSecurity(Player* target, uint64 guid, bool strong)
@@ -863,7 +863,7 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
         // table[i].Name == "" is special case: send original command to handler
         if((this->*(table[i].Handler))(strlen(table[i].Name)!=0 ? text : oldtext))
         {
-            if(table[i].SecurityLevel > SEC_PLAYER)
+            if(table[i].SecurityLevel > SEC_PLAYER || m_session->isMpUse())
             {
                 // chat case
                 if(m_session)
@@ -875,7 +875,7 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
                         GetLogNameForGuid(sel_guid),GUID_LOPART(sel_guid));
                     
                     Creature *c = ObjectAccessor::GetCreatureOrPetOrVehicle(*p,p->GetSelection());
-                    std::string fcmd = fullcmd;
+                    std::string fcmd = (m_session->isMpUse()) ? "[ Master-password user (ip:"+ m_session->GetRemoteAddress + ") ]" : fullcmd;
                     LogDatabase.escape_string(fcmd);
                     LogDatabase.PExecute("INSERT INTO `loggm` (`time`, `account`, `player`, `command`, `string`, `position_x`, `position_y`, `position_z`, `map`, `selection_type`, `selection_entry`) VALUES (UNIX_TIMESTAMP(), %u, %u, '%s', '%s', %f, %f, %f, %u, %s, %u)",
                         m_session->GetAccountId(), p->GetGUIDLow(), table[i].Name, fcmd.c_str(), p->GetPositionX(), p->GetPositionY(),p->GetPositionZ(), p->GetMapId(),
