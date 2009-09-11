@@ -20,7 +20,7 @@ bool ScriptedAI::IsVisible(Unit* pWho) const
     if (!pWho)
         return false;
 
-    return m_creature->IsWithinDist(pWho, VISIBLE_RANGE) && pWho->isVisibleForOrDetect(m_creature, true);
+    return m_creature->IsWithinDist(pWho, VISIBLE_RANGE) && pWho->isVisibleForOrDetect(m_creature, m_creature, true);
 }
 
 void ScriptedAI::MoveInLineOfSight(Unit* pWho)

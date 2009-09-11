@@ -106,8 +106,8 @@ struct MANGOS_DLL_DECL npc_calvin_montagueAI : public ScriptedAI
         if (m_creature->getFaction() != m_uiNormFaction)
             m_creature->setFaction(m_uiNormFaction);
 
-        if (!m_creature->HasFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE_2))
-            m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE_2);
+        if (!m_creature->HasFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_OOC_NOT_ATTACKABLE))
+            m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_OOC_NOT_ATTACKABLE);
     }
 
     void AttackedBy(Unit* pAttacker)
@@ -125,7 +125,7 @@ struct MANGOS_DLL_DECL npc_calvin_montagueAI : public ScriptedAI
             uiDamage = 0;
 
             m_creature->setFaction(m_uiNormFaction);
-            m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE_2);
+            m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_OOC_NOT_ATTACKABLE);
             m_creature->CombatStop(true);
 
             m_uiPhase = 1;
@@ -185,7 +185,7 @@ bool QuestAccept_npc_calvin_montague(Player* pPlayer, Creature* pCreature, const
     if (pQuest->GetQuestId() == QUEST_590)
     {
         pCreature->setFaction(FACTION_HOSTILE);
-        pCreature->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE_2);
+        pCreature->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_OOC_NOT_ATTACKABLE);
         pCreature->AI()->AttackStart(pPlayer);
     }
     return true;

@@ -176,7 +176,7 @@ struct MANGOS_DLL_DECL boss_doomrelAI : public ScriptedAI
             if (bStartFight && pDwarf->isAlive())
             {
                 pDwarf->setFaction(FACTION_HOSTILE);
-                pDwarf->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE_2);
+                pDwarf->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
                 pDwarf->SetInCombatWithZone();              // attackstart
             }
             else
@@ -185,7 +185,7 @@ struct MANGOS_DLL_DECL boss_doomrelAI : public ScriptedAI
                     pDwarf->Respawn();
 
                 pDwarf->setFaction(FACTION_NEUTRAL);
-                pDwarf->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE_2);
+                pDwarf->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
             }
         }
     }
