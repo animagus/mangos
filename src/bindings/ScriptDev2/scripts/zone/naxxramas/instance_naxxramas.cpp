@@ -379,8 +379,12 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             OUT_SAVE_INST_DATA;
 
             std::ostringstream saveStream;
-            saveStream << Encounters[0] << " " << Encounters[1] << " " << Encounters[2] << " " << Encounters[10]
-            << " " << Encounters[11] << " " << Encounters[12];
+            saveStream << 
+                Encounters[ENCOUNT_ANUBREKHAN] << " " << Encounters[ENCOUNT_FAERLINA]  << " " << Encounters[ENCOUNT_MAEXXNA]      << " " << 
+                Encounters[ENCOUNT_PATCHWERK]  << " " << Encounters[ENCOUNT_GROBBULUS] << " " << Encounters[ENCOUNT_GLUTH]        << " " << Encounters[ENCOUNT_THADDIUS] << " " << 
+                Encounters[ENCOUNT_NOTH]       << " " << Encounters[ENCOUNT_HEIGAN]    << " " << Encounters[ENCOUNT_LOATHEB]      << " " << 
+                Encounters[ENCOUNT_RAZUVIOUS]  << " " << Encounters[ENCOUNT_GOTHIK]    << " " << Encounters[ENCOUNT_FOURHORSEMAN] << " " << 
+                Encounters[ENCOUNT_SAPPHIRON]  << " " << Encounters[ENCOUNT_KELTHUZAD];
 
             str_data = saveStream.str();
 
@@ -421,7 +425,11 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
         OUT_LOAD_INST_DATA(in);
 
         std::istringstream loadStream(in);
-        loadStream >> Encounters[0] >> Encounters[1] >> Encounters[2] >> Encounters[10] >> Encounters[11] >> Encounters[12];
+        loadStream >> Encounters[ENCOUNT_ANUBREKHAN] >> Encounters[ENCOUNT_FAERLINA] >> Encounters[ENCOUNT_MAEXXNA] >> 
+            Encounters[ENCOUNT_PATCHWERK] >> Encounters[ENCOUNT_GROBBULUS] >> Encounters[ENCOUNT_GLUTH]   >> Encounters[ENCOUNT_THADDIUS] >> 
+            Encounters[ENCOUNT_NOTH]      >> Encounters[ENCOUNT_HEIGAN]    >> Encounters[ENCOUNT_LOATHEB] >> 
+            Encounters[ENCOUNT_RAZUVIOUS] >> Encounters[ENCOUNT_GOTHIK]    >> Encounters[ENCOUNT_FOURHORSEMAN] >> 
+            Encounters[ENCOUNT_SAPPHIRON] >> Encounters[ENCOUNT_KELTHUZAD];
         for(uint32 i = 0; i < ENCOUNTERS; i++)
         {
             if (Encounters[i] == IN_PROGRESS)               // Do not load an encounter as "In Progress" - reset it instead.
