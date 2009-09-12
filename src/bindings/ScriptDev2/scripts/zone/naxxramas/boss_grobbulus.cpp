@@ -22,6 +22,7 @@
 Slime Spray 28157
 Fallout slime 28218
 Mutating Injection 28169
+Mutagen Explosion 28206
 Enrages 26527
 update creature_template set ScriptName='boss_grobbulus' where entry=15931;
 update creature_template set ScriptName='npc_grobbulus_poison_cloud',faction_A=14,faction_H=14,unit_flags=unit_flags|'33554432' where entry=16363;

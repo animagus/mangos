@@ -2346,6 +2346,12 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 m_target->CastSpell(m_target, 47287, true, NULL, this);
                 return;
             }
+            case 28169:
+                {
+                    m_target->CastSpell(m_target,28206,true,NULL,this,caster->GetGUID());
+                    m_target->CastSpell(m_target,26590,true,NULL,this);
+                    return;
+                }
         }
 
         if (caster && m_removeMode == AURA_REMOVE_BY_DEATH)
