@@ -944,7 +944,7 @@ void Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
     spell->m_CastItem = castItem;
     if (spellInfo->Id == 54363 || spellInfo->Id == 28241)
         if (triggeredByAura)
-            spell->SetRadius((triggeredByAura->GetAuraMaxDuration() - triggeredByAura->GetAuraDuration())/10000 + 1.2f);
+            spell->SetRadius((triggeredByAura->GetAuraMaxDuration() - triggeredByAura->GetAuraDuration())/10000 + 2.0f);
     spell->prepare(&targets, triggeredByAura);
 }
 
