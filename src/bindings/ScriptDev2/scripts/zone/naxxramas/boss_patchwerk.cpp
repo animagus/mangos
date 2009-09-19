@@ -39,7 +39,15 @@ EndScriptData */
 
 struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
 {
-    boss_patchwerkAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+    boss_patchwerkAI(Creature* pCreature) : ScriptedAI(pCreature) 
+    {
+        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        Reset();
+    }
+
+    ScriptedInstance* m_pInstance;
+    bool m_bIsHeroicMode;
 
     uint32 HatefullStrike_Timer;
     uint32 Enrage_Timer;
@@ -101,7 +109,7 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
             }
 
             if (pMostHPTarget)
-                DoCast(pMostHPTarget, SPELL_HATEFULSTRIKE);
+                DoCast(pMostHPTarget, m_bIsHeroicMode ? H_SPELL_HATEFULSTRIKE : SPELL_HATEFULSTRIKE);
 
             HatefullStrike_Timer = 1200;
         }else HatefullStrike_Timer -= diff;

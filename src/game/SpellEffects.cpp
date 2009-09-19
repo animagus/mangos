@@ -366,6 +366,42 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
                             damage = (int32)((float) damage * 10.0f / (10.0f + distance));
                         break;
                     }
+                    case 28062:
+                    {
+                        if (unitTarget->HasAura(28059))
+                        {
+                            if (Aura *positive = unitTarget->GetAura(29659, 0))
+                            {
+                                if (positive->GetStackAmount() != 1)
+                                    positive->modStackAmount(-1);
+
+                                if (positive->GetStackAmount() == 1 &&
+                                    positive->GetCasterGUID() == m_caster->GetGUID())
+                                    return;
+                            }
+                            unitTarget->CastSpell(unitTarget,29659,true,0,0,m_caster->GetGUID());
+                            return;
+                        }
+                        break;
+                    }
+                    case 28085:
+                    {
+                        if (unitTarget->HasAura(28084))
+                        {
+                            if (Aura *negative = unitTarget->GetAura(29660, 0))
+                            {
+                                if (negative->GetStackAmount() != 1)
+                                    negative->modStackAmount(-1);
+
+                                if (negative->GetStackAmount() == 1 &&
+                                    negative->GetCasterGUID() == m_caster->GetGUID())
+                                    return;
+                            }
+                            unitTarget->CastSpell(unitTarget,29660,true,0,0,m_caster->GetGUID());
+                            return;
+                        }
+                        break;
+                    }
                 }
                 break;
             }
@@ -990,6 +1026,28 @@ void Spell::EffectDummy(uint32 i)
                         m_caster->CastSpell(unitTarget, 29294, true);
                     return;
                 }
+                case 28089:
+                    {
+                        if (unitTarget && unitTarget->GetTypeId() != TYPEID_PLAYER)
+                            return;
+
+                        if (rand()%2)
+                        {
+                            // cast positive
+                            unitTarget->RemoveAurasDueToSpell(29659);
+                            unitTarget->RemoveAurasDueToSpell(28084);
+                            unitTarget->RemoveAurasDueToSpell(29660);
+                            unitTarget->CastSpell(unitTarget,28059,true);
+                        }
+                        else
+                        {
+                            // cast negative
+                            unitTarget->RemoveAurasDueToSpell(29659);
+                            unitTarget->RemoveAurasDueToSpell(28059);
+                            unitTarget->RemoveAurasDueToSpell(29660);
+                            unitTarget->CastSpell(unitTarget,28084,true);
+                        }
+                    }
                 case 29200:                                 // Purify Helboar Meat
                 {
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)

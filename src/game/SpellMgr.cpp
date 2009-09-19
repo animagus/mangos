@@ -278,7 +278,6 @@ SpellSpecific GetSpellSpecific(uint32 spellId)
     return SPELL_NORMAL;
 }
 
-
 // target not allow have more one spell specific from same caster
 bool IsSingleFromSpellSpecificPerTargetPerCaster(SpellSpecific spellSpec1,SpellSpecific spellSpec2)
 {
@@ -1327,6 +1326,16 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     // Forge Ember && Sundial of the Exiled
                     if( (spellInfo_1->Id == 60064 && spellInfo_2->Id == 60479) ||
                         (spellInfo_2->Id == 60064 && spellInfo_1->Id == 60479) )
+                        return false;
+
+                    // Positive Charge
+                    if ( (spellInfo_1->Id == 28059 && spellInfo_2->Id == 29659) ||
+                         (spellInfo_2->Id == 28059 && spellInfo_1->Id == 29659) )
+                         return false;
+
+                    //Negative Charge
+                    if ( (spellInfo_1->Id == 28084 && spellInfo_2->Id == 29660) ||
+                         (spellInfo_2->Id == 28084 && spellInfo_1->Id == 29660) )
                         return false;
 
                     break;

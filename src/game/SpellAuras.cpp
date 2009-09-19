@@ -2100,6 +2100,12 @@ void Aura::TriggerSpell()
                 target->CastSpell(target, trigger_spell_id, true, NULL, this);
                 return;
             }
+            /*case 54362:
+            case 28158:
+            {
+                triggeredSpellInfo->SetRadius(123);
+                return;
+            }*/
         }
     }
 
@@ -2318,6 +2324,12 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                         bg->RemovePlayerFromResurrectQueue(m_target->GetGUID());
                 return;
             }
+            case 28084:
+                m_target->RemoveAurasDueToSpell(29660);
+                return;
+            case 28059:
+                m_target->RemoveAurasDueToSpell(29659);
+                return;
             case 36730:                                     // Flame Strike
             {
                 m_target->CastSpell(m_target, 36731, true, NULL, this);
@@ -2348,8 +2360,8 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             }
             case 28169:
                 {
-                    m_target->CastSpell(m_target,28206,true,NULL,this,caster->GetGUID());
-                    m_target->CastSpell(m_target,26590,true,NULL,this);
+                    caster->CastSpell(m_target,28206,true);
+                    m_target->CastSpell(m_target,28240,true,NULL,this);
                     return;
                 }
         }

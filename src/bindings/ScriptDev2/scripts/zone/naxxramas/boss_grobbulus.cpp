@@ -39,7 +39,6 @@ update creature_template set minhealth=75600,maxhealth=75600 where entry=16290;*
 
 #define MOB_FALLOUT_SLIME   16290
 //hack
-#define MOB_POISON_SLIME   99999
 
 struct MANGOS_DLL_DECL boss_grobbulusAI : public ScriptedAI
 {
@@ -86,7 +85,7 @@ struct MANGOS_DLL_DECL boss_grobbulusAI : public ScriptedAI
     void SpellHitTarget(Unit *target, const SpellEntry *spell)
 
     {
-        if(spell->Id == SPELL_SLIME_SPRAY)
+        if(spell->Id == SPELL_SLIME_SPRAY && target->GetTypeId() == TYPEID_PLAYER)
         {
             if (Creature* pSlime = m_creature->SummonCreature(MOB_FALLOUT_SLIME, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, MINUTE*5*IN_MILISECONDS))
                 pSlime->SetInCombatWithZone();
@@ -112,10 +111,23 @@ struct MANGOS_DLL_DECL boss_grobbulusAI : public ScriptedAI
 
         if (MutatingInjection_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(target, SPELL_MUTATING_INJECTION);
+            // small hack to avoid target non players
+            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1))
+            {
+                if (target->GetTypeId() == TYPEID_PLAYER)
+                    DoCast(target, SPELL_MUTATING_INJECTION);
+                else if (target = SelectUnit(SELECT_TARGET_RANDOM,1))
+                    DoCast(target, SPELL_MUTATING_INJECTION);
+            }
 
-            MutatingInjection_Timer = 20000;
+            if (m_creature->GetHealth() < m_creature->GetMaxHealth() * 0.75f)
+                MutatingInjection_Timer = 15000;
+            else if (m_creature->GetHealth() < m_creature->GetMaxHealth() * 0.50f)
+                MutatingInjection_Timer = 10000;
+            else if (m_creature->GetHealth() < m_creature->GetMaxHealth() * 0.25f)
+                MutatingInjection_Timer = 6000; // DIE DIE ALL!!!!
+            else
+                MutatingInjection_Timer = 20000;            
         }else MutatingInjection_Timer -= diff;
 
         if (SlimeSpary_Timer < diff)
@@ -127,9 +139,8 @@ struct MANGOS_DLL_DECL boss_grobbulusAI : public ScriptedAI
         if (Enrage_Timer < diff)
         {
             DoCast(m_creature, SPELL_BERSERK);
-            Enrage_Timer = 300000;
+            Enrage_Timer = 10000;
         }else Enrage_Timer -= diff;
-
 
         DoMeleeAttackIfReady();
     }
@@ -143,11 +154,14 @@ struct MANGOS_DLL_DECL npc_grobbulus_poison_cloudAI : public Scripted_NoMovement
     }
 
     uint32 Cloud_Timer;
+    uint32 Despawn_Timer;
 
     void Reset()
     {
         Cloud_Timer = 1000;
+        Despawn_Timer = 75000;
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         //m_creature->DeleteThreatList;
         //return;
 
@@ -161,11 +175,19 @@ struct MANGOS_DLL_DECL npc_grobbulus_poison_cloudAI : public Scripted_NoMovement
     {
         if (Cloud_Timer < diff)
         {
-            DoCast(m_creature, 59116);
-            Cloud_Timer = 10000;
+            DoCast(m_creature, 54362);
+            Cloud_Timer = 120000;
+            WorldPacket data(SMSG_PLAY_SPELL_VISUAL,8+4);
+            data << m_creature->GetGUID();
+            data << 7020;
+            m_creature->SendMessageToSet(&data,false);
         }else Cloud_Timer -= diff;
 
-        m_creature->RemoveAura(15576, NULL);
+        if (Despawn_Timer < diff)
+            m_creature->ForcedDespawn();
+        else Despawn_Timer -=diff;
+
+        //m_creature->RemoveAura(15576, NULL);
     }
 };
 

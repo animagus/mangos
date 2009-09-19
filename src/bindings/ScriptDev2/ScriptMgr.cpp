@@ -379,6 +379,8 @@ extern void AddSC_nagrand();
 
 //Naxxramas
 extern void AddSC_boss_anubrekhan();
+extern void AddSC_boss_grobbulus();
+extern void AddSC_boss_thaddius();
 extern void AddSC_boss_four_horsemen();
 extern void AddSC_boss_faerlina();
 extern void AddSC_boss_gluth();
@@ -1298,6 +1300,8 @@ void ScriptsInit()
     AddSC_boss_razuvious();
     AddSC_boss_sapphiron();
     AddSC_instance_naxxramas();
+    AddSC_boss_grobbulus();
+    AddSC_boss_thaddius();
 
     //Netherstorm
     AddSC_netherstorm();

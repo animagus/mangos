@@ -108,6 +108,9 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
     uint64 m_uiworshipper3GUID;
     uint64 m_uiworshipper4GUID;
     uint8 m_uiworshipper;
+    uint64 guid_stalagg;
+    uint64 guid_feugen;
+    uint64 guid_thaddius;
 
     uint32 Encounters[ENCOUNTERS];
 
@@ -150,15 +153,18 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 
     void Initialize()
     {
-        guid_anubrekhan    = 0;
-        guid_faerlina      = 0;
-        guid_maexxna       = 0;
+        guid_anubrekhan      = 0;
+        guid_faerlina        = 0;
+        guid_maexxna         = 0;
         m_uiworshipper1GUID  = 0;
         m_uiworshipper2GUID  = 0;
         m_uiworshipper3GUID  = 0;
         m_uiworshipper4GUID  = 0;
-        m_uiworshipper = 0;
-        guid_heigan        = 0;
+        m_uiworshipper       = 0;
+        guid_heigan          = 0;
+        guid_stalagg         = 0;
+        guid_feugen          = 0;
+        guid_thaddius        = 0;
     }
 
     bool IsEncounterInProgress() const
@@ -179,6 +185,9 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case 15956: guid_anubrekhan = creature->GetGUID();   break;
             case 15952: guid_maexxna    = creature->GetGUID();   break;
             case 15936: guid_heigan     = creature->GetGUID();   break;
+            case 15929: guid_stalagg    = creature->GetGUID();   break;
+            case 15930: guid_feugen     = creature->GetGUID();   break;
+            case 15928: guid_thaddius   = creature->GetGUID();   break;
             case 16506:
                 ++m_uiworshipper;
                 switch (m_uiworshipper)
@@ -243,7 +252,10 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case GUID_WORSHIPPER2: return m_uiworshipper2GUID;   break;
             case GUID_WORSHIPPER3: return m_uiworshipper3GUID;   break;
             case GUID_WORSHIPPER4: return m_uiworshipper4GUID;   break;
-            case GUID_HEIGAN:     return guid_heigan;            break;
+            case GUID_HEIGAN:      return guid_heigan;           break;
+            case GUID_STALAGG:     return guid_stalagg;          break;
+            case GUID_FEUGEN:      return guid_feugen;           break;
+            case GUID_THADDIUS:    return guid_thaddius;         break;
             default:
                 return 0;
         }

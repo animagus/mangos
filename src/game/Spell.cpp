@@ -1283,10 +1283,15 @@ struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit,
 void Spell::SetTargetMap(uint32 effIndex,uint32 targetMode,UnitList& TagUnitMap)
 {
     float radius;
-    if (m_spellInfo->EffectRadiusIndex[effIndex])
-        radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[effIndex]));
+    if (m_spellInfo->Id == 54363 || m_spellInfo->Id == 28241)
+        radius = this->GetRadius();
     else
-        radius = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
+    {
+        if (m_spellInfo->EffectRadiusIndex[effIndex])
+            radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(m_spellInfo->EffectRadiusIndex[effIndex]));
+        else
+            radius = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
+    }
 
     if(m_originalCaster)
         if(Player* modOwner = m_originalCaster->GetSpellModOwner())

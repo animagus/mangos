@@ -137,13 +137,13 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
         {
             if (Player* pPlayer = i->getSource())
             {
+                if (pPlayer->isGameMaster())
+                    continue;
                 if (pPlayer->isDead())
                 {
                     ach_nodied_10 = false;
                     ach_nodied_25 = false;
                 }
-                if (pPlayer->isGameMaster())
-                    continue;
                 ++m_count_ppl;
             }
         }

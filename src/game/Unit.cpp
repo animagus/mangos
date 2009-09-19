@@ -942,6 +942,9 @@ void Unit::CastSpell(Unit* Victim,SpellEntry const *spellInfo, bool triggered, I
     SpellCastTargets targets;
     targets.setUnitTarget( Victim );
     spell->m_CastItem = castItem;
+    if (spellInfo->Id == 54363 || spellInfo->Id == 28241)
+        if (triggeredByAura)
+            spell->SetRadius((triggeredByAura->GetAuraMaxDuration() - triggeredByAura->GetAuraDuration())/10000 + 1.2f);
     spell->prepare(&targets, triggeredByAura);
 }
 
@@ -3481,7 +3484,9 @@ bool Unit::AddAura(Aura *Aur)
                     case SPELL_AURA_POWER_BURN_MANA:
                         break;
                     case SPELL_AURA_MOD_DAMAGE_TAKEN:
-                        if (i2->second->GetId() == 45770) // Shadow Bolt Volley by Hand of the Deciever.
+                    case SPELL_AURA_MOD_DAMAGE_PERCENT_DONE:
+                        if (i2->second->GetId() == 45770 || i2->second->GetId() == 29659 ||
+                            i2->second->GetId() == 29660) // Shadow Bolt Volley by Hand of the Deciever.
                         {
                             i2->second->modStackAmount(1);
                             delete Aur;
@@ -4257,6 +4262,19 @@ bool Unit::HasAura(uint32 spellId) const
         AuraMap::const_iterator iter = m_Auras.find(spellEffectPair(spellId, i));
         if (iter != m_Auras.end())
             return true;
+    }
+    return false;
+}
+
+bool Unit::HasAuraByCasterSpell(uint32 spellId, uint64 casterGUID) const
+{
+    for (AuraMap::const_iterator iter = m_Auras.begin(); iter != m_Auras.end(); )
+    {
+        Aura *aur = iter->second;
+        if (aur->GetId() == spellId && aur->GetCasterGUID() == casterGUID)
+            return true;
+        else
+            ++iter;
     }
     return false;
 }
