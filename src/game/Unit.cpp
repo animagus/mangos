@@ -1627,7 +1627,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
         return;
 
     // Magic damage, check for resists
-    if ((schoolMask & SPELL_SCHOOL_MASK_NORMAL)==0 || (spell && !(spell->Attributes & SPELL_ATTR_UNK26)))
+    if ((schoolMask & SPELL_SCHOOL_MASK_NORMAL)==0)
     {
         // Get base victim resistance for school
         float tmpvalue2 = (float)pVictim->GetResistance(GetFirstSchoolInMask(schoolMask));
@@ -1657,6 +1657,8 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
             *resist += uint32(damage * m / 4);
         if(*resist > damage)
             *resist = damage;
+        if (spell && (spell->Attributes & SPELL_ATTR_UNK26))
+            *resist = 0;
     }
     else
         *resist = 0;
