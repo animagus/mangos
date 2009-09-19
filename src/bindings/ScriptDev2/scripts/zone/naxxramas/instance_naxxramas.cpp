@@ -98,6 +98,13 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
     notDirectGO go_plaguewing_eye_ramp;
     notDirectGO go_plaguewing_portal;
 
+    notDirectGO go_grobblulus_door;
+    notDirectGO go_gluth_door;
+    notDirectGO go_thaddius_door;
+    notDirectGO go_abom_eye_boss;
+    notDirectGO go_abom_eye_ramp;
+    notDirectGO go_naxx_portal;
+
 
     uint64 guid_anubrekhan;
     uint64 guid_faerlina;
@@ -227,7 +234,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case 181197: go_maexxna_innerweb.Init(go);           break;
             case 181233: go_spiderwing_eye_boss.Init(go);        break;
             case 181212: go_spiderwing_eye_ramp.Init(go);        break;
-            case 181576: go_spiderwing_portal.Init(go);          break;
+            case 181575: go_spiderwing_portal.Init(go);          break;
             case 181200: go_noth_door.Init(go);                  break;
             case 181201: go_noth_exit.Init(go);                  break;
             case 181202: go_heigan_entry.Init(go);               break;
@@ -237,6 +244,12 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case 181231: go_plaguewing_eye_boss.Init(go);        break;
             case 181211: go_plaguewing_eye_ramp.Init(go);        break;
             case 181577: go_plaguewing_portal.Init(go);          break;
+            case 181123: go_grobblulus_door.Init(go);            break;
+            case 181120: go_gluth_door.Init(go);                 break;
+            case 181121: go_thaddius_door.Init(go);              break;
+            case 181213: go_abom_eye_boss.Init(go);              break;
+            case 181576: go_naxx_portal.Init(go);                break;
+            case 181232: go_abom_eye_boss.Init(go);              break;
         }
     }
 
@@ -384,6 +397,69 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
                     break;
                 }
                 break;
+            case ENCOUNT_PATCHWERK:
+                Encounters[ENCOUNT_PATCHWERK] = data;
+                switch(data)
+                {
+                case NOT_STARTED:
+                    //Close(go_grobblulus_door);
+                    break;
+                case IN_PROGRESS:
+                    break;
+                case DONE:
+                    Open(go_grobblulus_door);
+                    break;
+                }
+                break;
+            case ENCOUNT_GROBBULUS:
+                Encounters[ENCOUNT_GROBBULUS] = data;
+                switch(data)
+                {
+                case NOT_STARTED:
+                    Open(go_grobblulus_door);
+                    break;
+                case IN_PROGRESS:
+                    Close(go_grobblulus_door);
+                    break;
+                case DONE:
+                    Open(go_grobblulus_door);
+                    break;
+                }
+                break;
+            case ENCOUNT_GLUTH:
+                Encounters[ENCOUNT_GLUTH] = data;
+                switch(data)
+                {
+                case NOT_STARTED:
+                    Close(go_gluth_door);
+                    Close(go_thaddius_door);
+                    break;
+                case DONE:
+                    Open(go_gluth_door);
+                    Open(go_thaddius_door);
+                    break;
+                }
+                break;
+            case ENCOUNT_THADDIUS:
+                Encounters[ENCOUNT_THADDIUS] = data;
+                switch(data)
+                {
+                case NOT_STARTED:
+                    Disable(go_naxx_portal);
+                    Close(go_abom_eye_boss);
+                    Close(go_abom_eye_ramp);
+                    break;
+                case IN_PROGRESS:
+                    Close(go_thaddius_door);
+                    break;
+                case DONE:
+                    Open(go_abom_eye_boss);
+                    Open(go_abom_eye_ramp);
+                    Enable(go_naxx_portal);
+                    Open(go_thaddius_door);
+                    break;
+                }
+                break;
             }
 
         if (data == DONE)
@@ -416,7 +492,10 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case ENCOUNT_NOTH:          return Encounters[10]; break;
             case ENCOUNT_HEIGAN:        return Encounters[11]; break;
             case ENCOUNT_LOATHEB:       return Encounters[12]; break;
-
+            case ENCOUNT_PATCHWERK:     return Encounters[ENCOUNT_PATCHWERK]; break;
+            case ENCOUNT_GROBBULUS:     return Encounters[ENCOUNT_GROBBULUS]; break;
+            case ENCOUNT_GLUTH:         return Encounters[ENCOUNT_GLUTH];     break;
+            case ENCOUNT_THADDIUS:      return Encounters[ENCOUNT_THADDIUS];  break;
             default: return 0;
         }
     }

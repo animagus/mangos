@@ -149,6 +149,9 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
         if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
             return;
 
+        if (m_creature->GetPositionX() > 3343)
+            EnterEvadeMode();
+
         //MortalWound_Timer
         if (MortalWound_Timer < diff)
         {

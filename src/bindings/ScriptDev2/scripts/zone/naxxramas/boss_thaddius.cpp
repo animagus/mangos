@@ -379,7 +379,6 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
         SwitchTarget_Timer = 20000;
 
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        m_creature->CastSpell(m_creature,28160,true);
 
         if (m_pInstance)
         {
@@ -393,6 +392,7 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
 
             m_pInstance->SetData(ENCOUNT_THADDIUS, NOT_STARTED);
         }
+        m_creature->CastSpell(m_creature,28160,true);
     }
 
     void Aggro(Unit* who)
@@ -419,7 +419,6 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
 
         if (m_creature->Attack(who, true))
         {
-            m_creature->RemoveAurasDueToSpell(28160);
             m_creature->SetInCombatWithZone();
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
