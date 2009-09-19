@@ -83,7 +83,7 @@ struct MANGOS_DLL_DECL mob_zombie_chowsAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         if (bIsForceMove)
-            m_creature->SetSpeed(MOVE_RUN,0.8f);
+            m_creature->SetSpeed(MOVE_RUN,0.5f);
         if (!m_creature->SelectHostilTarget() || !m_creature->getVictim() || bIsForceMove)
             return;
 

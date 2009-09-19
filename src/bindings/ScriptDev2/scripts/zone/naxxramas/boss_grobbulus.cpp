@@ -87,7 +87,7 @@ struct MANGOS_DLL_DECL boss_grobbulusAI : public ScriptedAI
     {
         if(spell->Id == SPELL_SLIME_SPRAY || spell->Id == H_SPELL_SLIME_SPRAY && target->GetTypeId() == TYPEID_PLAYER)
         {
-            if (Creature* pSlime = m_creature->SummonCreature(MOB_FALLOUT_SLIME, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, MINUTE*5*IN_MILISECONDS))
+            if (Creature* pSlime = m_creature->SummonCreature(MOB_FALLOUT_SLIME, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, MINUTE*1*IN_MILISECONDS))
                 pSlime->SetInCombatWithZone();
         }
         /*//mob poison slime
