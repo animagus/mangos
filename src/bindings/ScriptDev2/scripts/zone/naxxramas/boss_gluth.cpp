@@ -61,11 +61,12 @@ struct MANGOS_DLL_DECL mob_zombie_chowsAI : public ScriptedAI
 
     void Reset()
     {
+        m_creature->CastSpell(m_creature,29307,true);
         bIsForceMove = false;
     }
     void JustDied(Unit* Killer) {}
 
-    void DoMeleeAttackIfReady()
+    /*void DoMeleeAttackIfReady()
     {
         //If we are within range melee the target
         if (m_creature->IsWithinDistInMap(m_creature->getVictim(), ATTACK_DISTANCE))
@@ -78,7 +79,7 @@ struct MANGOS_DLL_DECL mob_zombie_chowsAI : public ScriptedAI
                 m_creature->resetAttackTimer();
             }
         }
-    }
+    }*/
 
     void UpdateAI(const uint32 diff)
     {
@@ -86,6 +87,9 @@ struct MANGOS_DLL_DECL mob_zombie_chowsAI : public ScriptedAI
             m_creature->SetSpeed(MOVE_RUN,0.5f);
         if (!m_creature->SelectHostilTarget() || !m_creature->getVictim() || bIsForceMove)
             return;
+
+        if (!(m_creature->HasAura(29307)))
+            DoCast(m_creature,29307,true);
 
         DoMeleeAttackIfReady();
     }

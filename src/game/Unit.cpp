@@ -3488,7 +3488,7 @@ bool Unit::AddAura(Aura *Aur)
                     case SPELL_AURA_MOD_DAMAGE_TAKEN:
                     case SPELL_AURA_MOD_DAMAGE_PERCENT_DONE:
                         if (i2->second->GetId() == 45770 || i2->second->GetId() == 29659 ||
-                            i2->second->GetId() == 29660) // Shadow Bolt Volley by Hand of the Deciever.
+                            i2->second->GetId() == 29660 || i2->second->GetId() == 29306) // Shadow Bolt Volley by Hand of the Deciever.
                         {
                             i2->second->modStackAmount(1);
                             delete Aur;
