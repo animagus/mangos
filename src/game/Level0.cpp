@@ -69,9 +69,9 @@ bool ChatHandler::HandleMoodCommand(const char* args)
     if (chr) {
         QueryResult *result = CharacterDatabase.PQuery("SELECT count(*) FROM `character_mood` WHERE `character_id` = '%u'", chr->GetGUID());
         if ((*result)[0].GetBool()) {
-            CharacterDatabase.PExecute("UPDATE `character_mood` SET `mood`='%s', `date_create`='%u' WHERE `character_id`='%u'", argstr, time(NULL), chr->GetGUID());
+            CharacterDatabase.PExecute("UPDATE `character_mood` SET `mood`='%s', `date_create`='%u' WHERE `character_id`='%u'", argstr.c_str(), time(NULL), chr->GetGUID());
         } else {
-            CharacterDatabase.PExecute("INSERT INTO `character_mood` (`character_id`, `mood`) VALUES ('%u', '%s')", chr->GetGUID(), argstr);
+			CharacterDatabase.PExecute("INSERT INTO `character_mood` (`character_id`, `mood`) VALUES ('%u', '%s')", chr->GetGUID(), argstr.c_str());
         }
         return true;
     }
