@@ -80,6 +80,14 @@ ChatCommand * ChatHandler::getCommandTable()
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
+	static ChatCommand moodCommandTable[] = 
+	{
+		{"set",				SEC_PLAYER,			false, &ChatHandler::HandleMoodSetCommand,			   "", NULL },
+		{"clear",			SEC_PLAYER,			false, &ChatHandler::HandleMoodClearCommand,           "", NULL },
+		{"",				SEC_PLAYER,			false, &ChatHandler::HandleMoodCommand,					"", NULL },
+		{ NULL,             0,                  false, NULL,                                           "", NULL }
+	};
+
     static ChatCommand banCommandTable[] =
     {
         { "account",        SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleBanAccountCommand,          "", NULL },
@@ -619,7 +627,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "baninfo",        SEC_ADMINISTRATOR,  false, NULL,                                           "", baninfoCommandTable  },
         { "banlist",        SEC_ADMINISTRATOR,  true,  NULL,                                           "", banlistCommandTable  },
         { "start",          SEC_PLAYER,         false, &ChatHandler::HandleStartCommand,               "", NULL },
-        { "mood",           SEC_PLAYER,         false, &ChatHandler::HandleMoodCommand,                "", NULL },
+        { "mood",           SEC_PLAYER,         false, NULL,										   "", moodCommandTable },
         { "taxicheat",      SEC_MODERATOR,      false, &ChatHandler::HandleTaxiCheatCommand,           "", NULL },
         { "linkgrave",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleLinkGraveCommand,           "", NULL },
         { "neargrave",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNearGraveCommand,           "", NULL },

@@ -430,6 +430,8 @@ class ChatHandler
         bool HandleHelpCommand(const char* args);
         bool HandleCommandsCommand(const char* args);
         bool HandleMoodCommand(const char* args);
+		bool HandleMoodSetCommand(const char* args);
+		bool HandleMoodClearCommand(const char* args);
         bool HandleStartCommand(const char* args);
         bool HandleDismountCommand(const char* args);
         bool HandleSaveCommand(const char* args);
