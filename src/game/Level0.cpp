@@ -75,6 +75,7 @@ bool ChatHandler::HandleMoodSetCommand(const char* args)
     } else {
         CharacterDatabase.PExecute("INSERT INTO `character_mood` (`character_id`, `mood`, `date_modify`) VALUES ('%u', '%s', NOW())", chr->GetGUID(), argstr.c_str());
     }
+	PSendSysMessage("You mood: %s", argstr.c_str());
     return true;
 }
 
@@ -88,6 +89,7 @@ bool ChatHandler::HandleMoodClearCommand(const char* args)
     if ((*result)[0].GetBool()) {
         CharacterDatabase.PExecute("DELETE FROM `character_mood` WHERE `character_id`='%u'", chr->GetGUID());
     }
+	SendSysMessage("You mood cleared");
     return true;
 }
 
