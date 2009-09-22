@@ -60,6 +60,24 @@ bool ChatHandler::HandleAccountCommand(const char* /*args*/)
     return true;
 }
 
+bool ChatHandler::HandleMoodCommand(const char* args)
+{
+    if(!*args)
+        return false;
+    std::string argstr = (char*)args;
+    Player *chr = m_session->GetPlayer();
+    if (chr) {
+        QueryResult *result = characterDatabase.PQuery("SELECT count(*) FROM `character_mood` WHERE `character_id` = %d", chr->GetGUID());
+        if ((*result)[0].GetBool()) {
+            characterDatabase.PQuery("UPDATE `character_mood` SET `mood`=%s, `date_create`=%d WHERE `character_id`=%d", argstr, time(NULL), chr->GetGUID());
+        } else {
+            characterDatabase.PQuery("INSERT INTO `character_mood` (`character_id`, `mood`) VALUES (%d, %s)", chr->GetGUID(), argstr);
+        }
+        return true;
+    }
+    return false;
+}
+
 bool ChatHandler::HandleStartCommand(const char* /*args*/)
 {
     Player *chr = m_session->GetPlayer();
