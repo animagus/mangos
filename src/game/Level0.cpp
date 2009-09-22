@@ -65,6 +65,7 @@ bool ChatHandler::HandleMoodCommand(const char* args)
     if(!*args)
         return false;
     std::string argstr = (char*)args;
+    CharacterDatabase.escape_string(argstr);
     Player *chr = m_session->GetPlayer();
     if (chr) {
         QueryResult *result = CharacterDatabase.PQuery("SELECT count(*) FROM `character_mood` WHERE `character_id` = '%u'", chr->GetGUID());
