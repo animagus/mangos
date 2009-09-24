@@ -247,7 +247,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case 181123: go_grobblulus_door.Init(go);            break;
             case 181120: go_gluth_door.Init(go);                 break;
             case 181121: go_thaddius_door.Init(go);              break;
-            case 181213: go_abom_eye_boss.Init(go);              break;
+            case 181213: go_abom_eye_ramp.Init(go);              break;
             case 181576: go_naxx_portal.Init(go);                break;
             case 181232: go_abom_eye_boss.Init(go);              break;
         }
@@ -445,10 +445,14 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
                 switch(data)
                 {
                 case NOT_STARTED:
-                    Disable(go_naxx_portal);
-                    Close(go_abom_eye_boss);
-                    Close(go_abom_eye_ramp);
-                    break;
+                    {
+                        Disable(go_naxx_portal);
+                        Close(go_abom_eye_boss);
+                        Close(go_abom_eye_ramp);
+                        if (GetData(ENCOUNT_GLUTH) == 3)
+                            Open(go_thaddius_door);
+                        break;
+                    }
                 case IN_PROGRESS:
                     Close(go_thaddius_door);
                     break;

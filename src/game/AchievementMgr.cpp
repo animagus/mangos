@@ -957,10 +957,20 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
                 if(!miscvalue1)
                     continue;
 
-                // those requirements couldn't be found in the dbc
-                AchievementCriteriaDataSet const* data = achievementmgr.GetCriteriaDataSet(achievementCriteria);
-                if(!data || !data->Meets(GetPlayer(),unit))
-                    continue;
+                if(achievement->ID == 1260)
+                {
+                    if(Player::GetDrunkenstateByValue(GetPlayer()->GetDrunkValue()) != DRUNKEN_SMASHED)
+                        continue;
+                    if(!IsHolidayActive(HOLIDAY_BREWFEST))
+                        continue;
+                }
+                else
+                {
+                    // those requirements couldn't be found in the dbc
+                    AchievementCriteriaDataSet const* data = achievementmgr.GetCriteriaDataSet(achievementCriteria);
+                    if(!data || !data->Meets(GetPlayer(),unit))
+                        continue;
+                }
 
                 // miscvalue1 is the ingame fallheight*100 as stored in dbc
                 SetCriteriaProgress(achievementCriteria, miscvalue1);
