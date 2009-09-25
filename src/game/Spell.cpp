@@ -1344,6 +1344,7 @@ void Spell::SetTargetMap(uint32 effIndex,uint32 targetMode,UnitList& TagUnitMap)
         case TARGET_SELF:
         case TARGET_SELF2:
         case TARGET_DYNAMIC_OBJECT:
+        case TARGET_DYNAMIC_OBJECT_2:
         case TARGET_AREAEFFECT_CUSTOM:
         case TARGET_AREAEFFECT_CUSTOM_2:
         case TARGET_SUMMON:
@@ -5443,7 +5444,7 @@ SpellCastResult Spell::CheckItems()
                         return SPELL_FAILED_NOT_TRADEABLE;
                 }
 
-                if (m_spellInfo->maxLevel && (item->GetProto()->ItemLevel > m_spellInfo->maxLevel))
+                if (!(m_spellInfo->baseLevel) && m_spellInfo->maxLevel && (item->GetProto()->ItemLevel > m_spellInfo->maxLevel))
                     return SPELL_FAILED_BAD_TARGETS;
 
                 break;

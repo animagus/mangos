@@ -20105,7 +20105,7 @@ void Player::HandleFall(MovementInfo const& movementInfo)
     // 14.57 can be calculated by resolving damageperc formula below to 0
     if (z_diff >= 14.57f && !isDead() && !isGameMaster() &&
         !HasAuraType(SPELL_AURA_HOVER) && !HasAuraType(SPELL_AURA_FEATHER_FALL) &&
-        !HasAuraType(SPELL_AURA_FLY) && !IsImmunedToDamage(SPELL_SCHOOL_MASK_NORMAL) )
+        !HasAuraType(SPELL_AURA_FLY))
     {
         //Safe fall, fall height reduction
         int32 safe_fall = GetTotalAuraModifier(SPELL_AURA_SAFE_FALL);
@@ -20130,7 +20130,10 @@ void Player::HandleFall(MovementInfo const& movementInfo)
                     damage = GetMaxHealth()/2;
 
                 uint32 original_health = GetHealth();
-                uint32 final_damage = EnvironmentalDamage(DAMAGE_FALL, damage);
+                uint32 final_damage;
+                if (!IsImmunedToDamage(SPELL_SCHOOL_MASK_NORMAL))
+                    final_damage = EnvironmentalDamage(DAMAGE_FALL, damage);
+                else final_damage = 0;
 
                 // recheck alive, might have died of EnvironmentalDamage, avoid cases when player die in fact like Spirit of Redemption case
                 if (isAlive() && final_damage < original_health)

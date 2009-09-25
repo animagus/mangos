@@ -5298,6 +5298,15 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                         ((Player*)m_caster)->learnSpell(discoveredSpell, false);
                     return;
                 }
+                case 42436:
+                {
+                    // Cool hack, bro!
+                    if(!m_caster || m_caster->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    ((Player*)m_caster)->KilledMonsterCredit(24108, 0);
+                    return;
+                }
 				/*case 45204: // Clone Me! 
                 case 41055: // Copy Weapon 
                 case 45206: // Copy Off-hand Weapon 

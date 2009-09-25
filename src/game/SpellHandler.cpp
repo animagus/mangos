@@ -555,6 +555,8 @@ void WorldSession::HandleSpellClick( WorldPacket & recv_data )
             Unit *target = (itr->second.castFlags & 0x2) ? (Unit*)_player : (Unit*)unit;
 
             caster->CastSpell(target, itr->second.spellId, true);
+            if (unit->GetEntry() == 23487)
+                unit->ForcedDespawn();
         }
     }
 }

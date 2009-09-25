@@ -156,6 +156,17 @@ Waypoint m_aDragonCommon[]=
     {3209.969, 566.523, 98.652}
 };
 
+float ThsunamiLocations[5][4]=
+{
+    //left side
+    {3198.790, 486.745, 55.686, 6.230},
+    {3204.037, 533.541, 58.216, 6.275},
+    {3204.363, 579.140, 56.915, 6.254},
+    // right side
+    {3287.655, 552.528, 58.357, 3.185},
+    {3287.928, 515.096, 58.439, 3.094},
+};
+
 /*######
 ## Boss Sartharion
 ######*/
@@ -233,7 +244,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
         if (m_pInstance)
         {
             m_pInstance->SetData(TYPE_SARTHARION_EVENT, IN_PROGRESS);
-            FetchDragons();
+            //FetchDragons();
         }
     }
 
@@ -358,12 +369,12 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
             return;
 
         //spell will target dragons, if they are still alive at 35%
-        if (!m_bIsBerserk && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) <= 35)
+        /*if (!m_bIsBerserk && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) <= 35)
         {
             DoScriptText(SAY_SARTHARION_BERSERK,m_creature);
             DoCast(m_creature,SPELL_BERSERK);
             m_bIsBerserk = true;
-        }
+        }*/
 
         //soft enrage
         if (!m_bIsSoftEnraged && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) <= 10)
@@ -440,7 +451,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
         else
             m_uiLavaStrikeTimer -= uiDiff;
 
-        // call tenebron
+        /*// call tenebron
         if (!m_bHasCalledTenebron && m_uiTenebronTimer < uiDiff)
         {
             CallDragon(DATA_TENEBRON);
@@ -465,7 +476,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
             m_bHasCalledVesperon = true;
         }
         else
-            m_uiVesperonTimer -= uiDiff;
+            m_uiVesperonTimer -= uiDiff;*/
 
         DoMeleeAttackIfReady();
 
@@ -1069,6 +1080,38 @@ CreatureAI* GetAI_mob_twilight_eggs(Creature* pCreature)
 }
 
 /*######
+## Mob Tsunami
+######*/
+
+struct MANGOS_DLL_DECL mob_tsunamiAI : public ScriptedAI
+{
+    mob_tsunamiAI(Creature* pCreature) : ScriptedAI(pCreature) { Reset(); }
+
+    void Reset()
+    {
+    }
+
+    void AttackStart(Unit* pWho) { }
+    void MoveInLineOfSight(Unit* pWho) { }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        if (!(m_creature->HasAura(SPELL_FLAME_TSUNAMI)))
+            DoCast(m_creature,SPELL_FLAME_TSUNAMI,true);
+
+        if (!(m_creature->HasAura(SPELL_FLAME_TSUNAMI_DMG_AURA)))
+            DoCast(m_creature,SPELL_FLAME_TSUNAMI_DMG_AURA,true);
+
+    }
+};
+
+CreatureAI* GetAI_mob_tsunami(Creature* pCreature)
+{
+    return new mob_tsunamiAI(pCreature);
+}
+
+
+/*######
 ## Mob Twilight Whelps
 ######*/
 
@@ -1149,5 +1192,10 @@ void AddSC_boss_sartharion()
     newscript = new Script;
     newscript->Name = "mob_twilight_whelp";
     newscript->GetAI = &GetAI_mob_twilight_whelp;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_tsunami";
+    newscript->GetAI = &GetAI_mob_tsunami;
     newscript->RegisterSelf();
 }

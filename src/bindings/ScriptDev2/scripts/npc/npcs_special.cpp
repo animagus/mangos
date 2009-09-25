@@ -38,6 +38,7 @@ npc_kingdom_of_dalaran_quests   Misc NPC's gossip option related to quests 12791
 npc_mount_vendor        100%    Regular mount vendors all over the world. Display gossip if player doesn't meet the requirements to buy
 npc_rogue_trainer       80%     Scripted trainers, so they are able to offer item 17126 for class quest 6681
 npc_sayge               100%    Darkmoon event fortune teller, buff player based on answers given
+npc_wild_wolpertinger   100%
 EndContentData */
 
 /*########
@@ -1293,12 +1294,12 @@ bool GossipHello_Bat_Handler_Camille(Player* pPlayer, Creature* pCreature)
 {
 
   if(pPlayer->IsActiveQuest(11170) && pPlayer->GetQuestStatus(11170) != QUEST_STATUS_COMPLETE)
-    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "I`m ready to strike alliance reinforcements!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF +1);
+      pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "I`m ready to strike alliance reinforcements!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF +1);
 
   if(pPlayer->IsActiveQuest(11229))
-    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "I need to fly to the Windrunner Official business!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-
-    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
+      pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "I need to fly to the Windrunner Official business!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+  
+  pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
     return true;
 }
 
@@ -1308,17 +1309,15 @@ bool GossipSelect_Bat_Handler_Camille(Player* pPlayer, Creature* pCreature, uint
   uint32 spellId = 0;
 
   switch(action)
-    {
+  {
+  case GOSSIP_ACTION_INFO_DEF + 1: spellId = 43136; break;
+  case GOSSIP_ACTION_INFO_DEF + 2 : spellId = 43074; break;
+  }
 
-    case GOSSIP_ACTION_INFO_DEF + 1: spellId = 43136; break;
-
-    case GOSSIP_ACTION_INFO_DEF + 2 : spellId = 43074; break;
-    }
-
-   pPlayer->CLOSE_GOSSIP_MENU();
+  pPlayer->CLOSE_GOSSIP_MENU();
 
   if(spellId)
-    pPlayer->CastSpell(pPlayer, spellId, true);
+      pPlayer->CastSpell(pPlayer, spellId, true);
 
   return true;
 }
@@ -1327,8 +1326,7 @@ bool GossipHello_Greer_OreHammer(Player* pPlayer, Creature* pCreature)
 {
 
   if(pPlayer->GetQuestStatus(11332) == QUEST_STATUS_INCOMPLETE)
-    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "I am here to destroy the tanks with the plague!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-
+      pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TAXI, "I am here to destroy the tanks with the plague!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
   pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
 
@@ -1347,10 +1345,10 @@ bool GossipSelect_Greer_OreHammer(Player* pPlayer, Creature* pCreature, uint32 s
       uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 33634, 10, &noSpaceForCount);
 
       if(msg != EQUIP_ERR_OK)
-       {
-        pPlayer->SendEquipError(msg, NULL, NULL);
-         return false;
-       }
+      {
+          pPlayer->SendEquipError(msg, NULL, NULL);
+          return false;
+      }
 
       Item* bomb = pPlayer->StoreNewItem( dest, 33634, true, Item::GenerateItemRandomPropertyId(33634) );
 
@@ -1361,6 +1359,41 @@ bool GossipSelect_Greer_OreHammer(Player* pPlayer, Creature* pCreature, uint32 s
 
    return true;
 }
+
+/*######
+## npc_wild_wolpertinger
+######*/
+
+struct MANGOS_DLL_DECL npc_wild_wolpertingerAI : public ScriptedAI
+{
+    npc_wild_wolpertingerAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+
+    void Reset()
+    {
+        m_creature->RemoveFlag(UNIT_NPC_FLAGS,UNIT_NPC_FLAG_SPELLCLICK);
+    }
+
+    void SpellHit(Unit *caster, const SpellEntry *spell)
+    {
+        if (spell->Id == 41621)
+        {
+            if (caster->GetTypeId() == TYPEID_PLAYER && ((Player*)caster)->GetDrunkenstateByValue(((Player*)caster)->GetDrunkValue()) >= DRUNKEN_DRUNK)
+                m_creature->SetFlag(UNIT_NPC_FLAGS,UNIT_NPC_FLAG_SPELLCLICK);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+            return;
+    }
+};
+
+CreatureAI* GetAI_npc_wild_wolpertinger(Creature* pCreature)
+{
+    return new npc_wild_wolpertingerAI(pCreature);
+}
+
 
 void AddSC_npcs_special()
 {
@@ -1438,5 +1471,10 @@ void AddSC_npcs_special()
     newscript->Name = "npc_greer_orehammer";
     newscript->pGossipHello = &GossipHello_Greer_OreHammer;
     newscript->pGossipSelect = &GossipSelect_Greer_OreHammer;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_wild_wolpertinger";
+    newscript->GetAI = &GetAI_npc_wild_wolpertinger;
     newscript->RegisterSelf();
 }
