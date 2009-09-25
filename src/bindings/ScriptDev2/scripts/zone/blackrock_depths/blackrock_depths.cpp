@@ -700,7 +700,7 @@ struct MANGOS_DLL_DECL npc_coren_direbrewAI : public ScriptedAI
         if (DisarmTimer <= diff)
         {
             DoCast(m_creature,47310);
-            DisarmTimer = 7000;
+            DisarmTimer = 15000;
         }
         else DisarmTimer -= diff;
 
@@ -742,7 +742,7 @@ CreatureAI* GetAI_npc_coren_direbrew(Creature* pCreature)
     return new npc_coren_direbrewAI(pCreature);
 }
 
-bool QuestComplete_npc_coren_direbrew(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+bool ChooseReward_npc_coren_direbrew(Player* pPlayer, Creature* pCreature, const Quest* pQuest, uint32 item)
 {
     if (pQuest->GetQuestId() == 12062)
     {
@@ -777,9 +777,10 @@ struct MANGOS_DLL_DECL npc_direbrew_minionAI : public ScriptedAI
         if (DisarmTimer <= diff)
         {
             DoCast(m_creature->getVictim(),50313);
-            DisarmTimer = 7000;
+            DisarmTimer = 15000;
         }
         else DisarmTimer -= diff;
+        DoMeleeAttackIfReady();
     }
 };
 
@@ -833,7 +834,7 @@ void AddSC_blackrock_depths()
     newscript = new Script;
     newscript->Name = "npc_coren_direbrew";
     newscript->GetAI = &GetAI_npc_coren_direbrew;
-    newscript->pQuestComplete = &QuestComplete_npc_coren_direbrew;
+    newscript->pChooseReward = &ChooseReward_npc_coren_direbrew;
     newscript->RegisterSelf();
 
     newscript = new Script;

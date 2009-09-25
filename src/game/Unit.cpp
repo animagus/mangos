@@ -45,6 +45,7 @@
 #include "Path.h"
 #include "Traveller.h"
 #include "VMapFactory.h"
+#include "GameEventMgr.h"
 
 #include <math.h>
 
@@ -574,6 +575,12 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         {
             player->RewardPlayerAndGroupAtKill(pVictim);
             player->ProcDamageAndSpell(pVictim, PROC_FLAG_KILL, PROC_FLAG_KILLED, PROC_EX_NONE, 0);
+            if (pVictim->GetTypeId() == TYPEID_PLAYER && IsHolidayActive(HOLIDAY_WOTLK_LAUNCH) && player->GetMapId() == 489)
+            {
+                uint32 level = player->getLevel();
+                if (level < sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL))
+                    player->GiveLevel(level+1);
+            }
         }
 
         DEBUG_LOG("DealDamageAttackStop");
