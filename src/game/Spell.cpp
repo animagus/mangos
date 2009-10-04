@@ -1600,7 +1600,7 @@ void Spell::SetTargetMap(uint32 effIndex,uint32 targetMode,UnitList& TagUnitMap)
                         for(SpellScriptTarget::const_iterator i_spellST = bounds.first; i_spellST != bounds.second; ++i_spellST)
                         {
                             if (i_spellST->second.targetEntry != (*itr)->GetEntry())
-                                TagUnitMap.remove(itr);
+                                TagUnitMap.remove(*itr);
                         }
                     }
                 }
