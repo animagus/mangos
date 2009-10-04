@@ -2100,12 +2100,6 @@ void Aura::TriggerSpell()
                 target->CastSpell(target, trigger_spell_id, true, NULL, this);
                 return;
             }
-            /*case 54362:
-            case 28158:
-            {
-                triggeredSpellInfo->SetRadius(123);
-                return;
-            }*/
         }
     }
 

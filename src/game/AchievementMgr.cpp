@@ -1050,7 +1050,7 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
                 if(miscvalue1 && miscvalue1!=achievementCriteria->learn_spell.spellID)
                     continue;
 
-                if(GetPlayer()->HasSpell(achievementCriteria->learn_spell.spellID))
+                if(exception || GetPlayer()->HasSpell(achievementCriteria->learn_spell.spellID))
                     SetCriteriaProgress(achievementCriteria, 1);
                 break;
             case ACHIEVEMENT_CRITERIA_TYPE_LOOT_TYPE:

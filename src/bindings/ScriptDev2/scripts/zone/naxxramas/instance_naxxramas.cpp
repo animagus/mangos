@@ -118,6 +118,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
     uint64 guid_stalagg;
     uint64 guid_feugen;
     uint64 guid_thaddius;
+    uint64 guid_loatheb;
 
     uint32 Encounters[ENCOUNTERS];
 
@@ -172,6 +173,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
         guid_stalagg         = 0;
         guid_feugen          = 0;
         guid_thaddius        = 0;
+        guid_loatheb         = 0;
     }
 
     bool IsEncounterInProgress() const
@@ -195,6 +197,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case 15929: guid_stalagg    = creature->GetGUID();   break;
             case 15930: guid_feugen     = creature->GetGUID();   break;
             case 15928: guid_thaddius   = creature->GetGUID();   break;
+            case 16011: guid_loatheb    = creature->GetGUID();   break;
             case 16506:
                 ++m_uiworshipper;
                 switch (m_uiworshipper)
@@ -258,9 +261,9 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
         switch (identifier)
         {
             //Spiderwing -------------------------------------
-            case GUID_ANUBREKHAN: return guid_anubrekhan;        break;
-            case GUID_FAERLINA:   return guid_faerlina;          break;
-            case GUID_MAEXXNA:    return guid_maexxna;           break;
+            case GUID_ANUBREKHAN:  return guid_anubrekhan;       break;
+            case GUID_FAERLINA:    return guid_faerlina;         break;
+            case GUID_MAEXXNA:     return guid_maexxna;          break;
             case GUID_WORSHIPPER1: return m_uiworshipper1GUID;   break;
             case GUID_WORSHIPPER2: return m_uiworshipper2GUID;   break;
             case GUID_WORSHIPPER3: return m_uiworshipper3GUID;   break;
@@ -269,6 +272,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case GUID_STALAGG:     return guid_stalagg;          break;
             case GUID_FEUGEN:      return guid_feugen;           break;
             case GUID_THADDIUS:    return guid_thaddius;         break;
+            case GUID_LOATHEB:     return guid_loatheb;          break;
             default:
                 return 0;
         }
@@ -493,9 +497,9 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case ENCOUNT_ANUBREKHAN:    return Encounters[0]; break;
             case ENCOUNT_FAERLINA:      return Encounters[1]; break;
             case ENCOUNT_MAEXXNA:       return Encounters[2]; break;
-            case ENCOUNT_NOTH:          return Encounters[10]; break;
-            case ENCOUNT_HEIGAN:        return Encounters[11]; break;
-            case ENCOUNT_LOATHEB:       return Encounters[12]; break;
+            case ENCOUNT_NOTH:          return Encounters[ENCOUNT_NOTH]; break;
+            case ENCOUNT_HEIGAN:        return Encounters[ENCOUNT_HEIGAN]; break;
+            case ENCOUNT_LOATHEB:       return Encounters[ENCOUNT_LOATHEB]; break;
             case ENCOUNT_PATCHWERK:     return Encounters[ENCOUNT_PATCHWERK]; break;
             case ENCOUNT_GROBBULUS:     return Encounters[ENCOUNT_GROBBULUS]; break;
             case ENCOUNT_GLUTH:         return Encounters[ENCOUNT_GLUTH];     break;

@@ -74,7 +74,7 @@ struct MANGOS_DLL_DECL npc_tempest_minionAI : public ScriptedAI
         m_bDead = false;
         m_bTimeToDie = false;
         m_uiRespawnTimer = 4000;
-	m_uiEvadeCheckTimer = 0;
+        m_uiEvadeCheckTimer = 0;
 
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetStandState(UNIT_STAND_STATE_STAND);

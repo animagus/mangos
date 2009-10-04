@@ -279,6 +279,9 @@ void Spell::EffectInstaKill(uint32 /*i*/)
         m_caster->CastSpell(m_caster, spellID, true);
     }
 
+    if (m_spellInfo->Id == 48743)
+        return;
+
     if(m_caster == unitTarget)                              // prevent interrupt message
         finish();
 
@@ -372,12 +375,12 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
                         {
                             if (Aura *positive = unitTarget->GetAura(29659, 0))
                             {
-                                if (positive->GetStackAmount() != 1)
-                                    positive->modStackAmount(-1);
-
                                 if (positive->GetStackAmount() == 1 &&
                                     positive->GetCasterGUID() == m_caster->GetGUID())
                                     return;
+
+                                if (positive->GetStackAmount() != 1)
+                                    positive->modStackAmount(-1);
                             }
                             unitTarget->CastSpell(unitTarget,29659,true,0,0,m_caster->GetGUID());
                             return;
@@ -390,12 +393,12 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
                         {
                             if (Aura *negative = unitTarget->GetAura(29660, 0))
                             {
-                                if (negative->GetStackAmount() != 1)
-                                    negative->modStackAmount(-1);
-
                                 if (negative->GetStackAmount() == 1 &&
                                     negative->GetCasterGUID() == m_caster->GetGUID())
                                     return;
+
+                                if (negative->GetStackAmount() != 1)
+                                    negative->modStackAmount(-1);
                             }
                             unitTarget->CastSpell(unitTarget,29660,true,0,0,m_caster->GetGUID());
                             return;
@@ -1215,6 +1218,16 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(m_caster, 45088, true);
                     return;
                 }
+                case 49357:
+                case 52845:
+                    {
+                        // old spell to transform mount, in 3.2 new spells
+                        if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                            return;
+
+                        ((Player*)m_caster)->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LEARN_SPELL,43899,0,0,0,1);
+                        return;
+                    }
                 case 55004:                                 // Nitro Boosts
                     if (!m_CastItem)
                         return;

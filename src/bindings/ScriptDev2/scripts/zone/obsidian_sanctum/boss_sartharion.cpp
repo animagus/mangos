@@ -164,7 +164,7 @@ float ThsunamiLocations[5][4]=
     {3204.363, 579.140, 56.915, 6.254},
     // right side
     {3287.655, 552.528, 58.357, 3.185},
-    {3287.928, 515.096, 58.439, 3.094},
+    {3287.928, 511.096, 58.439, 3.094},
 };
 
 /*######
@@ -360,6 +360,20 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
                 }
             }
         }
+
+        if(rand()%2)
+        {
+            // right side
+            m_creature->SummonCreature(30616,ThsunamiLocations[3][0],ThsunamiLocations[3][1],ThsunamiLocations[3][2],ThsunamiLocations[3][3],TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,30000);
+            m_creature->SummonCreature(30616,ThsunamiLocations[4][0],ThsunamiLocations[4][1],ThsunamiLocations[4][2],ThsunamiLocations[4][3],TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,30000);
+
+        }else
+        {
+            // left side
+            m_creature->SummonCreature(30616,ThsunamiLocations[0][0],ThsunamiLocations[0][1],ThsunamiLocations[0][2],ThsunamiLocations[0][3],TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,30000);
+            m_creature->SummonCreature(30616,ThsunamiLocations[1][0],ThsunamiLocations[1][1],ThsunamiLocations[1][2],ThsunamiLocations[1][3],TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,30000);
+            m_creature->SummonCreature(30616,ThsunamiLocations[2][0],ThsunamiLocations[2][1],ThsunamiLocations[2][2],ThsunamiLocations[2][3],TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,30000);
+        }
     }
 
     void UpdateAI(const uint32 uiDiff) 
@@ -381,6 +395,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
         {
             // TODO
             m_bIsSoftEnraged = true;
+            m_uiLavaStrikeTimer = 2000;
         }
 
         // hard enrage
@@ -446,7 +461,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
                     case 2: DoScriptText(SAY_SARTHARION_SPECIAL_3, m_creature); break;
                 }
             }
-            m_uiLavaStrikeTimer = 5000 + rand()%15000;
+            m_uiLavaStrikeTimer = m_bIsSoftEnraged ? 2000 : 5000 + rand()%15000;
         }
         else
             m_uiLavaStrikeTimer -= uiDiff;
@@ -1087,12 +1102,45 @@ struct MANGOS_DLL_DECL mob_tsunamiAI : public ScriptedAI
 {
     mob_tsunamiAI(Creature* pCreature) : ScriptedAI(pCreature) { Reset(); }
 
+    bool move;
+    uint32 move_timer,die_timer, leap_timer;
     void Reset()
     {
+        move = false;
+        move_timer = 5000;
+        die_timer = 14000;
+        leap_timer = 1000;
     }
 
     void AttackStart(Unit* pWho) { }
     void MoveInLineOfSight(Unit* pWho) { }
+
+    void DoLeap()
+    {
+        Map* pMap = m_creature->GetMap();
+        if (pMap && pMap->IsDungeon())
+        {
+            Map::PlayerList const &PlayerList = pMap->GetPlayers();
+            if (!PlayerList.isEmpty())
+            {
+                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                {
+                    if (Player* pPlayer = i->getSource())
+                    {
+                        if (pPlayer->isGameMaster())
+                            continue;
+                        if (pPlayer->isAlive())
+                        {
+                            if (m_creature->GetDistance2d(pPlayer->GetPositionX(),pPlayer->GetPositionY()) <= 7)
+                                pPlayer->CastSpell(pPlayer,60241,true);
+                        }
+                    }
+
+                }
+            }
+        }
+
+    }
 
     void UpdateAI(const uint32 uiDiff)
     {
@@ -1101,6 +1149,36 @@ struct MANGOS_DLL_DECL mob_tsunamiAI : public ScriptedAI
 
         if (!(m_creature->HasAura(SPELL_FLAME_TSUNAMI_DMG_AURA)))
             DoCast(m_creature,SPELL_FLAME_TSUNAMI_DMG_AURA,true);
+
+        if (!move && move_timer <= uiDiff)
+        {
+            move = true;
+            if (m_creature->GetPositionX() < 3205)
+            {
+                //m_creature->AddMonsterMoveFlag(MONSTER_MOVE_WALK);
+                m_creature->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_creature->GetPositionX()+84.0f, m_creature->GetPositionY(), m_creature->GetPositionZ());
+                //m_creature->SendMonsterMoveWithSpeed(m_creature->GetPositionX()+84.0f,m_creature->GetPositionY(),m_creature->GetPositionZ(),15000);
+                //m_creature->GetMap()->CreatureRelocation(m_creature,m_creature->GetPositionX()+84.0f,m_creature->GetPositionY(),m_creature->GetPositionZ(),m_creature->GetOrientation());
+            }else
+            {
+                //m_creature->AddMonsterMoveFlag(MONSTER_MOVE_WALK);
+                m_creature->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_creature->GetPositionX()-84.0f, m_creature->GetPositionY(), m_creature->GetPositionZ());
+                //m_creature->SendMonsterMoveWithSpeed(m_creature->GetPositionX()-84.0f,m_creature->GetPositionY(),m_creature->GetPositionZ(),15000);
+                //m_creature->GetMap()->CreatureRelocation(m_creature,m_creature->GetPositionX()-84.0f,m_creature->GetPositionY(),m_creature->GetPositionZ(),m_creature->GetOrientation());
+            }
+
+        }else move_timer -= uiDiff;
+
+        if (die_timer <= uiDiff)
+            m_creature->ForcedDespawn();
+        else die_timer -= uiDiff;
+
+        if (leap_timer <= uiDiff)
+        {
+            DoLeap();
+            leap_timer = 1000;
+        }else leap_timer -= uiDiff;
+
 
     }
 };
@@ -1150,6 +1228,133 @@ CreatureAI* GetAI_mob_twilight_whelp(Creature* pCreature)
     return new mob_twilight_whelpAI(pCreature);
 }
 
+/*######
+## Mob Lava Blaze
+######*/
+
+struct MANGOS_DLL_DECL mob_lava_blazeAI : public ScriptedAI
+{
+    mob_lava_blazeAI(Creature* pCreature) : ScriptedAI(pCreature) { Reset(); }
+
+    void Reset()
+    {
+
+    }
+
+    void SpellHit(Unit* pCaster, const SpellEntry* pSpell)
+    {
+        if (pSpell->Id == 60430)
+            m_creature->SetHealth(m_creature->GetMaxHealth());
+    }
+
+/*    void UpdateAI(const uint32 uiDiff)
+    {
+        //Return since we have no target
+        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+            return;
+
+        DoMeleeAttackIfReady();
+    }
+*/
+};
+
+CreatureAI* GetAI_mob_lava_blaze(Creature* pCreature)
+{
+    return new mob_lava_blazeAI(pCreature);
+}
+
+/*######
+## Mob Safe Area
+######*/
+
+struct MANGOS_DLL_DECL mob_safe_areaAI : public ScriptedAI
+{
+    mob_safe_areaAI(Creature* pCreature) : ScriptedAI(pCreature)
+    {
+        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        Reset(); 
+    }
+
+    uint32 m_uiRangeCheck;
+    ScriptedInstance* m_pInstance;
+
+    void Reset()
+    {
+        m_uiRangeCheck = 10000;
+    }
+    
+    void MoveInLineOfSight(Unit *who)
+    {
+        return;
+    }
+
+    void Aggro(Unit* who)
+    {
+        //This is just for dance. It doesn't attack anybody.
+        DoStopAttack();
+        SetCombatMovement(false);
+    }
+    void JustDied(Unit* who)
+    {
+        //If dance mob was somehow killed - respawn him.
+        m_creature->Respawn();
+    }
+
+    void CheckRange()
+    {
+        Map* pMap = m_creature->GetMap();
+        if (pMap && pMap->IsDungeon())
+        {
+            Map::PlayerList const &PlayerList = pMap->GetPlayers();
+            if (!PlayerList.isEmpty())
+            {
+                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                {
+                    if (Player* pPlayer = i->getSource())
+                    {
+                        if (pPlayer->isGameMaster())
+                            continue;
+                        if (pPlayer->isAlive())
+                        {
+                            float fX = pPlayer->GetPositionX();
+                            float fY = pPlayer->GetPositionY();
+                            float fZ = pPlayer->GetPositionZ();
+
+                            if (fX > 3218.86f && fX < 3275.69f && fY < 572.40f && fY > 484.68f)
+                                continue;
+                            else
+                                DoCast(m_creature,58903,true);
+                        }
+                    }
+                        
+                }
+            }
+        }
+    }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        if (!m_pInstance)
+            return;
+
+        if (m_pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
+        {
+            if (m_uiRangeCheck <= uiDiff)
+            {
+                CheckRange();
+                m_uiRangeCheck = 4000;
+            }
+            else m_uiRangeCheck -= uiDiff;
+        }
+
+    }
+};
+
+CreatureAI* GetAI_mob_safe_area(Creature* pCreature)
+{
+    return new mob_safe_areaAI(pCreature);
+}
+
 void AddSC_boss_sartharion()
 {
     Script *newscript;
@@ -1197,5 +1402,15 @@ void AddSC_boss_sartharion()
     newscript = new Script;
     newscript->Name = "mob_tsunami";
     newscript->GetAI = &GetAI_mob_tsunami;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_blaze";
+    newscript->GetAI = &GetAI_mob_lava_blaze;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_safe_area";
+    newscript->GetAI = &GetAI_mob_safe_area;
     newscript->RegisterSelf();
 }

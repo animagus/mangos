@@ -1338,6 +1338,10 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                          (spellInfo_2->Id == 28084 && spellInfo_1->Id == 29660) )
                         return false;
 
+                    // Sartharion Tsunami spells
+                    if(spellInfo_1->SpellIconID == 3087 && spellInfo_2->SpellIconID == 3087)
+                        return false;
+
                     break;
                 }
                 case SPELLFAMILY_MAGE:
@@ -2160,7 +2164,8 @@ void SpellMgr::LoadSpellScriptTarget()
             if( spellProto->EffectImplicitTargetA[i]==TARGET_SCRIPT ||
                 spellProto->EffectImplicitTargetB[i]==TARGET_SCRIPT ||
                 spellProto->EffectImplicitTargetA[i]==TARGET_SCRIPT_COORDINATES ||
-                spellProto->EffectImplicitTargetB[i]==TARGET_SCRIPT_COORDINATES )
+                spellProto->EffectImplicitTargetB[i]==TARGET_SCRIPT_COORDINATES ||
+                (spellProto->EffectImplicitTargetB[i] == TARGET_AREAEFFECT_INSTANT && spellProto->EffectImplicitTargetA[i] == TARGET_CASTER_COORDINATES))
             {
                 targetfound = true;
                 break;

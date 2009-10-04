@@ -1582,7 +1582,34 @@ void Spell::SetTargetMap(uint32 effIndex,uint32 targetMode,UnitList& TagUnitMap)
             if (IsPositiveEffect(m_spellInfo->Id, effIndex))
                 targetB = SPELL_TARGETS_FRIENDLY;
 
-            FillAreaTargets(TagUnitMap,m_caster->GetPositionX(), m_caster->GetPositionY(),radius, PUSH_DEST_CENTER, targetB);
+            if (m_spellInfo->EffectImplicitTargetA[effIndex] == TARGET_CASTER_COORDINATES)
+            {
+                FillAreaTargets(TagUnitMap,m_caster->GetPositionX(), m_caster->GetPositionY(),radius, PUSH_DEST_CENTER, SPELL_TARGETS_AOE);
+
+                SpellScriptTargetBounds bounds = spellmgr.GetSpellScriptTargetBounds(m_spellInfo->Id);
+                if(bounds.first!=bounds.second)
+                {
+                    for(UnitList::const_iterator itr = TagUnitMap.begin(),next; itr != TagUnitMap.end(); itr = next)
+                    {
+                        if (!*itr) 
+                            continue;
+
+                        next = itr;
+                        ++next;
+
+                        for(SpellScriptTarget::const_iterator i_spellST = bounds.first; i_spellST != bounds.second; ++i_spellST)
+                        {
+                            if (i_spellST->second.targetEntry != (*itr)->GetEntry())
+                                TagUnitMap.erase(itr);
+                        }
+                    }
+                }
+
+            }
+            else
+            {
+                FillAreaTargets(TagUnitMap,m_caster->GetPositionX(), m_caster->GetPositionY(),radius, PUSH_DEST_CENTER, targetB);
+            }
 
             // exclude caster
             TagUnitMap.remove(m_caster);
@@ -2457,6 +2484,12 @@ void Spell::cast(bool skipCheck)
             }
             break;
         }
+        case SPELLFAMILY_DRUID:
+            {
+                if (m_spellInfo->Id == 16857 && (m_caster->m_form == FORM_BEAR || m_caster->m_form == FORM_DIREBEAR))
+                    AddTriggeredSpell(60089);
+                break;
+            }
         case SPELLFAMILY_ROGUE:
             // Fan of Knives (main hand)
             if (m_spellInfo->Id == 51723 && m_caster->GetTypeId() == TYPEID_PLAYER &&

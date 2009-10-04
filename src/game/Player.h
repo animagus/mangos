@@ -1207,6 +1207,7 @@ class MANGOS_DLL_SPEC Player : public Unit
                                                             // in trade, guild bank, mail....
         void RemoveItemDependentAurasAndCasts( Item * pItem );
         void DestroyItem( uint8 bag, uint8 slot, bool update );
+        void HandleDestroyItemReplace( uint32 itemEntry, uint8 bag , uint8 slot , uint16 pos);
         void DestroyItemCount( uint32 item, uint32 count, bool update, bool unequip_check = false);
         void DestroyItemCount( Item* item, uint32& count, bool update );
         void DestroyConjuredItems( bool update );

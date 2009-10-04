@@ -345,7 +345,7 @@ struct MANGOS_DLL_DECL npc_heigan_eruptionAI : public ScriptedAI
 
                         if (pPlayer->isAlive())
                         {
-                            if(pPlayer->GetDistance((*itr)) <= 5.0f)
+                            if(pPlayer->GetDistance((*itr)) <= 6.0f)
                                 //We use originalCaster for deal damage by Plague Fissure
                                 DoCast(pPlayer, SPELL_ERUPTION, true);
                         }
@@ -387,7 +387,7 @@ struct MANGOS_DLL_DECL npc_heigan_eruptionAI : public ScriptedAI
 
                         if (pPlayer->isAlive())
                         {
-                            if(pPlayer->GetDistance((*itr)) <= 5.0f)
+                            if(pPlayer->GetDistance((*itr)) <= 6.0f)
                                 DoCast(pPlayer, SPELL_ERUPTION, true);
                         }
                     }
@@ -426,7 +426,7 @@ struct MANGOS_DLL_DECL npc_heigan_eruptionAI : public ScriptedAI
 
                         if (pPlayer->isAlive())
                         {
-                            if(pPlayer->GetDistance((*itr)) <= 5.0f)
+                            if(pPlayer->GetDistance((*itr)) <= 6.0f)
                                 DoCast(pPlayer, SPELL_ERUPTION, true);
                         }
                     }
@@ -465,7 +465,7 @@ struct MANGOS_DLL_DECL npc_heigan_eruptionAI : public ScriptedAI
 
                         if (pPlayer->isAlive())
                         {
-                            if(pPlayer->GetDistance((*itr)) <= 5.0f)
+                            if(pPlayer->GetDistance((*itr)) <= 6.0f)
                                 DoCast(pPlayer, SPELL_ERUPTION, true);
                         }
                     }
