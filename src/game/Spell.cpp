@@ -1586,6 +1586,9 @@ void Spell::SetTargetMap(uint32 effIndex,uint32 targetMode,UnitList& TagUnitMap)
             {
                 FillAreaTargets(TagUnitMap,m_caster->GetPositionX(), m_caster->GetPositionY(),radius, PUSH_DEST_CENTER, SPELL_TARGETS_AOE);
 
+                if (tempUnitMap.empty())
+                    break;
+
                 SpellScriptTargetBounds bounds = spellmgr.GetSpellScriptTargetBounds(m_spellInfo->Id);
                 if(bounds.first!=bounds.second)
                 {
@@ -1599,6 +1602,9 @@ void Spell::SetTargetMap(uint32 effIndex,uint32 targetMode,UnitList& TagUnitMap)
 
                         for(SpellScriptTarget::const_iterator i_spellST = bounds.first; i_spellST != bounds.second; ++i_spellST)
                         {
+                            if (!i_spellST)
+                                continue;
+
                             if (i_spellST->second.targetEntry != (*itr)->GetEntry())
                                 TagUnitMap.remove(*itr);
                         }
@@ -1607,9 +1613,7 @@ void Spell::SetTargetMap(uint32 effIndex,uint32 targetMode,UnitList& TagUnitMap)
 
             }
             else
-            {
                 FillAreaTargets(TagUnitMap,m_caster->GetPositionX(), m_caster->GetPositionY(),radius, PUSH_DEST_CENTER, targetB);
-            }
 
             // exclude caster
             TagUnitMap.remove(m_caster);

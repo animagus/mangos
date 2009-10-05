@@ -10956,7 +10956,7 @@ void Player::HandleDestroyItemReplace( uint32 itemEntry, uint8 bag ,uint8 slot, 
     }
 
     Item *pNewItem = Item::CreateItem( newItemEntry, 1, this);
-    if( !pNewItem )
+    if (!pNewItem)
         return;
 
     if( IsInventoryPos( pos ) )
@@ -19272,7 +19272,10 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
                     {
                         // normal creature (not pet/etc) can be only in !PvP case
                         if(pVictim->GetTypeId()==TYPEID_UNIT)
+                        {
                             pGroupGuy->KilledMonster(((Creature*)pVictim)->GetCreatureInfo(), pVictim->GetGUID());
+                            //GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, pVictim->GetEntry(), 1);
+                        }
                     }
                 }
             }
@@ -19297,7 +19300,10 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
 
             // normal creature (not pet/etc) can be only in !PvP case
             if(pVictim->GetTypeId()==TYPEID_UNIT)
+            {
                 KilledMonster(((Creature*)pVictim)->GetCreatureInfo(), pVictim->GetGUID());
+                //GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, pVictim->GetEntry(), 1);
+            }
         }
     }
     return xp || honored_kill;

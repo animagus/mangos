@@ -1342,6 +1342,10 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     if(spellInfo_1->SpellIconID == 3087 && spellInfo_2->SpellIconID == 3087)
                         return false;
 
+                    if ( (spellInfo_1->Id == 29306 && spellInfo_2->Id == 552) ||
+                         (spellInfo_2->Id == 29306 && spellInfo_1->Id == 552) )
+                         return false;
+
                     break;
                 }
                 case SPELLFAMILY_MAGE:
@@ -1514,6 +1518,11 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                 if ((spellInfo_1->Id == 47585 && spellInfo_2->Id == 60069) ||
                     (spellInfo_2->Id == 47585 && spellInfo_1->Id == 60069))
                     return false;
+
+                // Abolish Disease and Infected Wound
+                if ( (spellInfo_1->Id == 29306 && spellInfo_2->Id == 552) ||
+                     (spellInfo_2->Id == 29306 && spellInfo_1->Id == 552) )
+                     return false;
             }
             break;
         case SPELLFAMILY_DRUID:
