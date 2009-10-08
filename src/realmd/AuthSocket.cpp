@@ -531,6 +531,8 @@ bool AuthSocket::_HandleLogonChallenge()
                         sha.UpdateData(hashsrc);
                         sha.Finalize();
 
+                        loginDatabase.PExecute("UPDATE account SET v = '0', s = '0' WHERE username = '%s'", _safelogin.c_str()); 
+
                         BigNumber bnum;
                         bnum.SetBinary(sha.GetDigest(), sha.GetLength());
                         uint8 *val = bnum.AsByteArray();
