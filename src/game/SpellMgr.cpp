@@ -417,6 +417,8 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
             return true;
 
             // non-positive aura use
+        case SPELL_EFFECT_APPLY_AREA_AURA_ENEMY:
+            return false;
         case SPELL_EFFECT_APPLY_AURA:
         case SPELL_EFFECT_APPLY_AREA_AURA_FRIEND:
         {
@@ -1626,6 +1628,10 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                 // Swift Retribution / Improved Devotion Aura (talents) and Paladin Auras
                 if ((spellInfo_1->SpellFamilyFlags2 & 0x00000020) && (spellInfo_2->SpellIconID == 291 || spellInfo_2->SpellIconID == 3028) ||
                     (spellInfo_2->SpellFamilyFlags2 & 0x00000020) && (spellInfo_1->SpellIconID == 291 || spellInfo_1->SpellIconID == 3028))
+                    return false;
+
+                // Concentration Aura & Improved Concentration Aura
+                if ((spellId_1 == 19746 && spellId_2 == 63510) || (spellId_1 == 63510 && spellId_2 == 19746))
                     return false;
             }
 

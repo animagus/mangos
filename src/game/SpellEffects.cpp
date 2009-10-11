@@ -375,12 +375,12 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
                         {
                             if (Aura *positive = unitTarget->GetAura(29659, 0))
                             {
-                                if (positive->GetStackAmount() == 1 &&
+                                /*if (positive->GetStackAmount() == 1 &&
                                     positive->GetCasterGUID() == m_caster->GetGUID())
-                                    return;
+                                    return;*/
 
-                                if (positive->GetStackAmount() != 1)
-                                    positive->modStackAmount(-1);
+                                /*if (positive->GetStackAmount() != 1)*/
+                                positive->modStackAmount(-1);
                             }
                             unitTarget->CastSpell(unitTarget,29659,true,0,0,m_caster->GetGUID());
                             return;
@@ -393,12 +393,12 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
                         {
                             if (Aura *negative = unitTarget->GetAura(29660, 0))
                             {
-                                if (negative->GetStackAmount() == 1 &&
+                                /*if (negative->GetStackAmount() == 1 &&
                                     negative->GetCasterGUID() == m_caster->GetGUID())
                                     return;
 
-                                if (negative->GetStackAmount() != 1)
-                                    negative->modStackAmount(-1);
+                                if (negative->GetStackAmount() != 1)*/
+                                negative->modStackAmount(-1);
                             }
                             unitTarget->CastSpell(unitTarget,29660,true,0,0,m_caster->GetGUID());
                             return;
@@ -7025,6 +7025,15 @@ void Spell::EffectTitanGrip(uint32 /*eff_idx*/)
 {
     if (unitTarget && unitTarget->GetTypeId() == TYPEID_PLAYER)
         ((Player*)unitTarget)->SetCanTitanGrip(true);
+
+    // titans grip dmg penalty for 2h weapons
+    if (!unitTarget->HasAura(49152))
+    {
+        if(((Player*)unitTarget)->IsTwoHandUsedInDualWield())
+        {
+            unitTarget->CastSpell(unitTarget, 49152, true);
+        }
+    }
 }
 
 void Spell::EffectRenamePet(uint32 /*eff_idx*/)

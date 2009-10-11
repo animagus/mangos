@@ -3575,11 +3575,15 @@ bool Unit::AddAura(Aura *Aur)
         if (Aur->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION || 
             (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION)
             continue;
+        if (GetSpellSpecific((*i)->GetSpellProto()->Id) == SPELL_WELL_FED ||
+            GetSpellSpecific(aurSpellInfo->Id) == SPELL_WELL_FED)
+            continue;
         if (Aur->GetCastItemGUID() || (*i)->GetCastItemGUID())
             continue;
 
         switch (aurName)
         {
+        case SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE:
         case SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN:
         case SPELL_AURA_MOD_RANGED_ATTACK_POWER:
         case SPELL_AURA_MOD_ATTACK_POWER:
@@ -3644,11 +3648,15 @@ void Unit::ReapplyModifers(Aura *Aur)
         if (Aur->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION || 
             (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION)
             continue;
+        if (GetSpellSpecific((*i)->GetSpellProto()->Id) == SPELL_WELL_FED ||
+            GetSpellSpecific(Aur->GetSpellProto()->Id) == SPELL_WELL_FED)
+            continue;
         if (Aur->GetCastItemGUID() || (*i)->GetCastItemGUID())
             continue;
 
         switch (aurName)
         {
+        case SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE:
         case SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN:
         case SPELL_AURA_MOD_RANGED_ATTACK_POWER:
         case SPELL_AURA_MOD_ATTACK_POWER:

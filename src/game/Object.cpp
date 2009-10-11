@@ -1625,6 +1625,7 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
         GetClosePoint(x, y, z, pCreature->GetObjectSize());
 
     pCreature->Relocate(x, y, z, ang);
+    pCreature->SetMeleeDamageSchool(SpellSchools(pCreature->GetCreatureInfo()->dmgschool));
 
     if(!pCreature->IsPositionValid())
     {

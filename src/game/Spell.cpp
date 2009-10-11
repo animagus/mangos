@@ -1586,7 +1586,7 @@ void Spell::SetTargetMap(uint32 effIndex,uint32 targetMode,UnitList& TagUnitMap)
             {
                 FillAreaTargets(TagUnitMap,m_caster->GetPositionX(), m_caster->GetPositionY(),radius, PUSH_DEST_CENTER, SPELL_TARGETS_AOE);
 
-                if (tempUnitMap.empty())
+                if (TagUnitMap.empty())
                     break;
 
                 SpellScriptTargetBounds bounds = spellmgr.GetSpellScriptTargetBounds(m_spellInfo->Id);
@@ -1594,7 +1594,8 @@ void Spell::SetTargetMap(uint32 effIndex,uint32 targetMode,UnitList& TagUnitMap)
                 {
                     for(UnitList::const_iterator itr = TagUnitMap.begin(),next; itr != TagUnitMap.end(); itr = next)
                     {
-                        if (!*itr) 
+                        bool found = false;
+                        if (!(*itr)) 
                             continue;
 
                         next = itr;
@@ -1602,12 +1603,12 @@ void Spell::SetTargetMap(uint32 effIndex,uint32 targetMode,UnitList& TagUnitMap)
 
                         for(SpellScriptTarget::const_iterator i_spellST = bounds.first; i_spellST != bounds.second; ++i_spellST)
                         {
-                            if (!i_spellST)
-                                continue;
-
-                            if (i_spellST->second.targetEntry != (*itr)->GetEntry())
-                                TagUnitMap.remove(*itr);
+                            if (i_spellST->second.targetEntry == (*itr)->GetEntry())
+                                found = true;
                         }
+
+                        if (!found)
+                            TagUnitMap.remove(*itr);
                     }
                 }
 
@@ -5826,7 +5827,9 @@ bool Spell::CheckTarget( Unit* target, uint32 eff )
     if (target != m_caster && target->GetCharmerOrOwnerGUID() != m_caster->GetGUID())
     {
         // any unattackable target skipped
-        if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
+        if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE) && 
+            !(m_spellInfo->EffectImplicitTargetA[eff] == TARGET_CASTER_COORDINATES && 
+            m_spellInfo->EffectImplicitTargetB[eff] == TARGET_AREAEFFECT_INSTANT))
             return false;
 
         // unselectable targets skipped in all cases except TARGET_SCRIPT targeting
