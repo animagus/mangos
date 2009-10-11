@@ -1695,8 +1695,8 @@ void AchievementMgr::CompletedAchievement(AchievementEntry const* achievement)
 
     // don't insert for ACHIEVEMENT_FLAG_REALM_FIRST_KILL since otherwise only the first group member would reach that achievement
     // TODO: where do set this instead?
-    if(!(achievement->flags & ACHIEVEMENT_FLAG_REALM_FIRST_KILL))
-        achievementmgr.SetRealmCompleted(achievement);
+    //if(!(achievement->flags & ACHIEVEMENT_FLAG_REALM_FIRST_KILL))
+    achievementmgr.SetRealmCompleted(achievement);
 
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ACHIEVEMENT);
 

@@ -3632,11 +3632,11 @@ bool Player::resetTalents(bool no_cost)
     */
 
 
-    if(CanTitanGrip())
+    if(m_canTitanGrip)
     {
-        SetCanTitanGrip(false);
-        AutoUnequipOffhandIfNeed();
-        RemoveAurasDueToSpellByCancel(49152);
+        m_canTitanGrip = false;
+        if(sWorld.getConfig(CONFIG_OFFHAND_CHECK_AT_TALENTS_RESET))
+            AutoUnequipOffhandIfNeed();
     }
 
     return true;
@@ -6421,10 +6421,6 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
 
     // check some item equip limitations (in result lost CanTitanGrip at talent reset, for example)
     AutoUnequipOffhandIfNeed();
-    if (!HasAura(49152) && IsTwoHandUsedInDualWield() && CanTitanGrip())
-    {
-        CastSpell(this, 49152, true);
-    }
 
     // recent client version not send leave/join channel packets for built-in local channels
     UpdateLocalChannels( newZone );
@@ -10680,16 +10676,6 @@ Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
 
     // only for full equip instead adding to stack
     GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EQUIP_ITEM, pItem->GetEntry());
-    // titans grip dmg penalty for 2h weapons
-    ItemPrototype const *pProto = pItem->GetProto();
-    uint32 type = pProto->InventoryType;
-    if (!HasAura(49152))
-    {
-        if (type == INVTYPE_2HWEAPON && CanTitanGrip())
-        {
-            CastSpell(this,49152,true);
-        }
-    }
 
     return pItem;
 }
@@ -10831,19 +10817,6 @@ void Player::RemoveItem( uint8 bag, uint8 slot, bool update )
         if( IsInWorld() && update )
             pItem->SendUpdateToPlayer( this );
         
-        // titans grip dmg penalty for 2h weapons removed if player does not have any
-        ItemPrototype const *pProto = pItem->GetProto();
-        uint32 type = pProto->InventoryType;
-        if (HasAura(49152))
-        {
-            if (type == INVTYPE_2HWEAPON)
-            {
-                if (!IsTwoHandUsedInDualWield())
-                {
-                    RemoveAurasDueToSpellByCancel(49152);
-                }
-            }
-        }
     }
 }
 
@@ -19052,7 +19025,7 @@ void Player::AutoUnequipOffhandIfNeed()
         return;
 
     // need unequip offhand for 2h-weapon without TitanGrip (in any from hands)
-    if (CanTitanGrip() || offItem->GetProto()->InventoryType != INVTYPE_2HWEAPON)
+    if (CanTitanGrip() || (offItem->GetProto()->InventoryType != INVTYPE_2HWEAPON && !IsTwoHandUsed()))
         return;
 
     ItemPosCountVec off_dest;
