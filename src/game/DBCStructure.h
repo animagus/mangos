@@ -230,6 +230,13 @@ struct AchievementCriteriaEntry
             uint32  spellID;                                // 3 Reference to Map.dbc
         } learn_spell;
 
+        // ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL         = 35
+        struct
+        {
+            uint32 unused;                                  // 3
+            uint32 count;                                   // 4
+        } honor_kill;
+
         // ACHIEVEMENT_CRITERIA_TYPE_OWN_ITEM               = 36
         struct
         {

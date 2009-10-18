@@ -22,8 +22,9 @@ SDCategory: NPCs
 EndScriptData */
 
 #include "precompiled.h"
+#include "GameEventMgr.h"
 
-#define HALLOWEEN_EVENTID       12
+#define HALLOWEEN_EVENTID       324
 #define SPELL_TRICK_OR_TREATED  24755
 #define SPELL_TREAT             24715
 
@@ -31,11 +32,11 @@ EndScriptData */
 #define LOCALE_TRICK_OR_TREAT_2 "Des bonbons ou des blagues!"
 #define LOCALE_TRICK_OR_TREAT_3 "Süßes oder Saures!"
 #define LOCALE_TRICK_OR_TREAT_6 "¡Truco o trato!"
+#define LOCALE_TRICK_OR_TREAT_7 "Êîíôåòà èëè Æèçíü!"
 
 bool isEventActive()
 {
-    /*
-     const GameEvent::ActiveEvents *ActiveEventsList = gameeventmgr.GetActiveEventList();
+     /*const GameEvent::ActiveEvents *ActiveEventsList = gameeventmgr.GetActiveEventList();
      GameEvent::ActiveEvents::const_iterator itr;
      for (itr = ActiveEventsList->begin(); itr != ActiveEventsList->end(); ++itr)
      {
@@ -52,7 +53,7 @@ bool GossipHello_npc_innkeeper(Player* pPlayer, Creature* pCreature)
     if (pCreature->isQuestGiver())
         pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
-    if (isEventActive()&& !pPlayer->GetAura(SPELL_TRICK_OR_TREATED,0))
+    if (IsHolidayActive(HolidayIds(HALLOWEEN_EVENTID)) && !pPlayer->GetAura(SPELL_TRICK_OR_TREATED,0))
     {
         char* localizedEntry;
         switch (pPlayer->GetSession()->GetSessionDbLocaleIndex())
@@ -69,12 +70,20 @@ bool GossipHello_npc_innkeeper(Player* pPlayer, Creature* pCreature)
             case 6:
                 localizedEntry=LOCALE_TRICK_OR_TREAT_6;
                 break;
+            case 7:
+                localizedEntry=LOCALE_TRICK_OR_TREAT_7;
+                break;
             default:
                 localizedEntry=LOCALE_TRICK_OR_TREAT_0;
         }
 
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, localizedEntry, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+HALLOWEEN_EVENTID);
     }
+
+    if (pCreature->isVendor())
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
+    
+    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, GOSSIP_TEXT_INN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INN);
 
     pPlayer->TalkedToCreature(pCreature->GetEntry(), pCreature->GetGUID());
     pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
@@ -83,7 +92,7 @@ bool GossipHello_npc_innkeeper(Player* pPlayer, Creature* pCreature)
 
 bool GossipSelect_npc_innkeeper(Player* pPlayer, Creature* pCreature, uint32 sender, uint32 action)
 {
-    if (action == GOSSIP_ACTION_INFO_DEF+HALLOWEEN_EVENTID && isEventActive() && !pPlayer->GetAura(SPELL_TRICK_OR_TREATED,0))
+    if (action == GOSSIP_ACTION_INFO_DEF+HALLOWEEN_EVENTID && IsHolidayActive(HolidayIds(HALLOWEEN_EVENTID)) && !pPlayer->GetAura(SPELL_TRICK_OR_TREATED,0))
     {
         pPlayer->CLOSE_GOSSIP_MENU();
         pPlayer->CastSpell(pPlayer, SPELL_TRICK_OR_TREATED, true);
@@ -130,6 +139,20 @@ bool GossipSelect_npc_innkeeper(Player* pPlayer, Creature* pCreature, uint32 sen
         }
         return true;                                        // prevent mangos core handling
     }
+
+    if (action == GOSSIP_ACTION_TRADE)
+    {
+        pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
+        return true;
+    }
+
+    if (action == GOSSIP_ACTION_INN)
+    {
+        pPlayer->PlayerTalkClass->CloseGossip();
+        pPlayer->SetBindPoint(pCreature->GetGUID());
+        return true;
+    }
+
     return false;                                           // the player didn't select "trick or treat" or cheated, normal core handling
 }
 

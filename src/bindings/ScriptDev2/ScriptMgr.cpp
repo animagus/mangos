@@ -72,6 +72,7 @@ extern void AddSC_item_scripts();
 // -- NPC --
 extern void AddSC_npc_professions();
 extern void AddSC_npcs_special();
+extern void AddSC_npc_innkeeper();
 
 // -- Servers --
 
@@ -981,6 +982,7 @@ void ScriptsInit()
     // -- NPC --
     AddSC_npc_professions();
     AddSC_npcs_special();
+    AddSC_npc_innkeeper();
 
     // -- Servers --
 
