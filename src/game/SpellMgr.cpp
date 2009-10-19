@@ -386,6 +386,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
     {
         case 28441:                                         // not positive dummy spell
         case 37675:                                         // Chaos Blast
+        case 42966:                                         // Upset Tummy
             return false;
         case 36032:                                         // Arcane Blast
 		case 47314:
@@ -1347,6 +1348,14 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     if ( (spellInfo_1->Id == 29306 && spellInfo_2->Id == 552) ||
                          (spellInfo_2->Id == 29306 && spellInfo_1->Id == 552) )
                          return false;
+
+                    if ( (spellInfo_1->Id == 44436 && spellInfo_2->Id == 42965) ||
+                        (spellInfo_2->Id == 44436 && spellInfo_1->Id == 42965) )
+                        return false;
+
+                    if ( (spellInfo_1->Id == 42966 && spellInfo_2->Id == 43049) ||
+                        (spellInfo_2->Id == 42966 && spellInfo_1->Id == 43049) )
+                        return false;
 
                     break;
                 }

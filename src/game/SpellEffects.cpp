@@ -5320,16 +5320,70 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     ((Player*)m_caster)->KilledMonsterCredit(24108, 0);
                     return;
                 }
-				/*case 45204: // Clone Me! 
-                case 41055: // Copy Weapon 
-                case 45206: // Copy Off-hand Weapon 
-                     unitTarget->CastSpell(m_caster, damage, false); 
-                     break; 
-                case 45205: // Copy Offhand Weapon 
-                case 41054: // Copy Weapon 
-                     m_caster->CastSpell(unitTarget, damage, false); 
-                     break;
-                     */
+                case 24719:
+                {
+                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                        return;
+                    
+                    if (unitTarget->getGender() == GENDER_FEMALE)
+                        m_caster->CastSpell(unitTarget,24713,true);
+                    else
+                        m_caster->CastSpell(unitTarget,24712,true);
+                    return;
+                }
+                case 24718:
+                {
+                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                        return;
+                    
+                    if (unitTarget->getGender() == GENDER_FEMALE)
+                        m_caster->CastSpell(unitTarget,24711,true);
+                    else
+                        m_caster->CastSpell(unitTarget,24710,true);
+                    return;
+                }
+                case 24717:
+                {
+                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                        return;
+                    
+                    if (unitTarget->getGender() == GENDER_FEMALE)
+                        m_caster->CastSpell(unitTarget,24709,true);
+                    else
+                        m_caster->CastSpell(unitTarget,24708,true);
+                    return;
+                }
+                // Random Costume
+                case 24720:
+                {
+                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    uint32 spellId = 0;
+                    switch(rand() % 10)
+                    {
+                    case 0: spellId = 24713; break;
+                    case 1: spellId = 24712; break;
+                    case 2: spellId = 24711; break;
+                    case 3: spellId = 24710; break;
+                    case 4: spellId = 24709; break;
+                    case 5: spellId = 24708; break;
+                    case 6: spellId = 24711; break;
+                    case 7: spellId = 24710; break;
+                    case 8: spellId = 24732; break;
+                    case 9: spellId = 24740; break;
+                    }
+                    unitTarget->CastSpell(unitTarget, spellId, true);
+                    break;
+                }
+                case 44436:
+                {
+                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    if (roll_chance_i(30))
+                        unitTarget->CastSpell(unitTarget, 42966, true);
+                }
             }
             break;
         }

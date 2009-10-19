@@ -2152,6 +2152,20 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if(caster)
                     caster->CastSpell(caster, 13138, true, NULL, this);
                 return;
+            case 24930:
+                if (caster)
+                {
+                    uint32 spellId = 0;
+                    switch(rand() % 4)
+                    {
+                    case 0: spellId = 24924; break;
+                    case 1: spellId = 24925; break;
+                    case 2: spellId = 24926; break;
+                    case 3: spellId = 24927; break;
+                    }
+                    caster->CastSpell(m_target, spellId, true);
+                }
+                return;
             case 39850:                                     // Rocket Blast
                 if(roll_chance_i(20))                       // backfire stun
                     m_target->CastSpell(m_target, 51581, true, NULL, this);
