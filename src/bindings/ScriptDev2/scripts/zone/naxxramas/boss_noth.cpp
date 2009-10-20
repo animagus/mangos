@@ -278,11 +278,77 @@ CreatureAI* GetAI_boss_noth(Creature* pCreature)
     return new boss_nothAI(pCreature);
 }
 
+struct MANGOS_DLL_DECL mob_stoneskin_gargoyleAI : public ScriptedAI
+{
+    mob_stoneskin_gargoyleAI(Creature *c) : ScriptedAI(c)
+    {
+        m_bIsHeroicMode = c->GetMap()->IsHeroic();
+        m_pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        Reset();
+    }
+
+    ScriptedInstance* m_pInstance;
+    bool m_bIsHeroicMode;
+    bool InCombat;
+    uint32 m_acidTimer;
+    uint32 HealTimer;
+
+
+    void Reset()
+    {
+        m_acidTimer = 3000;
+        HealTimer = 5000;
+        InCombat = false;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        //Return since we have no target
+        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+            return;
+
+        if (m_acidTimer <= diff)
+        {
+            DoCast(m_creature,m_bIsHeroicMode?54714:29325);
+            m_acidTimer = 5000;
+        }else m_acidTimer -= diff;
+
+        if (InCombat)
+        {
+            if (HealTimer <= diff)
+            {
+                InCombat = false;
+                HealTimer = 5000;
+            }else HealTimer -= diff;
+        }
+
+        if (m_creature->GetHealth() <= (m_creature->GetMaxHealth() * 0.3f))
+        {
+            if (!InCombat)
+            {
+                InCombat = true;
+                DoCast(m_creature,m_bIsHeroicMode?54722:28995,true);
+            }
+        }
+
+        DoMeleeAttackIfReady();
+    }
+}; 
+CreatureAI* GetAI_mob_stoneskin_gargoyle(Creature *_Creature)
+{
+    return new mob_stoneskin_gargoyleAI (_Creature);
+}
+
 void AddSC_boss_noth()
 {
     Script *newscript;
     newscript = new Script;
     newscript->Name = "boss_noth";
     newscript->GetAI = &GetAI_boss_noth;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_stoneskin_gargoyle";
+    newscript->GetAI = &GetAI_mob_stoneskin_gargoyle;
     newscript->RegisterSelf();
 }

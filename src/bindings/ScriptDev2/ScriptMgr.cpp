@@ -438,6 +438,7 @@ extern void AddSC_boss_houndmaster_loksey();
 extern void AddSC_boss_interrogator_vishas();
 extern void AddSC_boss_mograine_and_whitemane();
 extern void AddSC_boss_scorn();
+extern void AddSC_boss_headless_horseman();
 extern void AddSC_instance_scarlet_monastery();
 
 //Scholomance
@@ -1347,6 +1348,7 @@ void ScriptsInit()
     AddSC_boss_interrogator_vishas();
     AddSC_boss_mograine_and_whitemane();
     AddSC_boss_scorn();
+    AddSC_boss_headless_horseman();
     AddSC_instance_scarlet_monastery();
 
     //Scholomance

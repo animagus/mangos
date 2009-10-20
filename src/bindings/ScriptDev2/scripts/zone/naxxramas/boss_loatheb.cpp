@@ -251,7 +251,7 @@ CreatureAI* GetAI_boss_loatheb(Creature *_Creature)
 
 struct MANGOS_DLL_DECL mob_loatheb_sporesAI : public ScriptedAI
 {
-    mob_loatheb_sporesAI(Creature *c) : ScriptedAI(c)\
+    mob_loatheb_sporesAI(Creature *c) : ScriptedAI(c)
     {
         m_pInstance = ((ScriptedInstance*)c->GetInstanceData());
         Reset();

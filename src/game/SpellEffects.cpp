@@ -373,16 +373,17 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
                     {
                         if (unitTarget->HasAura(28059))
                         {
+                            
+                            unitTarget->CastSpell(unitTarget,29659,true,0,0,m_caster->GetGUID());
                             if (Aura *positive = unitTarget->GetAura(29659, 0))
                             {
                                 /*if (positive->GetStackAmount() == 1 &&
                                     positive->GetCasterGUID() == m_caster->GetGUID())
                                     return;*/
 
-                                /*if (positive->GetStackAmount() != 1)*/
-                                positive->modStackAmount(-1);
+                                if (positive->GetStackAmount() > 10)
+                                    positive->modStackAmount(-1);
                             }
-                            unitTarget->CastSpell(unitTarget,29659,true,0,0,m_caster->GetGUID());
                             return;
                         }
                         break;
@@ -391,16 +392,16 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
                     {
                         if (unitTarget->HasAura(28084))
                         {
+                            unitTarget->CastSpell(unitTarget,29660,true,0,0,m_caster->GetGUID());
                             if (Aura *negative = unitTarget->GetAura(29660, 0))
                             {
                                 /*if (negative->GetStackAmount() == 1 &&
                                     negative->GetCasterGUID() == m_caster->GetGUID())
-                                    return;
+                                    return;*/
 
-                                if (negative->GetStackAmount() != 1)*/
-                                negative->modStackAmount(-1);
+                                if (negative->GetStackAmount() > 10)
+                                    negative->modStackAmount(-1);
                             }
-                            unitTarget->CastSpell(unitTarget,29660,true,0,0,m_caster->GetGUID());
                             return;
                         }
                         break;

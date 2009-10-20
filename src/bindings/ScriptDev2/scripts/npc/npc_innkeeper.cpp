@@ -34,20 +34,6 @@ EndScriptData */
 #define LOCALE_TRICK_OR_TREAT_6 "¡Truco o trato!"
 #define LOCALE_TRICK_OR_TREAT_7 "Êîíôåòà èëè Æèçíü!"
 
-bool isEventActive()
-{
-     /*const GameEvent::ActiveEvents *ActiveEventsList = gameeventmgr.GetActiveEventList();
-     GameEvent::ActiveEvents::const_iterator itr;
-     for (itr = ActiveEventsList->begin(); itr != ActiveEventsList->end(); ++itr)
-     {
-         if (*itr==HALLOWEEN_EVENTID)
-         {
-             return true;
-         }
-     }*/
-    return false;
-}
-
 bool GossipHello_npc_innkeeper(Player* pPlayer, Creature* pCreature)
 {
     if (pCreature->isQuestGiver())
