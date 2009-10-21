@@ -327,7 +327,7 @@ struct MANGOS_DLL_DECL mob_stoneskin_gargoyleAI : public ScriptedAI
             if (!InCombat)
             {
                 InCombat = true;
-                DoCast(m_creature,m_bIsHeroicMode?54722:28995,true);
+                DoCast(m_creature,m_bIsHeroicMode?54722:28995);
             }
         }
 

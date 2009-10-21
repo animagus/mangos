@@ -1328,6 +1328,20 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(m_caster,spell_id,true,NULL);
                     return;
                 }
+                case 24930:
+                    if (m_caster && unitTarget)
+                    {
+                        uint32 spellId = 0;
+                        switch(rand() % 4)
+                        {
+                        case 0: spellId = 24924; break;
+                        case 1: spellId = 24925; break;
+                        case 2: spellId = 24926; break;
+                        case 3: spellId = 24927; break;
+                        }
+                        m_caster->CastSpell(unitTarget, spellId, true);
+                    }
+                    return;
                 case 60932:                                 // Disengage (one from creature versions)
                     if (!unitTarget)
                         return;

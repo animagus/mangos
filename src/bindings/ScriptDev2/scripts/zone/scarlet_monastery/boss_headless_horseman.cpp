@@ -75,6 +75,7 @@ struct MANGOS_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
     {
         if (m_confuse && damage > m_creature->GetHealth())                // Don't let ourselves be slain before we do our death speech
         {
+            m_creature->ModifyHealth(damage);
             damage = 0;
         }
     }
@@ -92,7 +93,7 @@ struct MANGOS_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
         m_creature->RemoveAurasDueToSpell(42403);
         if(Creature* Head = GetClosestCreatureWithEntry(m_creature,23775,200))
             Head->ForcedDespawn();
-        DoCast(m_creature,43116);
+        DoCast(m_creature,43116,true);
         m_creature->Mount(22653);
         m_creature->GetMotionMaster()->Clear();
         m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
