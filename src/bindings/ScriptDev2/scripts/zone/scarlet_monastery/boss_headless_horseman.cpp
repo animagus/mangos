@@ -91,6 +91,7 @@ struct MANGOS_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
         m_creature->SetHealth(m_creature->GetMaxHealth());
         m_creature->RemoveAurasDueToSpell(43105);
         m_creature->RemoveAurasDueToSpell(42403);
+        m_creature->RemoveAurasDueToSpell(42556);
         if(Creature* Head = GetClosestCreatureWithEntry(m_creature,23775,200))
             Head->ForcedDespawn();
         DoCast(m_creature,43116,true);
@@ -139,6 +140,7 @@ struct MANGOS_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
             m_creature->GetMotionMaster()->MoveIdle();
             DoCast(m_creature,43105,true);
             DoCast(m_creature,42403,true);
+            DoCast(m_creature,42556,true);
             m_creature->Unmount();
         }
 
