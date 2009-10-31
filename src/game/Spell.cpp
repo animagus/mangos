@@ -4123,6 +4123,20 @@ SpellCastResult Spell::CheckCast(bool strict)
             if(mapEntry->IsBattleArena())
                 return SPELL_FAILED_NOT_IN_ARENA;
 
+    if (m_spellInfo->AttributesEx & SPELL_ATTR_EX_UNK24)
+    {
+        float fx, fy, fz;
+        float min_dis = GetSpellMinRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
+        float max_dis = GetSpellMaxRange(sSpellRangeStore.LookupEntry(m_spellInfo->rangeIndex));
+        float dis = rand_norm() * (max_dis - min_dis) + min_dis;
+
+        m_caster->GetClosePoint(fx, fy, fz, DEFAULT_WORLD_OBJECT_SIZE, dis);
+
+        if (m_caster->GetMap())
+            if (!m_caster->GetMap()->IsInWater(fx, fy, fz-0.5f))
+                return SPELL_FAILED_NOT_FISHABLE;
+    }
+
     // zone check
     uint32 zone, area;
     m_caster->GetZoneAndAreaId(zone, area);
