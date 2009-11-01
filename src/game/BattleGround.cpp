@@ -832,7 +832,7 @@ void BattleGround::RewardMark(Player *plr,uint32 count)
         RewardItem(plr,mark,count);
 
     if (mark == ITEM_EY_MARK_OF_HONOR || mark == SPELL_AB_MARK_WINNER || mark == SPELL_WS_MARK_WINNER)
-        RewardItem(plr,43589,2);
+        RewardItem(plr,43589,1);
 }
 
 void BattleGround::RewardSpellCast(Player *plr, uint32 spell_id)
