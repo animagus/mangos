@@ -471,6 +471,7 @@ struct MANGOS_DLL_DECL boss_archimondeAI : public ScriptedAI
                 }
             }else EnrageTimer -= diff;
 
+			/*
             if (CheckDistanceTimer < diff)
             {
                 // To simplify the check, we simply summon a creature in the location and then check how far we are from the creature
@@ -489,6 +490,7 @@ struct MANGOS_DLL_DECL boss_archimondeAI : public ScriptedAI
                 }
                 CheckDistanceTimer = 5000;
             }else CheckDistanceTimer -= diff;
+			*/
         }
 
         if (BelowTenPercent)
