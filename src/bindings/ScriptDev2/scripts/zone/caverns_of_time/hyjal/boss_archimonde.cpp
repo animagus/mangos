@@ -479,7 +479,7 @@ struct MANGOS_DLL_DECL boss_archimondeAI : public ScriptedAI
                 {
                     Check->SetVisibility(VISIBILITY_OFF);
 
-                    if (m_creature->IsWithinDistInMap(Check, 75))
+                    if (m_creature->IsWithinDistInMap(Check, 195))
                     {
                         m_creature->GetMotionMaster()->Clear(false);
                         m_creature->GetMotionMaster()->MoveIdle();
