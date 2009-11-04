@@ -1208,7 +1208,8 @@ void Aura::SetStackAmount(uint8 stackAmount)
         m_stackAmount = stackAmount;
         int32 amount = m_stackAmount * caster->CalculateSpellDamage(m_spellProto, m_effIndex, m_currentBasePoints, target);
         // Reapply if amount change
-        if (amount!=m_modifier.m_amount)
+        if (amount!=m_modifier.m_amount || (GetId() == 28832 || GetId() == 28833 || GetId() == 28834
+            || GetId() == 28835))
         {
             ApplyModifier(false, true);
             m_modifier.m_amount = amount;
@@ -2151,6 +2152,14 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 // root to self part of (root_target->charge->root_self sequence
                 if(caster)
                     caster->CastSpell(caster, 13138, true, NULL, this);
+                return;
+                // Four Horsemen Mark Spells
+            case 28832:
+            case 28833:
+            case 28834:
+            case 28835:
+                if (caster && m_target)
+                    caster->CastSpell(m_target,28836,true,NULL,this);
                 return;
             case 39850:                                     // Rocket Blast
                 if(roll_chance_i(20))                       // backfire stun

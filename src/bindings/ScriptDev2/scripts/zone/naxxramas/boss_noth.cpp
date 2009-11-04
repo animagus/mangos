@@ -297,7 +297,7 @@ struct MANGOS_DLL_DECL mob_stoneskin_gargoyleAI : public ScriptedAI
     void Reset()
     {
         m_acidTimer = 3000;
-        HealTimer = 5000;
+        HealTimer = 4000;
         InCombat = false;
     }
 
@@ -318,7 +318,7 @@ struct MANGOS_DLL_DECL mob_stoneskin_gargoyleAI : public ScriptedAI
             if (HealTimer <= diff)
             {
                 InCombat = false;
-                HealTimer = 5000;
+                HealTimer = 4000;
             }else HealTimer -= diff;
         }
 

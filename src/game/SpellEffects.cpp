@@ -406,6 +406,34 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
                         }
                         break;
                     }
+                    case 28836:
+                    {
+                        if (!m_triggeredByAuraSpell)
+                            return;
+
+                        switch(m_triggeredByAuraSpell->Id)
+                        {
+                        case 28832:
+                        case 28833:
+                        case 28834:
+                        case 28835:
+                            if (Aura *mark = unitTarget->GetAura(m_triggeredByAuraSpell->Id, 0))
+                            {
+                                switch(mark->GetStackAmount())
+                                {
+                                case 1: damage = 0;     break;
+                                case 2: damage = 500;   break;
+                                case 3: damage = 1500;  break;
+                                case 4: damage = 4000;  break;
+                                case 5: damage = 12500; break;
+                                case 6: damage = 20000; break;
+                                default: damage = (20000 + 1000 * (mark->GetStackAmount() - 6)); break;
+                                }
+                            }
+                            break;
+                        }
+                        break;
+                    }
                 }
                 break;
             }
@@ -415,7 +443,7 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
                 // Arcane Blast
                 if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x20000000))
                 {
-                    m_caster->CastSpell(m_caster, 36032, false);
+                    //m_caster->CastSpell(m_caster, 36032, false);
                 }
                 break;
             }

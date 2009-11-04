@@ -105,6 +105,11 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
     notDirectGO go_abom_eye_ramp;
     notDirectGO go_naxx_portal;
 
+    notDirectGO go_vaccuum_combat_gate;
+    notDirectGO go_vaccuum_exit_gate;
+    notDirectGO go_vaccuum_enter_gate;
+
+    notDirectGO go_horsemans_door;
 
     uint64 guid_anubrekhan;
     uint64 guid_faerlina;
@@ -119,6 +124,11 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
     uint64 guid_feugen;
     uint64 guid_thaddius;
     uint64 guid_loatheb;
+
+    uint64 m_uiZeliekGUID;
+    uint64 m_uiKorthazzGUID;
+    uint64 m_uiBlaumeuxGUID;
+    uint64 m_uiRivendareGUID;
 
     uint32 Encounters[ENCOUNTERS];
 
@@ -174,6 +184,10 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
         guid_feugen          = 0;
         guid_thaddius        = 0;
         guid_loatheb         = 0;
+        m_uiZeliekGUID       = 0;
+        m_uiKorthazzGUID     = 0;
+        m_uiBlaumeuxGUID     = 0;
+        m_uiRivendareGUID    = 0;
     }
 
     bool IsEncounterInProgress() const
@@ -198,6 +212,12 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case 15930: guid_feugen     = creature->GetGUID();   break;
             case 15928: guid_thaddius   = creature->GetGUID();   break;
             case 16011: guid_loatheb    = creature->GetGUID();   break;
+
+            case 16064: m_uiKorthazzGUID  = creature->GetGUID();   break;
+            case 16065: m_uiBlaumeuxGUID  = creature->GetGUID();   break;
+            case 30549: m_uiRivendareGUID = creature->GetGUID();   break;
+            case 16063: m_uiZeliekGUID    = creature->GetGUID();   break;
+
             case 16506:
                 ++m_uiworshipper;
                 switch (m_uiworshipper)
@@ -253,6 +273,10 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case 181213: go_abom_eye_ramp.Init(go);              break;
             case 181576: go_naxx_portal.Init(go);                break;
             case 181232: go_abom_eye_boss.Init(go);              break;
+            case 181170: go_vaccuum_combat_gate.Init(go);        break;
+            case 181124: go_vaccuum_enter_gate.Init(go);         break;
+            case 181125: go_vaccuum_exit_gate.Init(go);          break;
+            case 181119: go_horsemans_door.Init(go);             break;
         }
     }
 
@@ -273,6 +297,10 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case GUID_FEUGEN:      return guid_feugen;           break;
             case GUID_THADDIUS:    return guid_thaddius;         break;
             case GUID_LOATHEB:     return guid_loatheb;          break;
+            case GUID_ZELIEK:      return m_uiZeliekGUID;        break;
+            case GUID_KORTHAZZ:    return m_uiKorthazzGUID;      break;
+            case GUID_BLAUMEUX:    return m_uiBlaumeuxGUID;      break;
+            case GUID_RIVENDARE:   return m_uiRivendareGUID;     break;
             default:
                 return 0;
         }
@@ -468,6 +496,41 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
                     break;
                 }
                 break;
+            case ENCOUNT_GOTHIK:
+                Encounters[ENCOUNT_GOTHIK] = data;
+                switch(data)
+                {
+                case NOT_STARTED:
+                    Open(go_vaccuum_enter_gate);
+                    Open(go_vaccuum_combat_gate);
+                    Close(go_vaccuum_exit_gate);
+                    break;
+                case IN_PROGRESS:
+                    Close(go_vaccuum_enter_gate);
+                    Close(go_vaccuum_combat_gate);
+                    break;
+                case DONE:
+                    Open(go_vaccuum_combat_gate);
+                    Open(go_vaccuum_enter_gate);
+                    Open(go_vaccuum_exit_gate);
+                    break;
+                }
+                break;
+            case ENCOUNT_FOURHORSEMAN:
+                Encounters[ENCOUNT_FOURHORSEMAN] = data;
+                switch(data)
+                {
+                case NOT_STARTED:
+                    Open(go_horsemans_door);
+                    break;
+                case IN_PROGRESS:
+                    Close(go_horsemans_door);
+                    break;
+                case DONE:
+                    Open(go_horsemans_door);
+                    break;
+                }
+                break;
             }
 
         if (data == DONE)
@@ -504,6 +567,9 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case ENCOUNT_GROBBULUS:     return Encounters[ENCOUNT_GROBBULUS]; break;
             case ENCOUNT_GLUTH:         return Encounters[ENCOUNT_GLUTH];     break;
             case ENCOUNT_THADDIUS:      return Encounters[ENCOUNT_THADDIUS];  break;
+            case ENCOUNT_RAZUVIOUS:     return Encounters[ENCOUNT_RAZUVIOUS];  break;
+            case ENCOUNT_GOTHIK:        return Encounters[ENCOUNT_GOTHIK];    break;
+            case ENCOUNT_FOURHORSEMAN:  return Encounters[ENCOUNT_FOURHORSEMAN];    break;
             default: return 0;
         }
     }

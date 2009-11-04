@@ -393,6 +393,7 @@ extern void AddSC_boss_heigan();
 extern void AddSC_npc_heigan_eruption();
 extern void AddSC_boss_patchwerk();
 extern void AddSC_boss_razuvious();
+extern void AddSC_boss_gothik();
 extern void AddSC_boss_sapphiron();
 extern void AddSC_instance_naxxramas();
 
@@ -1301,6 +1302,7 @@ void ScriptsInit()
     AddSC_npc_heigan_eruption();
     AddSC_boss_patchwerk();
     AddSC_boss_razuvious();
+    AddSC_boss_gothik();
     AddSC_boss_sapphiron();
     AddSC_instance_naxxramas();
     AddSC_boss_grobbulus();

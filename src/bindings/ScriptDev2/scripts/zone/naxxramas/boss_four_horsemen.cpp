@@ -1,18 +1,18 @@
 /* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
 
 /* ScriptData
 SDName: Boss_Four_Horsemen
@@ -22,6 +22,7 @@ SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_naxxramas.h"
 
 //all horsemen
 #define SPELL_SHIELDWALL            29061
@@ -45,26 +46,81 @@ EndScriptData */
 
 #define C_SPIRIT_OF_BLAUMEUX        16776
 
-struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public ScriptedAI
+struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
 {
-    boss_lady_blaumeuxAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+    boss_lady_blaumeuxAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
+    {
+        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        Reset();
+    }
+
+    // X: 2460,656982 Y: -2953,094238 Z: 241,275406 Orient 0,591030
+    ScriptedInstance* m_pInstance;
+    bool m_bIsHeroicMode;
 
     uint32 Mark_Timer;
     uint32 VoidZone_Timer;
+    uint32 ShadowBolt_Timer;
+    uint32 Condemnation_Timer;
     bool ShieldWall1;
     bool ShieldWall2;
+    Player* target;
 
     void Reset()
     {
-        Mark_Timer = 20000;                                 // First Horsemen Mark is applied at 20 sec.
+        Mark_Timer = 24000;                                 // First Horsemen Mark is applied at 20 sec.
         VoidZone_Timer = 12000;                             // right
+        ShadowBolt_Timer = 5000;
+        Condemnation_Timer = 4000;
         ShieldWall1 = true;
         ShieldWall2 = true;
+        target = NULL;
+
+        if (m_pInstance)
+        {
+            m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, NOT_STARTED);
+
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+        }
     }
 
     void Aggro(Unit *who)
     {
         DoScriptText(SAY_BLAU_AGGRO, m_creature);
+
+        if (m_pInstance)
+        {
+            m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, IN_PROGRESS);
+            
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+                if (pTemp->isAlive() && !pTemp->getVictim())
+                    pTemp->AI()->AttackStart(who);
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+                if (pTemp->isAlive() && !pTemp->getVictim())
+                    pTemp->AI()->AttackStart(who);
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+                if (pTemp->isAlive() && !pTemp->getVictim())
+                    pTemp->AI()->AttackStart(who);
+        }
     }
 
     void KilledUnit(Unit* Victim)
@@ -72,9 +128,57 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public ScriptedAI
         DoScriptText(SAY_BLAU_SLAY, m_creature);
     }
 
+    void EnterCombat(Unit *who)
+    {
+        m_creature->GetMap()->CreatureRelocation(m_creature, 2460.656f, -2953.094f, 241.275f, 0.591f);
+    }
+
+    Player* GetNearTarget()
+    {
+        Map::PlayerList const &PlList = m_pInstance->instance->GetPlayers();
+        if (PlList.isEmpty())
+            return NULL;
+        for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+        {
+            if (Player* pPlayer = i->getSource())
+            {
+                if (pPlayer->isAlive())
+                {
+                    if(pPlayer->GetDistance((m_creature)) <= 45.0f)
+                        return pPlayer;
+                }
+            }
+        }
+        
+        return NULL;
+    }
+
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_BLAU_DEATH, m_creature);
+
+        if (m_pInstance)
+        {
+            bool HorsemenDead = true;
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+                if (pTemp->isAlive())
+                    HorsemenDead = false;
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+                if (pTemp->isAlive())
+                    HorsemenDead = false;
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+                if (pTemp->isAlive())
+                    HorsemenDead = false;
+
+            if (HorsemenDead)
+            {
+                m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, DONE);
+                GameObject* pGo = GetClosestGameObjectWithEntry(m_creature,m_bIsHeroicMode?193426:181366,200.0f);
+
+                if (pGo)
+                    m_pInstance->DoRespawnGameObject(pGo->GetGUID(),604800);
+            }
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -85,36 +189,42 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public ScriptedAI
         // Mark of Blaumeux
         if (Mark_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_MARK_OF_BLAUMEUX);
+            DoCast(m_creature,SPELL_MARK_OF_BLAUMEUX);
             Mark_Timer = 12000;
         }else Mark_Timer -= diff;
 
-        // Shield Wall - All 4 horsemen will shield wall at 50% hp and 20% hp for 20 seconds
-        if (ShieldWall1 && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 50)
+        if (target && m_creature->GetDistance(target) <= 45.0f)
         {
-            if (ShieldWall1)
+            if (m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != target->GetGUID())
+                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
+            if (ShadowBolt_Timer < diff)
             {
-                DoCast(m_creature,SPELL_SHIELDWALL);
-                ShieldWall1 = false;
-            }
+                DoCast(target, m_bIsHeroicMode ? H_SPELL_SHADOW_BOLT : SPELL_SHADOW_BOLT);
+                ShadowBolt_Timer = 2100;
+            }else ShadowBolt_Timer -= diff;
         }
-        if (ShieldWall2 && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 20)
+        else
         {
-            if (ShieldWall2)
+            target = GetNearTarget();
+
+            if (!target || (target && m_creature->GetDistance(target) <= 45.0f))
             {
-                DoCast(m_creature,SPELL_SHIELDWALL);
-                ShieldWall2 = false;
+                if (Condemnation_Timer <= diff)
+                {
+                    DoCast(m_creature,57381);
+                    Condemnation_Timer = 2100;
+                }else Condemnation_Timer -= diff;
             }
         }
 
         // Void Zone
         if (VoidZone_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_VOIDZONE);
+            DoCast(SelectUnit(SELECT_TARGET_RANDOM,0), m_bIsHeroicMode ? H_SPELL_VOIDZONE : SPELL_VOIDZONE);
             VoidZone_Timer = 12000;
         }else VoidZone_Timer -= diff;
 
-        DoMeleeAttackIfReady();
+        //DoMeleeAttackIfReady();
     }
 };
 
@@ -143,19 +253,76 @@ CreatureAI* GetAI_boss_lady_blaumeux(Creature* pCreature)
 
 struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
 {
-    boss_rivendare_naxxAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+    boss_rivendare_naxxAI(Creature* pCreature) : ScriptedAI(pCreature)
+    {
+        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        Reset();
+    }
+
+    ScriptedInstance* m_pInstance;
+    bool m_bIsHeroicMode;
+
+    uint32 Mark_Timer;
+    uint32 UnholyShadow_Timer;
+    bool ShieldWall1;
+    bool ShieldWall2;
 
     void Reset()
     {
+        Mark_Timer = 24000;
+        UnholyShadow_Timer = 15000;
+        ShieldWall1 = true;
+        ShieldWall2 = true;
+
+        if (m_pInstance)
+        {
+            m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, NOT_STARTED);
+
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+        }
     }
 
     void Aggro(Unit *who)
     {
         switch(rand()%3)
         {
-            case 0: DoScriptText(SAY_RIVE_AGGRO1, m_creature); break;
-            case 1: DoScriptText(SAY_RIVE_AGGRO2, m_creature); break;
-            case 2: DoScriptText(SAY_RIVE_AGGRO3, m_creature); break;
+        case 0: DoScriptText(SAY_RIVE_AGGRO1, m_creature); break;
+        case 1: DoScriptText(SAY_RIVE_AGGRO2, m_creature); break;
+        case 2: DoScriptText(SAY_RIVE_AGGRO3, m_creature); break;
+        }
+
+        if (m_pInstance)
+        {
+            m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, IN_PROGRESS);
+
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+                if (pTemp->isAlive() && !pTemp->getVictim())
+                    pTemp->AI()->AttackStart(who);
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+                if (pTemp->isAlive() && !pTemp->getVictim())
+                    pTemp->AI()->AttackStart(who);
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+                if (pTemp->isAlive() && !pTemp->getVictim())
+                    pTemp->AI()->AttackStart(who);
         }
     }
 
@@ -163,20 +330,56 @@ struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
     {
         switch(rand()%2)
         {
-            case 0: DoScriptText(SAY_RIVE_SLAY1, m_creature); break;
-            case 1: DoScriptText(SAY_RIVE_SLAY2, m_creature); break;
+        case 0: DoScriptText(SAY_RIVE_SLAY1, m_creature); break;
+        case 1: DoScriptText(SAY_RIVE_SLAY2, m_creature); break;
         }
     }
 
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_RIVE_DEATH, m_creature);
+
+        if (m_pInstance)
+        {
+            bool HorsemenDead = true;
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+                if (pTemp->isAlive())
+                    HorsemenDead = false;
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+                if (pTemp->isAlive())
+                    HorsemenDead = false;
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+                if (pTemp->isAlive())
+                    HorsemenDead = false;
+
+            if (HorsemenDead)
+            {
+                m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, DONE);
+                GameObject* pGo = GetClosestGameObjectWithEntry(m_creature,m_bIsHeroicMode?193426:181366,200.0f);
+                
+                if (pGo)
+                    m_pInstance->DoRespawnGameObject(pGo->GetGUID(),604800);
+            }
+        }
     }
 
     void UpdateAI(const uint32 diff)
     {
         if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
             return;
+
+        // Mark of Blaumeux
+        if (Mark_Timer < diff)
+        {
+            DoCast(m_creature->getVictim(),SPELL_MARK_OF_RIVENDARE);
+            Mark_Timer = 15000;
+        }else Mark_Timer -= diff;
+
+        if (UnholyShadow_Timer < diff)
+        {
+            DoCast(m_creature->getVictim(), m_bIsHeroicMode ? H_SPELL_UNHOLY_SHADOW : SPELL_UNHOLY_SHADOW);
+            UnholyShadow_Timer = 15000;
+        }else UnholyShadow_Timer -= diff;
 
         DoMeleeAttackIfReady();
     }
@@ -203,7 +406,15 @@ CreatureAI* GetAI_boss_rivendare_naxx(Creature* pCreature)
 
 struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
 {
-    boss_thane_korthazzAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+    boss_thane_korthazzAI(Creature* pCreature) : ScriptedAI(pCreature)
+    {
+        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        Reset();
+    }
+
+    ScriptedInstance* m_pInstance;
+    bool m_bIsHeroicMode;
 
     uint32 Mark_Timer;
     uint32 Meteor_Timer;
@@ -212,25 +423,106 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
 
     void Reset()
     {
-        Mark_Timer = 20000;                                 // First Horsemen Mark is applied at 20 sec.
+        Mark_Timer = 24000;                                 // First Horsemen Mark is applied at 20 sec.
         Meteor_Timer = 30000;                               // wrong
         ShieldWall1 = true;
         ShieldWall2 = true;
+
+        if (m_pInstance)
+        {
+            m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, NOT_STARTED);
+
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+        }
     }
 
     void Aggro(Unit *who)
     {
         DoScriptText(SAY_KORT_AGGRO, m_creature);
+
+        if (m_pInstance)
+        {
+            m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, IN_PROGRESS);
+
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+                if (pTemp->isAlive() && !pTemp->getVictim())
+                    pTemp->AI()->AttackStart(who);
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+                if (pTemp->isAlive() && !pTemp->getVictim())
+                    pTemp->AI()->AttackStart(who);
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+                if (pTemp->isAlive() && !pTemp->getVictim())
+                    pTemp->AI()->AttackStart(who);
+        }
     }
 
     void KilledUnit(Unit* Victim)
     {
         DoScriptText(SAY_KORT_SLAY, m_creature);
+
+        if (m_pInstance)
+        {
+            bool HorsemenDead = true;
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+                if (pTemp->isAlive())
+                    HorsemenDead = false;
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+                if (pTemp->isAlive())
+                    HorsemenDead = false;
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+                if (pTemp->isAlive())
+                    HorsemenDead = false;
+
+            if (HorsemenDead)
+                m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, DONE);
+        }
     }
 
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_KORT_DEATH, m_creature);
+
+        if (m_pInstance)
+        {
+            bool HorsemenDead = true;
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+                if (pTemp->isAlive())
+                    HorsemenDead = false;
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+                if (pTemp->isAlive())
+                    HorsemenDead = false;
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+                if (pTemp->isAlive())
+                    HorsemenDead = false;
+
+            if (HorsemenDead)
+            {
+                m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, DONE);
+
+                GameObject* pGo = GetClosestGameObjectWithEntry(m_creature,m_bIsHeroicMode?193426:181366,200.0f);
+
+                if (pGo)
+                    m_pInstance->DoRespawnGameObject(pGo->GetGUID(),604800);
+            }
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -245,29 +537,11 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
             Mark_Timer = 12000;
         }else Mark_Timer -= diff;
 
-        // Shield Wall - All 4 horsemen will shield wall at 50% hp and 20% hp for 20 seconds
-        if (ShieldWall1 && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 50)
-        {
-            if (ShieldWall1)
-            {
-                DoCast(m_creature,SPELL_SHIELDWALL);
-                ShieldWall1 = false;
-            }
-        }
-        if (ShieldWall2 && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 20)
-        {
-            if (ShieldWall2)
-            {
-                DoCast(m_creature,SPELL_SHIELDWALL);
-                ShieldWall2 = false;
-            }
-        }
-
         // Meteor
         if (Meteor_Timer < diff)
         {
             DoCast(m_creature->getVictim(),SPELL_METEOR);
-            Meteor_Timer = 20000;                           // wrong
+            Meteor_Timer = 15000 + rand()%2000;
         }else Meteor_Timer -= diff;
 
         DoMeleeAttackIfReady();
@@ -296,26 +570,107 @@ CreatureAI* GetAI_boss_thane_korthazz(Creature* pCreature)
 
 #define C_SPIRIT_OF_ZELIREK         16777
 
-struct MANGOS_DLL_DECL boss_sir_zeliekAI : public ScriptedAI
+struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
 {
-    boss_sir_zeliekAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+    boss_sir_zeliekAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
+    {
+        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        Reset();
+    }
+
+    // X: 2520,967285 Y: -2890,136475 Z: 241,275116 Orient: 4,082907
+    ScriptedInstance* m_pInstance;
+    bool m_bIsHeroicMode;
 
     uint32 Mark_Timer;
     uint32 HolyWrath_Timer;
+    uint32 HolyBolt_Timer;
+    uint32 Condemnation_Timer;
+    Player* target;
     bool ShieldWall1;
     bool ShieldWall2;
 
     void Reset()
     {
-        Mark_Timer = 20000;                                 // First Horsemen Mark is applied at 20 sec.
+        Mark_Timer = 24000;                                 // First Horsemen Mark is applied at 24 sec.
         HolyWrath_Timer = 12000;                            // right
+        HolyBolt_Timer = 5000;
+        Condemnation_Timer = 4000;
         ShieldWall1 = true;
         ShieldWall2 = true;
+        target = NULL;
+
+        if (m_pInstance)
+        {
+            m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, NOT_STARTED);
+
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+        }
     }
 
     void Aggro(Unit *who)
     {
         DoScriptText(SAY_ZELI_AGGRO, m_creature);
+
+        if (m_pInstance)
+        {
+            m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, IN_PROGRESS);
+
+            // stupid check. need to avoid bug with one-pull boss.
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+                if (!pTemp->isAlive())
+                    pTemp->Respawn();
+
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+                if (pTemp->isAlive() && !pTemp->getVictim())
+                    pTemp->AI()->AttackStart(who);
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+                if (pTemp->isAlive() && !pTemp->getVictim())
+                    pTemp->AI()->AttackStart(who);
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+                if (pTemp->isAlive() && !pTemp->getVictim())
+                    pTemp->AI()->AttackStart(who);
+        }
+    }
+
+    Player* GetNearTarget()
+    {
+        Map::PlayerList const &PlList = m_pInstance->instance->GetPlayers();
+        if (PlList.isEmpty())
+            return NULL;
+        for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+        {
+            if (Player* pPlayer = i->getSource())
+            {
+                if (pPlayer->isAlive())
+                {
+                    if(pPlayer->GetDistance((m_creature)) <= 45.0f)
+                        return pPlayer;
+                }
+            }
+        }
+
+        return NULL;
+    }
+
+    void EnterCombat(Unit *who)
+    {
+        m_creature->GetMap()->CreatureRelocation(m_creature, 2520.967f, -2890.136f, 241.275f, 4.082f);
     }
 
     void KilledUnit(Unit* Victim)
@@ -326,6 +681,30 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_ZELI_DEATH, m_creature);
+
+        if (m_pInstance)
+        {
+            bool HorsemenDead = true;
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+                if (pTemp->isAlive())
+                    HorsemenDead = false;
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+                if (pTemp->isAlive())
+                    HorsemenDead = false;
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+                if (pTemp->isAlive())
+                    HorsemenDead = false;
+
+            if (HorsemenDead)
+            {
+                m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, DONE);
+
+                GameObject* pGo = GetClosestGameObjectWithEntry(m_creature,m_bIsHeroicMode?193426:181366,200.0f);
+
+                if (pGo)
+                    m_pInstance->DoRespawnGameObject(pGo->GetGUID(),604800);
+            }
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -337,36 +716,42 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public ScriptedAI
         // Mark of Zeliek
         if (Mark_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_MARK_OF_ZELIEK);
+            DoCast(m_creature,SPELL_MARK_OF_ZELIEK);
             Mark_Timer = 12000;
         }else Mark_Timer -= diff;
 
-        // Shield Wall - All 4 horsemen will shield wall at 50% hp and 20% hp for 20 seconds
-        if (ShieldWall1 && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 50)
+        if (target && m_creature->GetDistance(target) <= 45.0f)
         {
-            if (ShieldWall1)
+            if (m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != target->GetGUID())
+                m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
+            if (HolyBolt_Timer < diff)
             {
-                DoCast(m_creature,SPELL_SHIELDWALL);
-                ShieldWall1 = false;
-            }
+                DoCast(target, m_bIsHeroicMode ? H_SPELL_HOLY_BOLT : SPELL_HOLY_BOLT);
+                HolyBolt_Timer = 2100;
+            }else HolyBolt_Timer -= diff;
         }
-        if (ShieldWall2 && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 20)
+        else
         {
-            if (ShieldWall2)
+            target = GetNearTarget();
+
+            if (!target || (target && m_creature->GetDistance(target) <= 45.0f))
             {
-                DoCast(m_creature,SPELL_SHIELDWALL);
-                ShieldWall2 = false;
+                if (Condemnation_Timer <= diff)
+                {
+                    DoCast(m_creature,57377);
+                    Condemnation_Timer = 2100;
+                }else Condemnation_Timer -= diff;
             }
         }
 
         // Holy Wrath
         if (HolyWrath_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_HOLY_WRATH);
+            DoCast(SelectUnit(SELECT_TARGET_RANDOM,0), m_bIsHeroicMode ? H_SPELL_HOLY_WRATH : SPELL_HOLY_WRATH);
             HolyWrath_Timer = 12000;
         }else HolyWrath_Timer -= diff;
 
-        DoMeleeAttackIfReady();
+        //DoMeleeAttackIfReady();
     }
 };
 
