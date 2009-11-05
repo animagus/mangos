@@ -193,7 +193,7 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
             Mark_Timer = 12000;
         }else Mark_Timer -= diff;
 
-        if (target && m_creature->GetDistance(target) <= 45.0f)
+        if (target && target->isAlive() && m_creature->GetDistance(target) <= 45.0f)
         {
             if (m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != target->GetGUID())
                 m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
@@ -720,7 +720,7 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
             Mark_Timer = 12000;
         }else Mark_Timer -= diff;
 
-        if (target && m_creature->GetDistance(target) <= 45.0f)
+        if (target && target->isAlive() && m_creature->GetDistance(target) <= 45.0f)
         {
             if (m_creature->GetUInt64Value(UNIT_FIELD_TARGET) != target->GetGUID())
                 m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
