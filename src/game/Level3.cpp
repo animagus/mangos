@@ -190,6 +190,7 @@ bool ChatHandler::HandleReloadConfigCommand(const char* /*args*/)
 {
     sLog.outString( "Re-Loading config settings..." );
     sWorld.LoadConfigSettings(true);
+    MapManager::Instance().InitializeVisibilityDistanceInfo();
     SendGlobalSysMessage("World config settings reloaded.");
     return true;
 }
@@ -590,6 +591,14 @@ bool ChatHandler::HandleReloadItemRequiredTragetCommand(const char*)
     sLog.outString( "Re-Loading Item Required Targets Table..." );
     objmgr.LoadItemRequiredTarget();
     SendGlobalSysMessage("DB table `item_required_target` reloaded.");
+    return true;
+}
+
+bool ChatHandler::HandleReloadBattleEventCommand(const char*)
+{
+    sLog.outString( "Re-Loading BattleGround Eventindexes..." );
+    sBattleGroundMgr.LoadBattleEventIndexes();
+    SendGlobalSysMessage("DB table `gameobject_battleground` and `creature_battleground` reloaded.");
     return true;
 }
 
@@ -4131,30 +4140,6 @@ bool ChatHandler::HandleChangeWeather(const char* args)
 
     wth->SetWeather(WeatherType(type), grade);
 
-    return true;
-}
-
-bool ChatHandler::HandleSet32Bit(const char* args)
-{
-    if(!*args)
-        return false;
-
-    char* px = strtok((char*)args, " ");
-    char* py = strtok(NULL, " ");
-
-    if (!px || !py)
-        return false;
-
-    uint32 Opcode = (uint32)atoi(px);
-    uint32 Value = (uint32)atoi(py);
-    if (Value > 32)                                         //uint32 = 32 bits
-        return false;
-
-    sLog.outDebug(GetMangosString(LANG_SET_32BIT), Opcode, Value);
-
-    m_session->GetPlayer( )->SetUInt32Value( Opcode , 2^Value );
-
-    PSendSysMessage(LANG_SET_32BIT_FIELD, Opcode,1);
     return true;
 }
 

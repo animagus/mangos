@@ -157,7 +157,9 @@ inline bool IsSealSpell(SpellEntry const *spellInfo)
 {
     //Collection of all the seal family flags. No other paladin spell has any of those.
     return spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN &&
-        ( spellInfo->SpellFamilyFlags & SPELLFAMILYFLAG_PALADIN_SEALS );
+        ( spellInfo->SpellFamilyFlags & SPELLFAMILYFLAG_PALADIN_SEALS ) &&
+        // avoid counting target triggered effect as seal for avoid remove it or seal by it.
+        spellInfo->EffectImplicitTargetA[0] == TARGET_SELF;
 }
 
 inline bool IsElementalShield(SpellEntry const *spellInfo)
@@ -197,6 +199,12 @@ inline bool IsPassiveSpellStackableWithRanks(SpellEntry const* spellProto)
     return !IsSpellHaveEffect(spellProto,SPELL_EFFECT_APPLY_AURA);
 }
 
+inline bool IsDeathOnlySpell(SpellEntry const *spellInfo)
+{
+    return spellInfo->AttributesEx & SPELL_ATTR_EX3_CAST_ON_DEAD
+        || spellInfo->Id == 2584
+        || spellInfo->Id == 22011;
+}
 
 inline bool IsDeathPersistentSpell(SpellEntry const *spellInfo)
 {
@@ -430,7 +438,7 @@ enum ProcFlags
    PROC_FLAG_KILLED                        = 0x00000001,    // 00 Killed by agressor
    PROC_FLAG_KILL                          = 0x00000002,    // 01 Kill target (in most cases need XP/Honor reward)
 
-   PROC_FLAG_SUCCESSFUL_MILEE_HIT          = 0x00000004,    // 02 Successful melee auto attack
+   PROC_FLAG_SUCCESSFUL_MELEE_HIT          = 0x00000004,    // 02 Successful melee auto attack
    PROC_FLAG_TAKEN_MELEE_HIT               = 0x00000008,    // 03 Taken damage from melee auto attack hit
 
    PROC_FLAG_SUCCESSFUL_MELEE_SPELL_HIT    = 0x00000010,    // 04 Successful attack by Spell that use melee weapon
@@ -464,7 +472,7 @@ enum ProcFlags
    PROC_FLAG_SUCCESSFUL_OFFHAND_HIT        = 0x00800000     // 23 Successful off-hand melee attacks
 };
 
-#define MELEE_BASED_TRIGGER_MASK (PROC_FLAG_SUCCESSFUL_MILEE_HIT        | \
+#define MELEE_BASED_TRIGGER_MASK (PROC_FLAG_SUCCESSFUL_MELEE_HIT        | \
                                   PROC_FLAG_TAKEN_MELEE_HIT             | \
                                   PROC_FLAG_SUCCESSFUL_MELEE_SPELL_HIT  | \
                                   PROC_FLAG_TAKEN_MELEE_SPELL_HIT       | \

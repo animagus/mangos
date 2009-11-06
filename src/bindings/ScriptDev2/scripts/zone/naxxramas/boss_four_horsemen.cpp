@@ -189,7 +189,7 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
         // Mark of Blaumeux
         if (Mark_Timer < diff)
         {
-            DoCast(m_creature,SPELL_MARK_OF_BLAUMEUX);
+            DoCast(m_creature,SPELL_MARK_OF_BLAUMEUX,true);
             Mark_Timer = 12000;
         }else Mark_Timer -= diff;
 
@@ -371,7 +371,7 @@ struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
         // Mark of Blaumeux
         if (Mark_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_MARK_OF_RIVENDARE);
+            DoCast(m_creature->getVictim(),SPELL_MARK_OF_RIVENDARE,true);
             Mark_Timer = 15000;
         }else Mark_Timer -= diff;
 
@@ -533,7 +533,7 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
         // Mark of Korthazz
         if (Mark_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_MARK_OF_KORTHAZZ);
+            DoCast(m_creature->getVictim(),SPELL_MARK_OF_KORTHAZZ,true);
             Mark_Timer = 12000;
         }else Mark_Timer -= diff;
 
@@ -716,7 +716,7 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
         // Mark of Zeliek
         if (Mark_Timer < diff)
         {
-            DoCast(m_creature,SPELL_MARK_OF_ZELIEK);
+            DoCast(m_creature,SPELL_MARK_OF_ZELIEK,true);
             Mark_Timer = 12000;
         }else Mark_Timer -= diff;
 
