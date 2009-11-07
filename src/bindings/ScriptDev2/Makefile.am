@@ -1,4 +1,4 @@
-# Copyright © 2005,2006,2007 MaNGOS <http://www.mangosproject.org/>
+# Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,11 +19,10 @@
 ## Sub-directories to parse
 SUBDIRS = sql
 
-BUILT_SOURCES = svn_revision.h
-CLEANFILES = svn_revision.h
+BUILT_SOURCES = revision.h
+CLEANFILES = revision.h
 ## CPP flags for includes, defines, etc.
-AM_CPPFLAGS = $(MYSQL_INCLUDES) -I$(srcdir) -I$(srcdir)/../../../dep/include -I$(srcdir)/../../shared/ -I$(srcdir)/../../framework/ -I$(srcdir)/../../game/ -I$(srcdir)/include/
-
+AM_CPPFLAGS = $(MANGOS_INCLUDES) -I$(srcdir) -I$(srcdir)/../../../dep/include -I$(srcdir)/../../shared/ -I$(srcdir)/../../framework/ -I$(srcdir)/../../game/ -I$(srcdir)/include/ -I$(srcdir)/base/ -DSYSCONFDIR=\"$(sysconfdir)/\"
 ## Build MaNGOS script library as shared library.
 # libmangosscript shared library will later be reused by world server daemon.
 lib_LTLIBRARIES = libmangosscript.la
@@ -483,8 +482,8 @@ system/system.h
 
 
 ## magic to include SVN revision number in SD2 version string
-svn_revision.h: FORCE tools/gensvnrevision/gensvnrevision
-	tools/gensvnrevision/gensvnrevision
+revision.h: FORCE
+	$(top_builddir)/src/tools/genrevision/genrevision $(srcdir)
 
 FORCE:
 
@@ -501,7 +500,6 @@ FORCE:
 LTMANGOS_CURRENT = 0
 LTMANGOS_REVISION = 0
 LTMANGOS_AGE = 0
-libmangosscript_la_LIBADD = $(MYSQL_LIBS)
 libmangosscript_la_LIBFLAGS = -version-info $(LTMANGOS_CURRENT):$(LTMANGOS_REVISION):$(LTMANGOS_AGE)
 
 ## Additional files to include when running 'make dist'
@@ -509,4 +507,24 @@ libmangosscript_la_LIBFLAGS = -version-info $(LTMANGOS_CURRENT):$(LTMANGOS_REVIS
 EXTRA_DIST = \
 	Scripts/sc_default.cpp \
 	Scripts/sc_defines.cpp \
-	Scripts/sc_defines.h
+	Scripts/sc_defines.h \
+	scriptdev2.conf.dist
+
+## Additional files to install
+sysconf_DATA = \
+	scriptdev2.conf.dist
+
+install-data-hook:
+	@list='$(sysconf_DATA)'; for p in $$list; do \
+      dest=`echo $$p | sed -e s/.dist//`; \
+	  if test -f $(DESTDIR)$(sysconfdir)/$$dest; then \
+        echo "$@ will not overwrite existing $(DESTDIR)$(sysconfdir)/$$dest"; \
+      else \
+	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(sysconfdir)/$$dest"; \
+	    $(INSTALL_DATA) $$p $(DESTDIR)$(sysconfdir)/$$dest; \
+	  fi; \
+	done
+
+clean-local:
+	rm -f $(sysconf_DATA)
+
