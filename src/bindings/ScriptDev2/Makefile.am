@@ -479,7 +479,7 @@ scripts/world/npcs_special.cpp \
 system/ScriptLoader.cpp \
 system/ScriptLoader.h \
 system/system.cpp \
-system/system.h \
+system/system.h
 
 
 ## magic to include SVN revision number in SD2 version string
