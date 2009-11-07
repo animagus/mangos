@@ -443,7 +443,7 @@ void GameObject::Update(uint32 /*p_time*/)
             if(!m_spawnedByDefault)
             {
                 m_respawnTime = 0;
-                ObjectAccessor::UpdateObjectVisibility(this);
+                UpdateObjectVisibility();
                 return;
             }
 
