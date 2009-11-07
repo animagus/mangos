@@ -1,18 +1,18 @@
 /* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
 
 /* ScriptData
 SDName: Boss_Svala
@@ -165,9 +165,9 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
     {
         switch(urand(0, 2))
         {
-            case 0: DoScriptText(SAY_SLAY_1, m_creature); break;
-            case 1: DoScriptText(SAY_SLAY_2, m_creature); break;
-            case 2: DoScriptText(SAY_SLAY_3, m_creature); break;
+        case 0: DoScriptText(SAY_SLAY_1, m_creature); break;
+        case 1: DoScriptText(SAY_SLAY_2, m_creature); break;
+        case 2: DoScriptText(SAY_SLAY_3, m_creature); break;
         }
     }
 
@@ -202,29 +202,29 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
 
                     switch(m_uiIntroCount)
                     {
-                        case 0:
-                            DoScriptText(SAY_INTRO_1, m_creature);
-                            break;
-                        case 1:
-                            DoScriptText(SAY_INTRO_2_ARTHAS, pArthas);
-                            break;
-                        case 2:
-                            pArthas->CastSpell(m_creature, SPELL_TRANSFORMING_CHANNEL, false);
-                            m_creature->CastSpell(m_creature, SPELL_TRANSFORMING_FLOATING, false);
-                            DoMoveToPosition();
-                            break;
-                        case 3:
-                            m_creature->CastSpell(m_creature, SPELL_TRANSFORMING, false);
-                            DoScriptText(SAY_INTRO_3, m_creature);
-                            break;
-                        case 4:
-                            DoScriptText(SAY_INTRO_4_ARTHAS, pArthas);
-                            break;
-                        case 5:
-                            DoScriptText(SAY_INTRO_5, m_creature);
-                            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                            m_bIsIntroDone = true;
-                            break;
+                    case 0:
+                        DoScriptText(SAY_INTRO_1, m_creature);
+                        break;
+                    case 1:
+                        DoScriptText(SAY_INTRO_2_ARTHAS, pArthas);
+                        break;
+                    case 2:
+                        pArthas->CastSpell(m_creature, SPELL_TRANSFORMING_CHANNEL, false);
+                        m_creature->CastSpell(m_creature, SPELL_TRANSFORMING_FLOATING, false);
+                        DoMoveToPosition();
+                        break;
+                    case 3:
+                        m_creature->CastSpell(m_creature, SPELL_TRANSFORMING, false);
+                        DoScriptText(SAY_INTRO_3, m_creature);
+                        break;
+                    case 4:
+                        DoScriptText(SAY_INTRO_4_ARTHAS, pArthas);
+                        break;
+                    case 5:
+                        DoScriptText(SAY_INTRO_5, m_creature);
+                        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                        m_bIsIntroDone = true;
+                        break;
                     }
 
                     ++m_uiIntroCount;
@@ -270,3 +270,4 @@ void AddSC_boss_svala()
     newscript->pAreaTrigger = &AreaTrigger_at_svala_intro;
     newscript->RegisterSelf();
 }
+
