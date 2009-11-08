@@ -26,6 +26,7 @@ extern void AddSC_guards();
 extern void AddSC_item_scripts();
 extern void AddSC_npc_professions();
 extern void AddSC_npcs_special();
+extern void AddSC_npc_innkeeper();
 
 //eastern kingdoms
 extern void AddSC_blackrock_depths();                       //blackrock_depths
@@ -101,6 +102,7 @@ extern void AddSC_boss_houndmaster_loksey();
 extern void AddSC_boss_interrogator_vishas();
 extern void AddSC_boss_mograine_and_whitemane();
 extern void AddSC_boss_scorn();
+extern void AddSC_boss_headless_horseman();
 extern void AddSC_instance_scarlet_monastery();
 extern void AddSC_boss_darkmaster_gandling();               //scholomance
 extern void AddSC_boss_death_knight_darkreaver();
@@ -262,6 +264,8 @@ extern void AddSC_boss_moorabi();
 extern void AddSC_boss_sladran();
 extern void AddSC_instance_gundrak();
 extern void AddSC_boss_anubrekhan();                        //naxxramas
+extern void AddSC_boss_grobbulus();
+extern void AddSC_boss_thaddius();
 extern void AddSC_boss_four_horsemen();
 extern void AddSC_boss_faerlina();
 extern void AddSC_boss_gluth();
@@ -270,7 +274,10 @@ extern void AddSC_boss_kelthuzad();
 extern void AddSC_boss_loatheb();
 extern void AddSC_boss_maexxna();
 extern void AddSC_boss_noth();
+extern void AddSC_npc_heigan_eruption();
+extern void AddSC_boss_heigan();
 extern void AddSC_boss_patchwerk();
+extern void AddSC_boss_gothik();
 extern void AddSC_boss_razuvious();
 extern void AddSC_boss_sapphiron();
 extern void AddSC_instance_naxxramas();
@@ -300,6 +307,10 @@ extern void AddSC_boss_skadi();
 extern void AddSC_boss_svala();
 extern void AddSC_boss_ymiron();
 extern void AddSC_instance_pinnacle();
+
+extern void AddSC_boss_archavon();
+extern void AddSC_boss_emalon();
+extern void AddSC_instance_vault_of_archavon();
 
 extern void AddSC_borean_tundra();
 extern void AddSC_dalaran();
@@ -411,6 +422,7 @@ void AddScripts()
     AddSC_item_scripts();
     AddSC_npc_professions();
     AddSC_npcs_special();
+    AddSC_npc_innkeeper();
 
     //eastern kingdoms
     AddSC_blackrock_depths();                               //blackrock_depths
@@ -486,6 +498,7 @@ void AddScripts()
     AddSC_boss_interrogator_vishas();
     AddSC_boss_mograine_and_whitemane();
     AddSC_boss_scorn();
+    AddSC_boss_headless_horseman();
     AddSC_instance_scarlet_monastery();
     AddSC_boss_darkmaster_gandling();                       //scholomance
     AddSC_boss_death_knight_darkreaver();
@@ -655,8 +668,13 @@ void AddScripts()
     AddSC_boss_loatheb();
     AddSC_boss_maexxna();
     AddSC_boss_noth();
+    AddSC_boss_heigan();
+    AddSC_npc_heigan_eruption();
     AddSC_boss_patchwerk();
     AddSC_boss_razuvious();
+    AddSC_boss_gothik();
+    AddSC_boss_grobbulus();
+    AddSC_boss_thaddius();
     AddSC_boss_sapphiron();
     AddSC_instance_naxxramas();
     AddSC_boss_anomalus();                                  //nexus
@@ -685,6 +703,10 @@ void AddScripts()
     AddSC_boss_svala();
     AddSC_boss_ymiron();
     AddSC_instance_pinnacle();
+
+    AddSC_boss_archavon();
+    AddSC_boss_emalon();
+    AddSC_instance_vault_of_archavon();
 
     AddSC_borean_tundra();
     AddSC_dalaran();
