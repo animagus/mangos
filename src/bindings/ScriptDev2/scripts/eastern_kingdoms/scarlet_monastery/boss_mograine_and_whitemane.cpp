@@ -70,13 +70,16 @@ struct MANGOS_DLL_DECL boss_scarlet_commander_mograineAI : public ScriptedAI
 
     void Reset()
     {
-        Unit* Whitemane = Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_WHITEMANE));
-        if(Whitemane && !Whitemane->isAlive())
-            ((Creature*)Whitemane)->Respawn();
+        if (m_pInstance)
+        {
+            Unit* Whitemane = Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_WHITEMANE));
+            if(Whitemane && !Whitemane->isAlive())
+                ((Creature*)Whitemane)->Respawn();
+        }
         m_uiCrusaderStrike_Timer = 10000;
         m_uiHammerOfJustice_Timer = 10000;
 
-        //Incase wipe during phase that mograine fake death
+        //In case wipe during phase that mograine fake death
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetStandState(UNIT_STAND_STATE_STAND);
