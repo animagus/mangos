@@ -3496,7 +3496,6 @@ void Spell::EffectSummonType(uint32 i)
         case SUMMON_TYPE_FORCE_OF_NATURE:
         case SUMMON_TYPE_GUARDIAN2:
         case SUMMON_TYPE_GUARDIAN3:
-		case SUMMON_TYPE_QUEST:
             // Jewelery statue case (totem like)
             if(m_spellInfo->SpellIconID == 2056)
                 EffectSummonTotem(i);
@@ -3521,6 +3520,7 @@ void Spell::EffectSummonType(uint32 i)
         case SUMMON_TYPE_CRITTER2:
         case SUMMON_TYPE_CRITTER3:
         case SUMMON_TYPE_QUEST_CRITTER:
+		case SUMMON_TYPE_QUEST:
             EffectSummonCritter(i);
             break;
         case SUMMON_TYPE_TOTEM_SLOT1:
