@@ -66,6 +66,7 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
     bool ShieldWall1;
     bool ShieldWall2;
     Player* target;
+    Player* m_void_target;
 
     void Reset()
     {
@@ -76,6 +77,7 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
         ShieldWall1 = true;
         ShieldWall2 = true;
         target = NULL;
+        m_void_target = NULL;
 
         if (m_pInstance)
         {
@@ -189,6 +191,7 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
         // Mark of Blaumeux
         if (Mark_Timer < diff)
         {
+            m_creature->InterruptNonMeleeSpells(false);
             DoCast(m_creature,SPELL_MARK_OF_BLAUMEUX,true);
             Mark_Timer = 12000;
         }else Mark_Timer -= diff;
@@ -211,6 +214,7 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
             {
                 if (Condemnation_Timer <= diff)
                 {
+                    m_creature->InterruptNonMeleeSpells(false);
                     DoCast(m_creature,57381);
                     Condemnation_Timer = 2100;
                 }else Condemnation_Timer -= diff;
@@ -220,8 +224,13 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
         // Void Zone
         if (VoidZone_Timer < diff)
         {
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM,0), m_bIsHeroicMode ? H_SPELL_VOIDZONE : SPELL_VOIDZONE);
-            VoidZone_Timer = 12000;
+            m_void_target  = GetNearTarget();
+            if (m_void_target)
+            {
+                m_creature->InterruptNonMeleeSpells(false);
+                DoCast(m_void_target, m_bIsHeroicMode ? H_SPELL_VOIDZONE : SPELL_VOIDZONE,true);
+            }
+            VoidZone_Timer = 15000;
         }else VoidZone_Timer -= diff;
 
         //DoMeleeAttackIfReady();
@@ -371,12 +380,14 @@ struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
         // Mark of Blaumeux
         if (Mark_Timer < diff)
         {
+            m_creature->InterruptNonMeleeSpells(false);
             DoCast(m_creature->getVictim(),SPELL_MARK_OF_RIVENDARE,true);
             Mark_Timer = 15000;
         }else Mark_Timer -= diff;
 
         if (UnholyShadow_Timer < diff)
         {
+            m_creature->InterruptNonMeleeSpells(false);
             DoCast(m_creature->getVictim(), m_bIsHeroicMode ? H_SPELL_UNHOLY_SHADOW : SPELL_UNHOLY_SHADOW);
             UnholyShadow_Timer = 15000;
         }else UnholyShadow_Timer -= diff;
@@ -533,6 +544,7 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
         // Mark of Korthazz
         if (Mark_Timer < diff)
         {
+            m_creature->InterruptNonMeleeSpells(false);
             DoCast(m_creature->getVictim(),SPELL_MARK_OF_KORTHAZZ,true);
             Mark_Timer = 12000;
         }else Mark_Timer -= diff;
@@ -588,6 +600,7 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
     uint32 HolyBolt_Timer;
     uint32 Condemnation_Timer;
     Player* target;
+    Player* m_chain_target;
     bool ShieldWall1;
     bool ShieldWall2;
 
@@ -600,6 +613,7 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
         ShieldWall1 = true;
         ShieldWall2 = true;
         target = NULL;
+        m_chain_target = NULL;
 
         if (m_pInstance)
         {
@@ -716,6 +730,7 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
         // Mark of Zeliek
         if (Mark_Timer < diff)
         {
+            m_creature->InterruptNonMeleeSpells(false);
             DoCast(m_creature,SPELL_MARK_OF_ZELIEK,true);
             Mark_Timer = 12000;
         }else Mark_Timer -= diff;
@@ -738,6 +753,7 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
             {
                 if (Condemnation_Timer <= diff)
                 {
+                    m_creature->InterruptNonMeleeSpells(false);
                     DoCast(m_creature,57377);
                     Condemnation_Timer = 2100;
                 }else Condemnation_Timer -= diff;
@@ -747,7 +763,12 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
         // Holy Wrath
         if (HolyWrath_Timer < diff)
         {
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM,0), m_bIsHeroicMode ? H_SPELL_HOLY_WRATH : SPELL_HOLY_WRATH);
+            m_chain_target = GetNearTarget();
+            if (m_chain_target)
+            {
+                m_creature->InterruptNonMeleeSpells(false);
+                DoCast(m_chain_target, m_bIsHeroicMode ? H_SPELL_HOLY_WRATH : SPELL_HOLY_WRATH);
+            }
             HolyWrath_Timer = 12000;
         }else HolyWrath_Timer -= diff;
 
@@ -758,6 +779,41 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
 CreatureAI* GetAI_boss_sir_zeliek(Creature* pCreature)
 {
     return new boss_sir_zeliekAI(pCreature);
+}
+
+struct MANGOS_DLL_DECL mob_void_zoneAI : public Scripted_NoMovementAI
+{
+    mob_void_zoneAI(Creature *c) : Scripted_NoMovementAI(c)
+    {
+        pInstance = ((ScriptedInstance*)c->GetInstanceData());
+        m_bIsHeroicMode = c->GetMap()->IsHeroic();
+        Reset();
+    }
+
+    ScriptedInstance* pInstance;
+    bool m_bIsHeroicMode;
+    uint32 m_despawn_timer;
+
+    void Reset()
+    {
+        m_despawn_timer = 75000;
+    }
+
+    void UpdateAI(const uint32 diff) 
+    {
+        if (!(m_creature->HasAura(m_bIsHeroicMode?39003:36120)))
+            DoCast(m_creature,m_bIsHeroicMode?39003:36120,true);
+
+        if (m_despawn_timer <= diff)
+        {
+            m_creature->ForcedDespawn();
+        }else m_despawn_timer -= diff;
+    }
+};
+
+CreatureAI* GetAI_mob_void_zone(Creature *_Creature)
+{
+    return new mob_void_zoneAI (_Creature);
 }
 
 void AddSC_boss_four_horsemen()
@@ -782,5 +838,10 @@ void AddSC_boss_four_horsemen()
     newscript = new Script;
     newscript->Name = "boss_sir_zeliek";
     newscript->GetAI = &GetAI_boss_sir_zeliek;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_void_zone";
+    newscript->GetAI = &GetAI_mob_void_zone;
     newscript->RegisterSelf();
 }

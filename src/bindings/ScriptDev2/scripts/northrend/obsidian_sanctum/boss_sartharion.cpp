@@ -1304,16 +1304,6 @@ struct MANGOS_DLL_DECL mob_lava_blazeAI : public ScriptedAI
         if (pSpell->Id == 60430)
             m_creature->SetHealth(m_creature->GetMaxHealth());
     }
-
-/*    void UpdateAI(const uint32 uiDiff)
-    {
-        //Return since we have no target
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
-            return;
-
-        DoMeleeAttackIfReady();
-    }
-*/
 };
 
 CreatureAI* GetAI_mob_lava_blaze(Creature* pCreature)

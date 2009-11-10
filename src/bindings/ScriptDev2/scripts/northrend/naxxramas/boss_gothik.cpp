@@ -213,7 +213,8 @@ struct MANGOS_DLL_DECL boss_gothikAI : public Scripted_NoMovementAI
         {
             if (HarvestSoul_Timer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_HARVESTSOUL);
+                m_creature->InterruptNonMeleeSpells(false);
+                DoCast(m_creature->getVictim(), SPELL_HARVESTSOUL,true);
                 HarvestSoul_Timer = 15000 + rand()%1000;
             }else HarvestSoul_Timer -= diff;
 
