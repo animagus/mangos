@@ -958,23 +958,71 @@ bool Pet::InitStatsForLevel(uint32 petlevel, Unit* owner)
             }
             break;
         }
-        case GUARDIAN_PET:
-            SetUInt32Value(UNIT_FIELD_PETEXPERIENCE, 0);
-            SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, 1000);
+		default:
+			{
+				switch (GetEntry())
+				{
+				case 510: // mage Water Elemental
+					{
+						//40% damage bonus of mage's frost damage
+						float val = owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FROST) * 0.4;
+						if(val < 0)
+							val = 0;
+						SetBonusDamage(int32(val));
+						break;
+					}
+				case 1964: //force of nature
+					{
+						SetCreateHealth(30 + 30*petlevel);
+						SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 2.5f - (petlevel / 2)));
+						SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 2.5f + (petlevel / 2)));
+						break;
+					}
+				case 15352: //earth elemental 36213
+					{
+						SetCreateHealth(100 + 120*petlevel);
+						SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
+						SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
+						break;
+					}
+				case 15438: //fire elemental
+					{
+						SetCreateHealth(40*petlevel);
+						SetCreateMana(28 + 10*petlevel);
+						SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 4 - petlevel));
+						SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 4 + petlevel));
+						break;
+					}
+				case 31216: // Mirror Image
+					{
+						SetBonusDamage(int32(owner->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FROST) * 0.33f));
+						SetCreateMana(160*petlevel);
+						SetCreateHealth(35*petlevel);
+						break;
+					}
+				case 27829: // Ebon Gargoyle
+					{
+						SetBonusDamage( int32(owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.4f));
+						SetCreateMana(28 + 10*petlevel);
+						SetCreateHealth(28 + 30*petlevel);
+						break;
+					}
+				default:
+					{
 
-            SetCreateMana(28 + 10*petlevel);
-            SetCreateHealth(28 + 30*petlevel);
-
-            // FIXME: this is wrong formula, possible each guardian pet have own damage formula
-            //these formula may not be correct; however, it is designed to be close to what it should be
-            //this makes dps 0.5 of pets level
-            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
-            //damage range is then petlevel / 2
-            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
-            break;
-        default:
-            sLog.outError("Pet have incorrect type (%u) for levelup.", getPetType());
-            break;
+						SetCreateMana(28 + 10*petlevel);
+						SetCreateHealth(28 + 30*petlevel);
+						// FIXME: this is wrong formula, possible each guardian pet have own damage formula
+						//these formula may not be correct; however, it is designed to be close to what it should be
+						//this makes dps 0.5 of pets level
+						SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
+						//damage range is then petlevel / 2
+						SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
+						break;
+					}
+				}
+				break;
+			}
     }
 
     for (int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)

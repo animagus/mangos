@@ -212,6 +212,8 @@ class MANGOS_DLL_SPEC Aura
         void HandleAuraIncreaseBaseHealthPercent(bool Apply, bool Real);
         void HandleNoReagentUseAura(bool Apply, bool Real);
         void HandlePhase(bool Apply, bool Real);
+		void HandleAuraInitializeImages(bool Apply, bool Real);
+		void HandleAuraCloneCaster(bool Apply, bool Real);
 		void HandleAbilityIgnoreAurastate(bool Apply, bool Real);
         void HandleAllowOnlyAbility(bool Apply, bool Real);
         void HandleModTargetArmorPct(bool Apply, bool Real);

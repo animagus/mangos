@@ -150,7 +150,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectKillCreditPersonal,                       // 90 SPELL_EFFECT_KILL_CREDIT              Kill credit but only for single person
     &Spell::EffectUnused,                                   // 91 SPELL_EFFECT_THREAT_ALL               one spell: zzOLDBrainwash
     &Spell::EffectEnchantHeldItem,                          // 92 SPELL_EFFECT_ENCHANT_HELD_ITEM
-    &Spell::EffectUnused,                                   // 93 SPELL_EFFECT_SUMMON_PHANTASM
+    &Spell::EffectPhantams,                                 // 93 SPELL_EFFECT_SUMMON_PHANTASM
     &Spell::EffectSelfResurrect,                            // 94 SPELL_EFFECT_SELF_RESURRECT
     &Spell::EffectSkinning,                                 // 95 SPELL_EFFECT_SKINNING
     &Spell::EffectCharge,                                   // 96 SPELL_EFFECT_CHARGE
@@ -3490,6 +3490,7 @@ void Spell::EffectSummonType(uint32 i)
 {
     switch(m_spellInfo->EffectMiscValueB[i])
     {
+		case SUMMON_TYPE_ILLUSION:
         case SUMMON_TYPE_GUARDIAN:
         case SUMMON_TYPE_POSESSED:
         case SUMMON_TYPE_POSESSED2:
@@ -3961,7 +3962,7 @@ void Spell::EffectSummonGuardian(uint32 i)
     // FIXME: some guardians have control spell applied and controlled by player and anyway player can't summon in this time
     //        so this code hack in fact
     if (m_caster->GetTypeId() == TYPEID_PLAYER && (duration <= 0 || GetSpellRecoveryTime(m_spellInfo) == 0))
-        if(m_caster->FindGuardianWithEntry(pet_entry))
+        if(m_caster->FindGuardianWithEntry(pet_entry) && pet_entry != 31216)
             return;                                         // find old guardian, ignore summon
 
     // in another case summon new
@@ -5251,6 +5252,15 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     unitTarget->CastSpell(unitTarget, 41131, true);
                     break;
                 }
+				case 45204: // Clone Me!
+				case 41055: // Copy Weapon
+				case 45206: // Copy Off-hand Weapon
+					unitTarget->CastSpell(m_caster, damage, false);
+					break;
+				case 45205: // Copy Offhand Weapon
+				case 41054: // Copy Weapon
+					m_caster->CastSpell(unitTarget, damage, false);
+					break;
                 // Force Cast - Portal Effect: Sunwell Isle
                 case 44876:
                 {
@@ -7242,4 +7252,11 @@ void Spell::EffectRechargeManaGem(uint32 i)
             pItem->SetSpellCharges(x,pProto->Spells[x].SpellCharges);
         pItem->SetState(ITEM_CHANGED,player);
     }
+}
+
+void Spell::EffectPhantams(uint32 i)
+{
+	WorldPacket data(SMSG_CLEAR_TARGET, 8);
+	data << uint64(m_caster->GetGUID());
+	m_caster->SendMessageToSet(&data,true);
 }

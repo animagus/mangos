@@ -1441,6 +1441,101 @@ CreatureAI* GetAI_npc_wild_wolpertinger(Creature* pCreature)
     return new npc_wild_wolpertingerAI(pCreature);
 }
 
+/*######
+## npc_mirror_image
+######*/
+
+struct MANGOS_DLL_DECL npc_mirror_imageAI : public ScriptedAI
+{
+    npc_mirror_imageAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+
+	uint32 m_uiFrostboltTimer;
+	uint32 m_uiFireblastTimer;
+
+    void Reset() 
+	{
+		Unit *owner = m_creature->GetOwner();
+		if (!owner)
+			return;
+
+		if (owner && !m_creature->hasUnitState(UNIT_STAT_FOLLOW))
+		{
+			m_creature->GetMotionMaster()->Clear(false);
+			m_creature->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+		}
+		// Inherit Master's Threat List (not yet implemented)
+		//owner->CastSpell((Unit*)NULL, 58838, true);
+		// here mirror image casts on summoner spell (not present in client dbc) 49866
+		// here should be auras (not present in client dbc): 35657, 35658, 35659, 35660 selfcasted by mirror images (stats related?)
+		// Clone Me!
+		m_uiFrostboltTimer = 0;
+		m_uiFireblastTimer = 6100;
+	}
+
+	void EnterEvadeMode()
+	{
+		if (m_creature->IsInEvadeMode() || !m_creature->isAlive())
+			return;
+
+		Unit *owner = m_creature->GetCharmerOrOwner();
+
+		m_creature->CombatStop(true);
+		if (owner && !m_creature->hasUnitState(UNIT_STAT_FOLLOW))
+		{
+			m_creature->GetMotionMaster()->Clear(false);
+			m_creature->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
+		}
+	}
+
+	void UpdateAI(const uint32 diff)
+	{
+		if (!(m_creature->HasAura(45204)))
+		{
+			Unit *owner = m_creature->GetCharmerOrOwner();
+			if (!owner)
+				return;
+			m_creature->CastSpell(m_creature, 45204, true, NULL, NULL, owner->GetGUID());
+		}
+
+		if (!(m_creature->HasAura(58836)))
+		{
+			Unit *owner = m_creature->GetCharmerOrOwner();
+			if (!owner)
+				return;
+			m_creature->CastSpell(m_creature, 58836, true, NULL, NULL, owner->GetGUID());
+		}
+		
+		if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+		{
+			Unit *owner = m_creature->GetCharmerOrOwner();
+			if (owner && owner->getVictim())
+				m_creature->AI()->AttackStart(owner->getVictim());
+		}
+
+		if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+			return;
+
+		if (m_uiFrostboltTimer <= diff)
+		{
+			DoCast(m_creature->getVictim(),59638);
+			m_uiFrostboltTimer = 3100;
+		}else m_uiFrostboltTimer -= diff;
+
+		if (m_uiFireblastTimer <= diff)
+		{
+			DoCast(m_creature->getVictim(),59637,true);
+			m_uiFireblastTimer = 6000;
+		}else m_uiFireblastTimer -= diff;
+
+		DoMeleeAttackIfReady();
+	}
+};
+
+CreatureAI* GetAI_npc_mirror_image(Creature* pCreature)
+{
+    return new npc_mirror_imageAI(pCreature);
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -1529,4 +1624,9 @@ void AddSC_npcs_special()
     newscript->Name = "npc_wild_wolpertinger";
     newscript->GetAI = &GetAI_npc_wild_wolpertinger;
     newscript->RegisterSelf();
+
+	newscript = new Script;
+	newscript->Name = "npc_mirror_image";
+	newscript->GetAI = &GetAI_npc_mirror_image;
+	newscript->RegisterSelf();
 }

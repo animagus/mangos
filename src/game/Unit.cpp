@@ -10284,6 +10284,10 @@ bool Unit::CanHaveThreatList() const
     if( ((Creature*)this)->isPet() && IS_PLAYER_GUID(((Pet*)this)->GetOwnerGUID()) )
         return false;
 
+	// guardians not have threat list, need implement pet guardian category
+	if( ((Creature*)this)->GetEntry() == 31216)
+		return false;
+
     return true;
 }
 
@@ -10419,9 +10423,27 @@ bool Unit::SelectHostilTarget()
         }
     }
 
-    if ( !target && !m_ThreatManager.isThreatListEmpty() )
-        // No taunt aura or taunt aura caster is dead standart target selection
-        target = m_ThreatManager.getHostilTarget();
+	if (CanHaveThreatList())
+	{
+		if (!target && !m_ThreatManager.isThreatListEmpty())
+			// No taunt aura or taunt aura caster is dead standard target selection
+			target = m_ThreatManager.getHostilTarget();
+	}
+	else if (!(((Creature*)this)->GetCharmInfo()->HasReactState(REACT_PASSIVE)))
+	{
+		// We have player pet probably
+		target = getAttackerForHelper();
+		if (!target && ((Creature*)this)->isPet())
+		{
+			if (Unit * owner = ((Pet*)this)->GetOwner())
+			{
+				if (owner->isInCombat())
+					target = owner->getAttackerForHelper();
+			}
+		}
+	}
+	else
+		return NULL;
 
     if(target)
     {

@@ -316,7 +316,8 @@ struct MANGOS_DLL_DECL mob_shield_orbAI : public ScriptedAI
     uint32 ui_MovementTimer;
     uint32 ui_MovingSteps;
 
-    void Reset() {
+    void Reset() 
+	{
         ui_ShadowBoltTimer = 1000 + rand()%3000;
         ui_MovementTimer = 1000 + rand()%2000;
         ui_MovingSteps = 0;
