@@ -2365,6 +2365,9 @@ void Spell::EffectTriggerMissileSpell(uint32 effect_idx)
     if (m_CastItem)
         DEBUG_LOG("WORLD: cast Item spellId - %i", spellInfo->Id);
 
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+        ((Player*)m_caster)->RemoveSpellCooldown(triggered_spell_id);
+
     m_caster->CastSpell(m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ, spellInfo, true, m_CastItem, 0, m_originalCasterGUID);
 }
 
@@ -3506,6 +3509,7 @@ void Spell::EffectSummonType(uint32 i)
         case SUMMON_TYPE_WILD:
         case SUMMON_TYPE_QUEST_WILD:
         case SUMMON_TYPE_CREATURE:
+		case SUMMON_TYPE_SCRAPBOT:
             EffectSummonWild(i);
             break;
         case SUMMON_TYPE_DEMON:
@@ -5413,6 +5417,41 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                         ((Player*)m_caster)->learnSpell(discoveredSpell, false);
                     return;
                 }
+				case 57337:   //Great Feast
+                {
+                    if(!unitTarget)
+                        return;
+
+                    unitTarget->CastSpell(unitTarget,58067,true);
+                    break;
+                }
+				case 57397:   //Fish Feast
+                {
+                    if(!unitTarget)
+                        return;
+
+					unitTarget->CastSpell(unitTarget,58648,true);
+                    unitTarget->CastSpell(unitTarget,57398,true);
+                    break;
+                }
+				case 58466:   //Gigantic Feast
+                {
+                    if(!unitTarget)
+                        return;
+
+					unitTarget->CastSpell(unitTarget,58648,true);
+                    unitTarget->CastSpell(unitTarget,58467,true);
+                    break;
+                }
+				case 58475:   //Small Feast
+                {
+                    if(!unitTarget)
+                        return;
+
+					unitTarget->CastSpell(unitTarget,58648,true);
+                    unitTarget->CastSpell(unitTarget,58477,true);
+                    break;
+                }
                 case 42436:
                 {
                     // Cool hack, bro!
@@ -6266,7 +6305,8 @@ void Spell::EffectSummonObject(uint32 i)
     if(uint64 guid = m_caster->m_ObjectSlot[slot])
     {
         if(GameObject* obj = m_caster ? m_caster->GetMap()->GetGameObject(guid) : NULL)
-            obj->SetLootState(GO_JUST_DEACTIVATED);
+			if(obj) 
+				m_caster->RemoveGameObject(obj,true);
         m_caster->m_ObjectSlot[slot] = 0;
     }
 
@@ -7256,7 +7296,7 @@ void Spell::EffectRechargeManaGem(uint32 i)
 
 void Spell::EffectPhantams(uint32 i)
 {
-	WorldPacket data(SMSG_CLEAR_TARGET, 8);
-	data << uint64(m_caster->GetGUID());
+	WorldPacket data(SMSG_BREAK_TARGET, m_caster->GetPackGUID().size());
+	data.append( m_caster->GetPackGUID() );
 	m_caster->SendMessageToSet(&data,true);
 }

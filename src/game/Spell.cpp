@@ -502,6 +502,9 @@ void Spell::FillTargetMap()
         if(IsAreaAuraEffect(m_spellInfo->Effect[i]))
             AddUnitTarget(m_caster, i);
 
+		if (m_spellInfo->EffectImplicitTargetA[i] == 0 && m_spellInfo->Effect[i] == SPELL_EFFECT_SUMMON_PHANTASM)
+			AddUnitTarget(m_caster, i);
+
         std::list<Unit*> tmpUnitMap;
 
         // TargetA/TargetB dependent from each other, we not switch to full support this dependences
@@ -1410,7 +1413,7 @@ void Spell::SetTargetMap(uint32 effIndex,uint32 targetMode,UnitList& TagUnitMap)
         case TARGET_SUMMON:
             TagUnitMap.push_back(m_caster);
             break;
-        case TARGET_RANDOM_ENEMY_CHAIN_IN_AREA:
+		case TARGET_RANDOM_ENEMY_CHAIN_IN_AREA:
         {
             m_targets.m_targetMask = 0;
             unMaxTargets = EffectChainTarget;
@@ -2216,6 +2219,11 @@ void Spell::SetTargetMap(uint32 effIndex,uint32 targetMode,UnitList& TagUnitMap)
         {
             // add here custom effects that need default target.
             // FOR EVERY TARGET TYPE THERE IS A DIFFERENT FILL!!
+			if (m_spellInfo->SpellFamilyFlags2 & UI64LIT (0x00000020) && m_spellInfo->SpellIconID == 3217)
+			{
+				TagUnitMap.push_back(m_caster);
+				break;
+			}
             switch(m_spellInfo->Effect[effIndex])
             {
                 case SPELL_EFFECT_DUMMY:
@@ -4029,8 +4037,10 @@ SpellCastResult Spell::CheckCast(bool strict)
         if(m_spellInfo->CasterAuraStateNot && m_caster->HasAuraState(AuraState(m_spellInfo->CasterAuraStateNot), m_spellInfo, m_caster))
 			return SPELL_FAILED_CASTER_AURASTATE;			
 
-        if(m_spellInfo->casterAuraSpell && !m_caster->HasAura(m_spellInfo->casterAuraSpell))
-            return SPELL_FAILED_CASTER_AURASTATE;
+		if(m_spellInfo->casterAuraSpell &&
+			sSpellStore.LookupEntry(m_spellInfo->casterAuraSpell) &&
+			!m_caster->HasAura(m_spellInfo->casterAuraSpell))
+			return SPELL_FAILED_CASTER_AURASTATE;
 		if(m_spellInfo->excludeCasterAuraSpell)
 		{
 			// Special cases of non existing auras handling

@@ -1451,6 +1451,7 @@ struct MANGOS_DLL_DECL npc_mirror_imageAI : public ScriptedAI
 
 	uint32 m_uiFrostboltTimer;
 	uint32 m_uiFireblastTimer;
+	bool inCombat;
 
     void Reset() 
 	{
@@ -1470,6 +1471,25 @@ struct MANGOS_DLL_DECL npc_mirror_imageAI : public ScriptedAI
 		// Clone Me!
 		m_uiFrostboltTimer = 0;
 		m_uiFireblastTimer = 6100;
+		inCombat = false;
+	}
+
+	void AttackStart(Unit* pWho)
+	{
+		if (!pWho)
+			return;
+
+		if (m_creature->Attack(pWho, true))
+		{
+			m_creature->AddThreat(pWho, 0.0f);
+			m_creature->SetInCombatWith(pWho);
+			pWho->SetInCombatWith(m_creature);
+
+			if (IsCombatMovement())
+				m_creature->GetMotionMaster()->MoveChase(pWho);
+		}
+
+		inCombat = true;		
 	}
 
 	void EnterEvadeMode()
@@ -1477,8 +1497,10 @@ struct MANGOS_DLL_DECL npc_mirror_imageAI : public ScriptedAI
 		if (m_creature->IsInEvadeMode() || !m_creature->isAlive())
 			return;
 
+		inCombat = false;
 		Unit *owner = m_creature->GetCharmerOrOwner();
 
+		m_creature->AttackStop();
 		m_creature->CombatStop(true);
 		if (owner && !m_creature->hasUnitState(UNIT_STAT_FOLLOW))
 		{
@@ -1510,6 +1532,12 @@ struct MANGOS_DLL_DECL npc_mirror_imageAI : public ScriptedAI
 			Unit *owner = m_creature->GetCharmerOrOwner();
 			if (owner && owner->getVictim())
 				m_creature->AI()->AttackStart(owner->getVictim());
+		}
+
+		if (inCombat && !m_creature->getVictim())
+		{
+			EnterEvadeMode();
+			return;
 		}
 
 		if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())

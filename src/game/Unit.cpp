@@ -10284,10 +10284,6 @@ bool Unit::CanHaveThreatList() const
     if( ((Creature*)this)->isPet() && IS_PLAYER_GUID(((Pet*)this)->GetOwnerGUID()) )
         return false;
 
-	// guardians not have threat list, need implement pet guardian category
-	if( ((Creature*)this)->GetEntry() == 31216)
-		return false;
-
     return true;
 }
 
