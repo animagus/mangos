@@ -1529,7 +1529,7 @@ struct MANGOS_DLL_DECL npc_highlord_darion_mograineAI : public npc_escortAI
 
 	void Reset()
 	{
-		if (HasEscortState(STATE_ESCORT_NONE))
+		if (!HasEscortState(STATE_ESCORT_ESCORTING))
 		{
 			m_creature->SetVisibility(VISIBILITY_ON);
 			bIsBattle = false;
