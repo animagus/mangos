@@ -1361,6 +1361,14 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
             case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_GOLD_VALUE_OWNED:
                 SetCriteriaProgress(achievementCriteria, GetPlayer()->GetMoney(), PROGRESS_HIGHEST);
                 break;
+			case ACHIEVEMENT_CRITERIA_TYPE_EARNED_PVP_TITLE:
+				{
+					if (achievementCriteria->ID != 9058)
+						continue;
+
+					SetCriteriaProgress(achievementCriteria,1,PROGRESS_ACCUMULATE);
+					break;
+				}
             // std case: not exist in DBC, not triggered in code as result
             case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_HEALTH:
             case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_SPELLPOWER:
@@ -1383,7 +1391,6 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
             case ACHIEVEMENT_CRITERIA_TYPE_GET_KILLING_BLOWS:
             case ACHIEVEMENT_CRITERIA_TYPE_MONEY_FROM_VENDORS:
             case ACHIEVEMENT_CRITERIA_TYPE_SPECIAL_PVP_KILL:
-            case ACHIEVEMENT_CRITERIA_TYPE_EARNED_PVP_TITLE:
             case ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE_TYPE:
             case ACHIEVEMENT_CRITERIA_TYPE_GOLD_EARNED_BY_AUCTIONS:
             case ACHIEVEMENT_CRITERIA_TYPE_CREATE_AUCTION:
@@ -1532,6 +1539,8 @@ bool AchievementMgr::IsCompletedCriteria(AchievementCriteriaEntry const* achieve
             return progress->counter >= achievementCriteria->learn_skill_line.spellCount;
         case ACHIEVEMENT_CRITERIA_TYPE_EARN_HONORABLE_KILL:
             return progress->counter >= achievementCriteria->honorable_kill.killCount;
+		case ACHIEVEMENT_CRITERIA_TYPE_EARNED_PVP_TITLE:
+			return progress->counter >= 1;
 
         // handle all statistic-only criteria here
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_BATTLEGROUND:
