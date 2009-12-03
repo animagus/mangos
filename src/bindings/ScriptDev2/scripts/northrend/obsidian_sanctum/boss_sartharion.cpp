@@ -1565,7 +1565,7 @@ void AddSC_boss_sartharion()
     newscript->RegisterSelf();
 
     newscript = new Script;
-    newscript->Name = "mob_blaze";
+    newscript->Name = "mob_lava_blaze";
     newscript->GetAI = &GetAI_mob_lava_blaze;
     newscript->RegisterSelf();
 
