@@ -26,20 +26,42 @@ EndScriptData */
 #define EMOTE_BREATH            -1533082
 #define EMOTE_ENRAGE            -1533083
 
+#define SPELL_FROST_AURA        28531
+#define SPELL_FROST_AURA_H      55799
+#define SPELL_CLEAVE            19983
+#define SPELL_TAIL_SWEEP        55697
+#define SPELL_TAIL_SWEEP_H      55696
+#define SPELL_SUMMON_BLIZZARD   28560
+#define SPELL_LIFE_DRAIN        28542
+#define SPELL_LIFE_DRAIN_H      55665
 #define SPELL_ICEBOLT           28522
 #define SPELL_FROST_BREATH      29318
-#define SPELL_FROST_AURA        28531
-#define SPELL_LIFE_DRAIN        28542
-#define SPELL_BLIZZARD          28547
-#define SPELL_BESERK            26662
+#define SPELL_FROST_EXPLOSION   28524
+#define SPELL_FROST_MISSILE     30101
+#define SPELL_BERSERK           26662
+#define SPELL_DIES              29357
+
+#define SPELL_CHILL             28547
+#define SPELL_CHILL_H           55699
+
+#define MOB_BLIZZARD            16474
+#define GO_ICEBLOCK             181247
+
+#define ACHIEVEMENT_THE_HUNDRED_CLUB    2146
+#define ACHIEVEMENT_THE_HUNDRED_CLUB_H  2147
+#define MAX_FROST_RESISTANCE            100
 
 struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
 {
     boss_sapphironAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        Reset();
+		m_pInstance = ((ScriptedInstance*)pCreature->GetInstanceData());
+		m_bIsHeroic = pCreature->GetMap()->IsHeroic();
+		Reset();
     }
 
+	ScriptedInstance* m_pInstance;
+	bool m_bIsHeroic;
     uint32 Icebolt_Count;
     uint32 Icebolt_Timer;
     uint32 FrostBreath_Timer;
@@ -51,6 +73,8 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
     uint32 phase;
     bool landoff;
     uint32 land_Timer;
+	bool CanTheHundredClub;
+	uint32 CheckFrostResistTimer;
 
     void Reset()
     {
@@ -65,9 +89,27 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
         phase = 1;
         Icebolt_Count = 0;
         landoff = false;
+		CanTheHundredClub = true;
+		CheckFrostResistTimer = 5000;
 
         //m_creature->ApplySpellMod(SPELL_FROST_AURA, SPELLMOD_DURATION, -1);
     }
+
+	void CheckPlayersFrostResist()
+	{
+		if(CanTheHundredClub && m_pInstance)
+		{
+			Map::PlayerList const &players = m_pInstance->instance->GetPlayers();
+			for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+			{
+				if(itr->getSource()->GetResistance(SPELL_SCHOOL_FROST) > MAX_FROST_RESISTANCE)
+				{
+					CanTheHundredClub = false;
+					break;
+				}
+			}
+		}
+	}
 
     void UpdateAI(const uint32 diff)
     {
@@ -93,7 +135,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
             if (Blizzard_Timer < diff)
             {
                 if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                    DoCast(target,SPELL_BLIZZARD);
+                    DoCast(target,SPELL_SUMMON_BLIZZARD);
 
                 Blizzard_Timer = 20000;
             }else Blizzard_Timer -= diff;
@@ -159,7 +201,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
             if (Beserk_Timer < diff)
             {
                 DoScriptText(EMOTE_ENRAGE, m_creature);
-                DoCast(m_creature,SPELL_BESERK);
+                DoCast(m_creature,SPELL_BERSERK,true);
                 Beserk_Timer = 300000;
             }else Beserk_Timer -= diff;
         }
