@@ -779,7 +779,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     if(!pCurrChar->IsStandState() && !pCurrChar->hasUnitState(UNIT_STAT_STUNNED))
         pCurrChar->SetStandState(UNIT_STAND_STATE_STAND);
 
-	pCurrChar->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARNED_PVP_TITLE,1,0,NULL,0,9058);
+	//pCurrChar->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARNED_PVP_TITLE,1,0,NULL,0,9058);
 
     m_playerLoading = false;
     delete holder;
