@@ -2518,8 +2518,7 @@ void Spell::cancel()
         } break;
 
         default:
-        {
-        } break;
+			break;
     }
 
     finish(false);
