@@ -118,7 +118,8 @@ enum
     
     //Frostwyrm Lair
     GO_FROSTWYRM_WATERFALL  = 5000,
-    GO_KELTHUZAD_DOOR       = 5001
+    GO_KELTHUZAD_DOOR       = 5001,
+	GO_SAPPHIRON_BIRTH      = 5002
 };
 
 #endif

@@ -110,6 +110,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
     notDirectGO go_vaccuum_enter_gate;
 
     notDirectGO go_horsemans_door;
+	notDirectGO go_sapphiron_birth;
 
     uint64 guid_anubrekhan;
     uint64 guid_faerlina;
@@ -277,6 +278,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case 181124: go_vaccuum_enter_gate.Init(go);         break;
             case 181125: go_vaccuum_exit_gate.Init(go);          break;
             case 181119: go_horsemans_door.Init(go);             break;
+			case 181356: go_sapphiron_birth.Init(go);            break;
         }
     }
 

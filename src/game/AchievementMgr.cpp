@@ -1363,11 +1363,21 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
                 break;
 			case ACHIEVEMENT_CRITERIA_TYPE_EARNED_PVP_TITLE:
 				{
+					if (!miscvalue1)
+						continue;
+
 					if (achievementCriteria->ID != 9058)
 						continue;
 
 					SetCriteriaProgress(achievementCriteria,1,PROGRESS_ACCUMULATE);
 					break;
+				}
+			case ACHIEVEMENT_CRITERIA_TYPE_REACH_TEAM_RATING:
+				{
+					if (!miscvalue1 || miscvalue1!= achievementCriteria->reach_team_rating.teamtype)
+						continue;
+
+					SetCriteriaProgress(achievementCriteria,miscvalue2,PROGRESS_SET);
 				}
             // std case: not exist in DBC, not triggered in code as result
             case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_HEALTH:
@@ -1385,7 +1395,6 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
             case ACHIEVEMENT_CRITERIA_TYPE_WIN_ARENA:
             case ACHIEVEMENT_CRITERIA_TYPE_PLAY_ARENA:
             case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_TEAM_RATING:
-            case ACHIEVEMENT_CRITERIA_TYPE_REACH_TEAM_RATING:
             case ACHIEVEMENT_CRITERIA_TYPE_OWN_RANK:
             case ACHIEVEMENT_CRITERIA_TYPE_EQUIP_EPIC_ITEM:
             case ACHIEVEMENT_CRITERIA_TYPE_GET_KILLING_BLOWS:
@@ -1541,6 +1550,8 @@ bool AchievementMgr::IsCompletedCriteria(AchievementCriteriaEntry const* achieve
             return progress->counter >= achievementCriteria->honorable_kill.killCount;
 		case ACHIEVEMENT_CRITERIA_TYPE_EARNED_PVP_TITLE:
 			return progress->counter >= 1;
+		case ACHIEVEMENT_CRITERIA_TYPE_REACH_TEAM_RATING:
+			return progress->counter >= achievementCriteria->reach_team_rating.teamrating;
 
         // handle all statistic-only criteria here
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_BATTLEGROUND:

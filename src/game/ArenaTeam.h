@@ -94,14 +94,17 @@ struct ArenaTeamMember
     uint32 wins_season;
     uint32 personal_rating;
 
-    void ModifyPersonalRating(Player* plr, int32 mod, uint32 slot)
+    void ModifyPersonalRating(Player* plr, int32 mod, uint32 slot, uint32 type)
     {
         if (int32(personal_rating) + mod < 0)
             personal_rating = 0;
         else
             personal_rating += mod;
         if(plr)
+		{
             plr->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot*6) + 5, personal_rating);
+			plr->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_TEAM_RATING,type,personal_rating);
+		}
     }
 };
 
