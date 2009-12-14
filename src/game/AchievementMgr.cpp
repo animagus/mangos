@@ -1378,6 +1378,7 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
 						continue;
 
 					SetCriteriaProgress(achievementCriteria,miscvalue2,PROGRESS_SET);
+					break;
 				}
             // std case: not exist in DBC, not triggered in code as result
             case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_HEALTH:
