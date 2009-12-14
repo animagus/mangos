@@ -1058,9 +1058,6 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
                 {
                     if (!miscvalue1)
                         continue;
-                    // test implementation only on G.N.E.R.D. Rage
-                    if (achievement->ID!=1261)
-                        continue;
 
                     // those requirements couldn't be found in the dbc
                     AchievementCriteriaDataSet const* data = achievementmgr.GetCriteriaDataSet(achievementCriteria);
