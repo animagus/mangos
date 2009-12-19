@@ -1332,6 +1332,11 @@ void Spell::SetTargetMap(uint32 effIndex,uint32 targetMode,UnitList& TagUnitMap)
             if (m_spellInfo->Id == 54835)
                 unMaxTargets = 10;
 			break;
+        case SPELLFAMILY_PRIEST:
+            // Circle of Healing
+            if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000000010000000))
+                unMaxTargets = 5;
+            break;
         default:
             break;
     }
