@@ -5532,7 +5532,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     switch (rand()%3)                               
                     {
                     case 0:
-                        trickspell=44755;                       // Snowflakes 
+                        trickspell=45036;                       // Snowflakes 
                         break;
                     case 1:
                         trickspell=26206;                       // Mistletoe
