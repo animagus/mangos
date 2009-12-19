@@ -1564,6 +1564,34 @@ CreatureAI* GetAI_npc_mirror_image(Creature* pCreature)
     return new npc_mirror_imageAI(pCreature);
 }
 
+/*######
+## npc_winter_reveler
+######*/
+
+struct MANGOS_DLL_DECL npc_winter_revelerAI : public ScriptedAI
+{
+    npc_winter_revelerAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+
+    void Reset() {}
+
+    void ReceiveEmote(Player* pPlayer, uint32 emote)
+    {
+        if (emote == TEXTEMOTE_KISS)
+        {
+            if (pPlayer->HasAura(26218))
+                return;
+
+            m_creature->CastSpell(pPlayer, 26218, true);
+        }
+           
+    }
+};
+
+CreatureAI* GetAI_npc_winter_reveler(Creature* pCreature)
+{
+    return new npc_winter_revelerAI(pCreature);
+}
+
 void AddSC_npcs_special()
 {
     Script *newscript;
@@ -1657,4 +1685,9 @@ void AddSC_npcs_special()
 	newscript->Name = "npc_mirror_image";
 	newscript->GetAI = &GetAI_npc_mirror_image;
 	newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_winter_reveler";
+    newscript->GetAI = &GetAI_npc_winter_reveler;
+    newscript->RegisterSelf();
 }

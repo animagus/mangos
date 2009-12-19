@@ -5303,7 +5303,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
                         return;
 
-                    ((Player*)unitTarget)->ModifyMoney(50000000);
+                    ((Player*)unitTarget)->ModifyMoney(-50000000);
 
                     break;
                 }
@@ -5521,6 +5521,28 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
                     if (roll_chance_i(30))
                         unitTarget->CastSpell(unitTarget, 42966, true);
+                    return;
+                }
+                case 26218:
+                {
+                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    int32 trickspell=0;
+                    switch (rand()%3)                               
+                    {
+                    case 0:
+                        trickspell=44755;                       // Snowflakes 
+                        break;
+                    case 1:
+                        trickspell=26206;                       // Mistletoe
+                        break;
+                    case 2:
+                        trickspell=26207;                       // Fresh Holly
+                        break;
+                    }
+                    unitTarget->CastSpell(unitTarget, trickspell, true);
+                    return;
                 }
             }
             break;
