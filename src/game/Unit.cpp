@@ -9196,6 +9196,12 @@ bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo)
     if (!spellInfo)
         return false;
 
+    // Single spell immunity.
+    SpellImmuneList const& idList = m_spellImmune[IMMUNITY_ID];
+    for (SpellImmuneList::const_iterator itr = idList.begin(); itr != idList.end(); ++itr)
+        if(itr->type == spellInfo->Id)
+            return true;
+
     //TODO add spellEffect immunity checks!, player with flag in bg is imune to imunity buffs from other friendly players!
     //SpellImmuneList const& dispelList = m_spellImmune[IMMUNITY_EFFECT];
 
@@ -11819,6 +11825,13 @@ void Unit::StopMoving()
     WorldPacket data;
     BuildHeartBeatMsg(&data);
     SendMessageToSet(&data,false);
+}
+
+void Unit::SendMovementFlagUpdate()
+{
+    WorldPacket data;
+    BuildHeartBeatMsg(&data);
+    SendMessageToSet(&data, false);
 }
 
 void Unit::SetFeared(bool apply, uint64 casterGUID, uint32 spellID, uint32 time)

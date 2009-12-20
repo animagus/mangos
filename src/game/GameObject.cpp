@@ -646,6 +646,11 @@ GameObjectInfo const *GameObject::GetGOInfo() const
     return m_goInfo;
 }
 
+GameObject* GameObject::GetGameObject(WorldObject& object, uint64 guid)
+{
+	return object.GetMap()->GetGameObject(guid);
+}
+
 /*********************************************************/
 /***                    QUEST SYSTEM                   ***/
 /*********************************************************/
