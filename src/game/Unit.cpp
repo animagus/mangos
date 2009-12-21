@@ -3581,11 +3581,15 @@ bool Unit::AddAura(Aura *Aur)
         Modifier *a_mod = Aur->GetModifier();
         if (i_mod->m_miscvalue != a_mod->m_miscvalue)
             continue;
-        if ( ( (*i)->IsPassive() &&
-            !( (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && (*i)->GetSpellProto()->SpellFamilyFlags & UI64LIT(0x0000000004000000))) ||
-             ( Aur->IsPassive() && 
-            !( aurSpellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN && aurSpellInfo->SpellFamilyFlags & UI64LIT(0x0000000004000000))))
-            continue;
+
+        if (Unit *caster = (*i)->GetCaster())
+            if (!((Creature *)caster)->isTotem() && (*i)->IsPassive())
+                continue;
+
+        if (Unit *caster = Aur->GetCaster())
+            if (!((Creature *)caster)->isTotem() && Aur->IsPassive())
+                continue;
+
         if (Aur->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION || 
             (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION)
             continue;
@@ -3656,11 +3660,14 @@ void Unit::ReapplyModifers(Aura *Aur)
         if (Aur == (*i))                                //don't reapply self
             continue;
 
-        if ( ( (*i)->IsPassive() &&
-            !( (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && (*i)->GetSpellProto()->SpellFamilyFlags & UI64LIT(0x0000000004000000))) ||
-            ( Aur->IsPassive() && 
-            !( Aur->GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && Aur->GetSpellProto()->SpellFamilyFlags & UI64LIT(0x0000000004000000))))
-            continue;
+        if (Unit *caster = (*i)->GetCaster())
+            if (!((Creature *)caster)->isTotem() && (*i)->IsPassive())
+                continue;
+
+        if (Unit *caster = Aur->GetCaster())
+            if (!((Creature *)caster)->isTotem() && Aur->IsPassive())
+                continue;
+
         if (Aur->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION || 
             (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION)
             continue;
