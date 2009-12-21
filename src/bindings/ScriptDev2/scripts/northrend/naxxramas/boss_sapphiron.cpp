@@ -91,7 +91,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
 		Cleave_Timer = 5000+rand()%10000;
 		Tail_Timer = 5000+rand()%10000;
         Fly_Timer = 45000;
-        Icebolt_Timer = 4000;
+        Icebolt_Timer = 5000;
         land_Timer = 4000;
         Beserk_Timer = 0;
         phase = 1;
@@ -248,7 +248,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
 
             if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() > 10)
             {
-                if (Fly_Timer < diff)
+                if (Fly_Timer <= diff)
                 {
                     phase = 2;
                     float x, y, z, o;
@@ -289,7 +289,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
 
             if (Icebolt_Count == (m_bIsHeroic?3:2) && !landoff)
             {
-                if (FrostBreath_Timer < diff)
+                if (FrostBreath_Timer <= diff)
                 {
                     DoScriptText(EMOTE_BREATH, m_creature);
                     DoCast(m_creature,SPELL_FROST_MISSILE);
@@ -308,7 +308,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
 
             if (landoff)
             {
-                if (land_Timer < diff)
+                if (land_Timer <= diff)
                 {
                     phase = 1;
                     m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
@@ -323,7 +323,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
 
         if ((m_creature->GetHealth()*100) / m_creature->GetMaxHealth() <= 10)
         {
-            if (Beserk_Timer < diff)
+            if (Beserk_Timer <= diff)
             {
                 DoScriptText(EMOTE_ENRAGE, m_creature);
                 DoCast(m_creature,SPELL_BERSERK,true);
@@ -341,11 +341,63 @@ CreatureAI* GetAI_boss_sapphiron(Creature* pCreature)
     return new boss_sapphironAI(pCreature);
 }
 
+/*######
+## Mob Blizzard
+######*/
+
+struct MANGOS_DLL_DECL mob_BlizzardAI : public ScriptedAI
+{
+    mob_BlizzardAI(Creature* pCreature) : ScriptedAI(pCreature) 
+    {
+        m_bIsHeroic = pCreature->GetMap()->IsHeroic();
+        Reset();         
+    }
+
+    uint32 m_uiDespawn;
+    uint32 m_uiBlizzTimer;
+    bool m_bIsHeroic;
+
+    void Aggro(Unit* who)
+    {
+        DoStopAttack();
+        SetCombatMovement(false);
+    }
+
+    void Reset()
+    {
+        m_uiDespawn = 21000;
+        m_uiBlizzTimer = 1000;
+    }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        if (m_uiBlizzTimer <= uiDiff)
+        {
+            DoCast(m_creature,m_bIsHeroic ? 55699 : 28547);
+            m_uiBlizzTimer = 10000;
+        }else m_uiBlizzTimer -= uiDiff;
+
+        if (m_uiDespawn <= uiDiff)
+            m_creature->ForcedDespawn();
+        else m_uiDespawn -= uiDiff;
+    }
+};
+
+CreatureAI* GetAI_mob_Blizzard(Creature* pCreature)
+{
+    return new mob_BlizzardAI(pCreature);
+}
+
 void AddSC_boss_sapphiron()
 {
     Script *newscript;
     newscript = new Script;
     newscript->Name = "boss_sapphiron";
     newscript->GetAI = &GetAI_boss_sapphiron;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_Blizzard";
+    newscript->GetAI = &GetAI_mob_Blizzard;
     newscript->RegisterSelf();
 }

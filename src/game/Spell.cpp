@@ -1327,10 +1327,14 @@ void Spell::SetTargetMap(uint32 effIndex,uint32 targetMode,UnitList& TagUnitMap)
 		case SPELLFAMILY_GENERIC:
 			if (m_spellInfo->Id == 45641)
 				unMaxTargets = 5;
-            if (m_spellInfo->Id == 29213)
+            else if (m_spellInfo->Id == 29213)
                 unMaxTargets = 3;
-            if (m_spellInfo->Id == 54835)
+            else if (m_spellInfo->Id == 54835)
                 unMaxTargets = 10;
+            else if (m_spellInfo->Id == 28542)
+                unMaxTargets = 2;
+            else if (m_spellInfo->Id == 55665)
+                unMaxTargets = 5;
 			break;
         case SPELLFAMILY_PRIEST:
             // Circle of Healing
