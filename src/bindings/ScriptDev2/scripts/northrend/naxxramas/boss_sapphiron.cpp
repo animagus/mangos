@@ -223,7 +223,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
             if (LifeDrain_Timer <= diff)
             {
                 if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-					DoCast(target,m_bIsHeroic?SPELL_LIFE_DRAIN_H:SPELL_LIFE_DRAIN_H);
+					DoCast(target,m_bIsHeroic ? SPELL_LIFE_DRAIN_H : SPELL_LIFE_DRAIN);
                 LifeDrain_Timer = 24000;
             }else LifeDrain_Timer -= diff;
 
