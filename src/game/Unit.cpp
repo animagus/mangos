@@ -3597,6 +3597,7 @@ bool Unit::AddAura(Aura *Aur)
 
         switch (aurName)
         {
+        case SPELL_AURA_MOD_POWER_REGEN:
         case SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE:
         case SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN:
         case SPELL_AURA_MOD_RANGED_ATTACK_POWER:
@@ -3676,6 +3677,7 @@ void Unit::ReapplyModifers(Aura *Aur)
         case SPELL_AURA_MOD_RANGED_ATTACK_POWER:
         case SPELL_AURA_MOD_ATTACK_POWER:
         case SPELL_AURA_MOD_STAT:
+        case SPELL_AURA_MOD_POWER_REGEN:
             {
                 if ((*i)->GetModifier()->m_miscvalue != Aur->GetModifier()->m_miscvalue)
                     continue;
