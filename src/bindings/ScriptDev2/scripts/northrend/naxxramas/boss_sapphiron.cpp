@@ -140,7 +140,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
 			{
 				if (GameObject* pGo = GameObject::GetGameObject(*m_creature, itr->second))
 				{
-					if (pGo->IsInBetween(m_creature, pTarget, 2.0f)
+					if (pGo->IsInBetween(m_creature, pTarget, 3.0f)
 						&& m_creature->GetExactDist2d(pTarget->GetPositionX(), pTarget->GetPositionY()) - m_creature->GetExactDist2d(pGo->GetPositionX(), pGo->GetPositionY()) < 5.0f)
 					{
 						pTarget->ApplySpellImmune(0, IMMUNITY_ID, SPELL_FROST_EXPLOSION, true);
@@ -293,7 +293,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
                 {
                     DoScriptText(EMOTE_BREATH, m_creature);
                     DoCast(m_creature,SPELL_FROST_MISSILE);
-                    land_Timer = 2000;
+                    land_Timer = 4000;
                     FrostBreath_Timer = 6000;
                 }else FrostBreath_Timer -= diff;
 

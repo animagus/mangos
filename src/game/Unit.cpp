@@ -3581,14 +3581,16 @@ bool Unit::AddAura(Aura *Aur)
         Modifier *a_mod = Aur->GetModifier();
         if (i_mod->m_miscvalue != a_mod->m_miscvalue)
             continue;
-        if ((*i)->IsPassive() || spellmgr.GetSpellElixirSpecific((*i)->GetSpellProto()->Id) ||
-            Aur->IsPassive() || spellmgr.GetSpellElixirSpecific(aurSpellInfo->Id))
+        if ( ( (*i)->IsPassive() &&
+            !( (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && (*i)->GetSpellProto()->SpellFamilyFlags & UI64LIT(0x0000000004000000))) ||
+             ( Aur->IsPassive() && 
+            !( aurSpellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN && aurSpellInfo->SpellFamilyFlags & UI64LIT(0x0000000004000000))))
             continue;
         if (Aur->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION || 
             (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION)
             continue;
-        if (GetSpellSpecific((*i)->GetSpellProto()->Id) == SPELL_WELL_FED ||
-            GetSpellSpecific(aurSpellInfo->Id) == SPELL_WELL_FED)
+        if (spellmgr.GetSpellElixirSpecific((*i)->GetSpellProto()->Id) ||
+            spellmgr.GetSpellElixirSpecific(aurSpellInfo->Id))
             continue;
         if (Aur->GetCastItemGUID() || (*i)->GetCastItemGUID())
             continue;
@@ -3653,15 +3655,16 @@ void Unit::ReapplyModifers(Aura *Aur)
         if (Aur == (*i))                                //don't reapply self
             continue;
 
-        if ((*i)->IsPassive() || spellmgr.GetSpellElixirSpecific((*i)->GetSpellProto()->Id) ||
-            Aur->IsPassive() || spellmgr.GetSpellElixirSpecific(Aur->GetSpellProto()->Id))
+        if ( ( (*i)->IsPassive() &&
+            !( (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && (*i)->GetSpellProto()->SpellFamilyFlags & UI64LIT(0x0000000004000000))) ||
+            ( Aur->IsPassive() && 
+            !( Aur->GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && Aur->GetSpellProto()->SpellFamilyFlags & UI64LIT(0x0000000004000000))))
             continue;
-
         if (Aur->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION || 
             (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION)
             continue;
-        if (GetSpellSpecific((*i)->GetSpellProto()->Id) == SPELL_WELL_FED ||
-            GetSpellSpecific(Aur->GetSpellProto()->Id) == SPELL_WELL_FED)
+        if (spellmgr.GetSpellElixirSpecific((*i)->GetSpellProto()->Id) ||
+            spellmgr.GetSpellElixirSpecific(Aur->GetSpellProto()->Id))
             continue;
         if (Aur->GetCastItemGUID() || (*i)->GetCastItemGUID())
             continue;
