@@ -293,6 +293,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
                 {
                     DoScriptText(EMOTE_BREATH, m_creature);
                     DoCast(m_creature,SPELL_FROST_MISSILE);
+                    m_creature->SendMovementFlagUpdate();
                     land_Timer = 4000;
                     FrostBreath_Timer = 6000;
                 }else FrostBreath_Timer -= diff;
