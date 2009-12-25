@@ -280,6 +280,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
                     advance(itr, rand()%targets.size());
                     iceblocks.insert(std::make_pair((*itr)->GetGUID(), 0));
                     DoCast(*itr, SPELL_ICEBOLT);
+                    m_creature->AddMonsterMoveFlag(MONSTER_MOVE_LEVITATING);
                     m_creature->SendMovementFlagUpdate();
                     ++Icebolt_Count;
                 }
@@ -293,8 +294,9 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
                 {
                     DoScriptText(EMOTE_BREATH, m_creature);
                     DoCast(m_creature,SPELL_FROST_MISSILE);
+                    m_creature->AddMonsterMoveFlag(MONSTER_MOVE_LEVITATING);
                     m_creature->SendMovementFlagUpdate();
-                    land_Timer = 4000;
+                    land_Timer = 5000;
                     FrostBreath_Timer = 6000;
                 }else FrostBreath_Timer -= diff;
 
