@@ -111,6 +111,8 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 
     notDirectGO go_horsemans_door;
 	notDirectGO go_sapphiron_birth;
+    notDirectGO go_kelthuzad_door;
+    notDirectGO go_sapphiron_door;
 
     uint64 guid_anubrekhan;
     uint64 guid_faerlina;
@@ -279,6 +281,8 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case 181125: go_vaccuum_exit_gate.Init(go);          break;
             case 181119: go_horsemans_door.Init(go);             break;
 			case 181356: go_sapphiron_birth.Init(go);            break;
+            case 181228: go_kelthuzad_door.Init(go);             break;
+            case 181225: go_sapphiron_door.Init(go);             break;
         }
     }
 
@@ -533,6 +537,38 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
                     break;
                 }
                 break;
+            case ENCOUNT_SAPPHIRON:
+                Encounters[ENCOUNT_SAPPHIRON] = data;
+                switch(data)
+                {
+                case NOT_STARTED:
+                    Close(go_sapphiron_door);
+                    Close(go_kelthuzad_door);
+                    break;
+                case IN_PROGRESS:
+                    break;
+                case DONE:
+                    Open(go_sapphiron_door);
+                    Open(go_kelthuzad_door);
+                    break;
+                }
+                break;
+            case ENCOUNT_KELTHUZAD:
+                Encounters[ENCOUNT_KELTHUZAD] = data;
+                switch(data)
+                {
+                case NOT_STARTED:
+                    if (GetData(ENCOUNT_SAPPHIRON) == DONE)
+                        Open(go_kelthuzad_door);
+                    break;
+                case IN_PROGRESS:
+                    Close(go_kelthuzad_door);
+                    break;
+                case DONE:
+                    Open(go_kelthuzad_door);
+                    break;
+                }
+                break;
             }
 
         if (data == DONE)
@@ -572,6 +608,8 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
             case ENCOUNT_RAZUVIOUS:     return Encounters[ENCOUNT_RAZUVIOUS];  break;
             case ENCOUNT_GOTHIK:        return Encounters[ENCOUNT_GOTHIK];    break;
             case ENCOUNT_FOURHORSEMAN:  return Encounters[ENCOUNT_FOURHORSEMAN];    break;
+            case ENCOUNT_SAPPHIRON:     return Encounters[ENCOUNT_SAPPHIRON];    break;
+            case ENCOUNT_KELTHUZAD:     return Encounters[ENCOUNT_KELTHUZAD];    break;
             default: return 0;
         }
     }
@@ -612,12 +650,30 @@ InstanceData* GetInstanceData_naxxramas(Map* map)
     return new instance_naxxramas(map);
 }
 
+bool AreaTrigger_at_frostwyrm_lair(Player* pPlayer, AreaTriggerEntry* pAt)
+{
+    if (ScriptedInstance* pInstance = (ScriptedInstance*)pPlayer->GetInstanceData())
+    {
+        if (pInstance->GetData(ENCOUNT_MAEXXNA) != DONE || pInstance->GetData(ENCOUNT_THADDIUS) != DONE ||
+            pInstance->GetData(ENCOUNT_FOURHORSEMAN) != DONE || pInstance->GetData(ENCOUNT_LOATHEB) != DONE)
+            return true;
+
+        return false;
+    }
+    return false;
+}
+
 void AddSC_instance_naxxramas()
 {
     Script *newscript;
     newscript = new Script;
     newscript->Name = "instance_naxxramas";
     newscript->GetInstanceData = &GetInstanceData_naxxramas;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "at_frostwyrm_lair";
+    newscript->pAreaTrigger = &AreaTrigger_at_frostwyrm_lair;
     newscript->RegisterSelf();
 }
 

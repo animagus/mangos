@@ -1787,8 +1787,20 @@ void Spell::SetTargetMap(uint32 effIndex,uint32 targetMode,UnitList& TagUnitMap)
 
                 FillRaidOrPartyHealthPriorityTargets(TagUnitMap, m_caster, target, radius, count, true, false, true);
             }
+            else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && m_spellInfo->SpellIconID == 2214)
+            {
+                Unit* target = m_targets.getUnitTarget();
+                if(!target)
+                    target = m_caster;
+
+                FillRaidOrPartyHealthPriorityTargets(TagUnitMap, m_caster, target, radius, 5, true, false, true);
+            }
             else
                 FillAreaTargets(TagUnitMap, m_targets.m_destX, m_targets.m_destY, radius, PUSH_DEST_CENTER, SPELL_TARGETS_FRIENDLY);
+
+            if (m_spellInfo->Id == 27820)
+                TagUnitMap.remove(m_originalCaster);
+
             break;
         // TARGET_SINGLE_PARTY means that the spells can only be casted on a party member and not on the caster (some seals, fire shield from imp, etc..)
         case TARGET_SINGLE_PARTY:

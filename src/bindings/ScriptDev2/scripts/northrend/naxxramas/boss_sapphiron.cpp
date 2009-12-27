@@ -22,6 +22,7 @@ SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_naxxramas.h"
 
 #define EMOTE_BREATH            -1533082
 #define EMOTE_ENRAGE            -1533083
@@ -100,6 +101,9 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
 		CanTheHundredClub = true;
 		CheckFrostResistTimer = 5000;
         ClearIceBlock();
+
+        if (m_pInstance)
+            m_pInstance->SetData(ENCOUNT_SAPPHIRON, NOT_STARTED);
     }
 
 	void CheckPlayersFrostResist()
@@ -193,6 +197,18 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
             m_creature->GetMotionMaster()->MoveIdle();
         }
             
+    }
+
+    void Aggro(Unit* who)
+    {
+        if (m_pInstance)
+            m_pInstance->SetData(ENCOUNT_SAPPHIRON, IN_PROGRESS);
+    }
+
+    void JustDied(Unit* Killer)
+    {
+        if (m_pInstance)
+            m_pInstance->SetData(ENCOUNT_SAPPHIRON, DONE);
     }
 
     void UpdateAI(const uint32 diff)
