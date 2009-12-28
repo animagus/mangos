@@ -564,6 +564,9 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
                 case SPELL_AURA_ADD_FLAT_MODIFIER:          // mods
                 case SPELL_AURA_ADD_PCT_MODIFIER:
                 {
+                    // positive, but SPELLMOD_COST negative
+                    if (spellId == 12042)
+                        return true;
                     // non-positive mods
                     switch(spellproto->EffectMiscValue[effIndex])
                     {

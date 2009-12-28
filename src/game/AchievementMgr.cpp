@@ -1069,7 +1069,6 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
 
                     SetCriteriaProgress(achievementCriteria, 1, PROGRESS_ACCUMULATE);
                     break;
-
                 }
             case ACHIEVEMENT_CRITERIA_TYPE_LOOT_TYPE:
             {
@@ -1371,7 +1370,7 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
 				}
 			case ACHIEVEMENT_CRITERIA_TYPE_REACH_TEAM_RATING:
 				{
-					if (!miscvalue1 || miscvalue1!= achievementCriteria->reach_team_rating.teamtype)
+					if (!miscvalue1 || miscvalue1 != achievementCriteria->reach_team_rating.teamtype)
 						continue;
 
 					SetCriteriaProgress(achievementCriteria,miscvalue2,PROGRESS_SET);
@@ -1735,8 +1734,8 @@ void AchievementMgr::CompletedAchievement(AchievementEntry const* achievement)
 
     // don't insert for ACHIEVEMENT_FLAG_REALM_FIRST_KILL since otherwise only the first group member would reach that achievement
     // TODO: where do set this instead?
-    //if(!(achievement->flags & ACHIEVEMENT_FLAG_REALM_FIRST_KILL))
-    achievementmgr.SetRealmCompleted(achievement);
+    if(!(achievement->flags & ACHIEVEMENT_FLAG_REALM_FIRST_KILL))
+        achievementmgr.SetRealmCompleted(achievement);
 
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ACHIEVEMENT);
 

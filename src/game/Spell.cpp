@@ -1789,11 +1789,7 @@ void Spell::SetTargetMap(uint32 effIndex,uint32 targetMode,UnitList& TagUnitMap)
             }
             else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && m_spellInfo->SpellIconID == 2214)
             {
-                Unit* target = m_targets.getUnitTarget();
-                if(!target)
-                    target = m_caster;
-
-                FillRaidOrPartyHealthPriorityTargets(TagUnitMap, m_caster, target, radius, 5, true, false, true);
+                FillRaidOrPartyHealthPriorityTargets(TagUnitMap, m_caster, m_caster, radius, 5, true, false, true);
             }
             else
                 FillAreaTargets(TagUnitMap, m_targets.m_destX, m_targets.m_destY, radius, PUSH_DEST_CENTER, SPELL_TARGETS_FRIENDLY);

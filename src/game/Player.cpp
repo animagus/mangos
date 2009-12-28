@@ -19339,6 +19339,54 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
             }
         }
     }
+
+    // need insert RealmCompleted for ACHIEVEMENT_FLAG_REALM_FIRST_KILL...
+    AchievementCriteriaEntryList const& achievementCriteriaList = achievementmgr.GetAchievementCriteriaByType(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE);
+    for(AchievementCriteriaEntryList::const_iterator i = achievementCriteriaList.begin(); i!=achievementCriteriaList.end(); ++i)
+    {
+        if (!sWorld.getConfig(CONFIG_GM_ALLOW_ACHIEVEMENT_GAINS) && GetSession()->GetSecurity() > SEC_PLAYER)
+            break;
+
+        AchievementCriteriaEntry const *achievementCriteria = (*i);
+
+        if (achievementCriteria->groupFlag & ACHIEVEMENT_CRITERIA_GROUP_NOT_IN_GROUP && GetGroup())
+            continue;
+
+        AchievementEntry const *achievement = sAchievementStore.LookupEntry(achievementCriteria->referredAchievement);
+        if (!achievement)
+            continue;
+
+        if(!(achievement->flags & ACHIEVEMENT_FLAG_REALM_FIRST_KILL))
+            continue;
+
+        if ((achievement->factionFlag == ACHIEVEMENT_FACTION_FLAG_HORDE    && GetTeam() != HORDE) ||
+            (achievement->factionFlag == ACHIEVEMENT_FACTION_FLAG_ALLIANCE && GetTeam() != ALLIANCE))
+            continue;
+
+        if(achievementCriteria->kill_creature.creatureID != pVictim->GetEntry())
+            continue;
+        
+        if (Group *pGroup = GetGroup())
+        {
+            for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+            {
+                Player* pGroupGuy = itr->getSource();
+                if(!pGroupGuy)
+                    continue;
+
+                if (pGroupGuy->GetAchievementMgr().IsCompletedAchievement(achievement))
+                {
+                    achievementmgr.SetRealmCompleted(achievement);
+                    break;
+                }
+            }
+        }
+        else if (GetAchievementMgr().IsCompletedAchievement(achievement))
+        {
+            achievementmgr.SetRealmCompleted(achievement);
+            break;
+        }
+    }
     return xp || honored_kill;
 }
 
