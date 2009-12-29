@@ -55,7 +55,15 @@ EndScriptData */
 
 struct MANGOS_DLL_DECL boss_razuviousAI : public ScriptedAI
 {
-    boss_razuviousAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+    boss_razuviousAI(Creature* pCreature) : ScriptedAI(pCreature) 
+    {
+        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        Reset();
+    }
+
+    ScriptedInstance* m_pInstance;
+    bool m_bIsHeroicMode;
 
     uint32 UnbalancingStrike_Timer;
     uint32 DisruptingShout_Timer;
@@ -66,6 +74,9 @@ struct MANGOS_DLL_DECL boss_razuviousAI : public ScriptedAI
         UnbalancingStrike_Timer = 30000;                    //30 seconds
         DisruptingShout_Timer = 25000;                      //25 seconds
         CommandSound_Timer = 40000;                         //40 seconds
+
+        if (m_pInstance)
+            m_pInstance->SetData(ENCOUNT_RAZUVIOUS, NOT_STARTED);
     }
 
     void KilledUnit(Unit* Victim)
@@ -87,6 +98,9 @@ struct MANGOS_DLL_DECL boss_razuviousAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoPlaySoundToSet(m_creature, SOUND_DEATH);
+
+        if (m_pInstance)
+            m_pInstance->SetData(ENCOUNT_RAZUVIOUS, DONE);
     }
 
     void Aggro(Unit *who)
@@ -103,6 +117,9 @@ struct MANGOS_DLL_DECL boss_razuviousAI : public ScriptedAI
                 DoPlaySoundToSet(m_creature, SOUND_AGGRO3);
                 break;
         }
+
+        if (m_pInstance)
+            m_pInstance->SetData(ENCOUNT_RAZUVIOUS, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)

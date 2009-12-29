@@ -60,6 +60,9 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
         Enrage_Timer = 420000;                              //7 minutes 420,000
         Slimebolt_Timer = 450000;                           //7.5 minutes 450,000
         Enraged = false;
+
+        if (m_pInstance)
+            m_pInstance->SetData(ENCOUNT_PATCHWERK, NOT_STARTED);
     }
 
     void KilledUnit(Unit* Victim)
@@ -73,6 +76,9 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoScriptText(SAY_DEATH, m_creature);
+
+        if (m_pInstance)
+            m_pInstance->SetData(ENCOUNT_PATCHWERK, DONE);
     }
 
     void Aggro(Unit *who)
@@ -81,6 +87,9 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
             DoScriptText(SAY_AGGRO1, m_creature);
         else
             DoScriptText(SAY_AGGRO2, m_creature);
+
+        if (m_pInstance)
+            m_pInstance->SetData(ENCOUNT_PATCHWERK, IN_PROGRESS);
     }
 
     void UpdateAI(const uint32 diff)
