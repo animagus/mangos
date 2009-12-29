@@ -750,8 +750,8 @@ struct MANGOS_DLL_DECL mob_shadow_fisureAI : public ScriptedAI
 
     void Reset()
     {
-        m_uiDespawn = 6000;
-        m_uiVoidTimer = 4000;
+        m_uiDespawn = 5000;
+        m_uiVoidTimer = 3500;
     }
 
     void UpdateAI(const uint32 uiDiff)
