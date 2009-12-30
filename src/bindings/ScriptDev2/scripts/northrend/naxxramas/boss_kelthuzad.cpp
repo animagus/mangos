@@ -441,7 +441,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
                         pAbom->SetNoCallAssistance(true);
                         pAbom->AI()->AttackStart(target);
                     }
-                AbomsTimer = 27000;
+                AbomsTimer = 25000;
             }else AbomsTimer -= diff;
 
             if (BansheTimer <= diff)
@@ -454,7 +454,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
                         pBanshe->AI()->AttackStart(target);
                     }
 
-                BansheTimer = 27000;
+                BansheTimer = 23000;
             }else BansheTimer -= diff;
 
 
@@ -524,7 +524,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
 
                 DoResetThreat(); // 50% chance WIPE
 
-                ChainsOfKelthuzad_Timer = (rand()%30+30)*1000;
+                ChainsOfKelthuzad_Timer = (rand()%30+40)*1000;
             }else ChainsOfKelthuzad_Timer -= diff;
 
             //Check for Mana Detonation
@@ -631,7 +631,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
                 if (rand()%2)
                     DoScriptText(SAY_FROST_BLAST, m_creature);
 
-                FrostBlast_Timer = (rand()%30+20)*1000;
+                FrostBlast_Timer = (rand()%30+30)*1000;
             }else FrostBlast_Timer -= diff;
         }
 
@@ -818,7 +818,7 @@ struct MANGOS_DLL_DECL mob_frozen_wastesAI : public ScriptedAI
     void UpdateAI(const uint32 uiDiff)
     {
         if (!m_creature->HasAura(m_bIsHeroic ? 55713 : 28458))
-            DoCast(m_creature, m_bIsHeroic ? 555713 : 28458, true);
+            DoCast(m_creature, m_bIsHeroic ? 55713 : 28458, true);
 
         DoMeleeAttackIfReady();
     }
