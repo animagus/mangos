@@ -22,6 +22,7 @@ SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_naxxramas.h"
 
 //Razuvious - NO TEXT sound only
 //8852 aggro01 - Hah hah, I'm just getting warmed up!

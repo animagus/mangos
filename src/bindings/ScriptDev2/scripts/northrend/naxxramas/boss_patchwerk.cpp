@@ -22,6 +22,7 @@ SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
+#include "def_naxxramas.h"
 
 #define SAY_AGGRO1              -1533017
 #define SAY_AGGRO2              -1533018
