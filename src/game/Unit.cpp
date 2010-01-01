@@ -4854,12 +4854,6 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     triggered_spell_id = 26654;
                     break;
                 }
-                // Glyph of Blocking
-                case 58375:
-                {
-                    triggered_spell_id = 58374;
-                    break;
-                }
                 // Unstable Power
                 case 24658:
                 {
