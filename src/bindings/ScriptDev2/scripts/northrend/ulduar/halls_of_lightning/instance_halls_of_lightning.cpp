@@ -106,6 +106,8 @@ struct MANGOS_DLL_DECL instance_halls_of_lightning : public ScriptedInstance
                 m_uiLokenDoorGUID = pGo->GetGUID();
                 if (m_auiEncounter[3] == DONE)
                     pGo->SetGoState(GO_STATE_ACTIVE);
+				else
+					pGo->SetGoState(GO_STATE_READY);
                 break;
             case GO_LOKEN_THRONE:
                 m_uiLokenGlobeGUID = pGo->GetGUID();
@@ -135,12 +137,17 @@ struct MANGOS_DLL_DECL instance_halls_of_lightning : public ScriptedInstance
             case TYPE_LOKEN:
                 if (uiData == DONE)
                 {
-                    DoUseDoorOrButton(m_uiLokenDoorGUID);
+                    //DoUseDoorOrButton(m_uiLokenDoorGUID);
+					if (GameObject* pLokenDoor = instance->GetGameObject(m_uiLokenDoorGUID))
+						pLokenDoor->SetGoState(GO_STATE_ACTIVE);
 
                     //Appears to be type 5 GO with animation. Need to figure out how this work, code below only placeholder
                     if (GameObject* pGlobe = instance->GetGameObject(m_uiLokenGlobeGUID))
                         pGlobe->SetGoState(GO_STATE_ACTIVE);
-                }
+				} else {
+					if (GameObject* pLokenDoor = instance->GetGameObject(m_uiLokenDoorGUID))
+						pLokenDoor->SetGoState(GO_STATE_READY);
+				}
                 m_auiEncounter[3] = uiData;
                 break;
         }
