@@ -376,6 +376,71 @@ CreatureAI* GetAI_npc_dancing_flames(Creature* pCreature)
 }
 
 /*######
+## npc_lake_fog
+######*/
+
+struct MANGOS_DLL_DECL npc_lake_frogAI : public ScriptedAI
+{
+    npc_lake_frogAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+
+    uint32 maidenTimer;
+
+    void Reset() {
+        m_creature->RemoveAurasDueToSpell(62550);
+        maidenTimer = 40000;
+    }
+
+    bool IsMaiden() {
+        return (m_creature->getTransForm() == 62550);
+    }
+
+    void ReceiveEmote(Player* pPlayer, uint32 emote)
+    {
+        bool isFrog = !IsMaiden();
+        bool giveAshwoodBrand = false;
+
+        if (emote == TEXTEMOTE_KISS) {
+            if (isFrog) {
+                if (!pPlayer->HasAura(62581)) {
+                    if (!pPlayer->HasAura(62574)) {
+                        m_creature->CastSpell(pPlayer, 62581, false);
+                    } else {
+                        pPlayer->RemoveAurasDueToSpell(62574);
+                        giveAshwoodBrand = true;
+                    }
+                }
+            }
+            if (giveAshwoodBrand) {
+                uint16 log_slot = pPlayer->FindQuestSlot( 13673 );
+                QuestStatus q_status = pPlayer->GetQuestStatus(13673);
+                if (log_slot < MAX_QUEST_LOG_SIZE && q_status != QUEST_STATUS_COMPLETE) {
+                    if (urand(0, 4) == 1) {
+                        m_creature->CastSpell(m_creature, 62550, false);
+                        m_creature->CastSpell(pPlayer, 62554, true, NULL);
+                    }
+                }
+            }
+        }     
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (IsMaiden()) {
+            if (maidenTimer <=  diff) {
+                Reset();
+            } else
+                maidenTimer -= diff;
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_lake_frog(Creature* pCreature)
+{
+    return new npc_lake_frogAI(pCreature);
+}
+
+
+/*######
 ## Triage quest
 ######*/
 
@@ -1611,6 +1676,11 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name = "npc_dancing_flames";
     newscript->GetAI = &GetAI_npc_dancing_flames;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_lake_frog";
+    newscript->GetAI = &GetAI_npc_lake_frog;
     newscript->RegisterSelf();
 
     newscript = new Script;
