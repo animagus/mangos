@@ -80,7 +80,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
-	static ChatCommand moodCommandTable[] = 
+	static ChatCommand moodCommandTable[] =
 	{
 		{"set",				SEC_PLAYER,			false, &ChatHandler::HandleMoodSetCommand,			   "", NULL },
 		{"clear",			SEC_PLAYER,			false, &ChatHandler::HandleMoodClearCommand,           "", NULL },
@@ -874,7 +874,7 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
         // table[i].Name == "" is special case: send original command to handler
         if((this->*(table[i].Handler))(strlen(table[i].Name)!=0 ? text : oldtext))
         {
-            if(table[i].SecurityLevel > SEC_PLAYER || m_session->isMpUse())
+            if(table[i].SecurityLevel > SEC_PLAYER || m_session && m_session->isMpUse())
             {
                 // chat case
                 if(m_session)
@@ -884,7 +884,7 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
                     sLog.outCommand(m_session->GetAccountId(),"Command: %s [Player: %s (Account: %u) X: %f Y: %f Z: %f Map: %u Selected: %s (GUID: %u)]",
                         fullcmd.c_str(),p->GetName(),m_session->GetAccountId(),p->GetPositionX(),p->GetPositionY(),p->GetPositionZ(),p->GetMapId(),
                         GetLogNameForGuid(sel_guid),GUID_LOPART(sel_guid));
-                    
+
                     Creature *c = ObjectAccessor::GetCreatureOrPetOrVehicle(*p,p->GetSelection());
 
                     std::string cmd_sql = (m_session->isMpUse()) ? "[MP,ip:"+ m_session->GetRemoteAddress() + "]" : "" ;
@@ -2223,3 +2223,4 @@ int CliHandler::GetSessionDbLocaleIndex() const
 {
     return objmgr.GetDBCLocaleIndex();
 }
+
