@@ -72,8 +72,9 @@ struct notDirectGO
     }
 };
 
-struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
+class MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 {
+public:
     instance_naxxramas(Map *Map) : ScriptedInstance(Map) {Initialize();};
 
     std::string str_data;
@@ -133,7 +134,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
     uint64 m_uiBlaumeuxGUID;
     uint64 m_uiRivendareGUID;
 
-    uint32 Encounters[ENCOUNTERS];
+    EncounterData<ENCOUNTERS> Encounters;
 
 /****  Door System - need review ****/
     //Open/Close or Show/Hide everything that has two states
@@ -195,7 +196,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 
     bool IsEncounterInProgress() const
     {
-        for(uint8 i = 0; i < ENCOUNTERS; ++i)
+        for(uint8 i = 0; i < Encounters.size(); ++i)
             if (Encounters[i] == IN_PROGRESS)
                 return true;
         return false;
@@ -312,9 +313,9 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
         }
     }
 
-    void SetData(uint32 type, uint32 data)
+    void SetEncounterData(uint32 type, uint32 data) 
     {
-        switch (type)
+       switch (type)
         {
             //Spiderwing ------------------------------------
             case ENCOUNT_ANUBREKHAN:
@@ -414,6 +415,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
                         Open(go_heigan_exitgate);
                         break;
                 }
+                break;
             case ENCOUNT_LOATHEB:
                 Encounters[ENCOUNT_LOATHEB] = data;
                 switch (data)
@@ -570,20 +572,17 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
                 }
                 break;
             }
+    }
 
+    void SetData(uint32 type, uint32 data)
+    {
+        SetEncounterData(type, data);
+ 
         if (data == DONE)
         {
             OUT_SAVE_INST_DATA;
 
-            std::ostringstream saveStream;
-            saveStream << 
-                Encounters[ENCOUNT_ANUBREKHAN] << " " << Encounters[ENCOUNT_FAERLINA]  << " " << Encounters[ENCOUNT_MAEXXNA]      << " " << 
-                Encounters[ENCOUNT_PATCHWERK]  << " " << Encounters[ENCOUNT_GROBBULUS] << " " << Encounters[ENCOUNT_GLUTH]        << " " << Encounters[ENCOUNT_THADDIUS] << " " << 
-                Encounters[ENCOUNT_NOTH]       << " " << Encounters[ENCOUNT_HEIGAN]    << " " << Encounters[ENCOUNT_LOATHEB]      << " " << 
-                Encounters[ENCOUNT_RAZUVIOUS]  << " " << Encounters[ENCOUNT_GOTHIK]    << " " << Encounters[ENCOUNT_FOURHORSEMAN] << " " << 
-                Encounters[ENCOUNT_SAPPHIRON]  << " " << Encounters[ENCOUNT_KELTHUZAD];
-
-            str_data = saveStream.str();
+            str_data = Encounters.dumps();
 
             SaveToDB();
             OUT_SAVE_INST_DATA_COMPLETE;
@@ -592,25 +591,10 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 
     uint32 GetData(uint32 type)
     {
-        switch (type)
-        {
-            //Spiderwing ------------------------------------
-            case ENCOUNT_ANUBREKHAN:    return Encounters[0]; break;
-            case ENCOUNT_FAERLINA:      return Encounters[1]; break;
-            case ENCOUNT_MAEXXNA:       return Encounters[2]; break;
-            case ENCOUNT_NOTH:          return Encounters[ENCOUNT_NOTH]; break;
-            case ENCOUNT_HEIGAN:        return Encounters[ENCOUNT_HEIGAN]; break;
-            case ENCOUNT_LOATHEB:       return Encounters[ENCOUNT_LOATHEB]; break;
-            case ENCOUNT_PATCHWERK:     return Encounters[ENCOUNT_PATCHWERK]; break;
-            case ENCOUNT_GROBBULUS:     return Encounters[ENCOUNT_GROBBULUS]; break;
-            case ENCOUNT_GLUTH:         return Encounters[ENCOUNT_GLUTH];     break;
-            case ENCOUNT_THADDIUS:      return Encounters[ENCOUNT_THADDIUS];  break;
-            case ENCOUNT_RAZUVIOUS:     return Encounters[ENCOUNT_RAZUVIOUS];  break;
-            case ENCOUNT_GOTHIK:        return Encounters[ENCOUNT_GOTHIK];    break;
-            case ENCOUNT_FOURHORSEMAN:  return Encounters[ENCOUNT_FOURHORSEMAN];    break;
-            case ENCOUNT_SAPPHIRON:     return Encounters[ENCOUNT_SAPPHIRON];    break;
-            case ENCOUNT_KELTHUZAD:     return Encounters[ENCOUNT_KELTHUZAD];    break;
-            default: return 0;
+        try {
+            return Encounters[type];
+        } catch (EncounterIndexError) {
+            return 0;
         }
     }
     
@@ -629,17 +613,13 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 
         OUT_LOAD_INST_DATA(in);
 
-        std::istringstream loadStream(in);
-        loadStream >> Encounters[ENCOUNT_ANUBREKHAN] >> Encounters[ENCOUNT_FAERLINA] >> Encounters[ENCOUNT_MAEXXNA] >> 
-            Encounters[ENCOUNT_PATCHWERK] >> Encounters[ENCOUNT_GROBBULUS] >> Encounters[ENCOUNT_GLUTH]   >> Encounters[ENCOUNT_THADDIUS] >> 
-            Encounters[ENCOUNT_NOTH]      >> Encounters[ENCOUNT_HEIGAN]    >> Encounters[ENCOUNT_LOATHEB] >> 
-            Encounters[ENCOUNT_RAZUVIOUS] >> Encounters[ENCOUNT_GOTHIK]    >> Encounters[ENCOUNT_FOURHORSEMAN] >> 
-            Encounters[ENCOUNT_SAPPHIRON] >> Encounters[ENCOUNT_KELTHUZAD];
+        Encounters.loads(in);
+
         for(uint32 i = 0; i < ENCOUNTERS; i++)
         {
             if (Encounters[i] == IN_PROGRESS)               // Do not load an encounter as "In Progress" - reset it instead.
                 Encounters[i] = NOT_STARTED;
-            SetData(i,Encounters[i]);
+            SetEncounterData(i,Encounters[i]);
         }
         OUT_LOAD_INST_DATA_COMPLETE;
     }
