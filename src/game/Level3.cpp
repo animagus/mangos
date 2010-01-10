@@ -2959,11 +2959,22 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
                             else if(status == QUEST_STATUS_INCOMPLETE)
                                 statusStr = GetMangosString(LANG_COMMAND_QUEST_ACTIVE);
                         }
+                        std::ostringstream ss;
+                        ss << qinfo->GetQuestId() << " - ";
+                        if (m_session)
+                        {
+                            ss << "|cffffffff|Hquest:" << qinfo->GetQuestId();
+                            ss << ":" << qinfo->GetQuestLevel();
+                            ss << "|h[";
+                        }
+                        ss << title;
 
                         if (m_session)
-                            PSendSysMessage(LANG_QUEST_LIST_CHAT,qinfo->GetQuestId(),qinfo->GetQuestId(),qinfo->GetQuestLevel(),title.c_str(),statusStr);
-                        else
-                            PSendSysMessage(LANG_QUEST_LIST_CONSOLE,qinfo->GetQuestId(),title.c_str(),statusStr);
+                            ss << "]|h|r";
+
+                        ss << " " << statusStr;
+                        SendSysMessage(ss.str().c_str());
+
                         ++counter;
                         continue;
                     }

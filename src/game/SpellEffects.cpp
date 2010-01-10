@@ -456,7 +456,13 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
                 }
                 // Shield Slam
                 else if ((m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000020000000000)) && m_spellInfo->Category==1209)
+				{
                     damage += int32(m_caster->GetShieldBlockValue());
+					// Glyph of Blocking
+					if (m_caster->HasAura(58375)) {
+						m_caster->CastSpell(m_caster, 58374, true);
+					}
+				}
                 // Victory Rush
                 else if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x10000000000))
                 {
@@ -1399,11 +1405,20 @@ void Spell::EffectDummy(uint32 i)
                         return;
                     m_caster->CastSpell(unitTarget,60934,true,NULL);
                     return;
+                case 62990:                                 // Chop Tree 
+                    if (!unitTarget)
+                        return;
+                    if (unitTarget->isAlive())
+                    {
+                        unitTarget->CastSpell(m_caster, 62855, true, NULL);
+                        m_caster->DealDamage(unitTarget, unitTarget->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    }
+                    return;
                 case 67019:                                 // Flask of the North
                 {
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
-
+                    
                     uint32 spell_id = 0;
                     switch(m_caster->getClass())
                     {
@@ -1751,6 +1766,11 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(m_caster, 45182, true);
                     return;
                 }
+				case 51662:                                 // Hunger for Blood
+				{
+					m_caster->CastSpell(m_caster, 63848, true);
+					return;
+				}
             }
             break;
         case SPELLFAMILY_HUNTER:
@@ -4680,6 +4700,27 @@ void Spell::EffectWeaponDmg(uint32 i)
     int32 spell_bonus = 0;                                  // bonus specific for spell
     switch(m_spellInfo->SpellFamilyName)
     {
+		case SPELLFAMILY_DRUID:
+		{
+			// Rend and Tear ( on Maul / Shred )
+			if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000000000008800))
+			{
+				if(unitTarget && unitTarget->HasAuraState(AURA_STATE_MECHANIC_BLEED))
+				{
+					Unit::AuraList const& aura = m_caster->GetAurasByType(SPELL_AURA_DUMMY);
+					for(Unit::AuraList::const_iterator itr = aura.begin(); itr != aura.end(); ++itr)
+					{
+						if ((*itr)->GetSpellProto()->SpellIconID == 2859 && (*itr)->GetEffIndex() == 0)
+						{
+							totalDamagePercentMod += (totalDamagePercentMod * (*itr)->GetModifier()->m_amount) / 100;
+							break;
+						}
+					}
+				}
+			}
+
+			break;
+		}
         case SPELLFAMILY_WARRIOR:
         {
             // Devastate bonus and sunder armor refresh

@@ -68,6 +68,7 @@ struct MANGOS_DLL_DECL boss_tharonjaAI : public ScriptedAI
     void JustDied(Unit* pKiller)
     {
         DoScriptText(SAY_DEATH, m_creature);
+		DoCast(m_creature, 61863, true); // Achievement Criteria
     }
 
     void UpdateAI(const uint32 uiDiff)
