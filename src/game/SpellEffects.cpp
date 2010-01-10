@@ -3539,6 +3539,8 @@ void Spell::EffectSummonType(uint32 i)
                     //SUMMON_TYPE_TOTEM2 = 647: 52893, Anti-Magic Zone (npc used)
                     if(prop_id == 121 || prop_id == 647)
                         EffectSummonTotem(i);
+                    else if (summon_prop->Flags & 512)
+                        EffectSummonGuardian(i, summon_prop->FactionId);
                     else
                         EffectSummonWild(i, summon_prop->FactionId);
                     break;

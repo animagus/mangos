@@ -1244,7 +1244,8 @@ bool Aura::_RemoveAura()
                     ((Player*)caster)->SendCooldownEvent(GetSpellProto());
             }
         }
-        return true;
+    }
+    return true;
 }
 
 void Aura::SendFakeAuraUpdate(uint32 auraId, bool remove)
