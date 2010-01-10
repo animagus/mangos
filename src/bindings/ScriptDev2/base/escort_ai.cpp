@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software licensed under GPL version 2
  * Please see the included DOCS/LICENSE.TXT for more information */
 
@@ -47,7 +47,7 @@ void npc_escortAI::AttackStart(Unit* pWho)
 
     if (m_creature->Attack(pWho, true))
     {
-        m_creature->AddThreat(pWho, 0.0f);
+        m_creature->AddThreat(pWho);
         m_creature->SetInCombatWith(pWho);
         pWho->SetInCombatWith(m_creature);
 
@@ -101,7 +101,7 @@ bool npc_escortAI::AssistPlayerInCombat(Unit* pWho)
         else
         {
             pWho->SetInCombatWith(m_creature);
-            m_creature->AddThreat(pWho, 0.0f);
+            m_creature->AddThreat(pWho);
             return true;
         }
     }
@@ -132,7 +132,7 @@ void npc_escortAI::MoveInLineOfSight(Unit* pWho)
                 else if (m_creature->GetMap()->IsDungeon())
                 {
                     pWho->SetInCombatWith(m_creature);
-                    m_creature->AddThreat(pWho, 0.0f);
+                    m_creature->AddThreat(pWho);
                 }
             }
         }
@@ -318,7 +318,7 @@ void npc_escortAI::UpdateAI(const uint32 uiDiff)
 void npc_escortAI::UpdateEscortAI(const uint32 uiDiff)
 {
     //Check if we have a current target
-    if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+    if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
         return;
 
     DoMeleeAttackIfReady();
@@ -462,7 +462,7 @@ void npc_escortAI::Start(bool bIsActiveAttacker, bool bRun, uint64 uiPlayerGUID,
     //disable npcflags
     m_creature->SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
 
-    debug_log("SD2: EscortAI started with %u waypoints. ActiveAttacker = %d, Run = %d, PlayerGUID = %u", WaypointList.size(), m_bIsActiveAttacker, m_bIsRunning, m_uiPlayerGUID);
+    debug_log("SD2: EscortAI started with " SIZEFMTD " waypoints. ActiveAttacker = %d, Run = %d, PlayerGUID = " UI64FMTD, WaypointList.size(), m_bIsActiveAttacker, m_bIsRunning, m_uiPlayerGUID);
 
     CurrentWP = WaypointList.begin();
 

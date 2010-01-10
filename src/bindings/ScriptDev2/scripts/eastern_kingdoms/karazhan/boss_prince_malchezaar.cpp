@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -284,16 +284,16 @@ struct MANGOS_DLL_DECL boss_malchezaarAI : public ScriptedAI
         if (!info)
             return;
 
-        std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
+        ThreatList const& tList = m_creature->getThreatManager().getThreatList();
         std::vector<Unit *> targets;
 
-        if (!t_list.size())
+        if (tList.empty())
             return;
 
         //begin + 1 , so we don't target the one with the highest threat
-        std::list<HostilReference *>::iterator itr = t_list.begin();
+        ThreatList::const_iterator itr = tList.begin();
         std::advance(itr, 1);
-        for(; itr!= t_list.end(); ++itr)                   //store the threat list in a different container
+        for(; itr!= tList.end(); ++itr)                    //store the threat list in a different container
         {
             Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
                                                             //only on alive players
@@ -371,7 +371,7 @@ struct MANGOS_DLL_DECL boss_malchezaarAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (EnfeebleResetTimer)

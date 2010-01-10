@@ -456,7 +456,7 @@ struct MANGOS_DLL_DECL mob_sinister_reflectionAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if(!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         switch(ui_class)
@@ -486,8 +486,6 @@ struct MANGOS_DLL_DECL mob_sinister_reflectionAI : public ScriptedAI
             DoMeleeAttackIfReady();
             break;
         case 3: // Hunter
-
-
             if (m_creature->IsWithinDistInMap(m_creature->getVictim(), 5.0f) || !m_creature->IsWithinDistInMap(m_creature->getVictim(), 20.0f))
             {
                 if(ui_WindClip_Timer < diff)
@@ -730,7 +728,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!m_creature->SelectHostilTarget() || !m_creature->getVictim() || ui_Phase < PHASE_NORMAL)
+        if(!m_creature->SelectHostileTarget() || !m_creature->getVictim() || ui_Phase < PHASE_NORMAL)
             return;
 
         // *****************************************
@@ -1411,7 +1409,7 @@ struct MANGOS_DLL_DECL mob_hand_of_the_deceiverAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!m_creature->getVictim() || !m_creature->SelectHostilTarget())
+        if(!m_creature->getVictim() || !m_creature->SelectHostileTarget())
             return;
 
         // Gain Shadow Infusion at 20% health
@@ -1425,13 +1423,13 @@ struct MANGOS_DLL_DECL mob_hand_of_the_deceiverAI : public ScriptedAI
             ui_ShadowBoltVolley_Timer = 8000;
         }else ui_ShadowBoltVolley_Timer -= diff;
 
-        // Felfire Portal - Creatres a portal, that spawns Volatile Felfire Fiends, which do suicide bombing.
+        /*// Felfire Portal - Creatres a portal, that spawns Volatile Felfire Fiends, which do suicide bombing.
         if(ui_FelfirePortal_Timer < diff)
         {
             if(Creature* pPortal = DoSpawnCreature(NPC_FELFIRE_PORTAL, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN, 20000))
             {
                 // why don't use m_creature->getVictim() ???
-                std::list<HostilReference*>::iterator itr;
+                //std::list<HostilReference*>::iterator itr;
                 for(itr = m_creature->getThreatManager().getThreatList().begin(); itr != m_creature->getThreatManager().getThreatList().end(); ++itr)
                 {
                     if(Unit* pUnit = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid()))
@@ -1440,6 +1438,7 @@ struct MANGOS_DLL_DECL mob_hand_of_the_deceiverAI : public ScriptedAI
             }
             ui_FelfirePortal_Timer = 20000;
         }else ui_FelfirePortal_Timer -= diff;
+        This code has broken after 3.2.2 patch == FIX IT ==*/ 
 
         DoMeleeAttackIfReady();
     }
@@ -1465,7 +1464,7 @@ struct MANGOS_DLL_DECL mob_felfire_portalAI : public Scripted_NoMovementAI
 
     void UpdateAI(const uint32 diff)
     {
-        if(!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if(!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if(ui_SpawnFiend_Timer < diff)
@@ -1569,7 +1568,7 @@ struct MANGOS_DLL_DECL mob_volatile_felfire_fiendAI : public ScriptedAI
             return;
         }
 
-        if(!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if(!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if(ui_Explode_Timer) // Just so it doesn't explode as soon as it spawn

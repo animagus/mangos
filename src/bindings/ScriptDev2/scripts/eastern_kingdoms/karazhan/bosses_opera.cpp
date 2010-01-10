@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -178,7 +178,7 @@ struct MANGOS_DLL_DECL boss_dorotheeAI : public ScriptedAI
             }else AggroTimer -= diff;
         }
 
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (WaterBoltTimer < diff)
@@ -235,7 +235,7 @@ struct MANGOS_DLL_DECL mob_titoAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (YipTimer < diff)
@@ -346,7 +346,7 @@ struct MANGOS_DLL_DECL boss_strawmanAI : public ScriptedAI
             }else AggroTimer -= diff;
         }
 
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (BrainBashTimer < diff)
@@ -440,7 +440,7 @@ struct MANGOS_DLL_DECL boss_tinheadAI : public ScriptedAI
             }else AggroTimer -= diff;
         }
 
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (CleaveTimer < diff)
@@ -537,7 +537,7 @@ struct MANGOS_DLL_DECL boss_roarAI : public ScriptedAI
             }else AggroTimer -= diff;
         }
 
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (MangleTimer < diff)
@@ -612,7 +612,7 @@ struct MANGOS_DLL_DECL boss_croneAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (m_creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
@@ -805,7 +805,7 @@ struct MANGOS_DLL_DECL boss_bigbadwolfAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         DoMeleeAttackIfReady();
@@ -1113,7 +1113,7 @@ struct MANGOS_DLL_DECL boss_romuloAI : public ScriptedAI
             Creature* Julianne = ((Creature*)Unit::GetUnit((*m_creature), JulianneGUID));
             if (Julianne && Julianne->getVictim())
             {
-                m_creature->AddThreat(Julianne->getVictim(), 1.0f);
+                m_creature->AddThreat(Julianne->getVictim());
             }
         }
     }
@@ -1334,7 +1334,7 @@ void boss_julianneAI::UpdateAI(const uint32 diff)
         }else ResurrectSelfTimer -= diff;
     }
 
-    if (!m_creature->SelectHostilTarget() || !m_creature->getVictim() || IsFakingDeath)
+    if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || IsFakingDeath)
         return;
 
     if (RomuloDead)
@@ -1388,7 +1388,7 @@ void boss_julianneAI::UpdateAI(const uint32 diff)
 
 void boss_romuloAI::UpdateAI(const uint32 diff)
 {
-    if (!m_creature->SelectHostilTarget() || !m_creature->getVictim() || IsFakingDeath)
+    if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || IsFakingDeath)
         return;
 
     if (JulianneDead)

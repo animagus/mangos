@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -45,13 +45,13 @@ EndScriptData */
      boss_archavonAI(Creature* pCreature) : ScriptedAI(pCreature)
      {
          m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-         m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
          m_fDefaultMoveSpeed = m_creature->GetSpeedRate(MOVE_RUN);
          Reset();
      }
  
      ScriptedInstance* m_pInstance;
-     bool m_bIsHeroicMode;
+     bool m_bIsRegularMode;
      float m_fDefaultMoveSpeed;
      uint32 m_uiEvadeCheckCooldown;
  
@@ -107,7 +107,7 @@ EndScriptData */
 
      void UpdateAI(const uint32 uiDiff)
      {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
              return;
  
          if (m_uiEvadeCheckCooldown < uiDiff)
@@ -125,7 +125,7 @@ EndScriptData */
              {
                  if (Unit* pTarget = m_creature->getVictim())
                  {
-                     DoCast(pTarget, m_bIsHeroicMode ? SPELL_IMPALE_DMG_H : SPELL_IMPALE_DMG_N);
+                     DoCast(pTarget, !m_bIsRegularMode ? SPELL_IMPALE_DMG_H : SPELL_IMPALE_DMG_N);
                      pTarget->CastSpell(pTarget, SPELL_IMPALE_STUN, true);
                  }
                  m_bImpaleInProgress = false;
@@ -155,7 +155,7 @@ EndScriptData */
              {
                  m_creature->getThreatManager().addThreat(m_pCrushingLeapTarget, -100000000.0f);
                  m_creature->SetSpeed(MOVE_RUN, m_fDefaultMoveSpeed);
-                 DoCast(m_pCrushingLeapTarget, m_bIsHeroicMode ? SPELL_CRUSHING_LEAP_H : SPELL_CRUSHING_LEAP_N, true);
+                 DoCast(m_pCrushingLeapTarget, !m_bIsRegularMode ? SPELL_CRUSHING_LEAP_H : SPELL_CRUSHING_LEAP_N, true);
                  m_bCrushingLeapInProgress = false;
              }
              else
@@ -180,7 +180,7 @@ EndScriptData */
              {
                  if (m_pRockShardsTarget)
                  {
-                     DoCast(m_pRockShardsTarget, m_bIsHeroicMode ? (m_bRLRockShard ? SPELL_ROCK_SHARDS_LEFT_H : SPELL_ROCK_SHARDS_RIGHT_H) : (m_bRLRockShard ? SPELL_ROCK_SHARDS_LEFT_N : SPELL_ROCK_SHARDS_RIGHT_N));
+                     DoCast(m_pRockShardsTarget, !m_bIsRegularMode ? (m_bRLRockShard ? SPELL_ROCK_SHARDS_LEFT_H : SPELL_ROCK_SHARDS_RIGHT_H) : (m_bRLRockShard ? SPELL_ROCK_SHARDS_LEFT_N : SPELL_ROCK_SHARDS_RIGHT_N));
                      m_bRLRockShard = !m_bRLRockShard;
                  }
                  m_uiRockShardTimer = 100;
@@ -207,7 +207,7 @@ EndScriptData */
  
          if (m_uiCrushingLeapTimer < uiDiff)
          {
-             std::list<HostilReference*>::iterator i = m_creature->getThreatManager().getThreatList().begin();
+             ThreatList::const_iterator i = m_creature->getThreatManager().getThreatList().begin();
              std::list<Unit*> lTargets;
              for (; i != m_creature->getThreatManager().getThreatList().end(); ++i)
              {
@@ -237,7 +237,7 @@ EndScriptData */
              m_uiCrushingLeapTimer -= uiDiff; 
         if (m_uiStompTimer < uiDiff)
          {
-             DoCast(m_creature, m_bIsHeroicMode ? SPELL_STOMP_H : SPELL_STOMP_N);
+             DoCast(m_creature, !m_bIsRegularMode ? SPELL_STOMP_H : SPELL_STOMP_N);
              m_uiImpaleAfterStompTimer = 1000;
              m_bImpaleInProgress = true;
              m_uiStompTimer = 45000+rand()%15000;

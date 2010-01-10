@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -46,12 +46,12 @@ struct MANGOS_DLL_DECL boss_thespiaAI : public ScriptedAI
     boss_thespiaAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
 
     uint32 LightningCloud_Timer;
     uint32 LungBurst_Timer;
@@ -95,7 +95,7 @@ struct MANGOS_DLL_DECL boss_thespiaAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         //LightningCloud_Timer
@@ -104,7 +104,7 @@ struct MANGOS_DLL_DECL boss_thespiaAI : public ScriptedAI
             //cast twice in Heroic mode
             if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
                 DoCast(target, SPELL_LIGHTNING_CLOUD);
-            if (m_bIsHeroicMode)
+            if (!m_bIsRegularMode)
                 if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
                     DoCast(target, SPELL_LIGHTNING_CLOUD);
             LightningCloud_Timer = urand(15000, 25000);
@@ -124,7 +124,7 @@ struct MANGOS_DLL_DECL boss_thespiaAI : public ScriptedAI
             //cast twice in Heroic mode
             if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
                 DoCast(target, SPELL_ENVELOPING_WINDS);
-            if (m_bIsHeroicMode)
+            if (!m_bIsRegularMode)
                 if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
                     DoCast(target, SPELL_ENVELOPING_WINDS);
             EnvelopingWinds_Timer = urand(10000, 15000);
@@ -141,11 +141,11 @@ struct MANGOS_DLL_DECL mob_coilfang_waterelementalAI : public ScriptedAI
 {
     mob_coilfang_waterelementalAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
     uint32 WaterBoltVolley_Timer;
 
     void Reset()
@@ -155,12 +155,12 @@ struct MANGOS_DLL_DECL mob_coilfang_waterelementalAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (WaterBoltVolley_Timer < diff)
         {
-            DoCast(m_creature, m_bIsHeroicMode ? H_SPELL_WATER_BOLT_VOLLEY : SPELL_WATER_BOLT_VOLLEY);
+            DoCast(m_creature, m_bIsRegularMode ? SPELL_WATER_BOLT_VOLLEY : H_SPELL_WATER_BOLT_VOLLEY);
             WaterBoltVolley_Timer = urand(7000, 12000);
         }else WaterBoltVolley_Timer -= diff;
 

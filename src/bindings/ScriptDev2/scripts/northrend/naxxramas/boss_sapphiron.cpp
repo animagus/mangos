@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -58,13 +58,13 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
     boss_sapphironAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
 		m_pInstance = ((ScriptedInstance*)pCreature->GetInstanceData());
-		m_bIsHeroic = pCreature->GetMap()->IsHeroic();
+		m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
 		Reset();
     }
 
 	ScriptedInstance* m_pInstance;
 	IceBlockMap iceblocks;
-	bool m_bIsHeroic;
+	bool m_bIsRegularMode;
     uint32 Icebolt_Count;
     uint32 Icebolt_Timer;
     uint32 FrostBreath_Timer;
@@ -126,7 +126,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
 	{
 		m_creature->SetInCombatWithZone(); // make sure everyone is in threatlist
 		std::vector<Unit*> targets;
-		std::list<HostilReference*>::iterator i = m_creature->getThreatManager().getThreatList().begin();
+		ThreatList::const_iterator i = m_creature->getThreatManager().getThreatList().begin();
 		for (; i != m_creature->getThreatManager().getThreatList().end(); ++i)
 		{
 			Unit *pTarget = (*i)->getTarget();
@@ -213,16 +213,16 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
 		if (!m_pInstance)
 			return;
 
-		if (!m_bIsHeroic && !m_creature->HasAura(SPELL_FROST_AURA))
+		if (m_bIsRegularMode && !m_creature->HasAura(SPELL_FROST_AURA))
 			DoCast(m_creature,SPELL_FROST_AURA,true);
 
-		if (m_bIsHeroic && !m_creature->HasAura(SPELL_FROST_AURA_H))
+		if (!m_bIsRegularMode && !m_creature->HasAura(SPELL_FROST_AURA_H))
 			DoCast(m_creature,SPELL_FROST_AURA_H,true);
 
         if(CanTheHundredClub)
@@ -239,7 +239,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
             if (LifeDrain_Timer <= diff)
             {
                 if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-					DoCast(target,m_bIsHeroic ? SPELL_LIFE_DRAIN_H : SPELL_LIFE_DRAIN);
+					DoCast(target,!m_bIsRegularMode ? SPELL_LIFE_DRAIN_H : SPELL_LIFE_DRAIN);
                 LifeDrain_Timer = 24000;
             }else LifeDrain_Timer -= diff;
 
@@ -258,7 +258,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
 
             if (Tail_Timer <= diff)
             {
-                DoCast(m_creature->getVictim(),m_bIsHeroic?SPELL_TAIL_SWEEP_H:SPELL_TAIL_SWEEP);
+                DoCast(m_creature->getVictim(),!m_bIsRegularMode?SPELL_TAIL_SWEEP_H:SPELL_TAIL_SWEEP);
                 Tail_Timer = 5000+rand()%10000;
             }else Tail_Timer -= diff;
 
@@ -280,16 +280,16 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
 
         if (phase == 2)
         {
-            if (Icebolt_Timer < diff && Icebolt_Count < (m_bIsHeroic?3:2))
+            if (Icebolt_Timer < diff && Icebolt_Count < (!m_bIsRegularMode?3:2))
             {
                 std::vector<Unit*> targets;
-                std::list<HostilReference*>::iterator i = m_creature->getThreatManager().getThreatList().begin();
+                ThreatList::const_iterator i = m_creature->getThreatManager().getThreatList().begin();
                 for (; i != m_creature->getThreatManager().getThreatList().end(); ++i)
                     if ((*i)->getTarget()->GetTypeId() == TYPEID_PLAYER && !(*i)->getTarget()->HasAura(SPELL_ICEBOLT))
                         targets.push_back((*i)->getTarget());
 
                 if (targets.empty())
-                    Icebolt_Count = (m_bIsHeroic?3:2);
+                    Icebolt_Count = (!m_bIsRegularMode?3:2);
                 else
                 {
                     std::vector<Unit*>::iterator itr = targets.begin();
@@ -304,7 +304,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
                 Icebolt_Timer = 4000;
             }else Icebolt_Timer -= diff;
 
-            if (Icebolt_Count == (m_bIsHeroic?3:2) && !landoff)
+            if (Icebolt_Count == (!m_bIsRegularMode?3:2) && !landoff)
             {
                 if (FrostBreath_Timer <= diff)
                 {
@@ -365,13 +365,13 @@ struct MANGOS_DLL_DECL mob_BlizzardAI : public ScriptedAI
 {
     mob_BlizzardAI(Creature* pCreature) : ScriptedAI(pCreature) 
     {
-        m_bIsHeroic = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();         
     }
 
     uint32 m_uiDespawn;
     uint32 m_uiBlizzTimer;
-    bool m_bIsHeroic;
+    bool m_bIsRegularMode;
 
     void Aggro(Unit* who)
     {
@@ -389,7 +389,7 @@ struct MANGOS_DLL_DECL mob_BlizzardAI : public ScriptedAI
     {
         if (m_uiBlizzTimer <= uiDiff)
         {
-            DoCast(m_creature,m_bIsHeroic ? 55699 : 28547);
+            DoCast(m_creature,!m_bIsRegularMode ? 55699 : 28547);
             m_uiBlizzTimer = 10000;
         }else m_uiBlizzTimer -= uiDiff;
 

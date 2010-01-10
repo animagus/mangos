@@ -22,6 +22,7 @@ SDCategory: NPCs
 EndScriptData */
 
 #include "precompiled.h"
+/*
 #include "GameEventMgr.h"
 
 #define HALLOWEEN_EVENTID       324
@@ -72,7 +73,7 @@ bool GossipHello_npc_innkeeper(Player* pPlayer, Creature* pCreature)
     pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_INTERACT_1, GOSSIP_TEXT_INN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INN);
 
     pPlayer->TalkedToCreature(pCreature->GetEntry(), pCreature->GetGUID());
-    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
     return true;
 }
 
@@ -151,3 +152,4 @@ void AddSC_npc_innkeeper()
     newscript->pGossipSelect = &GossipSelect_npc_innkeeper;
     newscript->RegisterSelf();
 }
+*/

@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -75,7 +75,7 @@ struct MANGOS_DLL_DECL boss_volkhanAI : public ScriptedAI
     boss_volkhanAI(Creature *pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroic = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
@@ -83,7 +83,7 @@ struct MANGOS_DLL_DECL boss_volkhanAI : public ScriptedAI
 
     std::list<uint64> m_lGolemGUIDList;
 
-    bool m_bIsHeroic;
+    bool m_bIsRegularMode;
     bool m_bHasTemper;
     bool m_bIsStriking;
     bool m_bCanShatterGolem;
@@ -125,7 +125,7 @@ struct MANGOS_DLL_DECL boss_volkhanAI : public ScriptedAI
     {
         if (m_creature->Attack(pWho, true))
         {
-            m_creature->AddThreat(pWho, 0.0f);
+            m_creature->AddThreat(pWho);
             m_creature->SetInCombatWith(pWho);
             pWho->SetInCombatWith(m_creature);
 
@@ -181,7 +181,7 @@ struct MANGOS_DLL_DECL boss_volkhanAI : public ScriptedAI
             {
                  // only shatter brittle golems
                 if (pTemp->isAlive() && pTemp->GetEntry() == NPC_BRITTLE_GOLEM)
-                    pTemp->CastSpell(pTemp, m_bIsHeroic ? SPELL_SHATTER_H : SPELL_SHATTER_N, false);
+                    pTemp->CastSpell(pTemp, m_bIsRegularMode ? SPELL_SHATTER_N : SPELL_SHATTER_H, false);
             }
         }
     }
@@ -202,14 +202,14 @@ struct MANGOS_DLL_DECL boss_volkhanAI : public ScriptedAI
                 pSummoned->AI()->AttackStart(pTarget);
 
             //why healing when just summoned?
-            pSummoned->CastSpell(pSummoned, m_bIsHeroic ? SPELL_HEAT_H : SPELL_HEAT_N, false, NULL, NULL, m_creature->GetGUID());
+            pSummoned->CastSpell(pSummoned, m_bIsRegularMode ? SPELL_HEAT_N : SPELL_HEAT_H, false, NULL, NULL, m_creature->GetGUID());
         }
     }
 
     void UpdateAI(const uint32 uiDiff)
     {
         //Return since we have no target
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (m_bIsStriking)
@@ -241,7 +241,7 @@ struct MANGOS_DLL_DECL boss_volkhanAI : public ScriptedAI
 
                 DoScriptText(urand(0, 1) ? SAY_STOMP_1 : SAY_STOMP_2, m_creature);
 
-                DoCast(m_creature, m_bIsHeroic ? SPELL_SHATTERING_STOMP_H : SPELL_SHATTERING_STOMP_N);
+                DoCast(m_creature, m_bIsRegularMode ? SPELL_SHATTERING_STOMP_N : SPELL_SHATTERING_STOMP_H);
 
                 DoScriptText(EMOTE_SHATTER, m_creature);
 
@@ -357,13 +357,13 @@ struct MANGOS_DLL_DECL mob_molten_golemAI : public ScriptedAI
     mob_molten_golemAI(Creature *pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroic = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
 
-    bool m_bIsHeroic;
+    bool m_bIsRegularMode;
     bool m_bIsFrozen;
 
     uint32 m_uiBlast_Timer;
@@ -383,7 +383,7 @@ struct MANGOS_DLL_DECL mob_molten_golemAI : public ScriptedAI
     {
         if (m_creature->Attack(pWho, true))
         {
-            m_creature->AddThreat(pWho, 0.0f);
+            m_creature->AddThreat(pWho);
             m_creature->SetInCombatWith(pWho);
             pWho->SetInCombatWith(m_creature);
 
@@ -434,7 +434,7 @@ struct MANGOS_DLL_DECL mob_molten_golemAI : public ScriptedAI
     void UpdateAI(const uint32 uiDiff)
     {
         //Return since we have no target or if we are frozen
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim() || m_bIsFrozen)
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || m_bIsFrozen)
             return;
 
         if (m_uiBlast_Timer < uiDiff)
@@ -447,7 +447,7 @@ struct MANGOS_DLL_DECL mob_molten_golemAI : public ScriptedAI
 
         if (m_uiImmolation_Timer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), m_bIsHeroic ? SPELL_IMMOLATION_STRIKE_H : SPELL_IMMOLATION_STRIKE_N);
+            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_IMMOLATION_STRIKE_N : SPELL_IMMOLATION_STRIKE_H);
             m_uiImmolation_Timer = 5000;
         }
         else

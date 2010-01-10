@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -46,7 +46,7 @@ struct MANGOS_DLL_DECL mob_treantAI  : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (m_creature->getVictim()->GetGUID() != WarpGuid)
@@ -147,7 +147,7 @@ struct MANGOS_DLL_DECL boss_warp_splinterAI : public ScriptedAI
             if (pTreant)
             {
                 //pTreant->GetMotionMaster()->Mutate(new TargetedMovementGenerator<Creature>(*m_creature));
-                pTreant->AddThreat(m_creature, 0.1f);
+                pTreant->AddThreat(m_creature);
                 Treant_GUIDs[i] = pTreant->GetGUID();
                 ((mob_treantAI*)pTreant->AI())->WarpGuid = m_creature->GetGUID();
             }
@@ -180,7 +180,7 @@ struct MANGOS_DLL_DECL boss_warp_splinterAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         //Check for War Stomp

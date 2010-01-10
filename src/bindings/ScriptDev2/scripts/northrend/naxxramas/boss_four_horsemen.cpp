@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
@@ -51,13 +51,13 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
     boss_lady_blaumeuxAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     // X: 2460,656982 Y: -2953,094238 Z: 241,275406 Orient 0,591030
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
 
     uint32 Mark_Timer;
     uint32 VoidZone_Timer;
@@ -175,7 +175,7 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
             if (HorsemenDead)
             {
                 m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, DONE);
-                GameObject* pGo = GetClosestGameObjectWithEntry(m_creature,m_bIsHeroicMode?193426:181366,200.0f);
+                GameObject* pGo = GetClosestGameObjectWithEntry(m_creature,!m_bIsRegularMode?193426:181366,200.0f);
 
                 if (pGo)
                     m_pInstance->DoRespawnGameObject(pGo->GetGUID(),604800);
@@ -185,7 +185,7 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         // Mark of Blaumeux
@@ -202,7 +202,7 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
                 m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
             if (ShadowBolt_Timer < diff)
             {
-                DoCast(target, m_bIsHeroicMode ? H_SPELL_SHADOW_BOLT : SPELL_SHADOW_BOLT);
+                DoCast(target, !m_bIsRegularMode ? H_SPELL_SHADOW_BOLT : SPELL_SHADOW_BOLT);
                 ShadowBolt_Timer = 2100;
             }else ShadowBolt_Timer -= diff;
         }
@@ -228,7 +228,7 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
             if (m_void_target)
             {
                 m_creature->InterruptNonMeleeSpells(false);
-                DoCast(m_void_target, m_bIsHeroicMode ? H_SPELL_VOIDZONE : SPELL_VOIDZONE,true);
+                DoCast(m_void_target, !m_bIsRegularMode ? H_SPELL_VOIDZONE : SPELL_VOIDZONE,true);
             }
             VoidZone_Timer = 15000;
         }else VoidZone_Timer -= diff;
@@ -265,12 +265,12 @@ struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
     boss_rivendare_naxxAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
 
     uint32 Mark_Timer;
     uint32 UnholyShadow_Timer;
@@ -364,7 +364,7 @@ struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
             if (HorsemenDead)
             {
                 m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, DONE);
-                GameObject* pGo = GetClosestGameObjectWithEntry(m_creature,m_bIsHeroicMode?193426:181366,200.0f);
+                GameObject* pGo = GetClosestGameObjectWithEntry(m_creature,!m_bIsRegularMode?193426:181366,200.0f);
                 
                 if (pGo)
                     m_pInstance->DoRespawnGameObject(pGo->GetGUID(),604800);
@@ -374,7 +374,7 @@ struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         // Mark of Blaumeux
@@ -388,7 +388,7 @@ struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
         if (UnholyShadow_Timer < diff)
         {
             m_creature->InterruptNonMeleeSpells(false);
-            DoCast(m_creature->getVictim(), m_bIsHeroicMode ? H_SPELL_UNHOLY_SHADOW : SPELL_UNHOLY_SHADOW);
+            DoCast(m_creature->getVictim(), !m_bIsRegularMode ? H_SPELL_UNHOLY_SHADOW : SPELL_UNHOLY_SHADOW);
             UnholyShadow_Timer = 15000;
         }else UnholyShadow_Timer -= diff;
 
@@ -420,12 +420,12 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
     boss_thane_korthazzAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
 
     uint32 Mark_Timer;
     uint32 Meteor_Timer;
@@ -528,7 +528,7 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
             {
                 m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, DONE);
 
-                GameObject* pGo = GetClosestGameObjectWithEntry(m_creature,m_bIsHeroicMode?193426:181366,200.0f);
+                GameObject* pGo = GetClosestGameObjectWithEntry(m_creature,!m_bIsRegularMode?193426:181366,200.0f);
 
                 if (pGo)
                     m_pInstance->DoRespawnGameObject(pGo->GetGUID(),604800);
@@ -538,7 +538,7 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         // Mark of Korthazz
@@ -587,13 +587,13 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
     boss_sir_zeliekAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     // X: 2520,967285 Y: -2890,136475 Z: 241,275116 Orient: 4,082907
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
 
     uint32 Mark_Timer;
     uint32 HolyWrath_Timer;
@@ -713,7 +713,7 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
             {
                 m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, DONE);
 
-                GameObject* pGo = GetClosestGameObjectWithEntry(m_creature,m_bIsHeroicMode?193426:181366,200.0f);
+                GameObject* pGo = GetClosestGameObjectWithEntry(m_creature,!m_bIsRegularMode?193426:181366,200.0f);
 
                 if (pGo)
                     m_pInstance->DoRespawnGameObject(pGo->GetGUID(),604800);
@@ -724,7 +724,7 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
     void UpdateAI(const uint32 diff)
     {
         //Return since we have no target
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         // Mark of Zeliek
@@ -741,7 +741,7 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
                 m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
             if (HolyBolt_Timer < diff)
             {
-                DoCast(target, m_bIsHeroicMode ? H_SPELL_HOLY_BOLT : SPELL_HOLY_BOLT);
+                DoCast(target, !m_bIsRegularMode ? H_SPELL_HOLY_BOLT : SPELL_HOLY_BOLT);
                 HolyBolt_Timer = 2100;
             }else HolyBolt_Timer -= diff;
         }
@@ -767,7 +767,7 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
             if (m_chain_target)
             {
                 m_creature->InterruptNonMeleeSpells(false);
-                DoCast(m_chain_target, m_bIsHeroicMode ? H_SPELL_HOLY_WRATH : SPELL_HOLY_WRATH);
+                DoCast(m_chain_target, !m_bIsRegularMode ? H_SPELL_HOLY_WRATH : SPELL_HOLY_WRATH);
             }
             HolyWrath_Timer = 12000;
         }else HolyWrath_Timer -= diff;
@@ -786,12 +786,12 @@ struct MANGOS_DLL_DECL mob_void_zoneAI : public Scripted_NoMovementAI
     mob_void_zoneAI(Creature *c) : Scripted_NoMovementAI(c)
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
-        m_bIsHeroicMode = c->GetMap()->IsHeroic();
+        m_bIsRegularMode = c->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     ScriptedInstance* pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
     uint32 m_despawn_timer;
 
     void Reset()
@@ -801,8 +801,8 @@ struct MANGOS_DLL_DECL mob_void_zoneAI : public Scripted_NoMovementAI
 
     void UpdateAI(const uint32 diff) 
     {
-        if (!(m_creature->HasAura(m_bIsHeroicMode?39003:36120)))
-            DoCast(m_creature,m_bIsHeroicMode?39003:36120,true);
+        if (!(m_creature->HasAura(!m_bIsRegularMode?39003:36120)))
+            DoCast(m_creature,!m_bIsRegularMode?39003:36120,true);
 
         if (m_despawn_timer <= diff)
         {

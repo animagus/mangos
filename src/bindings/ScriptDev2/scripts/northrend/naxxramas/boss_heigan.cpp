@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -52,11 +52,11 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
     boss_heiganAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = ((ScriptedInstance*)pCreature->GetInstanceData());
-        m_bIsHeroic = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroic;
+    bool m_bIsRegularMode;
 
     bool m_ach_10ppl;
     bool m_ach_25ppl;
@@ -111,14 +111,14 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
                 if (!m_creature->IsWithinDistInMap(pPlayer,200))
                     continue;
 
-                if (!m_bIsHeroic && m_ach_10ppl)
+                if (m_bIsRegularMode && m_ach_10ppl)
                     pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7154);
-                else if (m_bIsHeroic && m_ach_25ppl)
+                else if (!m_bIsRegularMode && m_ach_25ppl)
                     pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7167);
 
-                if (!m_bIsHeroic && ach_nodied_10)
+                if (m_bIsRegularMode && ach_nodied_10)
                     pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7264);
-                else if (m_bIsHeroic && ach_nodied_25)
+                else if (!m_bIsRegularMode && ach_nodied_25)
                     pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7548);
             }
         }
@@ -147,7 +147,7 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
                 ++m_count_ppl;
             }
         }
-        if (!m_bIsHeroic)
+        if (m_bIsRegularMode)
         {
             if(m_count_ppl>8)
                 m_ach_10ppl = false;
@@ -181,7 +181,7 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
     
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (Ach_Timer<diff)
@@ -228,7 +228,7 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
             //Disease  all nearby players
             if(diseaseTimer < diff)
             {
-                DoCast(m_creature, m_bIsHeroic ? SPELL_FEAVER_H : SPELL_FEAVER);
+                DoCast(m_creature, m_bIsRegularMode ? SPELL_FEAVER_H : SPELL_FEAVER);
                 diseaseTimer=20000;
             }else diseaseTimer-=diff;
             //Debuff all players in 20 yard radius to 300% cast time
@@ -570,5 +570,3 @@ void AddSC_npc_heigan_eruption()
     newscript->GetAI = &GetAI_npc_heigan_eruptionAI;
     newscript->RegisterSelf();
 }
-
-

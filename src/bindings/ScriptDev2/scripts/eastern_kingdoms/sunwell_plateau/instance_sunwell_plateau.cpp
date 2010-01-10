@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software licensed under GPL version 2
  * Please see the included DOCS/LICENSE.TXT for more information */
 
@@ -284,7 +284,7 @@ struct MANGOS_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
             if (pKalecgos->isAlive())
             {
                 debug_log("SD2: Adding %s in Kalecgos' threatlist", pPlayer->GetName());
-                pKalecgos->AddThreat(pPlayer, 0.0f);
+                pKalecgos->AddThreat(pPlayer);
             }
         }
 
@@ -293,7 +293,7 @@ struct MANGOS_DLL_DECL instance_sunwell_plateau : public ScriptedInstance
         {
             if (pSath->isAlive())
             {
-                if (HostilReference* pRef = pSath->getThreatManager().getOnlineContainer().getReferenceByTarget(pPlayer))
+                if (HostileReference* pRef = pSath->getThreatManager().getOnlineContainer().getReferenceByTarget(pPlayer))
                 {
                     pRef->removeReference();
                     debug_log("SD2: Deleting %s from Sathrovarr's threatlist", pPlayer->GetName());

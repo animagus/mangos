@@ -3,7 +3,7 @@
 --
 
 DELETE FROM sd2_db_version;
-INSERT INTO sd2_db_version (version) VALUES ('ScriptDev2 (for MaNGOS 8555+) ');
+INSERT INTO sd2_db_version (version) VALUES ('ScriptDev2 (for MaNGOS 9062+) ');
 
 --
 -- Below contains data for table `script_texts` mainly used in C++ parts.
@@ -568,7 +568,10 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1000547,'It is too late for us, living one. Take yourself and your friend away from here before you both are... claimed...',0,0,0,25,'restless app SAY_RAND_5'),
 (-1000548,'It is too late for Jarl... its hold is too strong...',0,0,0,25,'restless app SAY_RAND_6'),
 (-1000549,'Go away, whoever you are! Witch Hill is mine... mine!',0,0,0,25,'restless app SAY_RAND_7'),
-(-1000550,'The manor... someone else... will soon be consumed...',0,0,0,25,'restless app SAY_RAND_8');
+(-1000550,'The manor... someone else... will soon be consumed...',0,0,0,25,'restless app SAY_RAND_8'),
+
+(-1000551,'The %s is angered by your request and attacks!',0,2,0,0,'woodlands EMOTE_AGGRO'),
+(-1000552,'Breaking off a piece of its bark, the %s hands it to you before departing.',0,2,0,0,'woodlands EMOTE_CREATE');
 
 -- -1 033 000 SHADOWFANG KEEP
 INSERT INTO script_texts (entry,content_default,sound,type,language,emote,comment) VALUES
@@ -604,6 +607,12 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 -- -1 090 000 GNOMEREGAN
 
 -- -1 109 000 SUNKEN TEMPLE
+INSERT INTO script_texts (entry,content_default,sound,type,language,emote,comment) VALUES
+(-1109000,'The walls of the chamber tremble. Something is happening...',0,2,0,0,'malfurion stormrage EMOTE_MALFURION'),
+(-1109001,'Be steadfast, champion. I know why it is that you are here and I know what it is that you seek. Eranikus will not give up the shard freely. He has been twisted... twisted by the same force that you seek to destroy.',0,0,0,0,'malfurion stormrge SAY_MALFURION1'),
+(-1109002,'Are you really surprised? Is it hard to believe that the power of an Old God could reach even inside the Dream? It is true - Eranikus, Tyrant of the Dream, wages a battle against us all. The Nightmare follows in his wake of destruction.',0,0,0,0,'malfurion stormrge SAY_MALFURION2'),
+(-1109003,'Understand this, Eranikus wants nothing more than to be brought to Azeroth from the Dream. Once he is out, he will stop at nothing to destroy my physical manifestation. This, however, is the only way in which you could recover the scepter shard.',0,0,0,0,'malfurion stormrge SAY_MAFLURION3'),
+(-1109004,'You will bring him back into this world, champion.',0,0,0,0,'malfurion Stormrge SAY_MALFURION4');
 
 -- -1 129 000 RAZORFEN DOWNS
 INSERT INTO script_texts (entry,content_default,sound,type,language,emote,comment) VALUES
@@ -642,7 +651,21 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1189019,'You will not defile these mysteries!',5842,1,0,0,'doan SAY_AGGRO'),
 (-1189020,'Burn in righteous fire!',5843,1,0,0,'doan SAY_SPECIALAE'),
 
-(-1189021,'Release the hounds!',5841,1,0,0,'loksey SAY_AGGRO');
+(-1189021,'Release the hounds!',5841,1,0,0,'loksey SAY_AGGRO'),
+
+(-1189022,'It is over, your search is done! Let fate choose now, the righteous one.',11961,1,0,0,'horseman SAY_ENTRANCE'),
+(-1189023,'Here\'s my body, fit and pure! Now, your blackened souls I\'ll cure!',12567,1,0,0,'horseman SAY_REJOINED'),
+(-1189024,'So eager you are for my blood to spill, yet to vanquish me this my head you must kill!',11969,1,0,0,'horseman SAY_BODY_DEFEAT'),
+(-1189025,'Over here, you idiot!',12569,1,0,0,'horseman SAY_LOST_HEAD'),
+(-1189026,'Harken, cur! Tis you I spurn! Now, $N, feel the burn!',12573,1,0,0,'horseman SAY_CONFLAGRATION'),
+(-1189027,'Soldiers arise, stand and fight! Bring victory at last to this fallen knight!',11963,1,0,0,'horseman SAY_SPROUTING_PUMPKINS'),
+(-1189028,'Your body lies beaten, battered and broken. Let my curse be your own, fate has spoken.',11962,1,0,0,'horseman SAY_SLAY'),
+(-1189029,'This end have I reached before. What new adventure lies in store?',11964,1,0,0,'horseman SAY_DEATH'),
+(-1189030,'%s laughs.',0,2,0,0,'horseman EMOTE_LAUGH'),
+(-1189031,'Horseman rise...',0,0,0,0,'horseman SAY_PLAYER1'),
+(-1189032,'Your time is night...',0,0,0,0,'horseman SAY_PLAYER2'),
+(-1189033,'You felt death once...',0,0,0,0,'horseman SAY_PLAYER3'),
+(-1189034,'Now, know demise!',0,0,0,0,'horseman SAY_PLAYER4');
 
 -- -1 209 000 ZUL'FARRAK
 
@@ -1137,7 +1160,18 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1533117,'Hungry worms will feast on your rotten flesh!',8834,1,0,0,'heigan SAY_TAUNT5'),
 (-1533118,'Noo... o...',8828,1,0,0,'heigan SAY_DEATH'),
 
-(-1533119,'%s spots a nearby Zombie to devour!',0,3,0,0,'gluth EMOTE_ZOMBIE');
+(-1533119,'%s spots a nearby Zombie to devour!',0,3,0,0,'gluth EMOTE_ZOMBIE'),
+
+(-1533120,'Hah hah, I\'m just getting warmed up!',8852,1,0,0,'razuvious SAY_AGGRO1'),
+(-1533121,'Stand and fight!',8853,1,0,0,'razuvious SAY_AGGRO2'),
+(-1533122,'Show me what you\'ve got!',8854,1,0,0,'razuvious SAY_AGGRO3'),
+(-1533123,'Sweep the leg! Do you have a problem with that?',8861,1,0,0,'razuvious SAY_SLAY1'),
+(-1533124,'You should have stayed home!',8862,1,0,0,'razuvious SAY_SLAY2'),
+(-1533125,'Do as I taught you!',8855,1,0,0,'razuvious SAY_COMMAND1'),
+(-1533126,'Show them no mercy!',8856,1,0,0,'razuvious SAY_COMMAND2'),
+(-1533127,'You disappoint me, students!',8858,1,0,0,'razuvious SAY_COMMAND3'),
+(-1533128,'The time for practice is over! Show me what you\'ve learned!',8859,1,0,0,'razuvious SAY_COMMAND4'),
+(-1533129,'An honorable... death...',8860,1,0,0,'razuvious SAY_DEATH');
 
 -- -1 534 000 THE BATTLE OF MT. HYJAL
 INSERT INTO script_texts (entry,content_default,sound,type,language,emote,comment) VALUES
@@ -1950,7 +1984,7 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 
 (-1568079,'Suit yourself. At least five of you must assist me if we\'re to get inside. Follow me.',0,1,0,0,'harrison SAY_START'),
 (-1568080,'According to my calculations, if enough of us bang the gong at once the seal on these doors will break and we can enter.',0,1,0,0,'harrison SAY_AT_GONG'),
-(-1568081,'I\'ve researched this site extensively and i won\'t allow any dim-witted treasure hunters to swoop in and steal what belongs to in a museum. I\'ll lead this charge.',0,1,0,0,'harrison SAY_OPEN_ENTRANCE');
+(-1568081,'I\'ve researched this site extensively and I won\'t allow any dim-witted treasure hunters to swoop in and steal what belongs to in a museum. I\'ll lead this charge.',0,1,0,0,'harrison SAY_OPEN_ENTRANCE');
 
 -- -1 574 000 UTGARDE KEEP
 INSERT INTO script_texts (entry,content_default,sound,type,language,emote,comment) VALUES
@@ -2329,7 +2363,7 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 INSERT INTO script_texts (entry,content_default,sound,type,language,emote,comment) VALUES
 (-1604000,'Drakkari gonna kill anybody who trespass on these lands!',14443,1,0,0,'sladran SAY_AGGRO'),
 (-1604001,'Minions of the scale, heed my call!',14444,1,0,0,'sladran SAY_SUMMON_SNAKE'),
-(-1604002,'Our thousand fangs gonna rend your flesh! ',14445,1,0,0,'sladran SAY_SUMMON_CONSTRICT'),
+(-1604002,'Our thousand fangs gonna rend your flesh! ',14445,1,0,0,'sladran SAY_SUMMON_CONSTRICTOR'),
 (-1604003,'Ye not breathin\'! Good.',14446,1,0,0,'sladran SAY_SLAY_1'),
 (-1604004,'You scared now?',14447,1,0,0,'sladran SAY_SLAY_2'),
 (-1604005,'I\'ll eat you next, mon!',14448,1,0,0,'sladran SAY_SLAY_3'),
@@ -2358,7 +2392,9 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,commen
 (-1604025,'What a rush!',14436,1,0,0,'galdarah SAY_SLAY_1'),
 (-1604026,'Who needs gods, when WE ARE GODS!',14437,1,0,0,'galdarah SAY_SLAY_2'),
 (-1604027,'I told ya so!',14438,1,0,0,'galdarah SAY_SLAY_3'),
-(-1604028,'Even the mighty... can fall.',14439,1,0,0,'galdarah SAY_DEATH');
+(-1604028,'Even the mighty... can fall.',14439,1,0,0,'galdarah SAY_DEATH'),
+
+(-1604029,'%s transforms into a Mammoth!',14724,2,0,0,'moorabi EMOTE_TRANSFORMED');
 
 -- -1 608 000 VIOLET HOLD
 

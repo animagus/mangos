@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
@@ -78,12 +78,12 @@ struct MANGOS_DLL_DECL mob_stalaggAI : public ScriptedAI
     mob_stalaggAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
     bool m_bIsDeath;
     bool m_bIsHold;
 
@@ -139,7 +139,7 @@ struct MANGOS_DLL_DECL mob_stalaggAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (m_bIsHold)
@@ -181,7 +181,7 @@ struct MANGOS_DLL_DECL mob_stalaggAI : public ScriptedAI
 
         if (PowerSurge_Timer < uiDiff)
         {
-            DoCast(m_creature, m_bIsHeroicMode ? H_SPELL_POWERSURGE : SPELL_POWERSURGE);
+            DoCast(m_creature, !m_bIsRegularMode ? H_SPELL_POWERSURGE : SPELL_POWERSURGE);
             PowerSurge_Timer = 10000+rand()%5000;
         }else PowerSurge_Timer -= uiDiff;
 
@@ -209,12 +209,12 @@ struct MANGOS_DLL_DECL mob_feugenAI : public ScriptedAI
     mob_feugenAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
     bool m_bIsDeath;
     bool m_bIsHold;
 
@@ -270,7 +270,7 @@ struct MANGOS_DLL_DECL mob_feugenAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (m_bIsHold)
@@ -312,7 +312,7 @@ struct MANGOS_DLL_DECL mob_feugenAI : public ScriptedAI
 
         if (StaticField_Timer < uiDiff)
         {
-            DoCast(m_creature, m_bIsHeroicMode ? H_SPELL_STATICFIELD : SPELL_STATICFIELD);
+            DoCast(m_creature, !m_bIsRegularMode ? H_SPELL_STATICFIELD : SPELL_STATICFIELD);
             StaticField_Timer = 10000+rand()%5000;
         }else StaticField_Timer -= uiDiff;
 
@@ -340,12 +340,12 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
     boss_thaddiusAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
     bool m_bIsActiveCheck;
     bool m_bIsActived;
     bool m_bIsPolarityShift;
@@ -487,7 +487,7 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
                                 {
                                     if (pFeugen && pFeugen->isAlive())
                                     {
-                                        HostilReference* ref = pFeugen->getThreatManager().getOnlineContainer().getReferenceByTarget(pFeugenTarget);
+                                        /*HostileReference* ref = pFeugen->getHostileRefManager().getThreatContainer().getReferenceByTarget(pFeugenTarget);
                                         if (ref)
                                         {
                                             ((mob_stalaggAI*)pStalagg->AI())->SetHold();
@@ -496,7 +496,7 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
                                             ref->removeReference();
                                             pStalagg->AddThreat(pFeugenTarget, FeugenTargetThreat);
                                             //pStalagg->AI()->AttackStart(pFeugenTarget);
-                                        }
+                                        }*/
                                     }
                                 }
                                 // Switch Stalagg's target from Feugen
@@ -504,7 +504,7 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
                                 {
                                     if (pStalagg && pStalagg->isAlive())
                                     {
-                                        HostilReference* ref = pStalagg->getThreatManager().getOnlineContainer().getReferenceByTarget(pStalaggTarget);
+                                        /*HostilReference* ThreatContainer::ref = pStalagg->getThreatManager().getReferenceByTarget(pStalaggTarget);
                                         if (ref)
                                         {
                                             ((mob_feugenAI*)pFeugen->AI())->SetHold();
@@ -513,7 +513,7 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
                                             ref->removeReference();
                                             pFeugen->AddThreat(pStalaggTarget, StalaggTargetThreat);
                                             //pFeugen->AI()->AttackStart(pStalaggTarget);
-                                        }
+                                        }*/
                                     }
                                 }
 
@@ -537,12 +537,12 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
             }else Active_Timer -= uiDiff;
         }
 
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (ChainLightning_Timer < uiDiff)
         {
-            DoCast(m_creature, m_bIsHeroicMode ? H_SPELL_CHAIN_LIGHTNING : SPELL_CHAIN_LIGHTNING);
+            DoCast(m_creature, !m_bIsRegularMode ? H_SPELL_CHAIN_LIGHTNING : SPELL_CHAIN_LIGHTNING);
             ChainLightning_Timer = 12000+rand()%5000;
         }else ChainLightning_Timer -= uiDiff;
 
@@ -574,8 +574,8 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
         if (RangeCheck_Timer < uiDiff)
         {
             m_bInMeleeRange = false;
-            std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
-            for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+            ThreatList const& t_list = m_creature->getThreatManager().getThreatList();
+            for(ThreatList::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
             {
                 Unit* pTarget = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
 

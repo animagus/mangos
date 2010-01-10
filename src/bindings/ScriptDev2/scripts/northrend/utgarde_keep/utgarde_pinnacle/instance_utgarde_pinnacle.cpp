@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -31,9 +31,68 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
     uint32 m_auiEncounter[MAX_ENCOUNTER];
     std::string strInstData;
 
+    uint64 m_uiSkadiDoorGUID;
+
     void Initialize()
     {
         memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
+
+        m_uiSkadiDoorGUID = 0;
+    }
+
+    void OnObjectCreate(GameObject* pGo)
+    {
+        switch(pGo->GetEntry())
+        {
+            case GO_DOOR_SKADI:
+                m_uiSkadiDoorGUID = pGo->GetGUID();
+
+                if (m_auiEncounter[2] == DONE)
+                    pGo->SetGoState(GO_STATE_ACTIVE);
+
+                break;
+        }
+    }
+
+    void SetData(uint32 uiType, uint32 uiData)
+    {
+        debug_log("SD2: Instance Pinnacle: SetData received for type %u with data %u", uiType, uiData);
+
+        switch(uiType)
+        {
+            case TYPE_SVALA:
+                m_auiEncounter[0] = uiData;
+                break;
+            case TYPE_GORTOK:
+                m_auiEncounter[1] = uiData;
+                break;
+            case TYPE_SKADI:
+                if (uiData == DONE)
+                    DoUseDoorOrButton(m_uiSkadiDoorGUID);
+
+                m_auiEncounter[2] = uiData;
+                break;
+            case TYPE_YMIRON:
+                m_auiEncounter[3] = uiData;
+                break;
+            default:
+                error_log("SD2: Instance Pinnacle: SetData = %u for type %u does not exist/not implemented.", uiType, uiData);
+                break;
+        }
+
+        //saving also SPECIAL for this instance
+        if (uiData == DONE || uiData == SPECIAL)
+        {
+            OUT_SAVE_INST_DATA;
+
+            std::ostringstream saveStream;
+            saveStream << m_auiEncounter[0] << " " << m_auiEncounter[1] << " " << m_auiEncounter[2] << " " << m_auiEncounter[3];
+
+            strInstData = saveStream.str();
+
+            SaveToDB();
+            OUT_SAVE_INST_DATA_COMPLETE;
+        }
     }
 
     uint32 GetData(uint32 uiType)
@@ -51,43 +110,6 @@ struct MANGOS_DLL_DECL instance_pinnacle : public ScriptedInstance
         }
 
         return 0;
-    }
-
-    void SetData(uint32 uiType, uint32 uiData)
-    {
-        debug_log("SD2: Instance Pinnacle: SetData received for type %u with data %u", uiType, uiData);
-
-        switch(uiType)
-        {
-            case TYPE_SVALA:
-                m_auiEncounter[0] = uiData;
-                break;
-            case TYPE_GORTOK:
-                m_auiEncounter[1] = uiData;
-                break;
-            case TYPE_SKADI:
-                m_auiEncounter[2] = uiData;
-                break;
-            case TYPE_YMIRON:
-                m_auiEncounter[3] = uiData;
-                break;
-            default:
-                error_log("SD2: Instance Pinnacle: SetData = %u for type %u does not exist/not implemented.", uiType, uiData);
-                break;
-        }
-
-        if (uiData == DONE)
-        {
-            OUT_SAVE_INST_DATA;
-
-            std::ostringstream saveStream;
-            saveStream << m_auiEncounter[0] << " " << m_auiEncounter[1] << " " << m_auiEncounter[2] << " " << m_auiEncounter[3];
-
-            strInstData = saveStream.str();
-
-            SaveToDB();
-            OUT_SAVE_INST_DATA_COMPLETE;
-        }
     }
 
     const char* Save()

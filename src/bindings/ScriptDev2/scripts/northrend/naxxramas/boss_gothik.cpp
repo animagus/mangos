@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
@@ -130,12 +130,12 @@ struct MANGOS_DLL_DECL boss_gothikAI : public Scripted_NoMovementAI
     boss_gothikAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
     bool SummonPhase;
     bool BlinkPhase;
 
@@ -206,7 +206,7 @@ struct MANGOS_DLL_DECL boss_gothikAI : public Scripted_NoMovementAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (SummonPhase)
@@ -220,7 +220,7 @@ struct MANGOS_DLL_DECL boss_gothikAI : public Scripted_NoMovementAI
 
             if (ShadowBolt_Timer < diff)
             {
-                DoCast(m_creature->getVictim(), m_bIsHeroicMode ? H_SPELL_SHADOWBOLT : SPELL_SHADOWBOLT);
+                DoCast(m_creature->getVictim(), m_bIsRegularMode ? H_SPELL_SHADOWBOLT : SPELL_SHADOWBOLT);
                 ShadowBolt_Timer = 1000 + rand()%500;
             }else ShadowBolt_Timer -= diff;
 

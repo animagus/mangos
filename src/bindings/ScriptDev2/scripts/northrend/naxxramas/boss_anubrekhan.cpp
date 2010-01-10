@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -67,7 +67,7 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
     boss_anubrekhanAI(Creature *c) : ScriptedAI(c) 
     {
         pInstance = ((ScriptedInstance*)c->GetInstanceData());
-        m_bIsHeroic = c->GetMap()->IsHeroic();
+        m_bIsRegularMode = c->GetMap()->IsRegularDifficulty();
         
         for (int i = 0; i < MAX_CRYPT_GUARDS; i++)
             guidCryptGuards[i] = 0;
@@ -79,7 +79,7 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
 
     bool m_ach_10ppl;
     bool m_ach_25ppl;
-    bool m_bIsHeroic;
+    bool m_bIsRegularMode;
     uint32 m_count_ppl;
     uint32 Ach_Timer;
     uint32 Impale_Timer;
@@ -148,9 +148,9 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
                 if (!m_creature->IsWithinDistInMap(pPlayer,200))
                     continue;
 
-                if (!m_bIsHeroic && m_ach_10ppl)
+                if (m_bIsRegularMode && m_ach_10ppl)
                     pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7146);
-                else if (m_bIsHeroic && m_ach_25ppl)
+                else if (!m_bIsRegularMode && m_ach_25ppl)
                     pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7159);
             }
         }
@@ -179,7 +179,7 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
                 ++m_count_ppl;
             }
         }
-        if (!m_bIsHeroic)
+        if (m_bIsRegularMode)
         {
             if(m_count_ppl>8)
                 m_ach_10ppl = false;
@@ -267,7 +267,7 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (m_uiEvadeCheckCooldown < diff)
@@ -286,7 +286,7 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
             Berserk_Timer = 300000;
         }else Berserk_Timer -= diff;
 
-        if (!m_bIsHeroic)
+        if (m_bIsRegularMode)
         {
             //SumonFirstCryptGuard_Timer
             if (SummonFirst_Timer < diff)
@@ -335,7 +335,7 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
                 //Do NOT cast it when we are afflicted by locust swarm
                 if (!m_creature->HasAura(SPELL_LOCUSTSWARM,1))
                     if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1))
-                        DoCast(target,m_bIsHeroic?SPELL_IMPALE_H:SPELL_IMPALE);
+                        DoCast(target,m_bIsRegularMode ? SPELL_IMPALE : SPELL_IMPALE_H);
                 Impale_Timer = 15000;
             }else Impale_Timer -= diff;
 
@@ -343,7 +343,7 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
             if (LocustSwarm_Timer < diff)
             {
                 //Cast Locust Swarm buff on ourselves
-                DoCast(m_creature, m_bIsHeroic?SPELL_LOCUSTSWARM_H:SPELL_LOCUSTSWARM);
+                DoCast(m_creature, !m_bIsRegularMode ? SPELL_LOCUSTSWARM_H:SPELL_LOCUSTSWARM);
                 swarm = true;
                 //Summon Crypt Guard immidietly after Locust Swarm
                 if (CryptGuard_count < MAX_CRYPT_GUARDS)
@@ -362,9 +362,9 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
 
         if (Ach_Timer<diff)
         {
-            if (!m_bIsHeroic && m_ach_10ppl)
+            if (m_bIsRegularMode && m_ach_10ppl)
                 CheckAch();
-            else if (m_bIsHeroic && m_ach_25ppl)
+            else if (!m_bIsRegularMode && m_ach_25ppl)
                 CheckAch();
             Ach_Timer = 10000;
         }else Ach_Timer -= diff;            

@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -95,7 +95,7 @@ struct MANGOS_DLL_DECL boss_void_reaverAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         // Pounding
@@ -111,20 +111,22 @@ struct MANGOS_DLL_DECL boss_void_reaverAI : public ScriptedAI
         if (ArcaneOrb_Timer < diff)
         {
             Unit *target = NULL;
-            std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
             std::vector<Unit *> target_list;
-            for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+
+            ThreatList const& tList = m_creature->getThreatManager().getThreatList();
+            for (ThreatList::const_iterator itr = tList.begin();itr != tList.end(); ++itr)
             {
                 target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+
                 // exclude pets & totems
-                if (target->GetTypeId() != TYPEID_PLAYER)
+                if (!target || target->GetTypeId() != TYPEID_PLAYER)
                     continue;
 
                 //18 yard radius minimum
-                if (target && !target->IsWithinDist(m_creature, 18.0f, false))
-                    target_list.push_back(target);
+                if (target->IsWithinDist(m_creature, 18.0f, false))
+                    continue;
 
-                target = NULL;
+                target_list.push_back(target);
             }
 
             if (target_list.size())

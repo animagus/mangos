@@ -49,8 +49,9 @@ void WorldSession::SendTaxiStatus( uint64 guid )
         return;
     }
 
-    uint32 curloc = objmgr.GetNearestTaxiNode(unit->GetPositionX(),unit->GetPositionY(),unit->GetPositionZ(),unit->GetMapId(),GetPlayer( )->GetTeam(),0);
 
+    uint32 curloc = sObjectMgr.GetNearestTaxiNode(unit->GetPositionX(),unit->GetPositionY(),unit->GetPositionZ(),unit->GetMapId(),GetPlayer( )->GetTeam());
+    
     // not found nearest
     if(curloc == 0)
         return;
@@ -94,8 +95,9 @@ void WorldSession::HandleTaxiQueryAvailableNodes( WorldPacket & recv_data )
 void WorldSession::SendTaxiMenu( Creature* unit )
 {
     // find current node
-    uint32 curloc = objmgr.GetNearestTaxiNode(unit->GetPositionX(),unit->GetPositionY(),unit->GetPositionZ(),unit->GetMapId(),GetPlayer( )->GetTeam(), 0);
 
+    uint32 curloc = sObjectMgr.GetNearestTaxiNode(unit->GetPositionX(),unit->GetPositionY(),unit->GetPositionZ(),unit->GetMapId(),GetPlayer( )->GetTeam());
+    
     if ( curloc == 0 )
         return;
 
@@ -129,8 +131,9 @@ void WorldSession::SendDoFlight( uint32 mountDisplayId, uint32 path, uint32 path
 bool WorldSession::SendLearnNewTaxiNode( Creature* unit )
 {
     // find current node
-    uint32 curloc = objmgr.GetNearestTaxiNode(unit->GetPositionX(),unit->GetPositionY(),unit->GetPositionZ(),unit->GetMapId(),GetPlayer( )->GetTeam(), 0);
 
+    uint32 curloc = sObjectMgr.GetNearestTaxiNode(unit->GetPositionX(),unit->GetPositionY(),unit->GetPositionZ(),unit->GetMapId(),GetPlayer( )->GetTeam());
+    
     if ( curloc == 0 )
         return true;                                        // `true` send to avoid WorldSession::SendTaxiMenu call with one more curlock seartch with same false result.
 
@@ -155,9 +158,9 @@ void WorldSession::HandleActivateTaxiExpressOpcode ( WorldPacket & recv_data )
     sLog.outDebug( "WORLD: Received CMSG_ACTIVATETAXIEXPRESS" );
 
     uint64 guid;
-    uint32 node_count, _totalcost;
+    uint32 node_count;
 
-    recv_data >> guid >> _totalcost >> node_count;
+    recv_data >> guid >> node_count;
 
     Creature *npc = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_FLIGHTMASTER);
     if (!npc)
@@ -182,10 +185,19 @@ void WorldSession::HandleActivateTaxiExpressOpcode ( WorldPacket & recv_data )
     GetPlayer()->ActivateTaxiPathTo(nodes, npc);
 }
 
-
 void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
 {
     sLog.outDebug( "WORLD: Received CMSG_MOVE_SPLINE_DONE" );
+
+    uint64 guid;                                            // used only for proper packet read
+    if(!recv_data.readPackGUID(guid))
+        return;
+
+    MovementInfo movementInfo;                              // used only for proper packet read
+    ReadMovementInfo(recv_data, &movementInfo);
+
+    recv_data.read_skip<uint32>();                          // unk
+
 
     // in taxi flight packet received in 2 case:
     // 1) end taxi path in far (multi-node) flight
@@ -199,84 +211,15 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
     if (!plMover)
         return;
 
-    MovementInfo movementInfo;
     ReadMovementInfo(recv_data, &movementInfo);
     //<<< end movement anticheat
     
     uint32 curDest = GetPlayer()->m_taxi.GetTaxiDestination();
 
     if(!curDest)
-    {
-        //movement anticheat code
-        GetPlayer()->SetPosition(movementInfo.x, movementInfo.y, movementInfo.z, movementInfo.o);
-        GetPlayer()->m_movementInfo = movementInfo;
-        GetPlayer()->m_movementInfo.SetMovementFlags(MovementFlags(movementInfo.flags));
-
-        //calc time deltas
-        int32 cClientTimeDelta = 0;
-        if (GetPlayer()->m_anti_LastClientTime !=0){
-            cClientTimeDelta = movementInfo.time - GetPlayer()->m_anti_LastClientTime;
-            GetPlayer()->m_anti_DeltaClientTime += cClientTimeDelta;
-            GetPlayer()->m_anti_LastClientTime = movementInfo.time;
-        } else {
-            GetPlayer()->m_anti_LastClientTime = movementInfo.time;
-        }
-
-        uint32 cServerTime=getMSTime();
-        uint32 cServerTimeDelta = 0;
-        if (GetPlayer()->m_anti_LastServerTime != 0){
-            cServerTimeDelta = cServerTime - GetPlayer()->m_anti_LastServerTime;
-            GetPlayer()->m_anti_DeltaServerTime += cServerTimeDelta;
-            GetPlayer()->m_anti_LastServerTime = cServerTime;
-        } else {
-            GetPlayer()->m_anti_LastServerTime = cServerTime;
-        }
-
-        GetPlayer()->m_anti_JustTeleported = 1;
-        //end movement anticheat
         return;
-    }
-
-    //movment anticheat
-    uint32 curloc = objmgr.GetNearestTaxiNode(movementInfo.x,movementInfo.y,movementInfo.z,GetPlayer()->GetMapId(),GetPlayer( )->GetTeam(), curDest);
-    //end movement anticheat
-
-    //sLog.outBasic("MA-%s > | xyzo: %f,%f,%fo(%f) flags[%X] | curloc: %d | destloc: %d ",
-    //                GetPlayer()->GetName(),movementInfo.x,movementInfo.y,movementInfo.z,movementInfo.o,
-    //                movementInfo.flags, curloc,curDest);
-
+    
     TaxiNodesEntry const* curDestNode = sTaxiNodesStore.LookupEntry(curDest);
-
-    if(curDestNode && curDestNode->map_id == GetPlayer()->GetMapId())
-    {
-        while(GetPlayer()->GetMotionMaster()->GetCurrentMovementGeneratorType()==FLIGHT_MOTION_TYPE)
-            GetPlayer()->GetMotionMaster()->MovementExpired(false);
-    }
-
-    //movement anticheat code
-    GetPlayer()->SetPosition(movementInfo.x, movementInfo.y, movementInfo.z, movementInfo.o);
-    GetPlayer()->m_movementInfo = movementInfo;
-    GetPlayer()->m_movementInfo.SetMovementFlags(MovementFlags(movementInfo.flags));
-    //calc time deltas
-    int32 cClientTimeDelta = 0;
-    if (GetPlayer()->m_anti_LastClientTime !=0){
-        cClientTimeDelta = movementInfo.time - GetPlayer()->m_anti_LastClientTime;
-        GetPlayer()->m_anti_DeltaClientTime += cClientTimeDelta;
-        GetPlayer()->m_anti_LastClientTime = movementInfo.time;
-    } else {
-        GetPlayer()->m_anti_LastClientTime = movementInfo.time;
-    }
-
-    uint32 cServerTime=getMSTime();
-    uint32 cServerTimeDelta = 0;
-    if (GetPlayer()->m_anti_LastServerTime != 0){
-        cServerTimeDelta = cServerTime - GetPlayer()->m_anti_LastServerTime;
-        GetPlayer()->m_anti_DeltaServerTime += cServerTimeDelta;
-        GetPlayer()->m_anti_LastServerTime = cServerTime;
-    } else {
-        GetPlayer()->m_anti_LastServerTime = cServerTime;
-    }
-    //<<< end movement anticheat
 
     // far teleport case
     if(curDestNode && curDestNode->map_id != GetPlayer()->GetMapId())
@@ -294,24 +237,6 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
         }
         return;
     }
-    
-    //<<< movement anticheat fix - disallow unmount from taxi
-    if(curloc != curDest){
-         // current source node for next destination
-        uint32 sourcenode = GetPlayer()->m_taxi.GetTaxiSource();
-        uint16 MountId = objmgr.GetTaxiMountDisplayId(sourcenode, GetPlayer()->GetTeam());
-
-        uint32 path, cost;
-        objmgr.GetTaxiPath( sourcenode, curDest, path, cost);
-
-        if(path && MountId)
-            SendDoFlight( MountId, path, 1 );               // skip start fly node
-        else
-            GetPlayer()->m_taxi.ClearTaxiDestinations();    // clear problematic path and next
-        return;
-    }
-    ///<<< movement anticheat
-
 
     uint32 destinationnode = GetPlayer()->m_taxi.NextTaxiDestination();
     if ( destinationnode > 0 )                              // if more destinations to go
@@ -331,10 +256,10 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recv_data)
 
         sLog.outDebug( "WORLD: Taxi has to go from %u to %u", sourcenode, destinationnode );
 
-        uint32 mountDisplayId = objmgr.GetTaxiMountDisplayId(sourcenode, GetPlayer()->GetTeam());
+        uint32 mountDisplayId = sObjectMgr.GetTaxiMountDisplayId(sourcenode, GetPlayer()->GetTeam());
 
         uint32 path, cost;
-        objmgr.GetTaxiPath( sourcenode, destinationnode, path, cost);
+        sObjectMgr.GetTaxiPath( sourcenode, destinationnode, path, cost);
 
         if(path && mountDisplayId)
             SendDoFlight( mountDisplayId, path, 1 );        // skip start fly node

@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -145,7 +145,7 @@ struct MANGOS_DLL_DECL mob_mature_netherwing_drakeAI : public ScriptedAI
             return;
         }
 
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (CastTimer < diff)
@@ -177,8 +177,7 @@ enum
 
     QUEST_FORCE_OF_NELT             = 10854,
     NPC_DRAGONMAW_SUBJUGATOR        = 21718,
-    NPC_ESCAPE_DUMMY                = 22317,
-    NPC_ENSLAVED_DRAKE_KILL_CREDIT  = 22316
+    NPC_ESCAPE_DUMMY                = 21348
 };
 
 struct MANGOS_DLL_DECL mob_enslaved_netherwing_drakeAI : public ScriptedAI
@@ -199,31 +198,23 @@ struct MANGOS_DLL_DECL mob_enslaved_netherwing_drakeAI : public ScriptedAI
         if (!Tapped)
             m_creature->setFaction(FACTION_DEFAULT);
 
-        FlyTimer = 10000;
+        FlyTimer = 2500;
     }
 
-    void SpellHit(Unit* caster, const SpellEntry* spell)
+    void SpellHit(Unit* pCaster, const SpellEntry* pSpell)
     {
-        if (!caster)
-            return;
-
-        if (caster->GetTypeId() == TYPEID_PLAYER && spell->Id == SPELL_HIT_FORCE_OF_NELTHARAKU && !Tapped)
+        if (pSpell->Id == SPELL_HIT_FORCE_OF_NELTHARAKU && !Tapped)
         {
-            Tapped = true;
-            PlayerGUID = caster->GetGUID();
-
-            m_creature->setFaction(FACTION_FRIENDLY);
-            DoCast(caster, SPELL_FORCE_OF_NELTHARAKU, true);
-
-            if (Creature* Dragonmaw = GetClosestCreatureWithEntry(m_creature, NPC_DRAGONMAW_SUBJUGATOR, 50.0f))
+            if (Player* pPlayer = pCaster->GetCharmerOrOwnerPlayerOrPlayerItself())
             {
-                m_creature->AddThreat(Dragonmaw, 100000.0f);
-                AttackStart(Dragonmaw);
-            }
+                Tapped = true;
+                PlayerGUID = pPlayer->GetGUID();
 
-            HostilReference* ref = m_creature->getThreatManager().getOnlineContainer().getReferenceByTarget(caster);
-            if (ref)
-                ref->removeReference();
+                m_creature->setFaction(FACTION_FRIENDLY);
+
+                if (Creature* pDragonmaw = GetClosestCreatureWithEntry(m_creature, NPC_DRAGONMAW_SUBJUGATOR, 50.0f))
+                    AttackStart(pDragonmaw);
+            }
         }
     }
 
@@ -233,42 +224,25 @@ struct MANGOS_DLL_DECL mob_enslaved_netherwing_drakeAI : public ScriptedAI
             return;
 
         if (id == 1)
-        {
-            if (PlayerGUID)
-            {
-                Unit* plr = Unit::GetUnit((*m_creature), PlayerGUID);
-                if (plr)
-                    DoCast(plr, SPELL_FORCE_OF_NELTHARAKU, true);
-
-                PlayerGUID = 0;
-            }
-
             m_creature->ForcedDespawn();
-        }
     }
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
         {
             if (Tapped)
             {
                 if (FlyTimer <= diff)
                 {
                     Tapped = false;
+
                     if (Player* pPlayer = (Player*)Unit::GetUnit(*m_creature, PlayerGUID))
                     {
                         if (pPlayer->GetQuestStatus(QUEST_FORCE_OF_NELT) == QUEST_STATUS_INCOMPLETE)
                         {
-                            pPlayer->KilledMonsterCredit(NPC_ENSLAVED_DRAKE_KILL_CREDIT, m_creature->GetGUID());
-
-                            /*
-                            float x,y,z;
-                            m_creature->GetPosition(x,y,z);
-
-                            float dx,dy,dz;
-                            m_creature->GetRandomPoint(x, y, z, 20, dx, dy, dz);
-                            dz += 20; // so it's in the air, not ground*/
+                            DoCast(pPlayer, SPELL_FORCE_OF_NELTHARAKU, true);
+                            PlayerGUID = 0;
 
                             float dx, dy, dz;
 
@@ -387,7 +361,7 @@ bool GossipHello_npc_drake_dealer_hurlunk(Player* pPlayer, Creature* pCreature)
     if (pCreature->isVendor() && pPlayer->GetReputationRank(1015) == REP_EXALTED)
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
 
-    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
 
     return true;
 }
@@ -411,7 +385,7 @@ bool GossipHello_npcs_flanis_swiftwing_and_kagrosh(Player* pPlayer, Creature* pC
     if (pPlayer->GetQuestStatus(10601) == QUEST_STATUS_INCOMPLETE && !pPlayer->HasItemCount(30659,1,true))
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Take Kagrosh's Pack", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
 
-    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
 
     return true;
 }
@@ -560,7 +534,7 @@ bool GossipHello_npc_oronok_tornheart(Player* pPlayer, Creature* pCreature)
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ORONOK1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
         pPlayer->SEND_GOSSIP_MENU(10312, pCreature->GetGUID());
     }else
-    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
 
     return true;
 }
@@ -766,7 +740,7 @@ struct MANGOS_DLL_DECL npc_wildaAI : public npc_escortAI
 
     void UpdateEscortAI(const uint32 uiDiff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         //TODO: add more abilities
@@ -985,7 +959,8 @@ struct MANGOS_DLL_DECL mob_torlothAI : public ScriptedAI
             case 5:
                 if (Unit* pTarget = Unit::GetUnit((*m_creature), m_uiPlayerGUID))
                 {
-                    m_creature->AddThreat(pTarget, 0.0f);
+                    m_creature->AddThreat(pTarget);
+                    m_creature->SetFacingToObject(pTarget);
                     m_creature->HandleEmoteCommand(EMOTE_ONESHOT_POINT);
                 }
                  break;
@@ -1031,7 +1006,7 @@ struct MANGOS_DLL_DECL mob_torlothAI : public ScriptedAI
         }
         else
         {
-            if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+            if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
                 return;
 
             if (m_uiCleaveTimer < uiDiff)

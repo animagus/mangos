@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -131,17 +131,16 @@ struct MANGOS_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
     void CastBloodboil()
     {
         // Get the Threat List
-        std::list<HostilReference *> m_threatlist = m_creature->getThreatManager().getThreatList();
+        ThreatList const& tList = m_creature->getThreatManager().getThreatList();
 
         // He doesn't have anyone in his threatlist, useless to continue
-        if (!m_threatlist.size())
+        if (tList.empty())
             return;
 
         std::list<Unit *> targets;
-        std::list<HostilReference *>::iterator itr = m_threatlist.begin();
 
         //store the threat list in a different container
-        for(; itr!= m_threatlist.end(); ++itr)
+        for (ThreatList::const_iterator itr = tList.begin();itr != tList.end(); ++itr)
         {
             Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
             //only on alive players
@@ -192,7 +191,7 @@ struct MANGOS_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (ArcingSmashTimer < diff)

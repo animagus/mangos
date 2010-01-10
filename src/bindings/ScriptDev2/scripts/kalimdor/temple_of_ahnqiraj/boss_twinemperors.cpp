@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -207,10 +207,10 @@ struct MANGOS_DLL_DECL boss_twinemperorsAI : public ScriptedAI
     Unit *GetAnyoneCloseEnough(float dist, bool totallyRandom)
     {
         int cnt = 0;
-        std::list<HostilReference*>::iterator i;
-        std::list<HostilReference*> candidates;
+        std::list<HostileReference*> candidates;
 
-        for (i = m_creature->getThreatManager().getThreatList().begin();i != m_creature->getThreatManager().getThreatList().end(); ++i)
+        ThreatList const& tList = m_creature->getThreatManager().getThreatList();
+        for (ThreatList::const_iterator i = tList.begin();i != tList.end(); ++i)
         {
             Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
             if (m_creature->IsWithinDistInMap(pUnit, dist))
@@ -226,8 +226,7 @@ struct MANGOS_DLL_DECL boss_twinemperorsAI : public ScriptedAI
         for (int randomi = rand() % cnt; randomi > 0; randomi --)
             candidates.pop_front();
 
-        i = candidates.begin();
-        Unit *ret = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
+        Unit *ret = Unit::GetUnit((*m_creature), candidates.front()->getUnitGuid());
         candidates.clear();
         return ret;
     }
@@ -236,8 +235,8 @@ struct MANGOS_DLL_DECL boss_twinemperorsAI : public ScriptedAI
     {
         Unit *nearp = NULL;
         float neardist = 0.0f;
-        std::list<HostilReference*>::iterator i;
-        for (i = m_creature->getThreatManager().getThreatList().begin();i != m_creature->getThreatManager().getThreatList().end(); ++i)
+        ThreatList const& tList = m_creature->getThreatManager().getThreatList();
+        for (ThreatList::const_iterator i = tList.begin();i != tList.end(); ++i)
         {
             Unit* pUnit = NULL;
             pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
@@ -467,7 +466,7 @@ struct MANGOS_DLL_DECL boss_veknilashAI : public boss_twinemperorsAI
     void CastSpellOnBug(Creature *target)
     {
         target->setFaction(14);
-        ((CreatureAI*)target->AI())->AttackStart(m_creature->getThreatManager().getHostilTarget());
+        ((CreatureAI*)target->AI())->AttackStart(m_creature->getThreatManager().getHostileTarget());
         SpellEntry *spell = (SpellEntry *)GetSpellStore()->LookupEntry(SPELL_MUTATE_BUG);
         for (int i=0; i<3; ++i)
         {
@@ -481,7 +480,7 @@ struct MANGOS_DLL_DECL boss_veknilashAI : public boss_twinemperorsAI
     void UpdateAI(const uint32 diff)
     {
         //Return since we have no target
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (!TryActivateAfterTTelep(diff))
@@ -567,7 +566,7 @@ struct MANGOS_DLL_DECL boss_veklorAI : public boss_twinemperorsAI
     void UpdateAI(const uint32 diff)
     {
         //Return since we have no target
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         // reset arcane burst after teleport - we need to do this because
@@ -633,7 +632,7 @@ struct MANGOS_DLL_DECL boss_veklorAI : public boss_twinemperorsAI
         // VL doesn't melee
         if (m_creature->Attack(who, false))
         {
-            m_creature->AddThreat(who, 0.0f);
+            m_creature->AddThreat(who);
             m_creature->SetInCombatWith(who);
             who->SetInCombatWith(m_creature);
 

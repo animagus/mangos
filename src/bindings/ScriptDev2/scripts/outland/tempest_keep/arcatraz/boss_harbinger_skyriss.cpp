@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -58,13 +58,13 @@ struct MANGOS_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
     boss_harbinger_skyrissAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Intro = false;
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
 
     bool Intro;
     bool IsImage33;
@@ -174,7 +174,7 @@ struct MANGOS_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
             }else Intro_Timer -=diff;
         }
 
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (!IsImage66 && ((m_creature->GetHealth()*100) / m_creature->GetMaxHealth() <= 66))
@@ -192,9 +192,9 @@ struct MANGOS_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
         if (MindRend_Timer < diff)
         {
             if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1))
-                DoCast(target, m_bIsHeroicMode ? H_SPELL_MIND_REND : SPELL_MIND_REND);
+                DoCast(target, m_bIsRegularMode ? SPELL_MIND_REND : H_SPELL_MIND_REND);
             else
-                DoCast(m_creature->getVictim(), m_bIsHeroicMode ? H_SPELL_MIND_REND : SPELL_MIND_REND);
+                DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_MIND_REND : H_SPELL_MIND_REND);
 
             MindRend_Timer = 8000;
         }else MindRend_Timer -=diff;
@@ -222,14 +222,14 @@ struct MANGOS_DLL_DECL boss_harbinger_skyrissAI : public ScriptedAI
             DoScriptText(urand(0, 1) ? SAY_MIND_1 : SAY_MIND_2, m_creature);
 
             if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1))
-                DoCast(target, m_bIsHeroicMode ? H_SPELL_DOMINATION : SPELL_DOMINATION);
+                DoCast(target, m_bIsRegularMode ? SPELL_DOMINATION : H_SPELL_DOMINATION);
             else
-                DoCast(m_creature->getVictim(), m_bIsHeroicMode ? H_SPELL_DOMINATION : SPELL_DOMINATION);
+                DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_DOMINATION : H_SPELL_DOMINATION);
 
             Domination_Timer = urand(16000, 32000);
         }else Domination_Timer -=diff;
 
-        if (m_bIsHeroicMode)
+        if (!m_bIsRegularMode)
         {
             if (ManaBurn_Timer < diff)
             {
@@ -260,12 +260,12 @@ struct MANGOS_DLL_DECL boss_harbinger_skyriss_illusionAI : public ScriptedAI
     boss_harbinger_skyriss_illusionAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
 
     void Reset() { }
 };

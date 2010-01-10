@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -58,7 +58,7 @@ enum KalecgosEncounter
     SPELL_REVITALIZE                = 45027,
     SPELL_TAIL_LASH                 = 45122,
     SPELL_TRANSFORM_KALEC           = 45027,
-    SPELL_CRAZED_RAGE               = 44806,
+    SPELL_CRAZED_RAGE               = 44806,                // this should be 44807 instead
 
      //Sathrovarr
     SPELL_SPECTRAL_INVIS            = 44801,
@@ -250,15 +250,18 @@ struct MANGOS_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->getVictim() || !m_creature->SelectHostilTarget() || m_bBanished)
+        if (!m_creature->getVictim() || !m_creature->SelectHostileTarget() || m_bBanished)
             return;
 
         if (!m_bEnraged && ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 10))
         {
             if (Unit* pSathrovarr = Unit::GetUnit(*m_creature, m_pInstance->GetData64(DATA_SATHROVARR)))
-                pSathrovarr->CastSpell(pSathrovarr, SPELL_CRAZED_RAGE, true);
+            {
+                if (pSathrovarr->isAlive())
+                    pSathrovarr->CastSpell(pSathrovarr, SPELL_CRAZED_RAGE, true);
+            }
 
-            DoCast(m_creature, SPELL_CRAZED_RAGE, true);
+            m_creature->CastSpell(m_creature, SPELL_CRAZED_RAGE, true);
             m_bEnraged = true;
         }
 
@@ -415,15 +418,18 @@ struct MANGOS_DLL_DECL boss_sathrovarrAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->getVictim() || !m_creature->SelectHostilTarget() || m_bBanished)
+        if (!m_creature->getVictim() || !m_creature->SelectHostileTarget() || m_bBanished)
             return;
 
         if (!m_bEnraged && ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) <= 10))
         {
             if (Unit* pKalecgos = Unit::GetUnit(*m_creature, m_pInstance->GetData64(DATA_KALECGOS_DRAGON)))
-                pKalecgos->CastSpell(pKalecgos, SPELL_CRAZED_RAGE, true);
+            {
+                if (pKalecgos->isAlive())
+                    pKalecgos->CastSpell(pKalecgos, SPELL_CRAZED_RAGE, true);
+            }
 
-            DoCast(m_creature, SPELL_CRAZED_RAGE, true);
+            m_creature->CastSpell(m_creature, SPELL_CRAZED_RAGE, true);
             m_bEnraged = true;
         }
 
@@ -497,7 +503,7 @@ struct MANGOS_DLL_DECL boss_kalecgos_humanoidAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->getVictim() || !m_creature->SelectHostilTarget())
+        if (!m_creature->getVictim() || !m_creature->SelectHostileTarget())
             return;
 
         if (RevitalizeTimer < diff)
@@ -552,7 +558,7 @@ bool GOHello_go_spectral_rift(Player* pPlayer, GameObject* pGo)
             if (pSath->isAlive())
             {
                 debug_log("SD2: Adding %s in pSath' threatlist", pPlayer->GetName());
-                pSath->AddThreat(pPlayer, 0.0f);
+                pSath->AddThreat(pPlayer);
             }
         }
 
@@ -561,7 +567,7 @@ bool GOHello_go_spectral_rift(Player* pPlayer, GameObject* pGo)
         {
             if (pKalecgos->isAlive())
             {
-                if (HostilReference* pRef = pKalecgos->getThreatManager().getOnlineContainer().getReferenceByTarget(pPlayer))
+                if (HostileReference* pRef = pKalecgos->getThreatManager().getOnlineContainer().getReferenceByTarget(pPlayer))
                 {
                     pRef->removeReference();
                     debug_log("SD2: Deleting %s from pKalecgos's threatlist", pPlayer->GetName());

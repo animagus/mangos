@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -67,7 +67,7 @@ struct MANGOS_DLL_DECL instance_ramparts : public ScriptedInstance
         {
             case TYPE_VAZRUDEN:
                 if (uiData == DONE && m_auiEncounter[1] == DONE)
-                    DoRespawnGameObject(instance->IsHeroic() ? m_uiChestHGUID : m_uiChestNGUID, HOUR*IN_MILISECONDS);
+                    DoRespawnGameObject(instance->IsRegularDifficulty() ? m_uiChestNGUID : m_uiChestHGUID, HOUR*IN_MILISECONDS);
                 m_auiEncounter[0] = uiData;
                 break;
             case TYPE_NAZAN:
@@ -80,7 +80,7 @@ struct MANGOS_DLL_DECL instance_ramparts : public ScriptedInstance
                 }
                 if (uiData == DONE && m_auiEncounter[0] == DONE)
                 {
-                    DoRespawnGameObject(instance->IsHeroic() ? m_uiChestHGUID : m_uiChestNGUID, HOUR*IN_MILISECONDS);
+                    DoRespawnGameObject(instance->IsRegularDifficulty() ? m_uiChestNGUID : m_uiChestHGUID, HOUR*IN_MILISECONDS);
                     m_auiEncounter[1] = uiData;
                 }
                 if (uiData == IN_PROGRESS)

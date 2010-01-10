@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -161,7 +161,7 @@ struct MANGOS_DLL_DECL boss_gruulAI : public ScriptedAI
     void UpdateAI(const uint32 uiDiff)
     {
         //Return since we have no target
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         // Growth
@@ -198,10 +198,10 @@ struct MANGOS_DLL_DECL boss_gruulAI : public ScriptedAI
             {
                 // Find 2nd-aggro target within melee range.
                 Unit *pTarget = NULL;
-                std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
-                std::list<HostilReference *>::iterator itr = t_list.begin();
+                ThreatList const& tList = m_creature->getThreatManager().getThreatList();
+                ThreatList::const_iterator itr = tList.begin();
                 std::advance(itr, 1);
-                for(; itr!= t_list.end(); ++itr)
+                for (;itr != tList.end(); ++itr)
                 {
                     pTarget = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
                     // exclude pets, totems & player out of melee range

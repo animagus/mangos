@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -43,12 +43,12 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
     boss_patchwerkAI(Creature* pCreature) : ScriptedAI(pCreature) 
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
 
     uint32 HatefullStrike_Timer;
     uint32 Enrage_Timer;
@@ -95,7 +95,7 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         //HatefullStrike_Timer
@@ -106,11 +106,11 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
             uint32 MostHP = 0;
             Unit* pMostHPTarget = NULL;
             Unit* pTemp = NULL;
-            std::list<HostilReference*>::iterator i = m_creature->getThreatManager().getThreatList().begin();
+            ThreatList const& t_list = m_creature->getThreatManager().getThreatList();
 
-            for (i = m_creature->getThreatManager().getThreatList().begin(); i!=m_creature->getThreatManager().getThreatList().end(); ++i)
+            for(ThreatList::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
             {
-                pTemp = Unit::GetUnit((*m_creature),(*i)->getUnitGuid());
+                pTemp = Unit::GetUnit((*m_creature),(*itr)->getUnitGuid());
                 if (pTemp && pTemp->isAlive() && pTemp->GetHealth() > MostHP && m_creature->IsWithinDist(pTemp, 5.0f, false))
                 {
                     MostHP = pTemp->GetHealth();
@@ -119,7 +119,7 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
             }
 
             if (pMostHPTarget)
-                DoCast(pMostHPTarget, m_bIsHeroicMode ? H_SPELL_HATEFULSTRIKE : SPELL_HATEFULSTRIKE);
+                DoCast(pMostHPTarget, !m_bIsRegularMode ? H_SPELL_HATEFULSTRIKE : SPELL_HATEFULSTRIKE);
 
             HatefullStrike_Timer = 1200;
         }else HatefullStrike_Timer -= diff;

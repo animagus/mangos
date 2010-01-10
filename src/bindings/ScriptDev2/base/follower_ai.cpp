@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software licensed under GPL version 2
  * Please see the included DOCS/LICENSE.TXT for more information */
 
@@ -33,7 +33,7 @@ void FollowerAI::AttackStart(Unit* pWho)
 
     if (m_creature->Attack(pWho, true))
     {
-        m_creature->AddThreat(pWho, 0.0f);
+        m_creature->AddThreat(pWho);
         m_creature->SetInCombatWith(pWho);
         pWho->SetInCombatWith(m_creature);
 
@@ -77,7 +77,7 @@ bool FollowerAI::AssistPlayerInCombat(Unit* pWho)
         else
         {
             pWho->SetInCombatWith(m_creature);
-            m_creature->AddThreat(pWho, 0.0f);
+            m_creature->AddThreat(pWho);
             return true;
         }
     }
@@ -108,7 +108,7 @@ void FollowerAI::MoveInLineOfSight(Unit* pWho)
                 else if (m_creature->GetMap()->IsDungeon())
                 {
                     pWho->SetInCombatWith(m_creature);
-                    m_creature->AddThreat(pWho, 0.0f);
+                    m_creature->AddThreat(pWho);
                 }
             }
         }
@@ -246,7 +246,7 @@ void FollowerAI::UpdateAI(const uint32 uiDiff)
 
 void FollowerAI::UpdateFollowerAI(const uint32 uiDiff)
 {
-    if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+    if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
         return;
 
     DoMeleeAttackIfReady();
@@ -304,7 +304,7 @@ void FollowerAI::StartFollow(Player* pLeader, uint32 uiFactionForFollower, const
 
     m_creature->GetMotionMaster()->MoveFollow(pLeader, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
 
-    debug_log("SD2: FollowerAI start follow %s (GUID %u)", pLeader->GetName(), m_uiLeaderGUID);
+    debug_log("SD2: FollowerAI start follow %s (GUID " UI64FMTD ")", pLeader->GetName(), m_uiLeaderGUID);
 }
 
 Player* FollowerAI::GetLeaderForFollower()

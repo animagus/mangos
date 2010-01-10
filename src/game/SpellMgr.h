@@ -126,6 +126,8 @@ inline float GetSpellMaxRange(SpellRangeEntry const *range, bool friendly = fals
 inline uint32 GetSpellRecoveryTime(SpellEntry const *spellInfo) { return spellInfo->RecoveryTime > spellInfo->CategoryRecoveryTime ? spellInfo->RecoveryTime : spellInfo->CategoryRecoveryTime; }
 int32 GetSpellDuration(SpellEntry const *spellInfo);
 int32 GetSpellMaxDuration(SpellEntry const *spellInfo);
+uint16 GetSpellAuraMaxTicks(SpellEntry const* spellInfo);
+WeaponAttackType GetWeaponAttackType(SpellEntry const *spellInfo);
 
 inline bool IsSpellHaveEffect(SpellEntry const *spellInfo, SpellEffects effect)
 {
@@ -201,9 +203,8 @@ inline bool IsPassiveSpellStackableWithRanks(SpellEntry const* spellProto)
 
 inline bool IsDeathOnlySpell(SpellEntry const *spellInfo)
 {
-    return spellInfo->AttributesEx & SPELL_ATTR_EX3_CAST_ON_DEAD
-        || spellInfo->Id == 2584
-        || spellInfo->Id == 22011;
+    return spellInfo->AttributesEx3 & SPELL_ATTR_EX3_CAST_ON_DEAD
+        || spellInfo->Id == 2584;
 }
 
 inline bool IsDeathPersistentSpell(SpellEntry const *spellInfo)
@@ -219,6 +220,9 @@ inline bool IsNonCombatSpell(SpellEntry const *spellInfo)
 bool IsPositiveSpell(uint32 spellId);
 bool IsPositiveEffect(uint32 spellId, uint32 effIndex);
 bool IsPositiveTarget(uint32 targetA, uint32 targetB);
+
+bool IsExplicitPositiveTarget(uint32 targetA);
+bool IsExplicitNegativeTarget(uint32 targetA);
 
 bool IsSingleTargetSpell(SpellEntry const *spellInfo);
 bool IsSingleTargetSpells(SpellEntry const *spellInfo1, SpellEntry const *spellInfo2);
@@ -389,9 +393,9 @@ inline uint32 GetSpellMechanicMask(SpellEntry const* spellInfo, int32 effect)
 {
     uint32 mask = 0;
     if (spellInfo->Mechanic)
-        mask |= 1<<spellInfo->Mechanic;
+        mask |= 1 << (spellInfo->Mechanic - 1);
     if (spellInfo->EffectMechanic[effect])
-        mask |= 1<<spellInfo->EffectMechanic[effect];
+        mask |= 1 << (spellInfo->EffectMechanic[effect] - 1);
     return mask;
 }
 
@@ -399,10 +403,10 @@ inline uint32 GetAllSpellMechanicMask(SpellEntry const* spellInfo)
 {
     uint32 mask = 0;
     if (spellInfo->Mechanic)
-        mask |= 1<<spellInfo->Mechanic;
+        mask |= 1 << (spellInfo->Mechanic - 1);
     for (int i=0; i< 3; ++i)
         if (spellInfo->EffectMechanic[i])
-            mask |= 1<<spellInfo->EffectMechanic[i];
+            mask |= 1 << (spellInfo->EffectMechanic[i]-1);
     return mask;
 }
 
@@ -731,8 +735,6 @@ class SpellMgr
     // Accessors (const or static functions)
     public:
 
-        bool IsAffectedByMod(SpellEntry const *spellInfo, SpellModifier *mod) const;
-
         SpellElixirMap const& GetSpellElixirMap() const { return mSpellElixirs; }
 
         uint32 GetSpellElixirMask(uint32 spellid) const
@@ -1037,5 +1039,5 @@ class SpellMgr
         SpellAreaForAreaMap  mSpellAreaForAreaMap;
 };
 
-#define spellmgr SpellMgr::Instance()
+#define sSpellMgr SpellMgr::Instance()
 #endif

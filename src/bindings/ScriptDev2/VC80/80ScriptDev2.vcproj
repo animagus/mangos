@@ -864,6 +864,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\scripts\eastern_kingdoms\scarlet_monastery\boss_headless_horseman.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\scripts\eastern_kingdoms\scarlet_monastery\instance_scarlet_monastery.cpp"
 						>
 					</File>
@@ -1015,6 +1019,18 @@
 				<Filter
 					Name="sunken_temple"
 					>
+					<File
+						RelativePath="..\scripts\eastern_kingdoms\sunken_temple\instance_sunken_temple.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\eastern_kingdoms\sunken_temple\sunken_temple.h"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\eastern_kingdoms\sunken_temple\sunken_temple.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="sunwell_plateau"
@@ -1448,7 +1464,15 @@
 						>
 					</File>
 					<File
+						RelativePath="..\scripts\kalimdor\ruins_of_ahnqiraj\ruins_of_ahnqiraj.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\scripts\kalimdor\ruins_of_ahnqiraj\instance_ruins_of_ahnqiraj.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\kalimdor\ruins_of_ahnqiraj\ruins_of_ahnqiraj.h"
 						>
 					</File>
 				</Filter>
@@ -1554,6 +1578,10 @@
 				</File>
 				<File
 					RelativePath="..\scripts\northrend\storm_peaks.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scripts\northrend\zuldrak.cpp"
 					>
 				</File>
 				<Filter
@@ -1732,6 +1760,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\scripts\northrend\naxxramas\naxxramas.h"
+						>
+					</File>
+					<File
 						RelativePath="..\scripts\northrend\naxxramas\instance_naxxramas.cpp"
 						>
 					</File>
@@ -1836,6 +1868,14 @@
 						</File>
 						<File
 							RelativePath="..\scripts\northrend\ulduar\halls_of_stone\halls_of_stone.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\ulduar\halls_of_stone\halls_of_stone.h"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\ulduar\halls_of_stone\instance_halls_of_stone.cpp"
 							>
 						</File>
 					</Filter>
@@ -2410,10 +2450,6 @@
 				</File>
 				<File
 					RelativePath="..\scripts\world\mob_generic_creature.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\scripts\world\npc_innkeeper.cpp"
 					>
 				</File>
 				<File

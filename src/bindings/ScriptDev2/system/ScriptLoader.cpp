@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
 * This program is free software licensed under GPL version 2
 * Please see the included DOCS/LICENSE.TXT for more information */
 
@@ -26,7 +26,6 @@ extern void AddSC_guards();
 extern void AddSC_item_scripts();
 extern void AddSC_npc_professions();
 extern void AddSC_npcs_special();
-extern void AddSC_npc_innkeeper();
 
 //eastern kingdoms
 extern void AddSC_blackrock_depths();                       //blackrock_depths
@@ -211,6 +210,7 @@ extern void AddSC_razorfen_downs();
 extern void AddSC_boss_ayamiss();                           //ruins_of_ahnqiraj
 extern void AddSC_boss_kurinnaxx();
 extern void AddSC_boss_moam();
+extern void AddSC_instance_ruins_of_ahnqiraj();
 extern void AddSC_boss_cthun();                             //temple_of_ahnqiraj
 extern void AddSC_boss_fankriss();
 extern void AddSC_boss_huhuran();
@@ -319,6 +319,7 @@ extern void AddSC_grizzly_hills();
 extern void AddSC_icecrown();
 extern void AddSC_sholazar_basin();
 extern void AddSC_storm_peaks();
+extern void AddSC_zuldrak();
 
 //outland
 extern void AddSC_boss_exarch_maladaar();                   //auchindoun, auchenai_crypts
@@ -422,7 +423,6 @@ void AddScripts()
     AddSC_item_scripts();
     AddSC_npc_professions();
     AddSC_npcs_special();
-    AddSC_npc_innkeeper();
 
     //eastern kingdoms
     AddSC_blackrock_depths();                               //blackrock_depths
@@ -607,6 +607,7 @@ void AddScripts()
     AddSC_boss_ayamiss();                                   //ruins_of_ahnqiraj
     AddSC_boss_kurinnaxx();
     AddSC_boss_moam();
+    AddSC_instance_ruins_of_ahnqiraj();
     AddSC_boss_cthun();                                     //temple_of_ahnqiraj
     AddSC_boss_fankriss();
     AddSC_boss_huhuran();
@@ -715,6 +716,7 @@ void AddScripts()
     AddSC_icecrown();
     AddSC_sholazar_basin();
     AddSC_storm_peaks();
+    AddSC_zuldrak();
 
     //outland
     AddSC_boss_exarch_maladaar();                           //auchindoun, auchenai_crypts

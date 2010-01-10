@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -17,16 +17,69 @@
 /* ScriptData
 SDName: Storm_Peaks
 SD%Complete: 100
-SDComment: Vendor Support (31247). Quest support: 12970
+SDComment: Vendor Support (31247). Quest support: 12970, 12684
 SDCategory: Storm Peaks
 EndScriptData */
 
 /* ContentData
 npc_loklira_the_crone
 npc_roxi_ramrocket
+npc_frostborn_scout
 EndContentData */
 
 #include "precompiled.h"
+
+/*######
+## npc_frostborn_scout
+######*/
+
+enum Scout
+{
+    QUEST_MISSING_SCOUT          = 12864,
+
+    GOSSIP_TEXTID_SCOUT_1        = 13611,
+    GOSSIP_TEXTID_SCOUT_2        = 13612,
+    GOSSIP_TEXTID_SCOUT_3        = 13613,
+    GOSSIP_TEXTID_SCOUT_4        = 13614
+
+};
+
+#define GOSSIP_ITEM_SCOUT_1     "Are you okay? I've come to take you back to Frosthold if you can stand."
+#define GOSSIP_ITEM_SCOUT_2     "I'm sorry that I didn't get here sooner. What happened?"
+#define GOSSIP_ITEM_SCOUT_3     "I'll go get some help. Hang in there."
+
+bool GossipHello_npc_frostborn_scout(Player* pPlayer, Creature* pCreature)
+{
+    if (pPlayer->GetQuestStatus(QUEST_MISSING_SCOUT) == QUEST_STATUS_INCOMPLETE)
+    {
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_SCOUT_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXTID_SCOUT_1, pCreature->GetGUID());
+        return true;
+    }
+
+    pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_frostborn_scout(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+{
+    switch(uiAction)
+    {
+        case GOSSIP_ACTION_INFO_DEF+1:
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_SCOUT_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+            pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXTID_SCOUT_2, pCreature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+2:
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_SCOUT_3, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+            pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXTID_SCOUT_3, pCreature->GetGUID());
+            break;
+        case GOSSIP_ACTION_INFO_DEF+3:
+            pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXTID_SCOUT_4, pCreature->GetGUID());
+            pPlayer->AreaExploredOrEventHappens(QUEST_MISSING_SCOUT);
+            break;
+    }
+    return true;
+}
 
 /*######
 ## npc_loklira_the_crone
@@ -61,7 +114,7 @@ bool GossipHello_npc_loklira_the_crone(Player* pPlayer, Creature* pCreature)
         return true;
     }
 
-    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
     return true;
 }
 
@@ -120,7 +173,7 @@ bool GossipHello_npc_thorim(Player* pPlayer, Creature* pCreature)
         pPlayer->SEND_GOSSIP_MENU(GOSSIP_TEXTID_THORIM1, pCreature->GetGUID());
     }
     else
-        pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
+        pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
 
     return true;
 }
@@ -173,7 +226,7 @@ bool GossipHello_npc_roxi_ramrocket(Player* pPlayer, Creature* pCreature)
         }
     }
 
-    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
     return true;
 }
 
@@ -194,7 +247,13 @@ bool GossipSelect_npc_roxi_ramrocket(Player* pPlayer, Creature* pCreature, uint3
 
 void AddSC_storm_peaks()
 {
-    Script *newscript;
+    Script* newscript;
+
+    newscript = new Script;
+    newscript->Name = "npc_frostborn_scout";
+    newscript->pGossipHello = &GossipHello_npc_frostborn_scout;
+    newscript->pGossipSelect = &GossipSelect_npc_frostborn_scout;
+    newscript->RegisterSelf();
 
     newscript = new Script;
     newscript->Name = "npc_loklira_the_crone";

@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -46,11 +46,11 @@ struct MANGOS_DLL_DECL boss_omor_the_unscarredAI : public ScriptedAI
     boss_omor_the_unscarredAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         SetCombatMovement(false);
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
 
     uint32 OrbitalStrike_Timer;
     uint32 ShadowWhip_Timer;
@@ -112,7 +112,7 @@ struct MANGOS_DLL_DECL boss_omor_the_unscarredAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         //only two may be wrong, perhaps increase timer and spawn periodically instead.
@@ -177,7 +177,7 @@ struct MANGOS_DLL_DECL boss_omor_the_unscarredAI : public ScriptedAI
 
             if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
             {
-                DoCast(target, m_bIsHeroicMode ? H_SPELL_BANE_OF_TREACHERY : SPELL_TREACHEROUS_AURA);
+                DoCast(target, m_bIsRegularMode ? SPELL_TREACHEROUS_AURA : H_SPELL_BANE_OF_TREACHERY);
                 Aura_Timer = urand(8000, 16000);
             }
         }else Aura_Timer -= diff;
@@ -189,7 +189,7 @@ struct MANGOS_DLL_DECL boss_omor_the_unscarredAI : public ScriptedAI
                 if (target)
                     target = m_creature->getVictim();
 
-                DoCast(target, m_bIsHeroicMode ? H_SPELL_SHADOW_BOLT : SPELL_SHADOW_BOLT);
+                DoCast(target, m_bIsRegularMode ? SPELL_SHADOW_BOLT : H_SPELL_SHADOW_BOLT);
                 Shadowbolt_Timer = urand(4000, 6500);
             }
         }else Shadowbolt_Timer -= diff;

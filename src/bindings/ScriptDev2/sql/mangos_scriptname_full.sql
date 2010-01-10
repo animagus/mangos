@@ -1,6 +1,8 @@
 /*  */
 
 /* AREATRIGGER */
+DELETE FROM areatrigger_scripts WHERE entry=4591;
+INSERT INTO areatrigger_scripts VALUES (4591,'at_coilfang_waterfall');
 DELETE FROM areatrigger_scripts WHERE entry=4560;
 INSERT INTO areatrigger_scripts VALUES (4560,'at_legion_teleporter');
 DELETE FROM areatrigger_scripts WHERE entry=3066;
@@ -87,6 +89,8 @@ UPDATE creature_template SET ScriptName='npc_lunaclaw_spirit' WHERE entry=12144;
 UPDATE creature_template SET ScriptName='npc_mount_vendor' WHERE entry IN (384,1261,1460,2357,3362,3685,4730,4731,4885,7952,7955,16264,17584);
 UPDATE creature_template SET ScriptName='npc_doctor' WHERE entry IN (12939,12920);
 UPDATE creature_template SET ScriptName='npc_injured_patient' WHERE entry IN (12936,12937,12938,12923,12924,12925);
+UPDATE creature_template SET ScriptName='' WHERE npcflag!=npcflag|65536 AND ScriptName='npc_innkeeper';
+UPDATE creature_template SET ScriptName='npc_innkeeper' WHERE npcflag=npcflag|65536;
 UPDATE creature_template SET ScriptName='npc_prof_alchemy' WHERE entry IN (17909,19052,22427);
 UPDATE creature_template SET ScriptName='npc_prof_blacksmith' WHERE entry IN (5164,11145,11146,11176,11177,11178,11191,11192,11193);
 UPDATE creature_template SET ScriptName='npc_engineering_tele_trinket' WHERE entry IN (14742,14743,21493,21494);
@@ -94,6 +98,8 @@ UPDATE creature_template SET ScriptName='npc_prof_leather' WHERE entry IN (7866,
 UPDATE creature_template SET ScriptName='npc_prof_tailor' WHERE entry IN (22208,22212,22213);
 UPDATE creature_template SET ScriptName='npc_rogue_trainer' WHERE entry IN (918,4163,3328,4583,5165,5167,13283,16684);
 UPDATE creature_template SET ScriptName='npc_sayge' WHERE entry=14822;
+UPDATE creature_template SET ScriptName='npc_tabard_vendor' WHERE entry=28776;
+UPDATE creature_template SET ScriptName='npc_locksmith' WHERE entry IN (29665,29725,29728);
 
 /*  */
 /* ZONE */
@@ -151,6 +157,7 @@ UPDATE creature_template SET ScriptName='boss_ambassador_hellmaw' WHERE entry=18
 /* AHN'KAHET */
 UPDATE creature_template SET ScriptName='boss_jedoga' WHERE entry=29310;
 UPDATE creature_template SET ScriptName='boss_nadox' WHERE entry=29309;
+UPDATE creature_template SET ScriptName = 'mob_ahnkahar_egg' WHERE entry IN (30172,30173);
 UPDATE creature_template SET ScriptName='boss_taldaram' WHERE entry=29308;
 UPDATE gameobject_template SET ScriptName='go_nerubian_device' WHERE entry IN (193093,193094);
 UPDATE creature_template SET ScriptName='boss_volazj' WHERE entry=29311;
@@ -419,8 +426,10 @@ UPDATE creature_template SET ScriptName='npc_aged_dying_ancient_kodo' WHERE entr
 /* DRAGONBLIGHT */
 UPDATE creature_template SET ScriptName='npc_afrasastrasz' WHERE entry=27575;
 UPDATE creature_template SET ScriptName='npc_alexstrasza_wr_gate' WHERE entry=31333;
+UPDATE creature_template SET ScriptName='npc_liquid_fire_of_elune' WHERE entry IN (26616,26643);
 UPDATE creature_template SET ScriptName='npc_tariolstrasz' WHERE entry=26443;
 UPDATE creature_template SET ScriptName='npc_torastrasza' WHERE entry=26949;
+UPDATE creature_template SET ScriptName='npc_woodlands_walker' WHERE entry=26421;
 
 /* DRAK'THARON KEEP */
 UPDATE creature_template SET ScriptName='boss_novos' WHERE entry=26631;
@@ -507,6 +516,7 @@ UPDATE creature_template SET ScriptName='boss_colossus' WHERE entry=29307;
 UPDATE creature_template SET ScriptName='boss_galdarah' WHERE entry=29306;
 UPDATE creature_template SET ScriptName='boss_moorabi' WHERE entry=29305;
 UPDATE creature_template SET ScriptName='boss_sladran' WHERE entry=29304;
+UPDATE creature_template SET ScriptName='mob_sladran_summon_target' WHERE entry=29682;
 UPDATE gameobject_template SET ScriptName='go_gundrak_altar' WHERE entry IN (192518, 192519, 192520);
 UPDATE instance_template SET script='instance_gundrak' WHERE map=604;
 
@@ -572,6 +582,7 @@ UPDATE creature_template SET ScriptName='npc_rinji' WHERE entry=7780;
 /* HOWLING FJORD */
 UPDATE creature_template SET ScriptName='npc_deathstalker_razael' WHERE entry=23998;
 UPDATE creature_template SET ScriptName='npc_dark_ranger_lyana' WHERE entry=23778;
+UPDATE creature_template SET ScriptName='npc_mcgoyver' WHERE entry=24040;
 
 
 /* ICECROWN */
@@ -771,7 +782,8 @@ UPDATE creature_template SET ScriptName='npc_henry_stern' WHERE entry=8696;
 
 
 /* RUINS OF AHN'QIRAJ */
--- UPDATE instance_template SET script='instance_ruins_of_ahnqiraj' WHERE map=509;
+UPDATE instance_template SET script='instance_ruins_of_ahnqiraj' WHERE map=509;
+UPDATE creature_template SET ScriptName='mob_anubisath_guardian' WHERE entry=15355;
 
 /* SCARLET MONASTERY */
 UPDATE instance_template SET script='instance_scarlet_monastery' WHERE map=189;
@@ -786,6 +798,7 @@ UPDATE creature_template SET ScriptName='boss_interrogator_vishas' WHERE entry=3
 UPDATE creature_template SET ScriptName='boss_scarlet_commander_mograine' WHERE entry=3976;
 UPDATE creature_template SET ScriptName='boss_scorn' WHERE entry=14693;
 UPDATE creature_template SET ScriptName='mob_scarlet_trainee' WHERE entry=6575;
+UPDATE creature_template SET ScriptName='boss_headless_horseman' WHERE entry=23682;
 
 /* SCHOLOMANCE */
 UPDATE instance_template SET script='instance_scholomance' WHERE map=289;
@@ -861,6 +874,7 @@ UPDATE creature_template SET ScriptName='npc_kaya' WHERE entry=11856;
 UPDATE creature_template SET ScriptName='npc_loklira_the_crone' WHERE entry=29975;
 UPDATE creature_template SET ScriptName='npc_thorim' WHERE entry=29445;
 UPDATE creature_template SET ScriptName='npc_roxi_ramrocket' WHERE entry=31247;
+UPDATE creature_template SET ScriptName = 'npc_frostborn_scout' WHERE entry = 29811;
 
 /* STORMWIND CITY */
 UPDATE creature_template SET ScriptName='npc_archmage_malin' WHERE entry=2708;
@@ -890,7 +904,10 @@ UPDATE creature_template SET ScriptName='mob_freed_soul' WHERE entry=11136;
 UPDATE gameobject_template SET ScriptName='go_gauntlet_gate' WHERE entry=175357;
 
 /* SUNKEN TEMPLE */
-
+UPDATE instance_template SET script='instance_sunken_temple' WHERE map=109;
+DELETE FROM areatrigger_scripts WHERE entry=4016;
+INSERT INTO areatrigger_scripts VALUES (4016,'at_shade_of_eranikus');
+UPDATE creature_template SET ScriptName='npc_malfurion_stormrage' WHERE entry=15362;
 
 /* SUNWELL PLATEAU */
 UPDATE instance_template SET script='instance_sunwell_plateau' WHERE map=580;
@@ -1033,6 +1050,7 @@ UPDATE creature_template SET ScriptName='mob_spark_of_ionar' WHERE entry=28926;
 UPDATE creature_template SET ScriptName='boss_loken' WHERE entry=28923;
 
 /* HALLS OF STONE */
+UPDATE instance_template SET script='instance_halls_of_stone' WHERE map=599;
 UPDATE creature_template SET ScriptName='boss_maiden_of_grief' WHERE entry=27975;
 UPDATE creature_template SET ScriptName='boss_sjonnir' WHERE entry=27978;
 UPDATE creature_template SET ScriptName='npc_brann_hos' WHERE entry=28070;
@@ -1065,6 +1083,8 @@ UPDATE creature_template SET ScriptName='mob_vrykul_skeleton' WHERE entry=23970;
 
 /* UTGARDE PINNACLE */
 UPDATE creature_template SET ScriptName='boss_gortok' WHERE entry=26687;
+DELETE FROM areatrigger_scripts WHERE entry=4991;
+INSERT INTO areatrigger_scripts VALUES (4991,'at_skadi');
 UPDATE creature_template SET ScriptName='boss_skadi' WHERE entry=26693;
 UPDATE creature_template SET ScriptName='boss_svala' WHERE entry=29281;
 DELETE FROM areatrigger_scripts WHERE entry=5140;

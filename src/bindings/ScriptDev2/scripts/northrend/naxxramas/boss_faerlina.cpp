@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -55,13 +55,13 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
     boss_faerlinaAI(Creature *c) : ScriptedAI(c)
 	{
 		pInstance = ((ScriptedInstance*)c->GetInstanceData());
-        m_bIsHeroicMode = c->GetMap()->IsHeroic();
+        m_bIsRegularModeMode = c->GetMap()->IsRegularDifficulty();
         HasTaunted = false;
 		Reset();
 	}
 
 	ScriptedInstance *pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularModeMode;
 
     bool m_ach_10ppl;
     bool m_ach_25ppl;
@@ -190,14 +190,14 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
                 if (!m_creature->IsWithinDistInMap(pPlayer,200))
                     continue;
 
-                if (!m_bIsHeroicMode && m_ach_10ppl)
+                if (m_bIsRegularModeMode && m_ach_10ppl)
                     pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7147);
-                else if (m_bIsHeroicMode && m_ach_25ppl)
+                else if (!m_bIsRegularModeMode && m_ach_25ppl)
                     pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7160);
 
-                if (!m_bIsHeroicMode && momma_said_10)
+                if (m_bIsRegularModeMode && momma_said_10)
                     pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7265);
-                else if (m_bIsHeroicMode && momma_said_25)
+                else if (!m_bIsRegularModeMode && momma_said_25)
                     pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7549);
             }
         }
@@ -235,7 +235,7 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
                 ++m_count_ppl;
             }
         }
-        if (!m_bIsHeroicMode)
+        if (m_bIsRegularModeMode)
         {
             if(m_count_ppl>8)
                 m_ach_10ppl = false;
@@ -249,7 +249,7 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (m_uiEvadeCheckCooldown < diff)
@@ -264,7 +264,7 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
         //PoisonBoltVolley_Timer
         if (PoisonBoltVolley_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),m_bIsHeroicMode?SPELL_POISONBOLT_VOLLEY_H:SPELL_POISONBOLT_VOLLEY);
+            DoCast(m_creature->getVictim(), !m_bIsRegularModeMode ? SPELL_POISONBOLT_VOLLEY_H : SPELL_POISONBOLT_VOLLEY);
             PoisonBoltVolley_Timer = 11000;
         }else PoisonBoltVolley_Timer -= diff;
 
@@ -272,7 +272,7 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
         if (RainOfFire_Timer < diff)
         {
             if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(target,m_bIsHeroicMode?SPELL_RAINOFFIRE_H:SPELL_RAINOFFIRE);
+                DoCast(target, !m_bIsRegularModeMode ? SPELL_RAINOFFIRE_H : SPELL_RAINOFFIRE);
 
             RainOfFire_Timer = 16000;
         }else RainOfFire_Timer -= diff;
@@ -292,9 +292,9 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
 
         if (Ach_Timer<diff)
         {
-            if (!m_bIsHeroicMode && m_ach_10ppl)
+            if (m_bIsRegularModeMode && m_ach_10ppl)
                 CheckAch();
-            else if (m_bIsHeroicMode && m_ach_25ppl)
+            else if (!m_bIsRegularModeMode && m_ach_25ppl)
                 CheckAch();
             Ach_Timer = 10000;
         }else Ach_Timer -= diff;   
@@ -313,13 +313,13 @@ struct MANGOS_DLL_DECL mob_faerlina_worshipperAI : public ScriptedAI
     mob_faerlina_worshipperAI(Creature *c) : ScriptedAI(c)
 	{
 		pInstance = ((ScriptedInstance*)c->GetInstanceData());
-        m_bIsHeroic = c->GetMap()->IsHeroic();
+        m_bIsRegularMode = c->GetMap()->IsRegularDifficulty();
 		Reset();
 	}
 
 	ScriptedInstance *pInstance;
 	uint32 fireball_timer;
-    bool m_bIsHeroic;
+    bool m_bIsRegularMode;
 
 	void Reset()
 	{
@@ -329,7 +329,7 @@ struct MANGOS_DLL_DECL mob_faerlina_worshipperAI : public ScriptedAI
     void Aggro(Unit *who){}
     void JustDied(Unit* Killer)
     {
-        if(!m_bIsHeroic) // in heroic need use mc
+        if(m_bIsRegularMode) // in heroic need use mc
         {
             Creature* Faerlina = (Creature*)Unit::GetUnit((*m_creature), pInstance->GetData64(GUID_FAERLINA));
             if(Faerlina)
@@ -340,13 +340,13 @@ struct MANGOS_DLL_DECL mob_faerlina_worshipperAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Return since we have no target
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
 		//PoisonBoltVolley_Timer
         if (fireball_timer < diff)
         {
-            DoCast(m_creature->getVictim(),m_bIsHeroic?SPELL_FIREBALL_H:SPELL_FIREBALL);
+            DoCast(m_creature->getVictim(), !m_bIsRegularMode ? SPELL_FIREBALL_H:SPELL_FIREBALL);
             fireball_timer = 3000;
         }else fireball_timer -= diff;
 

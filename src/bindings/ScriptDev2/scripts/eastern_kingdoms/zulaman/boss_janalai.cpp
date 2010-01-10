@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -71,7 +71,7 @@ enum
 };
 
 //spells should summon Fire Bomb, used in Throw5Bombs()
-uint32 m_auiSpellFireBombSummon[]=
+static uint32 m_auiSpellFireBombSummon[]=
 {
     42622, 42623, 42624, 42625, 42626
 };
@@ -256,6 +256,10 @@ struct MANGOS_DLL_DECL boss_janalaiAI : public ScriptedAI
                     //visual spell, spell hit pSummoned after a short time
                     m_creature->CastSpell(pSummoned,SPELL_FIRE_BOMB_THROW,true);
                 }
+                else
+                {
+                    pSummoned->CastSpell(pSummoned, SPELL_FIRE_WALL, true);
+                }
                 break;
         }
     }
@@ -269,64 +273,42 @@ struct MANGOS_DLL_DECL boss_janalaiAI : public ScriptedAI
 
     void CreateFireWall()                                   // Create Firewall
     {
-        Creature* wall = NULL;
-        wall = m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[0][0],FireWallCoords[0][1],FireWallCoords[0][2],FireWallCoords[0][3],TEMPSUMMON_TIMED_DESPAWN,11500);
-        if (wall)
-            wall->CastSpell(wall,SPELL_FIRE_WALL,false);
+        m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[0][0],FireWallCoords[0][1],FireWallCoords[0][2],FireWallCoords[0][3],TEMPSUMMON_TIMED_DESPAWN,11500);
 
-        wall = m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[0][0],FireWallCoords[0][1]+5,FireWallCoords[0][2],FireWallCoords[0][3],TEMPSUMMON_TIMED_DESPAWN,11500);
-        if (wall)
-            wall->CastSpell(wall,SPELL_FIRE_WALL,false);
+        m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[0][0],FireWallCoords[0][1]+5,FireWallCoords[0][2],FireWallCoords[0][3],TEMPSUMMON_TIMED_DESPAWN,11500);
 
-        wall = m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[0][0],FireWallCoords[0][1]-5,FireWallCoords[0][2],FireWallCoords[0][3],TEMPSUMMON_TIMED_DESPAWN,11500);
-        if (wall)
-            wall->CastSpell(wall,SPELL_FIRE_WALL,false);
+        m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[0][0],FireWallCoords[0][1]-5,FireWallCoords[0][2],FireWallCoords[0][3],TEMPSUMMON_TIMED_DESPAWN,11500);
 
-        wall = m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[1][0]-2,FireWallCoords[1][1]-2,FireWallCoords[1][2],FireWallCoords[1][3],TEMPSUMMON_TIMED_DESPAWN,11500);
-        if (wall)
-            wall->CastSpell(wall,SPELL_FIRE_WALL,false);
+        m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[1][0]-2,FireWallCoords[1][1]-2,FireWallCoords[1][2],FireWallCoords[1][3],TEMPSUMMON_TIMED_DESPAWN,11500);
 
-        wall = m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[1][0]+2,FireWallCoords[1][1]+2,FireWallCoords[1][2],FireWallCoords[1][3],TEMPSUMMON_TIMED_DESPAWN,11500);
-        if (wall)
-            wall->CastSpell(wall,SPELL_FIRE_WALL,false);
+        m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[1][0]+2,FireWallCoords[1][1]+2,FireWallCoords[1][2],FireWallCoords[1][3],TEMPSUMMON_TIMED_DESPAWN,11500);
 
-        wall = m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[2][0],FireWallCoords[2][1],FireWallCoords[2][2],FireWallCoords[2][3],TEMPSUMMON_TIMED_DESPAWN,11500);
-        if (wall)
-            wall->CastSpell(wall,SPELL_FIRE_WALL,false);
+        m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[2][0],FireWallCoords[2][1],FireWallCoords[2][2],FireWallCoords[2][3],TEMPSUMMON_TIMED_DESPAWN,11500);
 
-        wall = m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[2][0],FireWallCoords[2][1]-5,FireWallCoords[2][2],FireWallCoords[2][3],TEMPSUMMON_TIMED_DESPAWN,11500);
-        if (wall)
-            wall->CastSpell(wall,SPELL_FIRE_WALL,false);
+        m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[2][0],FireWallCoords[2][1]-5,FireWallCoords[2][2],FireWallCoords[2][3],TEMPSUMMON_TIMED_DESPAWN,11500);
 
-        wall = m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[2][0],FireWallCoords[2][1]+5,FireWallCoords[2][2],FireWallCoords[2][3],TEMPSUMMON_TIMED_DESPAWN,11500);
-        if (wall)
-            wall->CastSpell(wall,SPELL_FIRE_WALL,false);
+        m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[2][0],FireWallCoords[2][1]+5,FireWallCoords[2][2],FireWallCoords[2][3],TEMPSUMMON_TIMED_DESPAWN,11500);
 
-        wall = m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[3][0]-2,FireWallCoords[3][1],FireWallCoords[3][2],FireWallCoords[3][3],TEMPSUMMON_TIMED_DESPAWN,11500);
-        if (wall)
-            wall->CastSpell(wall,SPELL_FIRE_WALL,false);
+        m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[3][0]-2,FireWallCoords[3][1],FireWallCoords[3][2],FireWallCoords[3][3],TEMPSUMMON_TIMED_DESPAWN,11500);
 
-        wall = m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[3][0]+2,FireWallCoords[3][1],FireWallCoords[3][2],FireWallCoords[3][3],TEMPSUMMON_TIMED_DESPAWN,11500);
-        if (wall)
-            wall->CastSpell(wall,SPELL_FIRE_WALL,false);
+        m_creature->SummonCreature(NPC_FIRE_BOMB,FireWallCoords[3][0]+2,FireWallCoords[3][1],FireWallCoords[3][2],FireWallCoords[3][3],TEMPSUMMON_TIMED_DESPAWN,11500);
     }
 
-    //workaround for summon to emulate effect. EffectImplicitTarget 73 not implemented
     void Throw5Bombs()
     {
         //all available spells (each spell has different radius for summon location)
         uint8 uiMaxBombs = sizeof(m_auiSpellFireBombSummon)/sizeof(uint32);
 
-        float fX, fY, fZ;
-        float fRadius = 5.0f;
+        //float fX, fY, fZ;
+        //float fRadius = 5.0f;
 
         for(uint8 i = 0; i < uiMaxBombs; ++i)
         {
             m_creature->CastSpell(m_creature, m_auiSpellFireBombSummon[i], true);
 
             //workaround part
-            m_creature->GetRandomPoint(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), fRadius+(fRadius*i), fX, fY, fZ);
-            m_creature->SummonCreature(NPC_FIRE_BOMB, fX, fY, fZ, 0.0f, TEMPSUMMON_TIMED_DESPAWN, MINUTE*IN_MILISECONDS);
+            //m_creature->GetRandomPoint(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), fRadius+(fRadius*i), fX, fY, fZ);
+            //m_creature->SummonCreature(NPC_FIRE_BOMB, fX, fY, fZ, 0.0f, TEMPSUMMON_TIMED_DESPAWN, MINUTE*IN_MILISECONDS);
         }
 
         ++m_uiBombCounter;
@@ -335,9 +317,8 @@ struct MANGOS_DLL_DECL boss_janalaiAI : public ScriptedAI
     //Teleport every player into the middle if more than 20 yards away (possibly what spell 43096 should do)
     void TeleportPlayersOutOfRange()
     {
-        std::list<HostilReference*>::iterator i = m_creature->getThreatManager().getThreatList().begin();
-
-        for (; i != m_creature->getThreatManager().getThreatList().end(); ++i)
+        ThreatList const& tList = m_creature->getThreatManager().getThreatList();
+        for (ThreatList::const_iterator i = tList.begin();i != tList.end(); ++i)
         {
             Unit* pTemp = Unit::GetUnit((*m_creature),(*i)->getUnitGuid());
 
@@ -397,7 +378,7 @@ struct MANGOS_DLL_DECL boss_janalaiAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         //blow up bombs happen after bombing is over, so handle this here
@@ -531,7 +512,9 @@ struct MANGOS_DLL_DECL boss_janalaiAI : public ScriptedAI
         {
             if (hatchertime < diff)
             {
-                if (m_pInstance->GetData(DATA_J_EGGS_LEFT) > 0 || m_pInstance->GetData(DATA_J_EGGS_RIGHT) > 0)
+                if (!m_pInstance || (m_pInstance->GetData(DATA_J_EGGS_LEFT) == 0 && m_pInstance->GetData(DATA_J_EGGS_RIGHT) == 0))
+                    m_bIsEggRemaining = false;
+                else
                 {
                     DoScriptText(SAY_SUMMON_HATCHER, m_creature);
 
@@ -552,8 +535,6 @@ struct MANGOS_DLL_DECL boss_janalaiAI : public ScriptedAI
 
                     hatchertime = 90000;
                 }
-                else
-                    m_bIsEggRemaining = false;
 
             }else hatchertime -=diff;
         }
@@ -631,7 +612,7 @@ struct MANGOS_DLL_DECL mob_amanishi_hatcherAI : public ScriptedAI
 
         if (m_creature->Attack(pWho, false))
         {
-            m_creature->AddThreat(pWho, 0.0f);
+            m_creature->AddThreat(pWho);
             m_creature->SetInCombatWith(pWho);
             pWho->SetInCombatWith(m_creature);
         }
@@ -755,7 +736,7 @@ struct MANGOS_DLL_DECL mob_hatchlingAI : public ScriptedAI
             return;
         }
 
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (buffer_timer < diff)

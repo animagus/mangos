@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -93,8 +93,8 @@ struct MANGOS_DLL_DECL mob_kilrekAI : public ScriptedAI
         }
 
         Creature* pTerestian = ((Creature*)Unit::GetUnit(*m_creature, m_pInstance->GetData64(DATA_TERESTIAN)));
-        if (pTerestian && (!pTerestian->SelectHostilTarget() && !pTerestian->getVictim()))
-            pTerestian->AddThreat(pWho, 1.0f);
+        if (pTerestian && (!pTerestian->SelectHostileTarget() && !pTerestian->getVictim()))
+            pTerestian->AddThreat(pWho);
     }
 
     void JustDied(Unit* pKiller)
@@ -116,7 +116,7 @@ struct MANGOS_DLL_DECL mob_kilrekAI : public ScriptedAI
     void UpdateAI(const uint32 uiDiff)
     {
         //Return since we have no target
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (m_uiAmplify_Timer < uiDiff)
@@ -224,7 +224,7 @@ struct MANGOS_DLL_DECL boss_terestianAI : public ScriptedAI
 
             // Put Kil'rek in combat against our target so players don't skip him
             if (pKilrek && !pKilrek->getVictim())
-                pKilrek->AddThreat(pWho, 0.0f);
+                pKilrek->AddThreat(pWho);
 
             m_pInstance->SetData(TYPE_TERESTIAN, IN_PROGRESS);
         }
@@ -258,7 +258,7 @@ struct MANGOS_DLL_DECL boss_terestianAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (m_uiCheckKilrek_Timer < uiDiff)
@@ -339,7 +339,7 @@ struct MANGOS_DLL_DECL boss_terestianAI : public ScriptedAI
             Creature* pImp = m_creature->SummonCreature(NPC_FIENDISHIMP, afPortalLocations[uiRnd][0], afPortalLocations[uiRnd][1], PORTAL_Z, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 15000);
             if (pImp)
             {
-                pImp->AddThreat(m_creature->getVictim(), 1.0f);
+                pImp->AddThreat(m_creature->getVictim());
                 if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1))
                     pImp->AI()->AttackStart(pTarget);
             }
@@ -379,7 +379,7 @@ struct MANGOS_DLL_DECL mob_karazhan_impAI : public ScriptedAI
     void UpdateAI(const uint32 uiDiff)
     {
         //Return since we have no target
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (m_uiFirebolt_Timer < uiDiff)

@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/ >
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/ >
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -87,7 +87,7 @@ struct MANGOS_DLL_DECL molten_flameAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget())
+        if (!m_creature->SelectHostileTarget())
             return;
 
         if (m_creature->getVictim() && m_creature->isAlive())
@@ -234,9 +234,8 @@ struct MANGOS_DLL_DECL boss_supremusAI : public ScriptedAI
         uint32 health = 0;
         Unit* target = NULL;
 
-        std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
-        std::list<HostilReference*>::iterator i = m_threatlist.begin();
-        for (i = m_threatlist.begin(); i!= m_threatlist.end();++i)
+        ThreatList const& tList = m_creature->getThreatManager().getThreatList();
+        for (ThreatList::const_iterator i = tList.begin();i != tList.end(); ++i)
         {
             Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
             if (pUnit && m_creature->IsWithinDistInMap(pUnit, ATTACK_DISTANCE))
@@ -254,7 +253,7 @@ struct MANGOS_DLL_DECL boss_supremusAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (!m_creature->HasAura(SPELL_BERSERK, 0))

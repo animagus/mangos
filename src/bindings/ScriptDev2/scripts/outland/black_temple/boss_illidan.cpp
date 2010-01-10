@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -464,8 +464,8 @@ struct MANGOS_DLL_DECL npc_akama_illidanAI : public ScriptedAI
 
     void KillAllElites()
     {
-        std::list<HostilReference*>::iterator itr;
-        for(itr = m_creature->getThreatManager().getThreatList().begin(); itr != m_creature->getThreatManager().getThreatList().end(); ++itr)
+        ThreatList const& tList = m_creature->getThreatManager().getThreatList();
+        for (ThreatList::const_iterator itr = tList.begin();itr != tList.end(); ++itr)
         {
             Unit* pUnit = Unit::GetUnit((*m_creature), (*itr)->getUnitGuid());
             if (pUnit && (pUnit->GetTypeId() == TYPEID_UNIT) && (pUnit->GetEntry() == ILLIDARI_ELITE))
@@ -610,8 +610,8 @@ struct MANGOS_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         if (!Illidan)
             return;
 
-        std::list<HostilReference*>::iterator itr = Illidan->getThreatManager().getThreatList().begin();
-        for(; itr != Illidan->getThreatManager().getThreatList().end(); ++itr)
+        ThreatList const& tList = m_creature->getThreatManager().getThreatList();
+        for (ThreatList::const_iterator itr = tList.begin();itr != tList.end(); ++itr)
         {
             // Loop through threatlist till our GUID is found in it.
             if ((*itr)->getUnitGuid() == m_creature->GetGUID())
@@ -827,7 +827,7 @@ struct MANGOS_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         }
 
         // If we don't have a target, or is talking, or has run away, return
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim()) return;
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim()) return;
 
         DoMeleeAttackIfReady();
     }
@@ -1004,7 +1004,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
 
         if (m_creature->Attack(who, true))
         {
-            m_creature->AddThreat(who, 0.0f);
+            m_creature->AddThreat(who);
             m_creature->SetInCombatWith(who);
             who->SetInCombatWith(m_creature);
 
@@ -1527,7 +1527,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
         }
 
         // If we don't have a target, return.
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim() || IsTalking)
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || IsTalking)
             return;
 
         // If we are 'caged', then we shouldn't do anything such as cast spells or transform into Demon Form.
@@ -2009,7 +2009,7 @@ struct MANGOS_DLL_DECL boss_maievAI : public ScriptedAI
         }
 
         // Return if we don't have a target
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (TauntTimer < diff)
@@ -2133,17 +2133,16 @@ struct MANGOS_DLL_DECL flame_of_azzinothAI : public ScriptedAI
     void Charge()
     {
         // Get the Threat List
-        std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
+        ThreatList const& tList = m_creature->getThreatManager().getThreatList();
 
         // He doesn't have anyone in his threatlist, useless to continue
-        if (!m_threatlist.size())
+        if (tList.empty())
             return;
 
         std::list<Unit*> targets;
-        std::list<HostilReference *>::iterator itr = m_threatlist.begin();
 
         //store the threat list in a different container
-        for(; itr!= m_threatlist.end(); ++itr)
+        for (ThreatList::const_iterator itr = tList.begin();itr != tList.end(); ++itr)
         {
             Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
             //only on alive players
@@ -2166,7 +2165,7 @@ struct MANGOS_DLL_DECL flame_of_azzinothAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (FlameBlastTimer < diff)
@@ -2211,7 +2210,7 @@ struct MANGOS_DLL_DECL shadow_demonAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim()) return;
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim()) return;
 
         // Only cast the below on players.
         if (m_creature->getVictim()->GetTypeId() != TYPEID_PLAYER) return;

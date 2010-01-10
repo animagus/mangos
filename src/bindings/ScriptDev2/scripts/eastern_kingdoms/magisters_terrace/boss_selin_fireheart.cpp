@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -54,7 +54,7 @@ struct MANGOS_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
     boss_selin_fireheartAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
 
         Crystals.clear();
         //GUIDs per instance is static, so we only need to load them once.
@@ -64,7 +64,7 @@ struct MANGOS_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
             for(uint8 i = 0; i < size; ++i)
             {
                 uint64 guid = m_pInstance->GetData64(DATA_FEL_CRYSTAL);
-                debug_log("SD2: Selin: Adding Fel Crystal %u to list", guid);
+                debug_log("SD2: Selin: Adding Fel Crystal " UI64FMTD " to list", guid);
                 Crystals.push_back(guid);
             }
         }
@@ -72,7 +72,7 @@ struct MANGOS_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
 
     std::list<uint64> Crystals;
 
@@ -243,7 +243,7 @@ struct MANGOS_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (!DrainingCrystal)
@@ -258,7 +258,7 @@ struct MANGOS_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
                 }else DrainLifeTimer -= diff;
 
                 // Heroic only
-                if (m_bIsHeroicMode)
+                if (!m_bIsRegularMode)
                 {
                     if (DrainManaTimer < diff)
                     {
@@ -285,10 +285,10 @@ struct MANGOS_DLL_DECL boss_selin_fireheartAI : public ScriptedAI
                 {
                     SelectNearestCrystal();
 
-                    if (m_bIsHeroicMode)
-                        DrainCrystalTimer = urand(10000, 15000);
-                    else
+                    if (m_bIsRegularMode)
                         DrainCrystalTimer = urand(20000, 25000);
+                    else
+                        DrainCrystalTimer = urand(10000, 15000);
 
                 }else DrainCrystalTimer -= diff;
             }

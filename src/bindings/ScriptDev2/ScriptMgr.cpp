@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software licensed under GPL version 2
  * Please see the included DOCS/LICENSE.TXT for more information */
 
@@ -21,19 +21,18 @@ void FillSpellSummary();
 
 void LoadDatabase()
 {
-    //Get db string from file
-    char const* sd2dbstring = NULL;
+    std::string strSD2DBinfo = SD2Config.GetStringDefault("ScriptDev2DatabaseInfo", "");
 
-    if (!SD2Config.GetString("ScriptDev2DatabaseInfo", &sd2dbstring))
+    if (strSD2DBinfo.empty())
     {
         error_log("SD2: Missing Scriptdev2 database info from configuration file. Load database aborted.");
         return;
     }
 
     //Initialize connection to DB
-    if (sd2dbstring && SD2Database.Initialize(sd2dbstring))
+    if (SD2Database.Initialize(strSD2DBinfo.c_str()))
     {
-        outstring_log("SD2: ScriptDev2 database at %s initialized.", sd2dbstring);
+        outstring_log("SD2: ScriptDev2 database at %s initialized.", strSD2DBinfo.c_str());
         outstring_log("");
 
         pSystemMgr.LoadVersion();

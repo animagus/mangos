@@ -144,6 +144,7 @@ scripts/eastern_kingdoms/scarlet_monastery/boss_houndmaster_loksey.cpp \
 scripts/eastern_kingdoms/scarlet_monastery/boss_interrogator_vishas.cpp \
 scripts/eastern_kingdoms/scarlet_monastery/boss_mograine_and_whitemane.cpp \
 scripts/eastern_kingdoms/scarlet_monastery/boss_scorn.cpp \
+scripts/eastern_kingdoms/scarlet_monastery/boss_headless_horseman.cpp \
 scripts/eastern_kingdoms/scarlet_monastery/instance_scarlet_monastery.cpp \
 scripts/eastern_kingdoms/scarlet_monastery/scarlet_monastery.h \
 scripts/eastern_kingdoms/scholomance/boss_darkmaster_gandling.cpp \
@@ -182,6 +183,9 @@ scripts/eastern_kingdoms/stratholme/boss_timmy_the_cruel.cpp \
 scripts/eastern_kingdoms/stratholme/instance_stratholme.cpp \
 scripts/eastern_kingdoms/stratholme/stratholme.cpp \
 scripts/eastern_kingdoms/stratholme/stratholme.h \
+scripts/eastern_kingdoms/sunken_temple/instance_sunken_temple.cpp \
+scripts/eastern_kingdoms/sunken_temple/sunken_temple.h \
+scripts/eastern_kingdoms/sunken_temple/sunken_temple.cpp \
 scripts/eastern_kingdoms/sunwell_plateau/boss_brutallus.cpp \
 scripts/eastern_kingdoms/sunwell_plateau/boss_kalecgos.cpp \
 scripts/eastern_kingdoms/sunwell_plateau/boss_kiljaeden.cpp \
@@ -273,6 +277,8 @@ scripts/kalimdor/silithus.cpp \
 scripts/kalimdor/stonetalon_mountains.cpp \
 scripts/kalimdor/tanaris.cpp \
 scripts/kalimdor/teldrassil.cpp \
+scripts/kalimdor/ruins_of_ahnqiraj/ruins_of_ahnqiraj.cpp \
+scripts/kalimdor/ruins_of_ahnqiraj/ruins_of_ahnqiraj.h \
 scripts/kalimdor/temple_of_ahnqiraj/boss_bug_trio.cpp \
 scripts/kalimdor/temple_of_ahnqiraj/boss_cthun.cpp \
 scripts/kalimdor/temple_of_ahnqiraj/boss_fankriss.cpp \
@@ -293,6 +299,7 @@ scripts/kalimdor/wailing_caverns/instance_wailing_caverns.cpp \
 scripts/kalimdor/winterspring.cpp \
 scripts/kalimdor/zulfarrak/zulfarrak.cpp \
 scripts/northrend/azjol-nerub/ahnkahet/ahnkahet.h \
+scripts/northrend/zuldrak.cpp \
 scripts/northrend/azjol-nerub/ahnkahet/boss_jedoga.cpp \
 scripts/northrend/azjol-nerub/ahnkahet/boss_nadox.cpp \
 scripts/northrend/azjol-nerub/ahnkahet/boss_taldaram.cpp \
@@ -355,6 +362,8 @@ scripts/northrend/ulduar/halls_of_lightning/instance_halls_of_lightning.cpp \
 scripts/northrend/ulduar/halls_of_stone/boss_maiden_of_grief.cpp \
 scripts/northrend/ulduar/halls_of_stone/boss_sjonnir.cpp \
 scripts/northrend/ulduar/halls_of_stone/halls_of_stone.cpp \
+scripts/northrend/ulduar/halls_of_stone/halls_of_stone.h \
+scripts/northrend/ulduar/halls_of_stone/instance_halls_of_stone.cpp \
 scripts/northrend/ulduar/ulduar/instance_ulduar.cpp \
 scripts/northrend/ulduar/ulduar/ulduar.h \
 scripts/northrend/utgarde_keep/utgarde_keep/boss_ingvar.cpp \
@@ -472,7 +481,6 @@ scripts/world/go_scripts.cpp \
 scripts/world/guards.cpp \
 scripts/world/item_scripts.cpp \
 scripts/world/mob_generic_creature.cpp \
-scripts/world/npc_innkeeper.cpp \
 scripts/world/npc_professions.cpp \
 scripts/world/npcs_special.cpp \
 system/ScriptLoader.cpp \

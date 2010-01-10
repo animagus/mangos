@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -282,7 +282,7 @@ struct MANGOS_DLL_DECL advisorbase_ai : public ScriptedAI
                 AttackStart(pTarget);
                 m_creature->GetMotionMaster()->Clear();
                 m_creature->GetMotionMaster()->MoveChase(pTarget);
-                m_creature->AddThreat(pTarget, 0.0f);
+                m_creature->AddThreat(pTarget);
             }
             else
                 m_uiDelayRes_Timer -= uiDiff;
@@ -430,7 +430,7 @@ struct MANGOS_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         StartEvent();
 
                     pWho->SetInCombatWith(m_creature);
-                    m_creature->AddThreat(pWho, 0.0f);
+                    m_creature->AddThreat(pWho);
                 }
             }
         }
@@ -759,7 +759,7 @@ struct MANGOS_DLL_DECL boss_kaelthasAI : public ScriptedAI
             case 6:
             {
                 //Return since we have no target
-                if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+                if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
                     return;
 
                 //m_uiFireball_Timer
@@ -825,20 +825,14 @@ struct MANGOS_DLL_DECL boss_kaelthasAI : public ScriptedAI
                         m_uiMindControl_Timer -= uiDiff;
                 }
 
-                //m_uiPhoenix_Timer
-                if (m_uiPhoenix_Timer < uiDiff)
-                {
-                    DoCast(m_creature, SPELL_PHOENIX_ANIMATION);
-
-                    if (Creature* pPhoenix = m_creature->SummonCreature(NPC_PHOENIX, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 45000))
+                 // Summon Phoenix
+                 if (m_uiPhoenix_Timer < uiDiff)
+                 {
+                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
                     {
-                        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                            pPhoenix->AI()->AttackStart(pTarget);
+                        DoCast(pTarget, SPELL_PHOENIX_ANIMATION);
+                        DoScriptText(urand(0, 1) ? SAY_SUMMON_PHOENIX1 : SAY_SUMMON_PHOENIX2, pTarget);
                     }
-                    else
-                        error_log("SD2: Kael'Thas Phoenix could not be spawned");
-
-                    DoScriptText(urand(0, 1) ? SAY_SUMMON_PHOENIX1 : SAY_SUMMON_PHOENIX2, m_creature);
 
                     m_uiPhoenix_Timer = 60000;
                 }
@@ -920,10 +914,10 @@ struct MANGOS_DLL_DECL boss_kaelthasAI : public ScriptedAI
                     //m_uiGravityLapse_Timer
                     if (m_uiGravityLapse_Timer < uiDiff)
                     {
-                        std::list<HostilReference*>::iterator i = m_creature->getThreatManager().getThreatList().begin();
                         switch(m_uiGravityLapse_Phase)
                         {
                             case 0:
+                            {
                                 m_creature->StopMoving();
                                 m_creature->GetMotionMaster()->Clear();
                                 m_creature->GetMotionMaster()->MoveIdle();
@@ -931,7 +925,8 @@ struct MANGOS_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 m_creature->SendMonsterMove(afGravityPos[0], afGravityPos[1], afGravityPos[2], 0, MONSTER_MOVE_NONE, 0);
 
                                 // 1) Kael'thas will portal the whole raid right into his body
-                                for (i = m_creature->getThreatManager().getThreatList().begin(); i!= m_creature->getThreatManager().getThreatList().end();++i)
+                                ThreatList const& tList = m_creature->getThreatManager().getThreatList();
+                                for (ThreatList::const_iterator i = tList.begin();i != tList.end(); ++i)
                                 {
                                     Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
                                     if (pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER))
@@ -947,12 +942,14 @@ struct MANGOS_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 m_uiShockBarrier_Timer = 1000;
                                 m_uiNetherBeam_Timer = 5000;
                                 break;
-
+                            }
                             case 1:
+                            {
                                 DoScriptText(urand(0, 1) ? SAY_GRAVITYLAPSE1 : SAY_GRAVITYLAPSE2, m_creature);
 
                                 // 2) At that point he will put a Gravity Lapse debuff on everyone
-                                for (i = m_creature->getThreatManager().getThreatList().begin(); i!= m_creature->getThreatManager().getThreatList().end(); ++i)
+                                ThreatList const& tList = m_creature->getThreatManager().getThreatList();
+                                for (ThreatList::const_iterator i = tList.begin();i != tList.end(); ++i)
                                 {
                                     if (Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid()))
                                     {
@@ -973,7 +970,7 @@ struct MANGOS_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 m_uiGravityLapse_Timer = 10000;
                                 ++m_uiGravityLapse_Phase;
                                 break;
-
+                            }
                             case 2:
                                 //Cast nether vapor aura on self
                                 m_creature->InterruptNonMeleeSpells(false);
@@ -984,8 +981,10 @@ struct MANGOS_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 break;
 
                             case 3:
+                            {
                                 //Remove flight
-                                for (i = m_creature->getThreatManager().getThreatList().begin(); i!= m_creature->getThreatManager().getThreatList().end(); ++i)
+                                ThreatList const& tList = m_creature->getThreatManager().getThreatList();
+                                for (ThreatList::const_iterator i = tList.begin();i != tList.end(); ++i)
                                 {
                                     if (Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid()))
                                     {
@@ -1004,6 +1003,7 @@ struct MANGOS_DLL_DECL boss_kaelthasAI : public ScriptedAI
                                 m_uiGravityLapse_Phase = 0;
                                 AttackStart(m_creature->getVictim());
                                 break;
+                            }
                         }
                     }
                     else
@@ -1082,7 +1082,7 @@ struct MANGOS_DLL_DECL boss_thaladred_the_darkenerAI : public advisorbase_ai
             return;
 
         //Return since we have no target
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         //m_uiGaze_Timer
@@ -1157,7 +1157,7 @@ struct MANGOS_DLL_DECL boss_lord_sanguinarAI : public advisorbase_ai
             return;
 
         //Return since we have no target
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         //m_uiFear_Timer
@@ -1205,7 +1205,7 @@ struct MANGOS_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_a
 
         if (m_creature->Attack(pWho, true))
         {
-            m_creature->AddThreat(pWho, 0.0f);
+            m_creature->AddThreat(pWho);
             m_creature->SetInCombatWith(pWho);
             pWho->SetInCombatWith(m_creature);
 
@@ -1231,7 +1231,7 @@ struct MANGOS_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_a
             return;
 
         //Return since we have no target
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         //m_uiYell_Timer
@@ -1275,8 +1275,8 @@ struct MANGOS_DLL_DECL boss_grand_astromancer_capernianAI : public advisorbase_a
         {
             bool m_bInMeleeRange = false;
             Unit* pTarget = NULL;
-            std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
-            for (std::list<HostilReference*>::iterator i = m_threatlist.begin(); i!= m_threatlist.end();++i)
+            ThreatList const& tList = m_creature->getThreatManager().getThreatList();
+            for (ThreatList::const_iterator i = tList.begin();i != tList.end(); ++i)
             {
                 Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
 
@@ -1340,7 +1340,7 @@ struct MANGOS_DLL_DECL boss_master_engineer_telonicusAI : public advisorbase_ai
             return;
 
         //Return since we have no target
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         //m_uiBomb_Timer
@@ -1389,7 +1389,7 @@ struct MANGOS_DLL_DECL mob_phoenix_tkAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (m_uiCycle_Timer < uiDiff)
@@ -1437,7 +1437,7 @@ struct MANGOS_DLL_DECL mob_phoenix_egg_tkAI : public ScriptedAI
 
     void JustSummoned(Creature* pSummoned)
     {
-        pSummoned->AddThreat(m_creature->getVictim(), 0.0f);
+        pSummoned->AddThreat(m_creature->getVictim());
         pSummoned->CastSpell(pSummoned,SPELL_REBIRTH,false);
     }
 

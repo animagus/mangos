@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software licensed under GPL version 2
  * Please see the included DOCS/LICENSE.TXT for more information */
 
@@ -31,7 +31,7 @@ enum
     GO_ECK_UNDERWATER_DOOR = 192569,
     GO_GALDARAH_DOOR       = 192568,
     GO_EXIT_DOOR_L         = 193208,
-    GO_EXIT_DOOR_R         = 193207,
+    GO_EXIT_DOOR_R         = 193209,
 
     GO_ALTAR_OF_SLADRAN    = 192518,
     GO_ALTAR_OF_MOORABI    = 192519,

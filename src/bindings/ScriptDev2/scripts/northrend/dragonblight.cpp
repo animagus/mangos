@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -17,13 +17,14 @@
 /* ScriptData
 SDName: Dragonblight
 SD%Complete: 100
-SDComment: Quest support: 12499/12500(end sequenze). Taxi paths Wyrmrest temple.
+SDComment: Quest support: 12166, 12499/12500(end sequenze). Taxi paths Wyrmrest temple.
 SDCategory: Dragonblight
 EndScriptData */
 
 /* ContentData
 npc_afrasastrasz
 npc_alexstrasza_wr_gate
+npc_liquid_fire_of_elune
 npc_tariolstrasz
 npc_torastrasza
 EndContentData */
@@ -51,7 +52,7 @@ bool GossipHello_npc_afrasastrasz(Player* pPlayer, Creature* pCreature)
     pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_TAXI_MIDDLE_DOWN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
     pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_TAXI_MIDDLE_TOP, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
 
-    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
     return true;
 }
 
@@ -91,7 +92,7 @@ bool GossipHello_npc_alexstrasza_wr_gate(Player* pPlayer, Creature* pCreature)
     if (pPlayer->GetQuestRewardStatus(QUEST_RETURN_TO_AG_A) || pPlayer->GetQuestRewardStatus(QUEST_RETURN_TO_AG_H))
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_WHAT_HAPPENED, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
-    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
     return true;
 }
 
@@ -104,6 +105,49 @@ bool GossipSelect_npc_alexstrasza_wr_gate(Player* pPlayer, Creature* pCreature, 
     }
 
     return true;
+}
+
+/*######
+## npc_liquid_fire_of_elune (quest 12166)
+######*/
+
+enum
+{
+    NPC_ELK                 = 26616,
+    NPC_ELK_BUNNY           = 27111,
+    NPC_GRIZZLY             = 26643,
+    NPC_GRIZZLY_BUNNY       = 27112,
+
+    SPELL_LIQUID_FIRE       = 46770,
+    SPELL_LIQUID_FIRE_AURA  = 47972
+};
+
+bool EffectDummyCreature_npc_liquid_fire_of_elune(Unit* pCaster, uint32 uiSpellId, uint32 uiEffIndex, Creature* pCreatureTarget)
+{
+    //always check spellid and effectindex
+    if (uiSpellId == SPELL_LIQUID_FIRE && uiEffIndex == 0)
+    {
+        if (pCaster->GetTypeId() == TYPEID_PLAYER)
+        {
+            if (pCreatureTarget->HasAura(SPELL_LIQUID_FIRE_AURA))
+                return true;
+
+            if (pCreatureTarget->GetEntry() == NPC_ELK)
+            {
+                pCreatureTarget->CastSpell(pCreatureTarget, SPELL_LIQUID_FIRE_AURA, true);
+                ((Player*)pCaster)->KilledMonsterCredit(NPC_ELK_BUNNY, 0);
+            }
+            else if (pCreatureTarget->GetEntry() == NPC_GRIZZLY)
+            {
+                pCreatureTarget->CastSpell(pCreatureTarget, SPELL_LIQUID_FIRE_AURA, true);
+                ((Player*)pCaster)->KilledMonsterCredit(NPC_GRIZZLY_BUNNY, 0);
+            }
+        }
+
+        //always return true when we are handling this spell and effect
+        return true;
+    }
+    return false;
 }
 
 /*######
@@ -129,7 +173,7 @@ bool GossipHello_npc_tariolstrasz(Player* pPlayer, Creature* pCreature)
     pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_TAXI_BOTTOM_TOP, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
     pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_TAXI_BOTTOM_MIDDLE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
 
-    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
     return true;
 }
 
@@ -169,7 +213,7 @@ bool GossipHello_npc_torastrasza(Player* pPlayer, Creature* pCreature)
     pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_TAXI_TOP_MIDDLE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
     pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_TAXI_TOP_BOTTOM, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
 
-    pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
     return true;
 }
 
@@ -189,61 +233,45 @@ bool GossipSelect_npc_torastrasza(Player* pPlayer, Creature* pCreature, uint32 u
 }
 
 /*######
-## Woodlands Walker quests Strengthen the Ancients
+## npc_woodlands_walker
 ######*/
 
 enum
 {
-	SPELL_ADD_ITEM             = 47550
+    SPELL_STRENGTH_ANCIENTS     = 47575,
+    SPELL_CREATE_BARK_WALKERS   = 47550,
+    FACTION_HOSTILE             = 16,
+
+    EMOTE_AGGRO                 = -1000551,
+    EMOTE_CREATE                = -1000552
 };
 
-#define GOSSIP_ITEM_GIVE_ITEM           "I would like to see Lord Of Afrasastrasz, in the middle of the temple."
-#define SAY_AGREE                       "Breaking off a piece of its bark, the Woodlands Walker hands it to you before departing."
-#define SAY_DECIDE                      "The Woodlands Walker is angered by your request and attacks!."
-
-bool GossipHello_npc_woodlands_walker(Player* pPlayer, Creature* pCreature)
+bool EffectDummyCreature_npc_woodlands_walker(Unit* pCaster, uint32 uiSpellId, uint32 uiEffIndex, Creature* pCreatureTarget)
 {
-	if (pCreature->isQuestGiver())
-		pPlayer->PrepareQuestMenu(pCreature->GetGUID());
+    //always check spellid and effectindex
+    if (uiSpellId == SPELL_STRENGTH_ANCIENTS && uiEffIndex == 0)
+    {
+        if (pCaster->GetTypeId() == TYPEID_PLAYER)
+        {
+            if (urand(0, 1))
+            {
+                DoScriptText(EMOTE_AGGRO, pCreatureTarget);
+                pCreatureTarget->setFaction(FACTION_HOSTILE);
+                pCreatureTarget->AI()->AttackStart(pCaster);
+            }
+            else
+            {
+                DoScriptText(EMOTE_CREATE, pCreatureTarget);
+                pCaster->CastSpell(pCaster, SPELL_CREATE_BARK_WALKERS, true);
+                pCreatureTarget->ForcedDespawn();
+            }
+        }
 
-	if (pPlayer->GetQuestStatus(12096) == QUEST_STATUS_INCOMPLETE || pPlayer->GetQuestStatus(12092) == QUEST_STATUS_INCOMPLETE)
-		pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GIVE_ITEM, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-
-	pPlayer->SEND_GOSSIP_MENU(pCreature->GetNpcTextId(), pCreature->GetGUID());
-	return true;
+        //always return true when we are handling this spell and effect
+        return true;
+    }
+    return false;
 }
-
-bool GossipSelect_npc_woodlands_walker(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
-{
-	if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
-	{
-		pPlayer->CLOSE_GOSSIP_MENU();
-		if (rand()%2)
-		{
-			pPlayer->CastSpell(pPlayer, SPELL_ADD_ITEM, true);
-			pCreature->SetVisibility(VISIBILITY_RESPAWN);
-			pCreature->ForcedDespawn();
-		}
-		else
-		{
-			pCreature->setFaction(14);
-			pCreature->AI()->AttackStart(pPlayer);
-		}
-	}
-	return true;
-}
-
-struct MANGOS_DLL_DECL npc_woodlands_walkerAI : public ScriptedAI
-{
-	npc_woodlands_walkerAI(Creature* pCreature) : ScriptedAI(pCreature) { Reset(); }
-	void Reset() { m_creature->setFaction(35);}
-};
-
-CreatureAI* GetAI_npc_woodlands_walker(Creature* pCreature)
-{
-	return new npc_woodlands_walkerAI (pCreature);
-}
-
 void AddSC_dragonblight()
 {
     Script *newscript;
@@ -261,6 +289,11 @@ void AddSC_dragonblight()
     newscript->RegisterSelf();
 
     newscript = new Script;
+    newscript->Name = "npc_liquid_fire_of_elune";
+    newscript->pEffectDummyCreature = &EffectDummyCreature_npc_liquid_fire_of_elune;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
     newscript->Name = "npc_tariolstrasz";
     newscript->pGossipHello = &GossipHello_npc_tariolstrasz;
     newscript->pGossipSelect = &GossipSelect_npc_tariolstrasz;
@@ -271,11 +304,9 @@ void AddSC_dragonblight()
     newscript->pGossipHello = &GossipHello_npc_torastrasza;
     newscript->pGossipSelect = &GossipSelect_npc_torastrasza;
     newscript->RegisterSelf();
-	
-	newscript = new Script;
-	newscript->Name = "npc_woodlands_walker";
-	newscript->GetAI = &GetAI_npc_woodlands_walker;
-	newscript->pGossipHello = &GossipHello_npc_woodlands_walker;
-	newscript->pGossipSelect = &GossipSelect_npc_woodlands_walker;
-	newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_woodlands_walker";
+    newscript->pEffectDummyCreature = &EffectDummyCreature_npc_woodlands_walker;
+    newscript->RegisterSelf();
 }

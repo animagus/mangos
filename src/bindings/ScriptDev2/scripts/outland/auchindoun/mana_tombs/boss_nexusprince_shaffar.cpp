@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -122,7 +122,7 @@ struct MANGOS_DLL_DECL boss_nexusprince_shaffarAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (m_uiFrostNova_Timer < uiDiff)
@@ -195,18 +195,18 @@ struct MANGOS_DLL_DECL mob_ethereal_beaconAI : public ScriptedAI
 {
     mob_ethereal_beaconAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
 
     uint32 m_uiApprentice_Timer;
     uint32 m_uiArcaneBolt_Timer;
 
     void Reset()
     {
-        m_uiApprentice_Timer = m_bIsHeroicMode ? 10000 : 20000;
+        m_uiApprentice_Timer = m_bIsRegularMode ? 20000 : 10000;
         m_uiArcaneBolt_Timer = 1000;
     }
 
@@ -218,12 +218,12 @@ struct MANGOS_DLL_DECL mob_ethereal_beaconAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (m_uiArcaneBolt_Timer < uiDiff)
         {
-            DoCast(m_creature->getVictim(),SPELL_ARCANE_BOLT);
+            DoCast(m_creature->getVictim(), SPELL_ARCANE_BOLT);
             m_uiArcaneBolt_Timer = urand(2000, 4500);
         }else m_uiArcaneBolt_Timer -= uiDiff;
 
@@ -232,7 +232,7 @@ struct MANGOS_DLL_DECL mob_ethereal_beaconAI : public ScriptedAI
             if (m_creature->IsNonMeleeSpellCasted(false))
                 m_creature->InterruptNonMeleeSpells(true);
 
-            m_creature->CastSpell(m_creature,SPELL_ETHEREAL_APPRENTICE,true);
+            m_creature->CastSpell(m_creature, SPELL_ETHEREAL_APPRENTICE, true);
 
             m_creature->ForcedDespawn();
             return;

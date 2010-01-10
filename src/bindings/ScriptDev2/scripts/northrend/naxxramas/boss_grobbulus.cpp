@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
@@ -28,7 +28,6 @@ update creature_template set ScriptName='boss_grobbulus' where entry=15931;
 update creature_template set ScriptName='npc_grobbulus_poison_cloud',faction_A=14,faction_H=14,unit_flags=unit_flags|'33554432' where entry=16363;
 update creature_template set minhealth=75600,maxhealth=75600 where entry=16290;*/
 
-
 #define SPELL_BOMBARD_SLIME         28280
 
 #define SPELL_POISON_CLOUD          28240
@@ -45,13 +44,12 @@ struct MANGOS_DLL_DECL boss_grobbulusAI : public ScriptedAI
     boss_grobbulusAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
 
     uint32 PoisonCloud_Timer;
     uint32 MutatingInjection_Timer;
@@ -100,7 +98,7 @@ struct MANGOS_DLL_DECL boss_grobbulusAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (PoisonCloud_Timer < diff)
@@ -132,7 +130,7 @@ struct MANGOS_DLL_DECL boss_grobbulusAI : public ScriptedAI
 
         if (SlimeSpary_Timer < diff)
         {
-            DoCast(m_creature, m_bIsHeroicMode ? H_SPELL_SLIME_SPRAY : SPELL_SLIME_SPRAY);
+            DoCast(m_creature, m_bIsRegularMode ? H_SPELL_SLIME_SPRAY : SPELL_SLIME_SPRAY);
             SlimeSpary_Timer = 15000+rand()%15000;
         }else SlimeSpary_Timer -= diff;
 

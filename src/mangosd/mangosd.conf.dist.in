@@ -1,4 +1,4 @@
-#####################################
+﻿#####################################
 # MaNGOS Configuration file         #
 #####################################
 ConfVersion=2008080101
@@ -237,6 +237,11 @@ AddonChannel = 1
 #        Packet logging file for the worldserver
 #        Default: "world.log"
 #
+#    WorldLogTimestamp
+#        Logfile with timestamp of server start in name
+#        Default: 0 - no timestamp in name
+#                 1 - add timestamp in name in form Logname_YYYY-MM-DD_HH-MM-SS.Ext for Logname.Ext
+#
 #    DBErrorLogFile
 #        Log file of DB errors detected at server run
 #        Default: "DBErrors.log"
@@ -300,6 +305,7 @@ LogFilter_CreatureMoves = 1
 LogFilter_TransportMoves = 1
 LogFilter_VisibilityChanges = 1
 WorldLogFile = ""
+WorldLogTimestamp = 0
 DBErrorLogFile = "DBErrors.log"
 CharLogFile = "Char.log"
 CharLogTimestamp = 0
@@ -484,10 +490,6 @@ LogColors = ""
 #        Enable or disable instant logout for security level (0..4) or high (NOT in combat/while dueling/while falling)
 #        Default: 1 (Mods/GMs/Admins)
 #
-#    DisableWaterBreath
-#        Disable/enable waterbreathing for security level (0..4) or high
-#        Default: 4 (None)
-#
 #    AllFlightPaths
 #        Players will start with all flight paths (Note: ALL flight paths, not only player's team)
 #        Default: 0 (false)
@@ -550,6 +552,33 @@ LogColors = ""
 #        Increase to store more guild_bank events in table - minimum is 25 (GUILD_BANK_MAX_LOGS) for each guild_bank tab
 #        Useful when you don't want old log events to be overwritten by new, but increasing can slow down performance
 #        Default: 25
+#
+#    TimerBar.Fatigue.GMLevel
+#        Disable/enable fatigue for security level (0..4) or high
+#        Default: 4 (None)
+#
+#    TimerBar.Fatigue.Max
+#        Fatigue max timer value (in secs)
+#        Default: 60 (1 minute)
+#                  0 (instant death)
+#
+#    TimerBar.Breath.GMLevel
+#        Disable/enable waterbreathing for security level (0..4) or high
+#        Default: 4 (None)
+#
+#    TimerBar.Breath.Max
+#        Waterbreathing max timer value (in secs)
+#        Default: 180
+#                   0 (instant underwater breathing damage start)
+#
+#    TimerBar.Fire.GMLevel
+#        Disable/enable lava fire damage for security level (0..4) or high
+#        Default: 4 (None)
+#
+#    TimerBar.Fire.Max
+#        Lava damage delay max timer value (in secs)
+#        Default:  1
+#                  0 (instant in lava damage start)
 #
 #    MaxPrimaryTradeSkill
 #        Max count that player can learn the primary trade skill.
@@ -640,6 +669,12 @@ Quests.LowLevelHideDiff = 4
 Quests.HighLevelHideDiff = 7
 Guild.EventLogRecordsCount = 100
 Guild.BankEventLogRecordsCount = 25
+TimerBar.Fatigue.GMLevel = 4
+TimerBar.Fatigue.Max = 60
+TimerBar.Breath.GMLevel = 4
+TimerBar.Breath.Max = 180
+TimerBar.Fire.GMLevel = 4
+TimerBar.Fire.Max = 1
 MaxPrimaryTradeSkill = 2
 MinPetitionSigns = 9
 MaxGroupXPDistance = 74
@@ -1307,30 +1342,6 @@ Network.Threads = 1
 Network.OutKBuff = -1
 Network.OutUBuff = 65536
 Network.TcpNodelay = 1
-
-###################################################################################################################
-# MOVEMENT ANTICHEAT
-#
-#    Anticheat.Movement.Enable
-#        Enable Movement Anticheat
-#        Default: 1 - on
-#                 0 - off
-#
-#    Anticheat.Movement.TeleportToPlaneAlarms
-#        maximum alarms before player will be kicked (default 50, allowed 20 - 100)
-#
-#    Anticheat.Movement.MistimingDelta
-#        mistiming intelval between client and serverside (default 10000 ms, allowed 1000 - 15000 ms)
-#
-#    Anticheat.Movement.MistimingAlarms
-#        mistiming alarms before player will be kicked (default 20, allowed 10 - 50)
-#
-###################################################################################################################
-
-Anticheat.Movement.Enable = 1
-Anticheat.Movement.TeleportToPlaneAlarms = 50
-Anticheat.Movement.MistimingDelta = 10000
-Anticheat.Movement.MistimingAlarms = 20
 
 ###################################################################################################################
 # CONSOLE AND REMOTE ACCESS

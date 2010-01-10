@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -43,12 +43,12 @@ struct MANGOS_DLL_DECL boss_gatewatcher_iron_handAI : public ScriptedAI
     boss_gatewatcher_iron_handAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
 
     uint32 Shadow_Power_Timer;
     uint32 Jackhammer_Timer;
@@ -87,13 +87,13 @@ struct MANGOS_DLL_DECL boss_gatewatcher_iron_handAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Return since we have no target
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         //Shadow Power
         if (Shadow_Power_Timer < diff)
         {
-            DoCast(m_creature, m_bIsHeroicMode ? H_SPELL_SHADOW_POWER : SPELL_SHADOW_POWER);
+            DoCast(m_creature, m_bIsRegularMode ? SPELL_SHADOW_POWER : H_SPELL_SHADOW_POWER);
             Shadow_Power_Timer = urand(20000, 28000);
         }else Shadow_Power_Timer -= diff;
 
@@ -102,7 +102,7 @@ struct MANGOS_DLL_DECL boss_gatewatcher_iron_handAI : public ScriptedAI
         {
             //TODO: expect cast this about 5 times in a row (?), announce it by emote only once
             DoScriptText(EMOTE_HAMMER, m_creature);
-            DoCast(m_creature->getVictim(), m_bIsHeroicMode ? H_SPELL_JACKHAMMER : SPELL_JACKHAMMER);
+            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_JACKHAMMER : H_SPELL_JACKHAMMER);
 
             //chance to yell, but not same time as emote (after spell in fact casted)
             if (urand(0, 4))

@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -144,7 +144,7 @@ struct MANGOS_DLL_DECL npc_tempest_minionAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {  
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (m_bTimeToDie)
@@ -220,12 +220,12 @@ struct MANGOS_DLL_DECL boss_emalonAI : public ScriptedAI
     boss_emalonAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroic = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroic;
+    bool m_bIsRegularMode;
 
     uint64 m_auiTempestMinionGUID[4];
     uint32 m_uiChainLightningTimer;
@@ -298,7 +298,7 @@ struct MANGOS_DLL_DECL boss_emalonAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
 	if(m_uiEvadeCheckTimer < uiDiff)
@@ -327,7 +327,7 @@ struct MANGOS_DLL_DECL boss_emalonAI : public ScriptedAI
         if (m_uiChainLightningTimer < uiDiff)
         {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(pTarget, m_bIsHeroic ? SPELL_CHAIN_LIGHTNING_H : SPELL_CHAIN_LIGHTNING_N);
+                DoCast(pTarget, !m_bIsRegularMode ? SPELL_CHAIN_LIGHTNING_H : SPELL_CHAIN_LIGHTNING_N);
             m_uiChainLightningTimer = 10000 + rand()%15000;
         }
         else
@@ -335,7 +335,7 @@ struct MANGOS_DLL_DECL boss_emalonAI : public ScriptedAI
 
         if (m_uiLightningNovaTimer < uiDiff)
         {
-            DoCast(m_creature, m_bIsHeroic ? SPELL_LIGHTNING_NOVA_H : SPELL_LIGHTNING_NOVA_N);
+            DoCast(m_creature, !m_bIsRegularMode ? SPELL_LIGHTNING_NOVA_H : SPELL_LIGHTNING_NOVA_N);
             m_uiLightningNovaTimer = 45000;
         }
         else
@@ -383,7 +383,7 @@ struct MANGOS_DLL_DECL npc_tempest_warderAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {  
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (m_bTimeToDie)

@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -92,7 +92,7 @@ struct MANGOS_DLL_DECL mob_webwrapAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
         {
             if (m_creature->isAlive())
                 m_creature->DealDamage(m_creature,m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
@@ -114,7 +114,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
 {
     boss_maexxnaAI(Creature *c) : ScriptedAI(c)
 	{
-        m_bIsHeroicMode = c->GetMap()->IsHeroic();
+        m_bIsRegularMode = c->GetMap()->IsRegularDifficulty();
 		pInstance = ((ScriptedInstance*)c->GetInstanceData());
         for (int i = 0; i < MAX_PLAYERS_WEB_WRAP; i++)
             WWplayers[i] = 0;
@@ -124,7 +124,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
 	}
 
 	ScriptedInstance *pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
 
     bool m_ach_10ppl;
     bool m_ach_25ppl;
@@ -212,14 +212,14 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
                 if (!m_creature->IsWithinDistInMap(pPlayer,200))
                     continue;
 
-                if (!m_bIsHeroicMode && m_ach_10ppl)
+                if (m_bIsRegularMode && m_ach_10ppl)
                     pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7148);
-                else if (m_bIsHeroicMode && m_ach_25ppl)
+                else if (!m_bIsRegularMode && m_ach_25ppl)
                     pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7161);
 
-                if (!m_bIsHeroicMode && m_ach_arahna_10)
+                if (m_bIsRegularMode && m_ach_arahna_10)
                     pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7128);
-                else if (m_bIsHeroicMode && m_ach_arahna_25)
+                else if (!m_bIsRegularMode && m_ach_arahna_25)
                     pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7129);
             }
         }
@@ -258,7 +258,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
                 ++m_count_ppl;
             }
         }
-        if (!m_bIsHeroicMode)
+        if (m_bIsRegularMode)
         {
             if(m_count_ppl>8)
                 m_ach_10ppl = false;
@@ -301,7 +301,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
             return;
         /*if (pInstance->GetData(ENCOUNT_ANUBREKHAN) == DONE && !m_arahna_timer)
             m_arahna_timer = time(NULL);*/
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         // Handle flying players, cast webwrap and summon cocoon
@@ -341,7 +341,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         //WebSpray_Timer
         if (WebSpray_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), m_bIsHeroicMode?SPELL_WEBSPRAY_H:SPELL_WEBSPRAY);
+            DoCast(m_creature->getVictim(), !m_bIsRegularMode ? SPELL_WEBSPRAY_H:SPELL_WEBSPRAY);
             for (int i = 0; i < MAX_PLAYERS_WEB_WRAP; i++)
                 if (WWplayers[i])
                 {
@@ -358,7 +358,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         //PoisonShock_Timer
         if (PoisonShock_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), m_bIsHeroicMode?SPELL_POISONSHOCK_H:SPELL_POISONSHOCK);
+            DoCast(m_creature->getVictim(), !m_bIsRegularMode ? SPELL_POISONSHOCK_H:SPELL_POISONSHOCK);
             PoisonShock_Timer = 20000;
         }else PoisonShock_Timer -= diff;
 
@@ -383,15 +383,15 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         //Enrage if not already enraged and below 30%
         if (!Enraged && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 30)
         {
-            DoCast(m_creature,m_bIsHeroicMode?SPELL_FRENZY_H:SPELL_FRENZY);
+            DoCast(m_creature,!m_bIsRegularMode ? SPELL_FRENZY_H:SPELL_FRENZY);
             Enraged = true;
         }
 
         if (Ach_Timer<diff)
         {
-            if (!m_bIsHeroicMode && m_ach_10ppl)
+            if (m_bIsRegularMode && m_ach_10ppl)
                 CheckAch();
-            else if (m_bIsHeroicMode && m_ach_25ppl)
+            else if (!m_bIsRegularMode && m_ach_25ppl)
                 CheckAch();
             Ach_Timer = 10000;
         }else Ach_Timer -= diff;  

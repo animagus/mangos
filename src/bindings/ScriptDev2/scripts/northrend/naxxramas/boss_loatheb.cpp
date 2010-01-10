@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -63,12 +63,12 @@ struct MANGOS_DLL_DECL boss_loathebAI : public ScriptedAI
     boss_loathebAI(Creature *c) : ScriptedAI(c) 
     {
         m_pInstance = ((ScriptedInstance*)c->GetInstanceData());
-        m_bIsHeroic = c->GetMap()->IsHeroic();
+        m_bIsRegularMode = c->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroic;
+    bool m_bIsRegularMode;
 
     bool m_ach_10ppl;
     bool m_ach_25ppl;
@@ -132,14 +132,14 @@ struct MANGOS_DLL_DECL boss_loathebAI : public ScriptedAI
                 if (!m_creature->IsWithinDistInMap(pPlayer,200))
                     continue;
 
-                if (!m_bIsHeroic && m_ach_10ppl)
+                if (m_bIsRegularMode && m_ach_10ppl)
                     pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7155);
-                else if (m_bIsHeroic && m_ach_25ppl)
+                else if (!m_bIsRegularMode && m_ach_25ppl)
                     pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7168);
 
-                if (!m_bIsHeroic && ach_spore_10)
+                if (m_bIsRegularMode && ach_spore_10)
                     pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7612);
-                else if (m_bIsHeroic && ach_spore_25)
+                else if (!m_bIsRegularMode && ach_spore_25)
                     pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,7613);
             }
         }
@@ -163,7 +163,7 @@ struct MANGOS_DLL_DECL boss_loathebAI : public ScriptedAI
                 ++m_count_ppl;
             }
         }
-        if (!m_bIsHeroic)
+        if (m_bIsRegularMode)
         {
             if(m_count_ppl>8)
                 m_ach_10ppl = false;
@@ -177,7 +177,7 @@ struct MANGOS_DLL_DECL boss_loathebAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         //NecroticAura_Timer
@@ -190,7 +190,7 @@ struct MANGOS_DLL_DECL boss_loathebAI : public ScriptedAI
         //Deathbloom_Timer
         if (Deathbloom_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),m_bIsHeroic?SPELL_DEATHBLOOM_H:SPELL_DEATHBLOOM);
+            DoCast(m_creature->getVictim(),!m_bIsRegularMode?SPELL_DEATHBLOOM_H:SPELL_DEATHBLOOM);
             if (m_pInstance && m_pInstance->GetData(ENCOUNT_HEIGAN) < DONE)
                 Deathbloom_Timer = 18000;
             else
@@ -200,7 +200,7 @@ struct MANGOS_DLL_DECL boss_loathebAI : public ScriptedAI
         //InevitableDoom_Timer
         if (InevitableDoom_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),m_bIsHeroic?SPELL_INEVITABLE_DOOM_H:SPELL_INEVITABLE_DOOM);
+            DoCast(m_creature->getVictim(),!m_bIsRegularMode ? SPELL_INEVITABLE_DOOM_H:SPELL_INEVITABLE_DOOM);
             InevitableDoom_Timer = InevitableDoom_Cooldown;
 			if (InevitableDoom_Cooldown > 15000)
 				InevitableDoom_Cooldown -= 5000;
@@ -234,9 +234,9 @@ struct MANGOS_DLL_DECL boss_loathebAI : public ScriptedAI
 
         if (Ach_Timer<diff)
         {
-            if (!m_bIsHeroic && m_ach_10ppl)
+            if (m_bIsRegularMode && m_ach_10ppl)
                 CheckAch();
-            else if (m_bIsHeroic && m_ach_25ppl)
+            else if (!m_bIsRegularMode && m_ach_25ppl)
                 CheckAch();
             Ach_Timer = 10000;
         }else Ach_Timer -= diff;  
@@ -280,7 +280,7 @@ struct MANGOS_DLL_DECL mob_loatheb_sporesAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Return since we have no target
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         DoMeleeAttackIfReady();

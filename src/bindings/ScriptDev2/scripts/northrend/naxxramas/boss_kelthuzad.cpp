@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -218,7 +218,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
         GuardiansOfIcecrown[3] = 0;
         GuardiansOfIcecrown[4] = 0;
         GuardiansOfIcecrown_Count = 0;
-        m_bIsHeroic = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
         Reset();
     }
@@ -226,7 +226,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
     ScriptedInstance* m_pInstance;
     uint64 GuardiansOfIcecrown[5];
     uint64 MobsArround[42];
-    bool m_bIsHeroic;
+    bool m_bIsRegularMode;
 
     uint32 AbomsTimer;
     uint32 BansheTimer;
@@ -411,7 +411,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (Phase1)
@@ -501,14 +501,14 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
             //Check for Frost Bolt
             if (FrostBolt_Timer < diff)
             {
-                DoCast(m_creature->getVictim(),m_bIsHeroic?H_SPELL_FROST_BOLT:SPELL_FROST_BOLT);
+                DoCast(m_creature->getVictim(),!m_bIsRegularMode?H_SPELL_FROST_BOLT:SPELL_FROST_BOLT);
                 FrostBolt_Timer = (rand()%60)*1000;
             }else FrostBolt_Timer -= diff;
 
             //Check for Frost Bolt Nova
             if (FrostBoltNova_Timer < diff)
             {
-                DoCast(m_creature->getVictim(),m_bIsHeroic?H_SPELL_FROST_BOLT_NOVA:SPELL_FROST_BOLT_NOVA);
+                DoCast(m_creature->getVictim(),!m_bIsRegularMode?H_SPELL_FROST_BOLT_NOVA:SPELL_FROST_BOLT_NOVA);
                 FrostBoltNova_Timer = 15000;
             }else FrostBoltNova_Timer -= diff;
 
@@ -524,16 +524,16 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
 
                 DoResetThreat(); // 50% chance WIPE
 
-                ChainsOfKelthuzad_Timer = (rand()%30+40)*1000;
+                ChainsOfKelthuzad_Timer = (rand()%30+30)*1000;
             }else ChainsOfKelthuzad_Timer -= diff;
 
             //Check for Mana Detonation
             if (ManaDetonation_Timer < diff)
             {
                 Unit* pTarget = NULL;
-                std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
+                ThreatList const& t_list = m_creature->getThreatManager().getThreatList();
                 std::vector<Unit *> target_list;
-                for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+                for(ThreatList::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                 {
                     pTarget = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
                     if (pTarget && pTarget->GetTypeId() == TYPEID_PLAYER && pTarget->getPowerType() == POWER_MANA)
@@ -566,12 +566,12 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
             if (FrostBlast_Timer < diff)
             {
                 Unit* pTarget = NULL;
-                std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
+                ThreatList const& t_list = m_creature->getThreatManager().getThreatList();
                 std::vector<Unit *> target_list;
                 //std::vector<Unit *> targets;
                 //std::vector<Unit *> targets_2;
                 // find random player target
-                for(std::list<HostilReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+                for(ThreatList::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                 {
                     pTarget = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
                     if (pTarget && pTarget->GetTypeId() == TYPEID_PLAYER)
@@ -645,7 +645,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
             DoScriptText(SAY_ANSWER_REQUEST, m_creature);
         }
 
-        if (Phase3 && (GuardiansOfIcecrown_Count < (m_bIsHeroic ? 4:2) ))
+        if (Phase3 && (GuardiansOfIcecrown_Count < (!m_bIsRegularMode ? 4:2) ))
         {
             if (GuardiansOfIcecrown_Timer < diff)
             {
@@ -734,13 +734,13 @@ struct MANGOS_DLL_DECL mob_shadow_fisureAI : public ScriptedAI
 {
     mob_shadow_fisureAI(Creature* pCreature) : ScriptedAI(pCreature) 
     {
-        m_bIsHeroic = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();         
     }
 
     uint32 m_uiDespawn;
     uint32 m_uiVoidTimer;
-    bool m_bIsHeroic;
+    bool m_bIsRegularMode;
 
     void Aggro(Unit* who)
     {
@@ -776,7 +776,7 @@ struct MANGOS_DLL_DECL mob_soul_weaverAI : public ScriptedAI
 {
     mob_soul_weaverAI(Creature* pCreature) : ScriptedAI(pCreature) 
     {
-        m_bIsHeroic = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();         
     }
 
@@ -785,12 +785,12 @@ struct MANGOS_DLL_DECL mob_soul_weaverAI : public ScriptedAI
     }
 
 
-    bool m_bIsHeroic;
+    bool m_bIsRegularMode;
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (!m_creature->HasAura(m_bIsHeroic ? 55717 : 28460))
-            DoCast(m_creature, m_bIsHeroic ? 55717 : 28460, true);
+        if (!m_creature->HasAura(!m_bIsRegularMode ? 55717 : 28460))
+            DoCast(m_creature, !m_bIsRegularMode ? 55717 : 28460, true);
 
         DoMeleeAttackIfReady();
     }
@@ -804,11 +804,11 @@ struct MANGOS_DLL_DECL mob_frozen_wastesAI : public ScriptedAI
 {
     mob_frozen_wastesAI(Creature* pCreature) : ScriptedAI(pCreature) 
     {
-        m_bIsHeroic = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();         
     }
 
-    bool m_bIsHeroic;
+    bool m_bIsRegularMode;
 
     void Reset()
     {
@@ -817,8 +817,8 @@ struct MANGOS_DLL_DECL mob_frozen_wastesAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (!m_creature->HasAura(m_bIsHeroic ? 55713 : 28458))
-            DoCast(m_creature, m_bIsHeroic ? 55713 : 28458, true);
+        if (!m_creature->HasAura(!m_bIsRegularMode ? 55713 : 28458))
+            DoCast(m_creature, !m_bIsRegularMode ? 55713 : 28458, true);
 
         DoMeleeAttackIfReady();
     }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation; either version 2 of the License, or
@@ -85,7 +85,7 @@ struct MANGOS_DLL_DECL mob_zombie_chowsAI : public ScriptedAI
     {
         if (bIsForceMove)
             m_creature->SetSpeed(MOVE_RUN,0.5f);
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim() || bIsForceMove)
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || bIsForceMove)
             return;
 
         if (!(m_creature->HasAura(29307)))
@@ -100,12 +100,12 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
     boss_gluthAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
 
     std::list<uint64> m_lZombieGUIDList;
 
@@ -150,7 +150,7 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (m_creature->GetPositionX() > 3343)
@@ -169,11 +169,11 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
             DoCast(m_creature,SPELL_DECIMATE,true); // need core support
 
             // workaround below
-            std::list<HostilReference *> t_list = m_creature->getThreatManager().getThreatList();
+            ThreatList const& t_list = m_creature->getThreatManager().getThreatList();
             if (t_list.size())
             {
                 //begin + 1 , so we don't target the one with the highest threat
-                std::list<HostilReference *>::iterator itr = t_list.begin();
+                ThreatList::const_iterator itr = t_list.begin();
                 //std::advance(itr, 1);
                 for(; itr!= t_list.end(); ++itr)
                 {
@@ -196,13 +196,13 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
                             pTemp->AddThreat(m_creature, 1000000000.0f); // force move toward to Gluth
                         }
             }
-            Decimate_Timer = (m_bIsHeroicMode ? 120000 : 105000);
+            Decimate_Timer = (m_bIsRegularMode ? 120000 : 105000);
         }else Decimate_Timer -= diff;
 
         //Enrage_Timer
         if (Enrage_Timer < diff)
         {
-            DoCast(m_creature, m_bIsHeroicMode ? SPELL_ENRAGE_H : SPELL_ENRAGE);
+            DoCast(m_creature, !m_bIsRegularMode ? SPELL_ENRAGE_H : SPELL_ENRAGE);
             Enrage_Timer = 60000;
         }else Enrage_Timer -= diff;
 
@@ -224,7 +224,7 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
         //Summon_Timer
         if (Summon_Timer < diff)
         {
-            if (m_bIsHeroicMode)
+            if (m_bIsRegularMode)
             {
                 if (Creature* pZombie = m_creature->SummonCreature(NPC_ZOMBIE_CHOW,ADD_1X,ADD_1Y,ADD_1Z,0,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,80000))
                 {

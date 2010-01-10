@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -85,12 +85,12 @@ struct MANGOS_DLL_DECL boss_nothAI : public ScriptedAI
     boss_nothAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
 
     uint32 Blink_Timer;
     uint32 Curse_Timer;
@@ -159,7 +159,7 @@ struct MANGOS_DLL_DECL boss_nothAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (m_creature->GetPositionX()>(2737))
@@ -180,8 +180,8 @@ struct MANGOS_DLL_DECL boss_nothAI : public ScriptedAI
                 //Blink_Timer
                 if (Blink_Timer < diff)
                 {
-                    DoCast(m_creature->getVictim(),m_bIsHeroicMode?SPELL_CRIPPLE_H:SPELL_CRIPPLE);
-                    if (m_bIsHeroicMode)
+                    DoCast(m_creature->getVictim(), !m_bIsRegularMode ? SPELL_CRIPPLE_H:SPELL_CRIPPLE);
+                    if (m_bIsRegularMode)
                     {
                         DoResetThreat();
                         DoCast(m_creature,SPELL_BLINK);
@@ -192,7 +192,7 @@ struct MANGOS_DLL_DECL boss_nothAI : public ScriptedAI
                 //Curse_Timer
                 if (Curse_Timer < diff)
                 {
-                    DoCast(m_creature->getVictim(),m_bIsHeroicMode?SPELL_CURSE_PLAGUEBRINGER_H:SPELL_CURSE_PLAGUEBRINGER);
+                    DoCast(m_creature->getVictim(),!m_bIsRegularMode?SPELL_CURSE_PLAGUEBRINGER_H:SPELL_CURSE_PLAGUEBRINGER);
                     Curse_Timer = 55000;
                 }else Curse_Timer -= diff;
 
@@ -200,7 +200,7 @@ struct MANGOS_DLL_DECL boss_nothAI : public ScriptedAI
                 if (Summon_Timer < diff)
                 {
                     DoScriptText(SAY_SUMMON, m_creature);
-                    max = m_bIsHeroicMode?3:2;
+                    max = m_bIsRegularMode?3:2;
                     for(uint8 i = 0; i < max; i++)
                     {
                         uint8 j = (rand()%4);
@@ -231,12 +231,12 @@ struct MANGOS_DLL_DECL boss_nothAI : public ScriptedAI
             {
                 if (Wave1_Timer < diff)
                 {
-                    max = m_bIsHeroicMode?4:2;
+                    max = m_bIsRegularMode?2:4;
                     for(uint8 i = 0; i < max; i++)
                     {
                         if (m_Stage < 4)
                             Creature_Summon = NPC_PLAGUED_CHAMPION;
-                        if (!m_bIsHeroicMode)
+                        if (m_bIsRegularMode)
                         {
                             if (m_Stage > 2 && i == 1)
                                 Creature_Summon = NPC_PLAGUED_GUARDIANS;
@@ -282,13 +282,13 @@ struct MANGOS_DLL_DECL mob_stoneskin_gargoyleAI : public ScriptedAI
 {
     mob_stoneskin_gargoyleAI(Creature *c) : ScriptedAI(c)
     {
-        m_bIsHeroicMode = c->GetMap()->IsHeroic();
+        m_bIsRegularMode = c->GetMap()->IsRegularDifficulty();
         m_pInstance = ((ScriptedInstance*)c->GetInstanceData());
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
     bool InCombat;
     uint32 m_acidTimer;
     uint32 HealTimer;
@@ -304,12 +304,12 @@ struct MANGOS_DLL_DECL mob_stoneskin_gargoyleAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         //Return since we have no target
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (m_acidTimer <= diff)
         {
-            DoCast(m_creature,m_bIsHeroicMode?54714:29325);
+            DoCast(m_creature,!m_bIsRegularMode?54714:29325);
             m_acidTimer = 5000;
         }else m_acidTimer -= diff;
 
@@ -327,7 +327,7 @@ struct MANGOS_DLL_DECL mob_stoneskin_gargoyleAI : public ScriptedAI
             if (!InCombat)
             {
                 InCombat = true;
-                DoCast(m_creature,m_bIsHeroicMode?54722:28995);
+                DoCast(m_creature,!m_bIsRegularMode?54722:28995);
             }
         }
 

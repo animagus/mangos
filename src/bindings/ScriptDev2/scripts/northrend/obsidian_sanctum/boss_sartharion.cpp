@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -176,12 +176,12 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
     boss_sartharionAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = ((ScriptedInstance*)pCreature->GetInstanceData());
-        m_bIsHeroic = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroic;
+    bool m_bIsRegularMode;
 
     bool m_bIsBerserk;
     bool m_bIsSoftEnraged;
@@ -373,7 +373,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
                 for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                 {
                     if (i->getSource()->isAlive())
-                        DoScriptText(WHISPER_LAVA_CHURN,m_creature,i->getSource());
+                        DoScriptText(WHISPER_LAVA_CHURN, m_creature,i->getSource());
                 }
             }
         }
@@ -402,14 +402,14 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
     void UpdateAI(const uint32 uiDiff) 
     {
         //Return since we have no target
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         //spell will target dragons, if they are still alive at 35%
         if (!m_bIsBerserk && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) <= 35)
         {
-            DoScriptText(SAY_SARTHARION_BERSERK,m_creature);
-            DoCast(m_creature,SPELL_BERSERK);
+            DoScriptText(SAY_SARTHARION_BERSERK, m_creature);
+            DoCast(m_creature, SPELL_BERSERK);
             m_bIsBerserk = true;
         }
 
@@ -446,7 +446,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
         if (m_uiFlameBreathTimer < uiDiff)
         {
             DoScriptText(SAY_SARTHARION_BREATH, m_creature);
-            DoCast(m_creature->getVictim(), m_bIsHeroic ? SPELL_FLAME_BREATH_H : SPELL_FLAME_BREATH);
+            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_FLAME_BREATH : SPELL_FLAME_BREATH_H);
             m_uiFlameBreathTimer = 25000 + rand()%10000;
         }
         else
@@ -455,7 +455,7 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
         // Tail Sweep
         if (m_uiTailSweepTimer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), m_bIsHeroic ? SPELL_TAIL_LASH_H : SPELL_TAIL_LASH);
+            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_TAIL_LASH : SPELL_TAIL_LASH_H);
             m_uiTailSweepTimer = 15000 + rand()%5000;
         }
         else
@@ -569,12 +569,12 @@ struct MANGOS_DLL_DECL dummy_dragonAI : public ScriptedAI
     dummy_dragonAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = ((ScriptedInstance*)pCreature->GetInstanceData());
-        m_bIsHeroic = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset(); 
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroic;
+    bool m_bIsRegularMode;
 
     uint32 m_uiWaypointId;
     uint32 m_uiMoveNextTimer;
@@ -808,7 +808,7 @@ struct MANGOS_DLL_DECL mob_tenebronAI : public dummy_dragonAI
     void UpdateAI(const uint32 uiDiff)
     {
         //if no target, update dummy and return
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
         {
             if (m_pInstance && m_pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
                 DoCast(m_creature,SPELL_POWER_OF_TENEBRON,true);
@@ -820,7 +820,7 @@ struct MANGOS_DLL_DECL mob_tenebronAI : public dummy_dragonAI
         if (m_uiShadowFissureTimer < uiDiff)
         {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                DoCast(pTarget, m_bIsHeroic ? SPELL_SHADOW_FISSURE_H : SPELL_SHADOW_FISSURE);
+                DoCast(pTarget, m_bIsRegularMode ? SPELL_SHADOW_FISSURE : SPELL_SHADOW_FISSURE_H);
 
             m_uiShadowFissureTimer = 15000 + rand()%5000;
         }
@@ -831,7 +831,7 @@ struct MANGOS_DLL_DECL mob_tenebronAI : public dummy_dragonAI
         if (m_uiShadowBreathTimer < uiDiff)
         {
             DoScriptText(SAY_TENEBRON_BREATH, m_creature);
-            DoCast(m_creature->getVictim(), m_bIsHeroic ? SPELL_SHADOW_BREATH_H : SPELL_SHADOW_BREATH);
+            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_SHADOW_BREATH : SPELL_SHADOW_BREATH_H);
             m_uiShadowBreathTimer = 20000 + rand()%5000;
         }
         else
@@ -899,7 +899,7 @@ struct MANGOS_DLL_DECL mob_shadronAI : public dummy_dragonAI
     void UpdateAI(const uint32 uiDiff)
     {
         //if no target, update dummy and return
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
         {
             if (m_pInstance && m_pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
                 DoCast(m_creature,SPELL_POWER_OF_SHADRON,true);
@@ -911,7 +911,7 @@ struct MANGOS_DLL_DECL mob_shadronAI : public dummy_dragonAI
         if (m_uiShadowFissureTimer < uiDiff)
         {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                DoCast(pTarget, m_bIsHeroic ? SPELL_SHADOW_FISSURE_H : SPELL_SHADOW_FISSURE);
+                DoCast(pTarget, m_bIsRegularMode ? SPELL_SHADOW_FISSURE : SPELL_SHADOW_FISSURE_H);
 
             m_uiShadowFissureTimer = 15000 + rand()%5000;
         }
@@ -922,7 +922,7 @@ struct MANGOS_DLL_DECL mob_shadronAI : public dummy_dragonAI
         if (m_uiShadowBreathTimer < uiDiff)
         {
             DoScriptText(SAY_SHADRON_BREATH, m_creature);
-            DoCast(m_creature->getVictim(), m_bIsHeroic ? SPELL_SHADOW_BREATH_H : SPELL_SHADOW_BREATH);
+            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_SHADOW_BREATH : SPELL_SHADOW_BREATH_H);
             m_uiShadowBreathTimer = 20000 + rand()%5000;
         }
         else
@@ -984,7 +984,7 @@ struct MANGOS_DLL_DECL mob_vesperonAI : public dummy_dragonAI
     void UpdateAI(const uint32 uiDiff)
     {
         //if no target, update dummy and return
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
         {
             if (m_pInstance && m_pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
                 DoCast(m_creature,SPELL_POWER_OF_VESPERON,true);
@@ -996,7 +996,7 @@ struct MANGOS_DLL_DECL mob_vesperonAI : public dummy_dragonAI
         if (m_uiShadowFissureTimer < uiDiff)
         {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                DoCast(pTarget, m_bIsHeroic ? SPELL_SHADOW_FISSURE_H : SPELL_SHADOW_FISSURE);
+                DoCast(pTarget, m_bIsRegularMode ? SPELL_SHADOW_FISSURE : SPELL_SHADOW_FISSURE_H);
 
             m_uiShadowFissureTimer = 15000 + rand()%5000;
         }
@@ -1007,7 +1007,7 @@ struct MANGOS_DLL_DECL mob_vesperonAI : public dummy_dragonAI
         if (m_uiShadowBreathTimer < uiDiff)
         {
             DoScriptText(SAY_VESPERON_BREATH, m_creature);
-            DoCast(m_creature->getVictim(), m_bIsHeroic ? SPELL_SHADOW_BREATH_H : SPELL_SHADOW_BREATH);
+            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_SHADOW_BREATH : SPELL_SHADOW_BREATH_H);
             m_uiShadowBreathTimer = 20000 + rand()%5000;
         }
         else
@@ -1075,7 +1075,7 @@ struct MANGOS_DLL_DECL mob_acolyte_of_shadronAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         DoMeleeAttackIfReady();
@@ -1120,7 +1120,7 @@ struct MANGOS_DLL_DECL mob_acolyte_of_vesperonAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         DoMeleeAttackIfReady();
@@ -1265,7 +1265,7 @@ struct MANGOS_DLL_DECL mob_twilight_whelpAI : public ScriptedAI
     void UpdateAI(const uint32 uiDiff)
     {
         //Return since we have no target
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         // twilight torment
@@ -1405,12 +1405,12 @@ struct MANGOS_DLL_DECL mob_shadow_fissureAI : public ScriptedAI
 {
     mob_shadow_fissureAI(Creature* pCreature) : ScriptedAI(pCreature) 
     {
-        m_bIsHeroic = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();         
     }
 
     uint32 m_uiVoidBlast;
-    bool m_bIsHeroic;
+    bool m_bIsRegularMode;
 
     void Aggro(Unit* who)
     {
@@ -1427,7 +1427,7 @@ struct MANGOS_DLL_DECL mob_shadow_fissureAI : public ScriptedAI
     {
         if (m_uiVoidBlast <= uiDiff)
         {
-            DoCast(m_creature,m_bIsHeroic ? 59128 : 57581,true);
+            DoCast(m_creature,m_bIsRegularMode ? 59128 : 57581,true);
             m_creature->ForcedDespawn();
         }else m_uiVoidBlast -= uiDiff;
     }
@@ -1451,13 +1451,13 @@ struct MANGOS_DLL_DECL mob_onyx_flight_captainAI : public ScriptedAI
 {
     mob_onyx_flight_captainAI(Creature* pCreature) : ScriptedAI(pCreature) 
     {
-        //m_bIsHeroic = pCreature->GetMap()->IsHeroic();
+        //m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
         Reset();         
     }
 
     uint32 m_uiPummpelTimer, m_uiHammmerTimer;
-    bool m_bIsHeroic;
+    bool m_bIsRegularMode;
     bool m_uiAggro;
     ScriptedInstance* m_pInstance;
 
@@ -1491,7 +1491,7 @@ struct MANGOS_DLL_DECL mob_onyx_flight_captainAI : public ScriptedAI
 
             }
         }
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (m_uiPummpelTimer <= uiDiff)

@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -90,14 +90,14 @@ struct MANGOS_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
     boss_priestess_delrissaAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-        m_bIsHeroicMode = pCreature->GetMap()->IsHeroic();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         memset(&m_auiLackeyGUID, 0, sizeof(m_auiLackeyGUID));
         LackeyEntryList.clear();
         Reset();
     }
 
     ScriptedInstance* m_pInstance;
-    bool m_bIsHeroicMode;
+    bool m_bIsRegularMode;
 
     std::vector<uint32> LackeyEntryList;
     uint64 m_auiLackeyGUID[MAX_ACTIVE_LACKEY];
@@ -141,7 +141,7 @@ struct MANGOS_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
                 if (!pAdd->getVictim())
                 {
                     pWho->SetInCombatWith(pAdd);
-                    pAdd->AddThreat(pWho, 0.0f);
+                    pAdd->AddThreat(pWho);
                 }
             }
         }
@@ -227,7 +227,7 @@ struct MANGOS_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         if (HealTimer < diff)
@@ -261,7 +261,7 @@ struct MANGOS_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
                 }
             }
 
-            DoCast(target, m_bIsHeroicMode ? SPELL_RENEW_HEROIC : SPELL_RENEW_NORMAL);
+            DoCast(target, m_bIsRegularMode ? SPELL_RENEW_NORMAL : SPELL_RENEW_HEROIC);
             RenewTimer = 5000;
         }else RenewTimer -= diff;
 
@@ -314,7 +314,7 @@ struct MANGOS_DLL_DECL boss_priestess_delrissaAI : public ScriptedAI
         if (SWPainTimer < diff)
         {
             if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                DoCast(pTarget, m_bIsHeroicMode ? SPELL_SW_PAIN_HEROIC : SPELL_SW_PAIN_NORMAL);
+                DoCast(pTarget, m_bIsRegularMode ? SPELL_SW_PAIN_NORMAL : SPELL_SW_PAIN_HEROIC);
 
             SWPainTimer = 10000;
         }else SWPainTimer -= diff;
@@ -382,7 +382,7 @@ struct MANGOS_DLL_DECL boss_priestess_lackey_commonAI : public ScriptedAI
                     if (!pAdd->getVictim() && pAdd != m_creature)
                     {
                         pWho->SetInCombatWith(pAdd);
-                        pAdd->AddThreat(pWho, 0.0f);
+                        pAdd->AddThreat(pWho);
                     }
                 }
             }
@@ -392,7 +392,7 @@ struct MANGOS_DLL_DECL boss_priestess_lackey_commonAI : public ScriptedAI
                 if (pDelrissa->isAlive() && !pDelrissa->getVictim())
                 {
                     pWho->SetInCombatWith(pDelrissa);
-                    pDelrissa->AddThreat(pWho, 0.0f);
+                    pDelrissa->AddThreat(pWho);
                 }
             }
         }
@@ -506,7 +506,7 @@ struct MANGOS_DLL_DECL boss_kagani_nightstrikeAI : public boss_priestess_lackey_
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         boss_priestess_lackey_commonAI::UpdateAI(diff);
@@ -606,7 +606,7 @@ struct MANGOS_DLL_DECL boss_ellris_duskhallowAI : public boss_priestess_lackey_c
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         boss_priestess_lackey_commonAI::UpdateAI(diff);
@@ -680,7 +680,7 @@ struct MANGOS_DLL_DECL boss_eramas_brightblazeAI : public boss_priestess_lackey_
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         boss_priestess_lackey_commonAI::UpdateAI(diff);
@@ -751,7 +751,7 @@ struct MANGOS_DLL_DECL boss_yazzaiAI : public boss_priestess_lackey_commonAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         boss_priestess_lackey_commonAI::UpdateAI(diff);
@@ -800,8 +800,8 @@ struct MANGOS_DLL_DECL boss_yazzaiAI : public boss_priestess_lackey_commonAI
         if (Blink_Timer < diff)
         {
             bool InMeleeRange = false;
-            std::list<HostilReference*>& t_list = m_creature->getThreatManager().getThreatList();
-            for(std::list<HostilReference*>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+            ThreatList const& tList = m_creature->getThreatManager().getThreatList();
+            for (ThreatList::const_iterator itr = tList.begin();itr != tList.end(); ++itr)
             {
                 if (Unit* target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid()))
                 {
@@ -872,7 +872,7 @@ struct MANGOS_DLL_DECL boss_warlord_salarisAI : public boss_priestess_lackey_com
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         boss_priestess_lackey_commonAI::UpdateAI(diff);
@@ -880,8 +880,8 @@ struct MANGOS_DLL_DECL boss_warlord_salarisAI : public boss_priestess_lackey_com
         if (Intercept_Stun_Timer < diff)
         {
             bool InMeleeRange = false;
-            std::list<HostilReference*>& t_list = m_creature->getThreatManager().getThreatList();
-            for(std::list<HostilReference*>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+            ThreatList const& tList = m_creature->getThreatManager().getThreatList();
+            for (ThreatList::const_iterator itr = tList.begin();itr != tList.end(); ++itr)
             {
                 if (Unit* target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid()))
                 {
@@ -997,7 +997,7 @@ struct MANGOS_DLL_DECL boss_garaxxasAI : public boss_priestess_lackey_commonAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         boss_priestess_lackey_commonAI::UpdateAI(diff);
@@ -1099,7 +1099,7 @@ struct MANGOS_DLL_DECL boss_apokoAI : public boss_priestess_lackey_commonAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         boss_priestess_lackey_commonAI::UpdateAI(diff);
@@ -1194,7 +1194,7 @@ struct MANGOS_DLL_DECL boss_zelfanAI : public boss_priestess_lackey_commonAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (!m_creature->SelectHostilTarget() || !m_creature->getVictim())
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
         boss_priestess_lackey_commonAI::UpdateAI(diff);
