@@ -1165,9 +1165,7 @@ bool Aura::_RemoveAura()
         // Enrage aura state
         if(m_spellProto->Dispel == DISPEL_ENRAGE)
             m_target->ModifyAuraState(AURA_STATE_ENRAGE, false);
-        
-        // Mechanic bleed aura state
-        
+
         if(GetAllSpellMechanicMask(m_spellProto) & (1 << MECHANIC_BLEED))
             m_target->ModifyAuraState(AURA_STATE_MECHANIC_BLEED, false);
 
@@ -1176,42 +1174,42 @@ bool Aura::_RemoveAura()
         uint32 removeFamilyFlag2 = m_spellProto->SpellFamilyFlags2;
         switch(m_spellProto->SpellFamilyName)
         {
-        case SPELLFAMILY_PALADIN:
-            if (IsSealSpell(m_spellProto))
-                removeState = AURA_STATE_JUDGEMENT;     // Update Seals information
-            break;
-        case SPELLFAMILY_WARLOCK:
-            // Conflagrate aura state on Immolate and Shadowflame,
-            if ((m_spellProto->SpellFamilyFlags & UI64LIT(0x0000000000000004)) ||
-                (m_spellProto->SpellFamilyFlags2 & 0x00000002))
-            {
-                removeFamilyFlag = UI64LIT(0x0000000000000004);
-                removeFamilyFlag2 = 0x00000002;
-                removeState = AURA_STATE_CONFLAGRATE;
-            }
-            break;
-        case SPELLFAMILY_DRUID:
-            if(m_spellProto->SpellFamilyFlags & UI64LIT(0x0000000000000400))
-                removeState = AURA_STATE_FAERIE_FIRE;   // Faerie Fire (druid versions)
-            else if(m_spellProto->SpellFamilyFlags & UI64LIT(0x50))
-            {
-                removeFamilyFlag = 0x50;
-                removeState = AURA_STATE_SWIFTMEND;     // Swiftmend aura state
-            }
-            break;
-        case SPELLFAMILY_WARRIOR:
-            if(m_spellProto->SpellFamilyFlags & UI64LIT(0x0004000000000000))
-                removeState = AURA_STATE_WARRIOR_VICTORY_RUSH; // Victorious
-            break;
-        case SPELLFAMILY_ROGUE:
-            if(m_spellProto->SpellFamilyFlags & UI64LIT(0x10000))
-                removeState = AURA_STATE_DEADLY_POISON; // Deadly poison aura state
-            break;
-        case SPELLFAMILY_HUNTER:
-            if(m_spellProto->SpellFamilyFlags & UI64LIT(0x1000000000000000))
-                removeState = AURA_STATE_FAERIE_FIRE;   // Sting (hunter versions)
-
+            case SPELLFAMILY_PALADIN:
+                if (IsSealSpell(m_spellProto))
+                    removeState = AURA_STATE_JUDGEMENT;     // Update Seals information
+                break;
+            case SPELLFAMILY_WARLOCK:
+                // Conflagrate aura state on Immolate and Shadowflame,
+                if ((m_spellProto->SpellFamilyFlags & UI64LIT(0x0000000000000004)) ||
+                    (m_spellProto->SpellFamilyFlags2 & 0x00000002))
+                {
+                    removeFamilyFlag = UI64LIT(0x0000000000000004);
+                    removeFamilyFlag2 = 0x00000002;
+                    removeState = AURA_STATE_CONFLAGRATE;
+                }
+                break;
+            case SPELLFAMILY_DRUID:
+                if(m_spellProto->SpellFamilyFlags & UI64LIT(0x0000000000000400))
+                    removeState = AURA_STATE_FAERIE_FIRE;   // Faerie Fire (druid versions)
+                else if(m_spellProto->SpellFamilyFlags & UI64LIT(0x50))
+                {
+                    removeFamilyFlag = 0x50;
+                    removeState = AURA_STATE_SWIFTMEND;     // Swiftmend aura state
+                }
+                break;
+            case SPELLFAMILY_WARRIOR:
+                if(m_spellProto->SpellFamilyFlags & UI64LIT(0x0004000000000000))
+                    removeState = AURA_STATE_WARRIOR_VICTORY_RUSH; // Victorious
+                break;
+            case SPELLFAMILY_ROGUE:
+                if(m_spellProto->SpellFamilyFlags & UI64LIT(0x10000))
+                    removeState = AURA_STATE_DEADLY_POISON; // Deadly poison aura state
+                break;
+            case SPELLFAMILY_HUNTER:
+                if(m_spellProto->SpellFamilyFlags & UI64LIT(0x1000000000000000))
+                    removeState = AURA_STATE_FAERIE_FIRE;   // Sting (hunter versions)
         }
+
         // Remove state (but need check other auras for it)
         if (removeState)
         {
@@ -1219,32 +1217,28 @@ bool Aura::_RemoveAura()
             Unit::AuraMap& Auras = m_target->GetAuras();
             for(Unit::AuraMap::iterator i = Auras.begin(); i != Auras.end(); ++i)
             {
-                bool found = false;
-                Unit::AuraMap& Auras = m_target->GetAuras();
-                for(Unit::AuraMap::iterator i = Auras.begin(); i != Auras.end(); ++i)
+                SpellEntry const *auraSpellInfo = (*i).second->GetSpellProto();
+                if(auraSpellInfo->SpellFamilyName  == m_spellProto->SpellFamilyName &&
+                    (auraSpellInfo->SpellFamilyFlags & removeFamilyFlag || auraSpellInfo->SpellFamilyFlags2 & removeFamilyFlag2))
                 {
-                    SpellEntry const *auraSpellInfo = (*i).second->GetSpellProto();
-                    if(auraSpellInfo->SpellFamilyName  == m_spellProto->SpellFamilyName &&
-                        (auraSpellInfo->SpellFamilyFlags & removeFamilyFlag || auraSpellInfo->SpellFamilyFlags2 & removeFamilyFlag2))
-                    {
-                        found = true;
-                        break;
-                    }
+                    found = true;
+                    break;
                 }
-                // this has been last aura
-                if(!found)
-                    m_target->ModifyAuraState(AuraState(removeState), false);
             }
+            // this has been last aura
+            if(!found)
+                m_target->ModifyAuraState(AuraState(removeState), false);
+        }
 
-            // reset cooldown state for spells
-            if(caster && caster->GetTypeId() == TYPEID_PLAYER)
-            {
-                if ( GetSpellProto()->Attributes & SPELL_ATTR_DISABLED_WHILE_ACTIVE )
-                    // note: item based cooldowns and cooldown spell mods with charges ignored (unknown existed cases)
-                    ((Player*)caster)->SendCooldownEvent(GetSpellProto());
-            }
+        // reset cooldown state for spells
+        if(caster && caster->GetTypeId() == TYPEID_PLAYER)
+        {
+            if ( GetSpellProto()->Attributes & SPELL_ATTR_DISABLED_WHILE_ACTIVE )
+                // note: item based cooldowns and cooldown spell mods with charges ignored (unknown existed cases)
+                ((Player*)caster)->SendCooldownEvent(GetSpellProto());
         }
     }
+
     return true;
 }
 
