@@ -138,7 +138,6 @@ scripts/eastern_kingdoms/scarlet_enclave/ebon_hold.cpp \
 scripts/eastern_kingdoms/scarlet_monastery/boss_arcanist_doan.cpp \
 scripts/eastern_kingdoms/scarlet_monastery/boss_azshir_the_sleepless.cpp \
 scripts/eastern_kingdoms/scarlet_monastery/boss_bloodmage_thalnos.cpp \
-scripts/eastern_kingdoms/scarlet_monastery/boss_headless_horseman.cpp \
 scripts/eastern_kingdoms/scarlet_monastery/boss_herod.cpp \
 scripts/eastern_kingdoms/scarlet_monastery/boss_high_inquisitor_fairbanks.cpp \
 scripts/eastern_kingdoms/scarlet_monastery/boss_houndmaster_loksey.cpp \
