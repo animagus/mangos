@@ -4182,8 +4182,8 @@ void Unit::RemoveSingleAuraDueToSpellByDispel(uint32 spellId, uint64 casterGUID,
             if(Unit* caster = dot->GetCaster())
             {
                 int32 bp0 = 8 * dot->GetModifier()->m_amount;
-                SpellEntry const* spell = sSpellStore.LookupEntry(64085);
-                bp0 *= caster->SpellDamageBonus(this, spell, bp0, SPELL_DIRECT_DAMAGE, 1);
+                //SpellEntry const* spell = sSpellStore.LookupEntry(64085);
+                //bp0 *= caster->SpellDamageBonus(this, spell, bp0, SPELL_DIRECT_DAMAGE, 1);
 
                 // Remove spell auras from stack
                 RemoveSingleSpellAurasByCasterSpell(spellId, casterGUID, AURA_REMOVE_BY_DISPEL);
@@ -5565,10 +5565,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 {
                     //last charge and crit
                     if (triggeredByAura->GetAuraCharges() <= 1 && (procEx & PROC_EX_CRITICAL_HIT) )
-                    {
-                        RemoveAurasDueToSpell(28682);       //-> remove Combustion auras
                         return true;                        // charge counting (will removed)
-                    }
 
                     CastSpell(this, 28682, true, castItem, triggeredByAura);
                     return (procEx & PROC_EX_CRITICAL_HIT); // charge update only at crit hits, no hidden cooldowns

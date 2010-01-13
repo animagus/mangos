@@ -6163,6 +6163,22 @@ void Aura::HandleSpellSpecificBoosts(bool apply)
                         }
                     }
                 }
+                // Combustion (remove triggered aura stack)
+                else if (m_spellProto->Id == 11129)
+                {
+                    if(!apply)
+                        spellId1 = 28682;
+                    else
+                        return;
+                }
+                // Combustion (remove main aura)
+                else if (m_spellProto->Id == 28682)
+                {
+                    if(!apply)
+                        spellId1 = 11129;
+                    else
+                        return;
+                }
                 else
                     return;
             }
