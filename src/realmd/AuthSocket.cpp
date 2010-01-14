@@ -1004,6 +1004,30 @@ bool AuthSocket::_HandleReconnectProof()
     }
 }
 
+std::string AuthSocket::_ResolveWorldAddress()
+{
+    // World server address hack
+    QueryResult *result = loginDatabase.PQuery(
+        "SELECT ng.`world_server_ip`, ng.`world_server_port` "
+        "FROM `hosts_subnets` AS hs INNER JOIN `net_groups` AS ng ON (hs.`net_group` = ng.`id`) "
+        "WHERE INET_ATON( SUBSTRING_INDEX( hs.`ip_mask`, '/', 1 ) ) = "
+        "INET_ATON( '%s' )  >> 32-SUBSTRING_INDEX( hs.`ip_mask` , '/', -1 ) << 32-SUBSTRING_INDEX( hs.`ip_mask` , '/', -1 ) "
+        "AND (ng.`max_connections` IS NULL OR ng.`max_connections` > 0) "
+        "ORDER BY hs.`priority` DESC, hs.`id` ASC"
+        , GetRemoteAddress().c_str()
+    );
+    std::ostringstream address;
+    if (result)
+    {
+        std::string server_ip = (*result)[0].GetCppString();
+        unsigned int port = (*result)[1].GetUInt16();
+        delete result;
+
+        address << server_ip << ":" << port;
+    }
+    return address.str();
+}
+
 /// %Realm List command handler
 bool AuthSocket::_HandleRealmList()
 {
@@ -1033,7 +1057,8 @@ bool AuthSocket::_HandleRealmList()
 
     ///- Circle through realms in the RealmList and construct the return packet (including # of user characters in each realm)
     ByteBuffer pkt;
-    LoadRealmlist(pkt, id);
+    LoadRealmlist(pkt, id, _ResolveWorldAddress());
+
     ByteBuffer hdr;
     hdr << (uint8) REALM_LIST;
     hdr << (uint16)pkt.size();
@@ -1044,8 +1069,9 @@ bool AuthSocket::_HandleRealmList()
     return true;
 }
 
-void AuthSocket::LoadRealmlist(ByteBuffer &pkt, uint32 acctid)
+void AuthSocket::LoadRealmlist(ByteBuffer &pkt, uint32 acctid, std::string alt_address)
 {   
+    std::string address;
     switch(_build)
     {
         case 5875:                                          // 1.12.1
@@ -1073,10 +1099,13 @@ void AuthSocket::LoadRealmlist(ByteBuffer &pkt, uint32 acctid)
                 uint8 color = (std::find(i->second.realmbuilds.begin(), i->second.realmbuilds.end(), _build) != i->second.realmbuilds.end()) ? i->second.color : 2;
                 color = (i->second.allowedSecurityLevel > _accountSecurityLevel) ? 2 : color;
 
+                if (alt_address.size()) address = alt_address;
+                else address = i->second.address;
+
                 pkt << uint32(i->second.icon);                      // realm type
                 pkt << uint8(color);                                // if 2, then realm is offline
                 pkt << i->first;                                    // name
-                pkt << i->second.address;                           // address
+                pkt << address;                                     // address
                 pkt << float(i->second.populationLevel);
                 pkt << uint8(AmountOfCharacters);
                 pkt << uint8(i->second.timezone);                   // realm category
@@ -1115,11 +1144,14 @@ void AuthSocket::LoadRealmlist(ByteBuffer &pkt, uint32 acctid)
                 // Show offline state for unsupported client builds
                 uint8 color = (std::find(i->second.realmbuilds.begin(), i->second.realmbuilds.end(), _build) != i->second.realmbuilds.end()) ? i->second.color : 2;
 
+                if (alt_address.size()) address = alt_address;
+                else address = i->second.address;
+
                 pkt << uint8(i->second.icon);                       // realm type
                 pkt << uint8(lock);                                 // if 1, then realm locked
                 pkt << uint8(color);                                // if 2, then realm is offline
                 pkt << i->first;                                    // name
-                pkt << i->second.address;                           // address
+                pkt << address;                                     // address
                 pkt << float(i->second.populationLevel);
                 pkt << uint8(AmountOfCharacters);
                 pkt << uint8(i->second.timezone);                   // realm category

@@ -46,13 +46,14 @@ class AuthSocket: public TcpSocket
         void OnAccept();
         void OnRead();
         void SendProof(Sha1Hash sha);
-        void LoadRealmlist(ByteBuffer &pkt, uint32 acctid);
+        void LoadRealmlist(ByteBuffer &pkt, uint32 acctid, std::string alt_address);
 
         bool _HandleLogonChallenge();
         bool _HandleLogonProof();
         bool _HandleReconnectChallenge();
         bool _HandleReconnectProof();
         bool _HandleRealmList();
+        std::string _ResolveWorldAddress();
         //data transfer handle for patch
 
         bool _HandleXferResume();
