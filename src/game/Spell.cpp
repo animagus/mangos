@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
+ * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1345,7 +1345,7 @@ void Spell::SetTargetMap(uint32 effIndex, uint32 targetMode, UnitList& targetUni
                 case 38794:                                 // Murmur's Touch (h)
                     unMaxTargets = 1;
                     break;
-                case 28542:
+                case 28542:                                 // Life Drain
                     unMaxTargets = 2;
                     break;
                 case 28796:                                 // Poison Bolt Volley
@@ -1353,7 +1353,9 @@ void Spell::SetTargetMap(uint32 effIndex, uint32 targetMode, UnitList& targetUni
                 case 31298:                                 // Sleep
                     unMaxTargets = 3;
                     break;
-                case 30843:                                 // Enfeeble
+                case 30843:                                 // Enfeeble TODO: exclude top threat target from target selection
+                case 42005:                                 // Bloodboil TODO: need to be 5 targets(players) furthest away from caster
+                case 55665:                                 // Life Drain (h)
                 case 45641:
                 case 55665:
                     unMaxTargets = 5;
@@ -1365,16 +1367,6 @@ void Spell::SetTargetMap(uint32 effIndex, uint32 targetMode, UnitList& targetUni
             }
             break;
         }
-        case SPELLFAMILY_PRIEST:
-            if(m_spellInfo->SpellVisual[0] == 8253)         // Circle of Healing
-            {
-                unMaxTargets = 5;
-                
-                // Glyph of Circle of Healing
-                if(Aura const* glyph = m_caster->GetDummyAura(55675))
-                    unMaxTargets += glyph->GetModifier()->m_amount;
-            }
-            break;
         case SPELLFAMILY_DRUID:
         {
             if (m_spellInfo->SpellFamilyFlags2 & 0x00000100)// Starfall
@@ -1438,7 +1430,6 @@ void Spell::SetTargetMap(uint32 effIndex, uint32 targetMode, UnitList& targetUni
         case TARGET_SELF2:
         case TARGET_AREAEFFECT_CUSTOM:
         case TARGET_AREAEFFECT_CUSTOM_2:
-        case TARGET_SUMMON:
             targetUnitMap.push_back(m_caster);
             break;
 		case TARGET_RANDOM_ENEMY_CHAIN_IN_AREA:
@@ -1800,6 +1791,20 @@ void Spell::SetTargetMap(uint32 effIndex, uint32 targetMode, UnitList& targetUni
                 if (m_caster->GetTypeId()==TYPEID_PLAYER)
                     if (Unit* target = m_caster->GetMap()->GetPet(((Player*)m_caster)->GetSelection()))
                         targetUnitMap.push_back(target);
+            }
+            // Circle of Healing
+            else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && m_spellInfo->SpellVisual[0] == 8253)
+            {
+                Unit* target = m_targets.getUnitTarget();
+                if(!target)
+                    target = m_caster;
+
+                uint32 count = 5;
+                // Glyph of Circle of Healing
+                if(Aura const* glyph = m_caster->GetDummyAura(55675))
+                    count += glyph->GetModifier()->m_amount;
+
+                FillRaidOrPartyHealthPriorityTargets(targetUnitMap, m_caster, target, radius, count, true, false, true);
             }
             // Wild Growth
             else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && m_spellInfo->SpellIconID == 2864)
@@ -2188,16 +2193,19 @@ void Spell::SetTargetMap(uint32 effIndex, uint32 targetMode, UnitList& targetUni
             break;
 
         case TARGET_DYNAMIC_OBJECT_FRONT:
+        case TARGET_DYNAMIC_OBJECT_BEHIND:
         case TARGET_DYNAMIC_OBJECT_LEFT_SIDE:
         case TARGET_DYNAMIC_OBJECT_RIGHT_SIDE:
+        {
             if (!(m_targets.m_targetMask & TARGET_FLAG_DEST_LOCATION))
             {
                 float angle = m_caster->GetOrientation();
                 switch(targetMode)
                 {
-                    case TARGET_DYNAMIC_OBJECT_FRONT:                         break;
-                    case TARGET_DYNAMIC_OBJECT_LEFT_SIDE:  angle -= 3*M_PI/4; break;
-                    case TARGET_DYNAMIC_OBJECT_RIGHT_SIDE: angle += 3*M_PI/4; break;
+                    case TARGET_DYNAMIC_OBJECT_FRONT:                        break;
+                    case TARGET_DYNAMIC_OBJECT_BEHIND:      angle += M_PI;   break;
+                    case TARGET_DYNAMIC_OBJECT_LEFT_SIDE:   angle += M_PI/2; break;
+                    case TARGET_DYNAMIC_OBJECT_RIGHT_SIDE:  angle -= M_PI/2; break;
                 }
 
                 float x,y;
@@ -2207,7 +2215,7 @@ void Spell::SetTargetMap(uint32 effIndex, uint32 targetMode, UnitList& targetUni
 
             targetUnitMap.push_back(m_caster);
             break;
-
+        }
         case TARGET_POINT_AT_NORTH:
         case TARGET_POINT_AT_SOUTH:
         case TARGET_POINT_AT_EAST:
