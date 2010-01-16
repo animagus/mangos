@@ -37,6 +37,9 @@ struct ProcTriggerSpell;
 // forward decl
 class Aura;
 
+// internal helper
+struct AuraHandleAddModifierHelper;
+
 typedef void(Aura::*pAuraHandler)(bool Apply, bool Real);
 // Real == true at aura add/remove
 // Real == false at aura mod unapply/reapply; when adding/removing dependent aura/item/stat mods
@@ -53,6 +56,7 @@ typedef void(Aura::*pAuraHandler)(bool Apply, bool Real);
 
 class MANGOS_DLL_SPEC Aura
 {
+    friend struct AuraHandleAddModifierHelper;
     friend Aura* CreateAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem);
 
     public:
