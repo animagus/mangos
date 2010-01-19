@@ -6145,14 +6145,6 @@ bool Spell::CheckTarget( Unit* target, uint32 eff )
             return false;
     }
 
-    // Not allow Bloodlust and Sated
-	if (((m_spellInfo->Id == 2825) && (target->HasAura(57724))))
-		return false;
-
-    // Not allow Heroism and Exhausted
-	if (((m_spellInfo->Id == 32182) && (target->HasAura(57723))))
-		return false;
-
     // Check Aura spell req (need for AoE spells)
     if(m_spellInfo->targetAuraSpell && !target->HasAura(m_spellInfo->targetAuraSpell))
         return false;
