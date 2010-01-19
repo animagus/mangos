@@ -4115,8 +4115,10 @@ SpellCastResult Spell::CheckCast(bool strict)
             return SPELL_FAILED_AFFECTING_COMBAT;
     }
 
-	// Heroism not have excludeCasterAuraSpell
+	// Heroism and Bloodlust not have excludeCasterAuraSpell
 	if (m_spellInfo->Id == 32182 && m_caster->HasAura(57723))
+		return SPELL_FAILED_CASTER_AURASTATE;
+	if (m_spellInfo->Id == 2825 && m_caster->HasAura(57724))
 		return SPELL_FAILED_CASTER_AURASTATE;
 
     // cancel autorepeat spells if cast start when moving
@@ -6142,6 +6144,14 @@ bool Spell::CheckTarget( Unit* target, uint32 eff )
         if (!CheckTargetCreatureType(target))
             return false;
     }
+
+    // Not allow Bloodlust and Sated
+	if (((m_spellInfo->Id == 2825) && (target->HasAura(57724))))
+		return false;
+
+    // Not allow Heroism and Exhausted
+	if (((m_spellInfo->Id == 32182) && (target->HasAura(57723))))
+		return false;
 
     // Check Aura spell req (need for AoE spells)
     if(m_spellInfo->targetAuraSpell && !target->HasAura(m_spellInfo->targetAuraSpell))
