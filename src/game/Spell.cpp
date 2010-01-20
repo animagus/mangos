@@ -2698,7 +2698,7 @@ void Spell::cast(bool skipCheck)
         case SPELLFAMILY_SHAMAN:
         {
             // Bloodlust
-            if (m_spellInfo->Id == 2825)
+             if (m_spellInfo->Id == 2825)
                 AddPrecastSpell(57724);                     // Sated
             // Heroism
             else if (m_spellInfo->Id == 32182)
@@ -6184,6 +6184,15 @@ bool Spell::CheckTarget( Unit* target, uint32 eff )
         if(((Player*)target)->isGameMaster() && !IsPositiveSpell(m_spellInfo->Id))
             return false;
     }
+
+	// Check Blessing of Kings and Blessing of Forgotten Kings
+	if (((m_spellInfo->Id == 69378) && (target->HasAura(20217))) ||
+		((m_spellInfo->Id == 69378) && (target->HasAura(25898))) ||
+		((m_spellInfo->Id == 20217) && (target->HasAura(69378))) ||
+		((m_spellInfo->Id == 20217) && (target->HasAura(25898))) ||
+		((m_spellInfo->Id == 25898) && (target->HasAura(69378))) ||
+		((m_spellInfo->Id == 25898) && (target->HasAura(20217))))
+		return false;
 
     //Check targets for LOS visibility (except spells without range limitations )
     switch(m_spellInfo->Effect[eff])
