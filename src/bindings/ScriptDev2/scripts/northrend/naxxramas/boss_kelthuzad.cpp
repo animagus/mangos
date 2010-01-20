@@ -517,13 +517,17 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
             {
                 //DoCast(m_creature->getVictim(),SPELL_CHAINS_OF_KELTHUZAD);
 
-                if (rand()%2)
-                    DoScriptText(SAY_CHAIN1, m_creature);
-                else
-                    DoScriptText(SAY_CHAIN2, m_creature);
+                if (!m_bIsRegularMode)
+                {
 
-                DoResetThreat(); // 50% chance WIPE
+                    if (rand()%2)
+                        DoScriptText(SAY_CHAIN1, m_creature);
+                    else
+                        DoScriptText(SAY_CHAIN2, m_creature);
 
+                    DoResetThreat(); // 50% chance WIPE
+                }
+                
                 ChainsOfKelthuzad_Timer = (rand()%30+30)*1000;
             }else ChainsOfKelthuzad_Timer -= diff;
 
