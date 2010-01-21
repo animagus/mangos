@@ -1402,7 +1402,7 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
 				}
             case ACHIEVEMENT_CRITERIA_TYPE_EQUIP_EPIC_ITEM:
                 {
-                    if (!miscvalue1 || miscvalue1 != achievementCriteria->equip_epic_item.itemSlot)
+                    if (!miscvalue2 || miscvalue1 != achievementCriteria->equip_epic_item.itemSlot)
                         continue;
 
                     // those requirements couldn't be found in the dbc
