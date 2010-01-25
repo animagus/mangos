@@ -868,7 +868,24 @@ bool Pet::UpdateStats(Stats stat)
     if ( stat == STAT_STAMINA )
     {
         if(owner)
-            value += float(owner->GetStat(stat)) * 0.3f;
+        {
+            if (getPetType() == HUNTER_PET)
+                value += float(owner->GetStat(stat)) * 0.4725f;
+            else
+            {
+                CreatureInfo const *cinfo = GetCreatureInfo();
+                CreatureFamily petFamily = (CreatureFamily) cinfo->family;
+                switch (petFamily)
+                {
+                    case CREATURE_FAMILY_FELHUNTER: value += float(owner->GetStat(stat)) * 0.7125f; break;
+                    case CREATURE_FAMILY_VOIDWALKER: value += float(owner->GetStat(stat)) * 0.825f; break;
+                    case CREATURE_FAMILY_FELGUARD: value += float(owner->GetStat(stat)) * 0.825f; break;
+                    case CREATURE_FAMILY_SUCCUBUS: value += float(owner->GetStat(stat)) * 0.6825f; break;
+                    case CREATURE_FAMILY_IMP: value += float(owner->GetStat(stat)) * 0.63f; break;
+                    default: value += float(owner->GetStat(stat)) * 0.3f; break;
+                }
+            }
+        }
     }
                                                             //warlock's and mage's pets gain 30% of owner's intellect
     else if ( stat == STAT_INTELLECT && getPetType() == SUMMON_PET )
