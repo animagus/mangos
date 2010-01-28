@@ -76,6 +76,9 @@ void Totem::Summon(Unit* owner)
     {
         case TOTEM_PASSIVE:
             CastSpell(this, GetSpell(), true);
+            // Totem of Wrath, Area Aura Enemies: Mod Crit % Taken
+            if (m_spells[1] == 30708)
+                CastSpell(this, m_spells[1], true);
             break;
         case TOTEM_STATUE:
             CastSpell(GetOwner(), GetSpell(), true);
