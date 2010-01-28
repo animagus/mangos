@@ -6609,13 +6609,16 @@ void Player::_ApplyItemMods(Item *item, uint8 slot,bool apply)
     if(slot >= INVENTORY_SLOT_BAG_END || !item)
         return;
 
-    // not apply/remove mods for broken item
-    if(item->IsBroken())
-        return;
-
     ItemPrototype const *proto = item->GetProto();
 
     if(!proto)
+        return;
+
+    if(proto->Socket[0].Color)                              //only (un)equipping of items with sockets can influence metagems, so no need to waste time with normal items
+        CorrectMetaGemEnchants(slot, apply);
+
+    // not apply/remove mods for broken item
+    if(item->IsBroken())
         return;
 
     sLog.outDetail("applying mods for item %u ",item->GetGUIDLow());
@@ -6631,9 +6634,6 @@ void Player::_ApplyItemMods(Item *item, uint8 slot,bool apply)
 
     ApplyItemEquipSpell(item,apply);
     ApplyEnchantment(item, apply);
-
-    if(proto->Socket[0].Color)                              //only (un)equipping of items with sockets can influence metagems, so no need to waste time with normal items
-        CorrectMetaGemEnchants(slot, apply);
 
     sLog.outDebug("_ApplyItemMods complete.");
 }
