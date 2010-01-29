@@ -908,7 +908,7 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
                     LogDatabase.escape_string(fcmd); // fcmd
                     LogDatabase.PExecute("INSERT INTO `loggm` (`time`, `account`, `player`, `command`, `string`, `position_x`, `position_y`, `position_z`, `map`, `selection_type`, `selection_entry`, `ip`, `is_mp`) VALUES (UNIX_TIMESTAMP(), %u, %u, '%s', '%s', %f, %f, %f, %u, '%s', %u, '%s', %u)",
                         m_session->GetAccountId(), p->GetGUIDLow(), table[i].Name, fcmd.c_str(), p->GetPositionX(), p->GetPositionY(),p->GetPositionZ(), p->GetMapId(),
-                        GetLogNameForGuid(sel_guid), GUID_LOPART(sel_guid), m_session->GetRemoteAddress(), m_session->isMpUse());
+                        GetLogNameForGuid(sel_guid), GUID_LOPART(sel_guid), m_session->GetRemoteAddress().c_str(), m_session->isMpUse());
                     // need fix to creature entry
                 }
             }
