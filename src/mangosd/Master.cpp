@@ -137,7 +137,7 @@ public:
             delete WorldDatabase.Query ("SELECT 1 FROM command LIMIT 1");
             delete loginDatabase.Query ("SELECT 1 FROM realmlist LIMIT 1");
             delete CharacterDatabase.Query ("SELECT 1 FROM bugreport LIMIT 1");
-            delete LogDatabase.Query ("SELECT 1 FROM gmlog LIMIT 1");
+            delete LogDatabase.Query ("SELECT 1 FROM loggm LIMIT 1");
         }
     }
 
