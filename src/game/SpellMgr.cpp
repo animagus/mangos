@@ -1510,6 +1510,14 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     if (spellInfo_1->Id == 67480 && spellInfo_2->Id == 20911)
                         return false;
 
+                    //Blessing of Kings and Blessing of Foggoten King check
+                    if (spellInfo_1->SpellIconID == 332 && spellInfo_2->SpellIconID == 332 && spellInfo_2->SpellVisual[0] == 9187)
+                        return true;
+
+                    //Greater Blessing of Kings and Blessing of Kings/Foggoten King check
+                    if (spellInfo_1->SpellIconID == 332 && spellInfo_2->SpellIconID == 1800)
+                        return true;
+
                     break;
                 }
             }
