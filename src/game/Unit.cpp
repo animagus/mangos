@@ -6692,6 +6692,13 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 triggered_spell_id = 379;
                 break;
             }
+            // Flametongue Weapon proc
+            if (dummySpell->SpellFamilyFlags & UI64LIT(0x0000000000200000))
+            {
+                triggered_spell_id = 10444;
+                basepoints0 = GetAttackTime(BASE_ATTACK) * (dummySpell->EffectBasePoints[0]+1) / 100000;
+                break;
+            }
             // Improved Water Shield
             if (dummySpell->SpellIconID == 2287)
             {
@@ -9073,6 +9080,14 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         if (bonus->ap_bonus)
             DoneTotal += int32(bonus->ap_bonus * GetTotalAttackPowerValue(BASE_ATTACK) * stack);
 
+        DoneTotal  += int32(DoneAdvertisedBenefit * coeff * SpellModSpellDamage);
+        TakenTotal += int32(TakenAdvertisedBenefit * coeff);
+    }
+    // Flametongue Weapon Proc: spell bonus scales with weapon speed
+    else if (spellProto->Id == 10444)
+    {
+        float coeff;
+        coeff = GetAttackTime(BASE_ATTACK) * 0.03811f / 1000;
         DoneTotal  += int32(DoneAdvertisedBenefit * coeff * SpellModSpellDamage);
         TakenTotal += int32(TakenAdvertisedBenefit * coeff);
     }
