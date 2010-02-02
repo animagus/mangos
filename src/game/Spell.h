@@ -438,7 +438,8 @@ class Spell
         void SetRadius(float rad) { m_radius = rad; }
         float GetRadius() const { return m_radius; }
 
-        bool IsNeedSendToClient() const;
+        bool IsNeedSendToClient() const;                    // use for hide spell cast for client in case when cast not have client side affect (animation or log entries)
+        bool IsTriggeredSpellWithRedundentData() const;     // use for ignore some spell data for triggered spells like cast time, some triggered spells have redundent copy data from main spell for client use purpose
 
         CurrentSpellTypes GetCurrentContainer();
 
