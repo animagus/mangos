@@ -8983,6 +8983,21 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         }
         case SPELLFAMILY_DEATHKNIGHT:
         {
+            {
+              AuraList const& mOverrideClassScript= owner->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
+              for(AuraList::const_iterator i = mOverrideClassScript.begin(); i != mOverrideClassScript.end(); ++i)
+              {
+                  if ((*i)->GetModifier()->m_miscvalue == 7282)
+                  {
+                      switch((*i)->GetSpellProto()->Id)
+                      {
+                          case 49032 : this->CastSpell(pVictim, 50508, false, NULL, (*i)); break;
+                          case 49631 : this->CastSpell(pVictim, 50509, false, NULL, (*i)); break;
+                          case 49632 : this->CastSpell(pVictim, 50510, false, NULL, (*i)); break;
+                      }
+                  }
+              }
+            };
             // Icy Touch, Howling Blast and Frost Strike
             if (spellProto->SpellFamilyFlags & UI64LIT(0x0000000600000002))
             {
