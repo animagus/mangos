@@ -449,6 +449,10 @@ const uint32 ItemQualityColors[MAX_ITEM_QUALITY] = {
 #define SPELL_ATTR_EX6_UNK30                      0x40000000            // 30 not set in 3.0.3
 #define SPELL_ATTR_EX6_UNK31                      0x80000000            // 31 not set in 3.0.3
 
+#define MIN_TALENT_SPEC         0
+#define MAX_TALENT_SPEC         1
+#define MIN_TALENT_SPECS        1
+#define MAX_TALENT_SPECS        2
 #define MAX_GLYPH_SLOT_INDEX    6
 
 enum SheathTypes
@@ -624,7 +628,7 @@ enum SpellEffects
     SPELL_EFFECT_SELF_RESURRECT            = 94,
     SPELL_EFFECT_SKINNING                  = 95,
     SPELL_EFFECT_CHARGE                    = 96,
-    SPELL_EFFECT_97                        = 97,
+    SPELL_EFFECT_SUMMON_ALL_TOTEMS         = 97,
     SPELL_EFFECT_KNOCK_BACK                = 98,
     SPELL_EFFECT_DISENCHANT                = 99,
     SPELL_EFFECT_INEBRIATE                 = 100,
