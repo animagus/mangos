@@ -8901,7 +8901,13 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             case 7377:
             {
                 if (pVictim->GetAura(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_PRIEST, UI64LIT(0x0000000000008000), 0, GetGUID()))
-                    DoneTotalMod *= ((*i)->GetModifier()->m_amount+100.0f)/100.0f;
+                    {
+                      if (this->HasAura(55687))
+                        DoneTotalMod *= ((*i)->GetModifier()->m_amount+100.0f + 10.0f)/100.0f;
+                      else
+                        DoneTotalMod *= ((*i)->GetModifier()->m_amount+100.0f)/100.0f;
+                      break;
+                    }
                 break;
             }
             // Marked for Death
