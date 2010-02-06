@@ -1529,6 +1529,10 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     if (spellInfo_1->SpellIconID == 332 && spellInfo_2->SpellIconID == 1800)
                         return true;
 
+                    //Inner Fire and Consecration
+                    if (spellInfo_1->SpellIconID == 51 && (spellInfo_2->SpellIconID == 51 && spellInfo_2->SpellFamilyName == SPELLFAMILY_PRIEST))
+                        return false;
+
                     break;
                 }
             }
