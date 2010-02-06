@@ -2332,8 +2332,6 @@ class MANGOS_DLL_SPEC Player : public Unit
         bool isActiveObject() const { return true; }
         bool canSeeSpellClickOn(Creature const* creature) const;
 
-        inline uint32 GetChampioningFaction() const { return m_ChampioningFaction; }
-        inline void SetChampioningFaction(uint32 faction) { m_ChampioningFaction = faction; } 
     protected:
 
         uint32 m_contestedPvPTimer;
@@ -2460,8 +2458,6 @@ class MANGOS_DLL_SPEC Player : public Unit
         SpellCooldowns m_spellCooldowns;
         PlayerTalentMap *m_talents[MAX_TALENT_SPECS];
         uint32 m_lastPotionId;                              // last used health/mana potion in combat, that block next potion use
-
-        uint32 m_ChampioningFaction;
 
         uint32 m_activeSpec;
         uint32 m_specsCount;

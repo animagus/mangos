@@ -507,8 +507,6 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
 
     m_lastFallTime = 0;
     m_lastFallZ = 0;
-
-    m_ChampioningFaction = 0;
 }
 
 Player::~Player ()
@@ -6072,52 +6070,11 @@ void Player::RewardReputation(Unit *pVictim, float rate)
 
     uint32 ChampioningFaction = 0;
 
-    if (GetChampioningFaction())
-    {
-        // support for: Championing - http://www.wowwiki.com/Championing
-
-        Map const *pMap = GetMap();
-        if (pMap && pMap->IsDungeon())
-        {
-            uint32 map_id = pMap->GetId();
-            if (pMap->GetDifficulty() == DUNGEON_DIFFICULTY_HEROIC)
-            {
-                switch (map_id)
-                {
-                    case 575:
-                    case 578:
-                    case 595:
-                    case 602:
-                        ChampioningFaction = GetChampioningFaction();
-                }
-            }
-            else
-            {
-                switch (map_id)
-                {
-                    case 574:
-                    case 575:
-                    case 576:
-                    case 578:
-                    case 595:
-                    case 599:
-                    case 600:
-                    case 601:
-                    case 602:
-                    case 604:
-                    case 608:
-                    case 619:
-                        ChampioningFaction = GetChampioningFaction();
-                }
-            }
-        }
-    }
-
     if(Rep->repfaction1 && (!Rep->team_dependent || GetTeam()==ALLIANCE))
     {
-        int32 donerep1 = CalculateReputationGain(pVictim->getLevel(), Rep->repvalue1, ChampioningFaction ? ChampioningFaction : Rep->repfaction1, false);
+        int32 donerep1 = CalculateReputationGain(pVictim->getLevel(), Rep->repvalue1, Rep->repfaction1, false);
         donerep1 = int32(donerep1*rate);
-        FactionEntry const *factionEntry1 = sFactionStore.LookupEntry(ChampioningFaction ? ChampioningFaction : Rep->repfaction1); 
+        FactionEntry const *factionEntry1 = sFactionStore.LookupEntry(Rep->repfaction1);
         uint32 current_reputation_rank1 = GetReputationMgr().GetRank(factionEntry1);
         if (factionEntry1 && current_reputation_rank1 <= Rep->reputation_max_cap1)
             GetReputationMgr().ModifyReputation(factionEntry1, donerep1);
@@ -6133,9 +6090,9 @@ void Player::RewardReputation(Unit *pVictim, float rate)
 
     if(Rep->repfaction2 && (!Rep->team_dependent || GetTeam()==HORDE))
     {
-        int32 donerep2 = CalculateReputationGain(pVictim->getLevel(), Rep->repvalue2, ChampioningFaction ? ChampioningFaction : Rep->repfaction2, false);
+        int32 donerep2 = CalculateReputationGain(pVictim->getLevel(), Rep->repvalue2, Rep->repfaction2, false);
         donerep2 = int32(donerep2*rate);
-        FactionEntry const *factionEntry2 = sFactionStore.LookupEntry(ChampioningFaction ? ChampioningFaction : Rep->repfaction2);
+        FactionEntry const *factionEntry2 = sFactionStore.LookupEntry(Rep->repfaction2);
         uint32 current_reputation_rank2 = GetReputationMgr().GetRank(factionEntry2);
         if (factionEntry2 && current_reputation_rank2 <= Rep->reputation_max_cap2)
             GetReputationMgr().ModifyReputation(factionEntry2, donerep2);
