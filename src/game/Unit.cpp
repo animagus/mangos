@@ -8992,6 +8992,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         case SPELLFAMILY_DEATHKNIGHT:
         {
             {
+              //Crypt Fever
               AuraList const& mOverrideClassScript= owner->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
               for(AuraList::const_iterator i = mOverrideClassScript.begin(); i != mOverrideClassScript.end(); ++i)
               {
@@ -9002,6 +9003,20 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                           case 49032 : this->CastSpell(pVictim, 50508, false, NULL, (*i)); break;
                           case 49631 : this->CastSpell(pVictim, 50509, false, NULL, (*i)); break;
                           case 49632 : this->CastSpell(pVictim, 50510, false, NULL, (*i)); break;
+                      }
+                  }
+              }
+              //Ebon Plaguebringer
+              for(AuraList::const_iterator i = mOverrideClassScript.begin(); i != mOverrideClassScript.end(); ++i)
+              {
+                  if ((*i)->GetModifier()->m_miscvalue == 7282)
+                  {
+                      pVictim->RemoveSingleSpellAurasFromStack(50510);
+                      switch((*i)->GetSpellProto()->Id)
+                      {
+                          case 51099 : this->CastSpell(pVictim, 51726, false, NULL, (*i)); break;
+                          case 51160 : this->CastSpell(pVictim, 51734, false, NULL, (*i)); break;
+                          case 51161 : this->CastSpell(pVictim, 51735, false, NULL, (*i)); break;
                       }
                   }
               }
