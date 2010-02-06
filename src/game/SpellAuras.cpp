@@ -7165,7 +7165,7 @@ void Aura::PeriodicTick()
                 GUID_LOPART(GetCasterGUID()), GuidHigh2TypeId(GUID_HIPART(GetCasterGUID())), m_target->GetGUIDLow(), m_target->GetTypeId(), pdamage, GetId());
 
             int32 gain = m_target->ModifyHealth(pdamage);
-            if (m_target->GetHealth() != m_target->GetMaxHealth())
+            if ((m_target->GetHealth() - gain) != m_target->GetMaxHealth())
             {
                 SpellPeriodicAuraLogInfo pInfo(this, pdamage, (pdamage - gain), 0, 0, 0.0f, isCrit);
                 m_target->SendPeriodicAuraLog(&pInfo);
