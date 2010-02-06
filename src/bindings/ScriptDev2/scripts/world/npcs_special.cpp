@@ -1662,15 +1662,15 @@ struct MANGOS_DLL_DECL npc_mirror_imageAI : public ScriptedAI
 
 		if (m_creature->Attack(pWho, true))
 		{
-			m_creature->AddThreat(pWho, 0.0f);
-			m_creature->SetInCombatWith(pWho);
-			pWho->SetInCombatWith(m_creature);
-
-			if (IsCombatMovement())
-				m_creature->GetMotionMaster()->MoveChase(pWho);
-		}
-
-		inCombat = true;		
+            m_creature->clearUnitState(UNIT_STAT_FOLLOW);
+            // TMGs call CreatureRelocation which via MoveInLineOfSight can call this function
+            // thus with the following clear the original TMG gets invalidated and crash, doh
+            // hope it doesn't start to leak memory without this :-/
+            //i_pet->Clear();
+            m_creature->GetMotionMaster()->MoveChase(pWho);
+            m_creature->getVictim()->AddThreat(m_creature);
+            inCombat = true;
+        }
 	}
 
 	void EnterEvadeMode()
@@ -1708,7 +1708,7 @@ struct MANGOS_DLL_DECL npc_mirror_imageAI : public ScriptedAI
 			m_creature->CastSpell(m_creature, 58836, true, NULL, NULL, owner->GetGUID());
 		}
 		
-		if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+		if (/*!m_creature->SelectHostileTarget() || */!m_creature->getVictim())
 		{
 			Unit *owner = m_creature->GetCharmerOrOwner();
 			if (owner && owner->getVictim())
@@ -1721,7 +1721,7 @@ struct MANGOS_DLL_DECL npc_mirror_imageAI : public ScriptedAI
 			return;
 		}
 
-		if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+		if (/*!m_creature->SelectHostileTarget() || */!m_creature->getVictim())
 			return;
 
 		if (m_uiFrostboltTimer <= diff)
