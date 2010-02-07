@@ -2608,13 +2608,13 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                         ((Player*)caster)->CastSpell( caster, 50001, true );
                 return;
             }
-            case 34477: //Misdirection
+            /*case 34477: //Misdirection
             case 57934: //Tricks of Trade
             {
                 if(Unit * caster = GetCaster())
                     caster->SetThreatRedirectionTarget(0, 0);
                 return;
-            }
+            }*/
         }
 
         // Living Bomb
