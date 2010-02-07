@@ -4914,9 +4914,22 @@ void Spell::EffectWeaponDmg(uint32 i)
                            if(m_spellInfo->SpellFamilyFlags & UI64LIT(0x2000000000000))
                                if(!m_caster->HasAura(51473))
                                   {
-                                      if((m_caster->HasAura(51468) && roll_chance_i(33))||(m_caster->HasAura(51472) && roll_chance_i(99))) ;
+                                      if((m_caster->HasAura(51468) && roll_chance_i(33))||(m_caster->HasAura(51472) && roll_chance_i(66))) ;
                                           else
-                                              unitTarget->RemoveSingleSpellAurasFromStack(itr->second->GetSpellProto()->Id);
+                                           {
+                                               unitTarget->RemoveSingleSpellAurasFromStack(itr->second->GetSpellProto()->Id);
+                                               Unit::AuraMap const& auras_ = unitTarget->GetAuras();
+                                               for(Unit::AuraMap::const_iterator itr = auras_.begin(); itr!=auras_.end(); ++itr)
+                                               {
+                                                   if(itr->second->GetSpellProto()->Dispel == DISPEL_DISEASE &&
+                                                       itr->second->GetCasterGUID() == m_caster->GetGUID() &&
+                                                       IsSpellLastAuraEffect(itr->second->GetSpellProto(), itr->second->GetEffIndex()))
+                                                          {
+                                                             ++count;
+                                                             unitTarget->RemoveSingleSpellAurasFromStack(itr->second->GetSpellProto()->Id);
+                                                          }
+                                               }
+                                          }
                                   }
                         }
                 }
