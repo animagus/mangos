@@ -2067,8 +2067,23 @@ void Spell::EffectDummy(uint32 i)
             {
                 int32 healval = m_caster->SpellDamageBonus(unitTarget, m_spellInfo, damage, DOT );
                 if( m_caster->GetOwner() )
-                    healval += m_caster->GetOwner()->SpellDamageBonus(unitTarget, m_spellInfo, healval, HEAL );
+//                    healval += m_caster->GetOwner()->SpellDamageBonus(unitTarget, m_spellInfo, healval, HEAL );
+                {
+                    if (Unit *owner = m_caster->GetOwner())
+                    {
+                        healval += int32(owner->SpellBaseHealingBonus(GetSpellSchoolMask(m_spellInfo)) * 0.045f);
+                        // Restorative Totems
+                        Unit::AuraList const& mDummyAuras = owner->GetAurasByType(SPELL_AURA_DUMMY);
+                        for(Unit::AuraList::const_iterator i = mDummyAuras.begin(); i != mDummyAuras.end(); ++i)
+                            // only its have dummy with specific icon
+                            if ((*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && (*i)->GetSpellProto()->SpellIconID == 338)
+                                healval += (*i)->GetModifier()->m_amount * healval / 100;
 
+                        // Glyph of Healing Stream Totem
+                        if (Aura *dummy = owner->GetDummyAura(55456))
+                            healval += dummy->GetModifier()->m_amount * healval / 100;
+                    }
+                }
                 if (unitTarget)
                     m_caster->CastCustomSpell(unitTarget, 52042, &healval, 0, 0, true, 0, 0, m_originalCasterGUID);
                 return;
@@ -4909,7 +4924,29 @@ void Spell::EffectWeaponDmg(uint32 i)
                     if(itr->second->GetSpellProto()->Dispel == DISPEL_DISEASE &&
                         itr->second->GetCasterGUID() == m_caster->GetGUID() &&
                         IsSpellLastAuraEffect(itr->second->GetSpellProto(), itr->second->GetEffIndex()))
-                        ++count;
+                        {
+                           ++count;
+                           if(m_spellInfo->SpellFamilyFlags & UI64LIT(0x2000000000000))
+                               if(!m_caster->HasAura(51473))
+                                  {
+                                      if((m_caster->HasAura(51468) && roll_chance_i(33))||(m_caster->HasAura(51472) && roll_chance_i(66))) ;
+                                          else
+                                           {
+                                               unitTarget->RemoveSingleSpellAurasFromStack(itr->second->GetSpellProto()->Id);
+                                               Unit::AuraMap const& auras_ = unitTarget->GetAuras();
+                                               for(Unit::AuraMap::const_iterator itr = auras_.begin(); itr!=auras_.end(); ++itr)
+                                               {
+                                                   if(itr->second->GetSpellProto()->Dispel == DISPEL_DISEASE &&
+                                                       itr->second->GetCasterGUID() == m_caster->GetGUID() &&
+                                                       IsSpellLastAuraEffect(itr->second->GetSpellProto(), itr->second->GetEffIndex()))
+                                                          {
+                                                             ++count;
+                                                             unitTarget->RemoveSingleSpellAurasFromStack(itr->second->GetSpellProto()->Id);
+                                                          }
+                                               }
+                                          }
+                                  }
+                        }
                 }
 
                 if (count)
