@@ -1792,6 +1792,8 @@ class MANGOS_DLL_SPEC Player : public Unit
         void UpdateMaxHealth();
         void UpdateMaxPower(Powers power);
         void ApplyFeralAPBonus(int32 amount, bool apply);
+        void ApplyFeralWeaponAPBonus(int32 amount, bool apply);
+        void ApplyFeralWeaponEnchantAPBonus(int32 amount, bool apply);
         void UpdateAttackPowerAndDamage(bool ranged = false);
         void UpdateShieldBlockValue();
         void UpdateDamagePhysical(WeaponAttackType attType);
@@ -2474,6 +2476,8 @@ class MANGOS_DLL_SPEC Player : public Unit
         int16 m_baseRatingValue[MAX_COMBAT_RATING];
         uint16 m_baseSpellPower;
         uint16 m_baseFeralAP;
+        uint16 m_weaponFeralAP;
+        uint16 m_weaponEnchantFeralAP;
         uint16 m_baseManaRegen;
         float m_armorPenetrationPct;
 
