@@ -4940,7 +4940,7 @@ void Spell::EffectWeaponDmg(uint32 i)
                         ++count;
                 }
 
-                if (!m_caster->HasAura(51473) && m_spellInfo->SpellFamilyFlags & UI64LIT(0x2000000000000))
+                /*if (!m_caster->HasAura(51473) && m_spellInfo->SpellFamilyFlags & UI64LIT(0x2000000000000))
                     for(Unit::AuraMap::const_iterator itr = auras.begin(); itr!=auras.end(); ++itr)
                     {
                         Aura *aur = (*itr).second;
@@ -4954,7 +4954,7 @@ void Spell::EffectWeaponDmg(uint32 i)
                             else
                                 unitTarget->RemoveSingleSpellAurasFromStack(aur->GetSpellProto()->Id);
                         }
-                    }
+                    }*/
                     
                     if (count)
                     {
