@@ -121,7 +121,7 @@ bool ItemUse_item_flying_machine(Player* pPlayer, Item* pItem, const SpellCastTa
             return false;
 
     if (itemId == 54732)
-        if (pPlayer->GetBaseSkillValue(SKILL_ENGINERING) >= 400)
+        if (pPlayer->GetSkillValue(SKILL_ENGINERING) >= 400)
             return false;
 
     debug_log("SD2: Player attempt to use item %u, but did not meet riding requirement",itemId);
