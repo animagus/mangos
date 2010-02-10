@@ -4955,19 +4955,19 @@ void Spell::EffectWeaponDmg(uint32 i)
                                 unitTarget->RemoveSingleSpellAurasFromStack(aur->GetSpellProto()->Id);
                         }
                     }
-             }
+                    
+                    if (count)
+                    {
+                        // Effect 1(for Blood-Caked Strike)/3(other) damage is bonus
+                        float bonus = count * CalculateDamage(m_spellInfo->SpellIconID == 1736 ? 0 : 2, unitTarget) / 100.0f;
+                        // Blood Strike, Blood-Caked Strike and Obliterate store bonus*2
+                        if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0002000000400000) ||
+                            m_spellInfo->SpellIconID == 1736)
+                            bonus /= 2.0f;
+                        totalDamagePercentMod *= 1.0f + bonus;
+                    }
+            }
 
-            if (count)
-            {
-                // Effect 1(for Blood-Caked Strike)/3(other) damage is bonus
-                float bonus = count * CalculateDamage(m_spellInfo->SpellIconID == 1736 ? 0 : 2, unitTarget) / 100.0f;
-                // Blood Strike, Blood-Caked Strike and Obliterate store bonus*2
-                if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0002000000400000) ||
-                    m_spellInfo->SpellIconID == 1736)
-                    bonus /= 2.0f;
-                totalDamagePercentMod *= 1.0f + bonus;
-            }
-            }
             // Glyph of Blood Strike
             if( m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000000000400000) &&
                 m_caster->HasAura(59332) &&
