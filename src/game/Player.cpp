@@ -429,6 +429,7 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     //returning reagents for temporarily removed pets
     //when dying/logging out
     m_oldpetspell = 0;
+    m_lastpetnumber = 0;
 
     ////////////////////Rest System/////////////////////
     time_inn_enter=0;
@@ -484,6 +485,8 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
 
     m_baseSpellPower = 0;
     m_baseFeralAP = 0;
+    m_weaponFeralAP = 0;
+    m_weaponEnchantFeralAP = 0;
     m_baseManaRegen = 0;
     m_armorPenetrationPct = 0.0f;
 
@@ -6883,7 +6886,9 @@ void Player::_ApplyItemBonuses(ItemPrototype const *proto, uint8 slot, bool appl
             case ITEM_MOD_ATTACK_POWER:
                 HandleStatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_VALUE, float(val), apply);
                 HandleStatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, float(val), apply);
-                break;
+                if(slot == EQUIPMENT_SLOT_MAINHAND)
+                    ApplyFeralWeaponAPBonus(int32(val), apply);                
+				break;
             case ITEM_MOD_RANGED_ATTACK_POWER:
                 HandleStatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, float(val), apply);
                 break;
@@ -12423,7 +12428,9 @@ void Player::ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool
                         case ITEM_MOD_ATTACK_POWER:
                             HandleStatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_VALUE, float(enchant_amount), apply);
                             HandleStatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, float(enchant_amount), apply);
-                            sLog.outDebug("+ %u ATTACK_POWER", enchant_amount);
+                            if(item->GetSlot() == EQUIPMENT_SLOT_MAINHAND)
+                                ((Player*)this)->ApplyFeralWeaponEnchantAPBonus(enchant_amount, apply);
+							sLog.outDebug("+ %u ATTACK_POWER", enchant_amount);
                             break;
                         case ITEM_MOD_RANGED_ATTACK_POWER:
                             HandleStatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, float(enchant_amount), apply);
@@ -16240,7 +16247,7 @@ InstancePlayerBind* Player::BindToInstance(InstanceSave *save, bool permanent, b
                 if(!load) CharacterDatabase.PExecute("UPDATE character_instance SET instance = '%u', permanent = '%u' WHERE guid = '%u' AND instance = '%u'", save->GetInstanceId(), permanent, GetGUIDLow(), bind.save->GetInstanceId());
         }
         else
-            if(!load) CharacterDatabase.PExecute("REPLACE INTO character_instance (guid, instance, permanent) VALUES ('%u', '%u', '%u')", GetGUIDLow(), save->GetInstanceId(), permanent);
+            if(!load) CharacterDatabase.PExecute("INSERT INTO character_instance (guid, instance, permanent) VALUES ('%u', '%u', '%u')", GetGUIDLow(), save->GetInstanceId(), permanent);
 
         if(bind.save != save)
         {
@@ -16367,7 +16374,7 @@ void Player::ConvertInstancesToGroup(Player *player, Group *group, uint64 player
     }
 
     // if the player's not online we don't know what binds it has
-    if(!player || !group || has_binds) CharacterDatabase.PExecute("REPLACE INTO group_instance SELECT guid, instance, permanent FROM character_instance WHERE guid = '%u'", GUID_LOPART(player_guid));
+    if(!player || !group || has_binds) CharacterDatabase.PExecute("INSERT INTO group_instance SELECT guid, instance, permanent FROM character_instance WHERE guid = '%u'", GUID_LOPART(player_guid));
     // the following should not get executed when changing leaders
     if(!player || has_solo) CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%d' AND permanent = 0", GUID_LOPART(player_guid));
 }
@@ -17254,7 +17261,7 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
     if (pet && m_temporaryUnsummonedPetNumber != pet->GetCharmInfo()->GetPetNumber() && mode == PET_SAVE_AS_CURRENT)
         mode = PET_SAVE_NOT_IN_SLOT;
 
-    if(returnreagent && pet && mode != PET_SAVE_AS_CURRENT)
+    if(returnreagent && pet && mode != PET_SAVE_AS_CURRENT && !InBattleGround())
     {
         //returning of reagents only for players, so best done here
         uint32 spellId = pet ? pet->GetUInt32Value(UNIT_CREATED_BY_SPELL) : m_oldpetspell;

@@ -96,6 +96,7 @@ bool AchievementCriteriaRequirement::IsValid(AchievementCriteriaEntry const* cri
         case ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET:
         case ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET2:
         case ACHIEVEMENT_CRITERIA_TYPE_EQUIP_EPIC_ITEM:
+        case ACHIEVEMENT_CRITERIA_TYPE_USE_ITEM:
             break;
         default:
             sLog.outErrorDb( "Table `achievement_criteria_requirement` have data for not supported criteria type (Entry: %u Type: %u), ignore.", criteria->ID, criteria->requiredType);
@@ -1147,6 +1148,13 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
                     continue;
                 if(achievementCriteria->use_item.itemID != miscvalue1)
                     continue;
+                if (achievementCriteria->ID == 3223)
+                {
+                    AchievementCriteriaRequirementSet const* data = sAchievementMgr.GetCriteriaRequirementSet(achievementCriteria);
+                    if(!data || !data->Meets(GetPlayer(),unit))
+                        continue;
+                }
+
                 SetCriteriaProgress(achievementCriteria, 1, PROGRESS_ACCUMULATE);
                 break;
             case ACHIEVEMENT_CRITERIA_TYPE_LOOT_ITEM:

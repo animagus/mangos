@@ -1417,7 +1417,15 @@ void Spell::EffectDummy(uint32 i)
                     if (!m_CastItem)
                         return;
                     if (roll_chance_i(95))                  // Nitro Boosts - success
+                    {
+                        if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                            return;
+
+                        if (BattleGround* bg = ((Player*)m_caster)->GetBattleGround())
+                            bg->EventPlayerDroppedFlag((Player*)m_caster);
+
                         m_caster->CastSpell(m_caster, 54861, true, m_CastItem);
+                    }
                     else                                    // Knocked Up   - backfire 5%
                         m_caster->CastSpell(m_caster, 46014, true, m_CastItem);
                     return;
@@ -1466,6 +1474,10 @@ void Spell::EffectDummy(uint32 i)
                         unitTarget->CastSpell(m_caster, 62855, true, NULL);
                         m_caster->DealDamage(unitTarget, unitTarget->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                     }
+                    return;
+                case 26899:
+                    if (unitTarget)
+                        unitTarget->RemoveAurasDueToSpell(26898);
                     return;
                 case 67019:                                 // Flask of the North
                 {
@@ -4921,46 +4933,41 @@ void Spell::EffectWeaponDmg(uint32 i)
                 Unit::AuraMap const& auras = unitTarget->GetAuras();
                 for(Unit::AuraMap::const_iterator itr = auras.begin(); itr!=auras.end(); ++itr)
                 {
-                    if(itr->second->GetSpellProto()->Dispel == DISPEL_DISEASE &&
-                        itr->second->GetCasterGUID() == m_caster->GetGUID() &&
-                        IsSpellLastAuraEffect(itr->second->GetSpellProto(), itr->second->GetEffIndex()))
+                    Aura *aur = (*itr).second;
+                    if(aur && aur->GetSpellProto()->Dispel == DISPEL_DISEASE 
+                        && aur->GetCasterGUID() == m_caster->GetGUID()
+                        && IsSpellLastAuraEffect(aur->GetSpellProto(), aur->GetEffIndex()))
+                        ++count;
+                }
+
+                if (!m_caster->HasAura(51473) && m_spellInfo->SpellFamilyFlags & UI64LIT(0x2000000000000))
+                    for(Unit::AuraMap::const_iterator itr = auras.begin(); itr!=auras.end(); ++itr)
+                    {
+                        Aura *aur = (*itr).second;
+                        if(aur && aur->GetSpellProto()->Dispel == DISPEL_DISEASE 
+                            && aur->GetCasterGUID() == m_caster->GetGUID()
+                            && IsSpellLastAuraEffect(aur->GetSpellProto(), aur->GetEffIndex()))
                         {
-                           ++count;
-                           if(m_spellInfo->SpellFamilyFlags & UI64LIT(0x2000000000000))
-                               if(!m_caster->HasAura(51473))
-                                  {
-                                      if((m_caster->HasAura(51468) && roll_chance_i(33))||(m_caster->HasAura(51472) && roll_chance_i(66))) ;
-                                          else
-                                           {
-                                               unitTarget->RemoveSingleSpellAurasFromStack(itr->second->GetSpellProto()->Id);
-                                               Unit::AuraMap const& auras_ = unitTarget->GetAuras();
-                                               for(Unit::AuraMap::const_iterator itr = auras_.begin(); itr!=auras_.end(); ++itr)
-                                               {
-                                                   if(itr->second->GetSpellProto()->Dispel == DISPEL_DISEASE &&
-                                                       itr->second->GetCasterGUID() == m_caster->GetGUID() &&
-                                                       IsSpellLastAuraEffect(itr->second->GetSpellProto(), itr->second->GetEffIndex()))
-                                                          {
-                                                             ++count;
-                                                             unitTarget->RemoveSingleSpellAurasFromStack(itr->second->GetSpellProto()->Id);
-                                                          }
-                                               }
-                                          }
-                                  }
+                            if((m_caster->HasAura(51468) && roll_chance_i(33)) ||
+                                (m_caster->HasAura(51472) && roll_chance_i(66)))
+                                break;
+                            else
+                                unitTarget->RemoveSingleSpellAurasFromStack(aur->GetSpellProto()->Id);
                         }
-                }
-
-                if (count)
-                {
-                    // Effect 1(for Blood-Caked Strike)/3(other) damage is bonus
-                    float bonus = count * CalculateDamage(m_spellInfo->SpellIconID == 1736 ? 0 : 2, unitTarget) / 100.0f;
-                    // Blood Strike, Blood-Caked Strike and Obliterate store bonus*2
-                    if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0002000000400000) ||
-                        m_spellInfo->SpellIconID == 1736)
-                        bonus /= 2.0f;
-
-                    totalDamagePercentMod *= 1.0f + bonus;
-                }
+                    }
+                    
+                    if (count)
+                    {
+                        // Effect 1(for Blood-Caked Strike)/3(other) damage is bonus
+                        float bonus = count * CalculateDamage(m_spellInfo->SpellIconID == 1736 ? 0 : 2, unitTarget) / 100.0f;
+                        // Blood Strike, Blood-Caked Strike and Obliterate store bonus*2
+                        if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0002000000400000) ||
+                            m_spellInfo->SpellIconID == 1736)
+                            bonus /= 2.0f;
+                        totalDamagePercentMod *= 1.0f + bonus;
+                    }
             }
+
             // Glyph of Blood Strike
             if( m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000000000400000) &&
                 m_caster->HasAura(59332) &&
@@ -5242,6 +5249,38 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         {
             switch(m_spellInfo->Id)
             {
+                case 6962:
+                {
+                    if(m_caster->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    Player* plr = ((Player*)m_caster);
+                    if(plr && plr->GetLastPetNumber())
+                    {
+                        PetType NewPetType = (plr->getClass()==CLASS_HUNTER) ? HUNTER_PET : SUMMON_PET;
+                        if (Pet* NewPet = new Pet(NewPetType))
+                        {
+                            if(NewPet->LoadPetFromDB(plr, 0, plr->GetLastPetNumber(), true))
+                            {
+                                NewPet->SetHealth(NewPet->GetMaxHealth());
+                                NewPet->SetPower(NewPet->getPowerType(),NewPet->GetMaxPower(NewPet->getPowerType()));
+
+                                switch (NewPet->GetEntry())
+                                {
+                                    case 11859:
+                                    case    89:
+                                        NewPet->SetEntry(416);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                            else
+                                delete NewPet;
+                        }
+                    }
+                    return;
+                }
                 // Bending Shinbone
                 case 8856:
                 {
@@ -5710,6 +5749,25 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
                     if (roll_chance_i(30))
                         unitTarget->CastSpell(unitTarget, 42966, true);
+                    return;
+                }
+                case 26678:
+                {
+                    // need remove at 3.3.0
+                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    switch(urand(0, 7))
+                    {
+                    case 0: ((Player*)unitTarget)->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL,26668); break;
+                    case 1: ((Player*)unitTarget)->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL,26670); break;
+                    case 2: ((Player*)unitTarget)->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL,26671); break;
+                    case 3: ((Player*)unitTarget)->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL,26672); break;
+                    case 4: ((Player*)unitTarget)->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL,26673); break;
+                    case 5: ((Player*)unitTarget)->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL,26674); break;
+                    case 6: ((Player*)unitTarget)->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL,26675); break;
+                    case 7: ((Player*)unitTarget)->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL,26676); break;
+                    }
                     return;
                 }
                 case 26218:
@@ -7303,6 +7361,8 @@ void Spell::EffectSpiritHeal(uint32 /*i*/)
 
     ((Player*)unitTarget)->ResurrectPlayer(1.0f);
     ((Player*)unitTarget)->SpawnCorpseBones();
+
+    ((Player*)unitTarget)->CastSpell(unitTarget, 6962, true);
 }
 
 // remove insignia spell effect
