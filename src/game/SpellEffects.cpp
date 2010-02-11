@@ -4930,6 +4930,10 @@ void Spell::EffectWeaponDmg(uint32 i)
                 m_spellInfo->SpellIconID == 1736 || m_spellInfo->SpellIconID == 3143)
             {
                 uint32 count = 0;
+                bool dispell = true;
+                if((m_caster->HasAura(51468) && roll_chance_i(33)) || (m_caster->HasAura(51472) && roll_chance_i(66)) || m_caster->HasAura(51473))
+                    dispell = false;
+
                 Unit::AuraMap const& auras = unitTarget->GetAuras();
                 for(Unit::AuraMap::const_iterator itr = auras.begin(); itr!=auras.end(); ++itr)
                 {
@@ -4940,7 +4944,10 @@ void Spell::EffectWeaponDmg(uint32 i)
                         ++count;
                 }
 
-                /*if (!m_caster->HasAura(51473) && m_spellInfo->SpellFamilyFlags & UI64LIT(0x2000000000000))
+                // fill list diseases for Obliterate
+                std::vector <Aura *> dispel_list;
+                if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x2000000000000) && dispell)
+                {
                     for(Unit::AuraMap::const_iterator itr = auras.begin(); itr!=auras.end(); ++itr)
                     {
                         Aura *aur = (*itr).second;
@@ -4948,24 +4955,25 @@ void Spell::EffectWeaponDmg(uint32 i)
                             && aur->GetCasterGUID() == m_caster->GetGUID()
                             && IsSpellLastAuraEffect(aur->GetSpellProto(), aur->GetEffIndex()))
                         {
-                            if((m_caster->HasAura(51468) && roll_chance_i(33)) ||
-                                (m_caster->HasAura(51472) && roll_chance_i(66)))
-                                break;
-                            else
-                                unitTarget->RemoveSingleSpellAurasFromStack(aur->GetSpellProto()->Id);
+                            dispel_list.push_back(aur);
                         }
-                    }*/
-                    
-                    if (count)
-                    {
-                        // Effect 1(for Blood-Caked Strike)/3(other) damage is bonus
-                        float bonus = count * CalculateDamage(m_spellInfo->SpellIconID == 1736 ? 0 : 2, unitTarget) / 100.0f;
-                        // Blood Strike, Blood-Caked Strike and Obliterate store bonus*2
-                        if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0002000000400000) ||
-                            m_spellInfo->SpellIconID == 1736)
-                            bonus /= 2.0f;
-                        totalDamagePercentMod *= 1.0f + bonus;
                     }
+                }
+                
+                if (!dispel_list.empty())
+                    for (std::vector<Aura*>::const_iterator i = dispel_list.begin(); i != dispel_list.end(); ++i)
+                        unitTarget->RemoveSingleSpellAurasByCasterSpell((*i)->GetId(),m_caster->GetGUID(),AURA_REMOVE_BY_DISPEL);
+
+                if (count)
+                {
+                    // Effect 1(for Blood-Caked Strike)/3(other) damage is bonus
+                    float bonus = count * CalculateDamage(m_spellInfo->SpellIconID == 1736 ? 0 : 2, unitTarget) / 100.0f;
+                    // Blood Strike, Blood-Caked Strike and Obliterate store bonus*2
+                    if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0002000000400000) ||
+                        m_spellInfo->SpellIconID == 1736)
+                        bonus /= 2.0f;
+                    totalDamagePercentMod *= 1.0f + bonus;
+                }
             }
 
             // Glyph of Blood Strike
