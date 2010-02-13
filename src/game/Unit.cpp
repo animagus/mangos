@@ -6726,7 +6726,24 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             if (dummySpell->SpellFamilyFlags & UI64LIT(0x0000000000200000))
             {
                 triggered_spell_id = 10444;
-                basepoints0 = GetAttackTime(BASE_ATTACK) * (dummySpell->EffectBasePoints[0]+1) / 100000;
+                float coeff = 0.0;
+                int32 fire = SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FIRE) +
+                             SpellBaseDamageBonusForVictim(SPELL_SCHOOL_MASK_FIRE, pVictim);
+                // Off-Hand case
+                if (castItem->GetSlot() == EQUIPMENT_SLOT_OFFHAND)
+                {
+                    coeff = GetAttackTime(OFF_ATTACK) * 0.03811f / 1000;
+                    basepoints0 = int32(GetAttackTime(OFF_ATTACK) * dummySpell->EffectBasePoints[0] / 100000);
+                }
+                // Main-Hand case
+                else
+                {
+                    coeff = GetAttackTime(BASE_ATTACK) * 0.03811f / 1000;
+                    basepoints0 = int32(GetAttackTime(BASE_ATTACK) * dummySpell->EffectBasePoints[0] / 100000);
+                }
+                basepoints0 += int32(fire * coeff);
+                // Temporary fix (halve damage) because of double procs
+                basepoints0 = int32(basepoints0 * 0.5f);
                 break;
             }
             // Improved Water Shield
@@ -9146,14 +9163,6 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         if (bonus->ap_bonus)
             DoneTotal += int32(bonus->ap_bonus * GetTotalAttackPowerValue(BASE_ATTACK) * stack);
 
-        DoneTotal  += int32(DoneAdvertisedBenefit * coeff * SpellModSpellDamage);
-        TakenTotal += int32(TakenAdvertisedBenefit * coeff);
-    }
-    // Flametongue Weapon Proc: spell bonus scales with weapon speed
-    else if (spellProto->Id == 10444)
-    {
-        float coeff;
-        coeff = GetAttackTime(BASE_ATTACK) * 0.03811f / 1000;
         DoneTotal  += int32(DoneAdvertisedBenefit * coeff * SpellModSpellDamage);
         TakenTotal += int32(TakenAdvertisedBenefit * coeff);
     }
