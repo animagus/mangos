@@ -5012,6 +5012,11 @@ void Spell::EffectWeaponDmg(uint32 i)
                         bonus /= 2.0f;
                     totalDamagePercentMod *= 1.0f + bonus;
                 }
+
+                // Heart Strike secondary target
+                if (m_spellInfo->SpellIconID == 3145)
+                    if (m_targets.getUnitTarget() != unitTarget)
+                        weaponDamagePercentMod /= 2.0f;
             }
 
             // Glyph of Blood Strike
