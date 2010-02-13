@@ -1804,6 +1804,11 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                 // Seal of Corruption (caster/target parts stacking allow, other stacking checked by spell specs)
                 if (spellInfo_1->SpellIconID == 2292 && spellInfo_2->SpellIconID == 2292)
                     return false;
+
+                // Seal of Vengeance/Corruption and Righteous Vengeance
+                if (spellInfo_1->SpellIconID == 2292 && spellInfo_2->SpellIconID == 3025 ||
+                    spellInfo_2->SpellIconID == 2292 && spellInfo_1->SpellIconID == 3025)
+                    return false;
             }
 
             // Blessing of Sanctuary (multi-family check, some from 16 spell icon spells)
