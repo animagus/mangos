@@ -83,7 +83,7 @@ struct MANGOS_DLL_DECL boss_grobbulusAI : public ScriptedAI
     void SpellHitTarget(Unit *target, const SpellEntry *spell)
 
     {
-        if(spell->Id == SPELL_SLIME_SPRAY || spell->Id == H_SPELL_SLIME_SPRAY && target->GetTypeId() == TYPEID_PLAYER)
+        if(spell->Id == SPELL_SLIME_SPRAY || spell->Id == H_SPELL_SLIME_SPRAY && target->GetTypeId() == TYPEID_PLAYER && target != m_creature->getVictim())
         {
             if (Creature* pSlime = m_creature->SummonCreature(MOB_FALLOUT_SLIME, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, MINUTE*1*IN_MILISECONDS))
                 pSlime->SetInCombatWithZone();
@@ -130,7 +130,7 @@ struct MANGOS_DLL_DECL boss_grobbulusAI : public ScriptedAI
 
         if (SlimeSpary_Timer < diff)
         {
-            DoCast(m_creature, m_bIsRegularMode ? H_SPELL_SLIME_SPRAY : SPELL_SLIME_SPRAY);
+            DoCast(m_creature->getVictim(), !m_bIsRegularMode ? H_SPELL_SLIME_SPRAY : SPELL_SLIME_SPRAY);
             SlimeSpary_Timer = 15000+rand()%15000;
         }else SlimeSpary_Timer -= diff;
 
@@ -162,7 +162,6 @@ struct MANGOS_DLL_DECL npc_grobbulus_poison_cloudAI : public Scripted_NoMovement
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         //m_creature->DeleteThreatList;
         //return;
-
     }
     void Aggro(Unit *who)
     {

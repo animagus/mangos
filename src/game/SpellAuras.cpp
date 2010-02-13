@@ -2328,6 +2328,15 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                         if (Unit* caster = GetCaster())
                             caster->CastSpell(caster, 13138, true, NULL, this);
                         return;
+                        // Four Horsemen Mark Spells
+                    case 28832:
+                    case 28833:
+                    case 28834:
+                    case 28835:
+                        if (m_target)
+                            if (Unit* caster = GetCaster())
+                                caster->CastSpell(m_target,28836,true,NULL,this);
+                        return;
                     case 39850:                             // Rocket Blast
                         if(roll_chance_i(20))               // backfire stun
                             m_target->CastSpell(m_target, 51581, true, NULL, this);
