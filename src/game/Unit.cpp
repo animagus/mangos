@@ -6028,8 +6028,26 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     break;
                 }
             }
+            // King of the Jungle
+            if (dummySpell->SpellIconID == 2850)
+            {
+                // Effect 0 for Enrage
+                if (effIndex == 0 && procSpell->Id == 5229)
+                {
+                    triggered_spell_id = 51185;
+                    basepoints0 = triggerAmount;
+                    break;
+                }
+                // Effect 1 for Tiger's Fury
+                else if (effIndex == 1 && (procSpell->SpellFamilyFlags2 & UI64LIT(0x0000000000000800)))
+                {
+                    triggered_spell_id = 51178;
+                    basepoints0 = triggerAmount;
+                    break;
+                }
+            }
             // Eclipse
-            if (dummySpell->SpellIconID == 2856)
+            else if (dummySpell->SpellIconID == 2856)
             {
                 if (!procSpell)
                     return false;
@@ -6197,7 +6215,10 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             if ((dummySpell->SpellFamilyFlags & UI64LIT(0x000000008000000)) && effIndex==0)
             {
                 triggered_spell_id = 25742;
-				basepoints0 = GetAttackTime(BASE_ATTACK) / 1000;
+                float ap = GetTotalAttackPowerValue(BASE_ATTACK);
+                int32 holy = SpellBaseDamageBonus(SPELL_SCHOOL_MASK_HOLY) +
+                             SpellBaseDamageBonusForVictim(SPELL_SCHOOL_MASK_HOLY, pVictim);
+                basepoints0 = int32(GetAttackTime(BASE_ATTACK) * int32(ap * 0.022f + holy * 0.044f) / 1000);
                 break;
             }
             // Righteous Vengeance
