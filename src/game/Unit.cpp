@@ -6725,6 +6725,10 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             // Flametongue Weapon proc
             if (dummySpell->SpellFamilyFlags & UI64LIT(0x0000000000200000))
             {
+                if(GetTypeId()!=TYPEID_PLAYER)
+                    return false;
+                if(!castItem || !castItem->IsEquipped())
+                    return false;
                 triggered_spell_id = 10444;
                 float coeff = 0.0;
                 int32 fire = SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FIRE) +
