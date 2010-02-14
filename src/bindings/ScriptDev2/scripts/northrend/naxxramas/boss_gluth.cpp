@@ -224,7 +224,7 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
         //Summon_Timer
         if (Summon_Timer < diff)
         {
-            if (m_bIsRegularMode)
+            if (!m_bIsRegularMode)
             {
                 if (Creature* pZombie = m_creature->SummonCreature(NPC_ZOMBIE_CHOW,ADD_1X,ADD_1Y,ADD_1Z,0,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,80000))
                 {
@@ -234,7 +234,6 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
                         m_lZombieGUIDList.push_back(pZombie->GetGUID());
                     }
                 }
-
                 if (Creature* pZombie = m_creature->SummonCreature(NPC_ZOMBIE_CHOW,ADD_2X,ADD_2Y,ADD_2Z,0,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,80000))
                 {
                     if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
@@ -243,7 +242,6 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
                         m_lZombieGUIDList.push_back(pZombie->GetGUID());
                     }
                 }
-
                 if (Creature* pZombie = m_creature->SummonCreature(NPC_ZOMBIE_CHOW,ADD_3X,ADD_3Y,ADD_3Z,0,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,80000))
                 {
                     if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))

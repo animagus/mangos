@@ -6888,7 +6888,7 @@ void Player::_ApplyItemBonuses(ItemPrototype const *proto, uint8 slot, bool appl
                 HandleStatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, float(val), apply);
                 if(slot == EQUIPMENT_SLOT_MAINHAND)
                     ApplyFeralWeaponAPBonus(int32(val), apply);                
-				break;
+                break;
             case ITEM_MOD_RANGED_ATTACK_POWER:
                 HandleStatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, float(val), apply);
                 break;
@@ -12430,7 +12430,7 @@ void Player::ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool
                             HandleStatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, float(enchant_amount), apply);
                             if(item->GetSlot() == EQUIPMENT_SLOT_MAINHAND)
                                 ((Player*)this)->ApplyFeralWeaponEnchantAPBonus(enchant_amount, apply);
-							sLog.outDebug("+ %u ATTACK_POWER", enchant_amount);
+                            sLog.outDebug("+ %u ATTACK_POWER", enchant_amount);
                             break;
                         case ITEM_MOD_RANGED_ATTACK_POWER:
                             HandleStatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, float(enchant_amount), apply);

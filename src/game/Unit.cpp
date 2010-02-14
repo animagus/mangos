@@ -2838,8 +2838,9 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
         return SPELL_MISS_NONE;
 
     // Check for immune
-    if (pVictim->IsImmunedToDamage(GetSpellSchoolMask(spell)))
-        return SPELL_MISS_IMMUNE;
+    if (!(spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY))
+        if (pVictim->IsImmunedToDamage(GetSpellSchoolMask(spell)))
+            return SPELL_MISS_IMMUNE;
 
     // Try victim reflect spell
     if (canReflect)
@@ -6027,8 +6028,26 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     break;
                 }
             }
+            // King of the Jungle
+            if (dummySpell->SpellIconID == 2850)
+            {
+                // Effect 0 for Enrage
+                if (effIndex == 0 && procSpell->Id == 5229)
+                {
+                    triggered_spell_id = 51185;
+                    basepoints0 = triggerAmount;
+                    break;
+                }
+                // Effect 1 for Tiger's Fury
+                else if (effIndex == 1 && (procSpell->SpellFamilyFlags2 & UI64LIT(0x0000000000000800)))
+                {
+                    triggered_spell_id = 51178;
+                    basepoints0 = triggerAmount;
+                    break;
+                }
+            }
             // Eclipse
-            if (dummySpell->SpellIconID == 2856)
+            else if (dummySpell->SpellIconID == 2856)
             {
                 if (!procSpell)
                     return false;
@@ -6196,7 +6215,10 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             if ((dummySpell->SpellFamilyFlags & UI64LIT(0x000000008000000)) && effIndex==0)
             {
                 triggered_spell_id = 25742;
-				basepoints0 = GetAttackTime(BASE_ATTACK) / 1000;
+                float ap = GetTotalAttackPowerValue(BASE_ATTACK);
+                int32 holy = SpellBaseDamageBonus(SPELL_SCHOOL_MASK_HOLY) +
+                             SpellBaseDamageBonusForVictim(SPELL_SCHOOL_MASK_HOLY, pVictim);
+                basepoints0 = int32(GetAttackTime(BASE_ATTACK) * int32(ap * 0.022f + holy * 0.044f) / 1000);
                 break;
             }
             // Righteous Vengeance
@@ -6652,7 +6674,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 // Earthen Power (Rank 1,2)
                 case 51523:
                 case 51524:
-                    triggered_spell_id = 63532;
+                    triggered_spell_id = 59566;
                     break;
                 // Shaman T8 Elemental 4P Bonus
                 case 64928:
@@ -6704,7 +6726,24 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             if (dummySpell->SpellFamilyFlags & UI64LIT(0x0000000000200000))
             {
                 triggered_spell_id = 10444;
-                basepoints0 = GetAttackTime(BASE_ATTACK) * (dummySpell->EffectBasePoints[0]+1) / 100000;
+                float coeff = 0.0;
+                int32 fire = SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FIRE) +
+                             SpellBaseDamageBonusForVictim(SPELL_SCHOOL_MASK_FIRE, pVictim);
+                // Off-Hand case
+                if (castItem->GetSlot() == EQUIPMENT_SLOT_OFFHAND)
+                {
+                    coeff = GetAttackTime(OFF_ATTACK) * 0.03811f / 1000;
+                    basepoints0 = int32(GetAttackTime(OFF_ATTACK) * dummySpell->EffectBasePoints[0] / 100000);
+                }
+                // Main-Hand case
+                else
+                {
+                    coeff = GetAttackTime(BASE_ATTACK) * 0.03811f / 1000;
+                    basepoints0 = int32(GetAttackTime(BASE_ATTACK) * dummySpell->EffectBasePoints[0] / 100000);
+                }
+                basepoints0 += int32(fire * coeff);
+                // Temporary fix (halve damage) because of double procs
+                basepoints0 = int32(basepoints0 * 0.5f);
                 break;
             }
             // Improved Water Shield
@@ -9127,14 +9166,6 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         DoneTotal  += int32(DoneAdvertisedBenefit * coeff * SpellModSpellDamage);
         TakenTotal += int32(TakenAdvertisedBenefit * coeff);
     }
-    // Flametongue Weapon Proc: spell bonus scales with weapon speed
-    else if (spellProto->Id == 10444)
-    {
-        float coeff;
-        coeff = GetAttackTime(BASE_ATTACK) * 0.03811f / 1000;
-        DoneTotal  += int32(DoneAdvertisedBenefit * coeff * SpellModSpellDamage);
-        TakenTotal += int32(TakenAdvertisedBenefit * coeff);
-    }
     // Default calculation
     else if (DoneAdvertisedBenefit || TakenAdvertisedBenefit)
     {
@@ -9748,7 +9779,8 @@ bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo)
             return true;
 
     if (!(spellInfo->AttributesEx & SPELL_ATTR_EX_UNAFFECTED_BY_SCHOOL_IMMUNE) &&         // unaffected by school immunity
-        !(spellInfo->AttributesEx & SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY))              // can remove immune (by dispell or immune it)
+        !(spellInfo->AttributesEx & SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY) && 
+        !(spellInfo->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY))              // can remove immune (by dispell or immune it)
     {
         SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
         for(SpellImmuneList::const_iterator itr = schoolList.begin(); itr != schoolList.end(); ++itr)
