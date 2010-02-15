@@ -1416,16 +1416,12 @@ void Spell::EffectDummy(uint32 i)
                 case 55004:                                 // Nitro Boosts
                     if (!m_CastItem)
                         return;
+                    if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                        return;
+                    if (BattleGround* bg = ((Player*)m_caster)->GetBattleGround())
+                        bg->EventPlayerDroppedFlag((Player*)m_caster);
                     if (roll_chance_i(95))                  // Nitro Boosts - success
-                    {
-                        if (m_caster->GetTypeId() != TYPEID_PLAYER)
-                            return;
-
-                        if (BattleGround* bg = ((Player*)m_caster)->GetBattleGround())
-                            bg->EventPlayerDroppedFlag((Player*)m_caster);
-
                         m_caster->CastSpell(m_caster, 54861, true, m_CastItem);
-                    }
                     else                                    // Knocked Up   - backfire 5%
                         m_caster->CastSpell(m_caster, 46014, true, m_CastItem);
                     return;

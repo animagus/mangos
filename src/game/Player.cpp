@@ -20457,6 +20457,7 @@ bool Player::CanUseBattleGroundObject()
              !HasStealthAura() &&                           // not stealthed
              !HasInvisibilityAura() &&                      // not invisible
              !HasAura(SPELL_RECENTLY_DROPPED_FLAG, 0) &&    // can't pickup
+             !HasAura(54861) &&                             // can't pickup while Nitro Boosts effect is active (since patch 3.1)
              isAlive()                                      // live player
            );
 }
