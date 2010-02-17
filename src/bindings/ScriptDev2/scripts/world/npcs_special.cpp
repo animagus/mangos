@@ -2067,15 +2067,15 @@ struct MANGOS_DLL_DECL npc_love_airAI : public ScriptedAI
                 return;
             
             uint32 roll = 0;
-            roll = urand(0, 2);
+            roll = urand(0, 1);
             switch(roll)
             {
             case 0: pPlayer->CastSpell(pPlayer,27509,true); break;
-            case 1: pPlayer->CastSpell(pPlayer,27242,true); break;
-            case 2: pPlayer->CastSpell(pPlayer,26898,true); break;
+            //case 1: pPlayer->CastSpell(pPlayer,27242,true); break;
+            case 1: pPlayer->CastSpell(pPlayer,26898,true); break;
             }
 
-            if (roll != 2)
+            if (roll != 1)
                 pPlayer->CastSpell(pPlayer,26680,true);
         }           
     }
