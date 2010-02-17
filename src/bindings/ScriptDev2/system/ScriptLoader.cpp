@@ -287,7 +287,6 @@ extern void AddSC_boss_keristrasza();
 extern void AddSC_boss_ormorok();
 extern void AddSC_boss_telestra();
 extern void AddSC_instance_nexus();
-extern void AddSC_boss_malygos();
 extern void AddSC_boss_sartharion();                        //obsidian_sanctum
 extern void AddSC_instance_obsidian_sanctum();
 extern void AddSC_boss_bjarngrim();                         //Ulduar, halls_of_lightning
@@ -682,7 +681,6 @@ void AddScripts()
     AddSC_boss_sapphiron();
     AddSC_instance_naxxramas();
     AddSC_boss_anomalus();                                  //nexus
-    AddSC_boss_malygos();
     AddSC_boss_keristrasza();
     AddSC_boss_ormorok();
     AddSC_boss_telestra();

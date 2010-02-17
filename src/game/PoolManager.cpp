@@ -27,85 +27,6 @@
 INSTANTIATE_SINGLETON_1(PoolManager);
 
 ////////////////////////////////////////////////////////////
-// template class SpawnedPoolData
-
-// Method that tell amount spawned objects/subpools
-uint32 SpawnedPoolData::GetSpawnedObjects(uint32 pool_id) const
-{
-    SpawnedPoolPools::const_iterator itr = mSpawnedPools.find(pool_id);
-    return itr != mSpawnedPools.end() ? itr->second : 0;
-}
-
-// Method that tell if a creature is spawned currently
-template<>
-bool SpawnedPoolData::IsSpawnedObject<Creature>(uint32 db_guid) const
-{
-    return mSpawnedCreatures.find(db_guid) != mSpawnedCreatures.end();
-}
-
-// Method that tell if a gameobject is spawned currently
-template<>
-bool SpawnedPoolData::IsSpawnedObject<GameObject>(uint32 db_guid) const
-{
-    return mSpawnedGameobjects.find(db_guid) != mSpawnedGameobjects.end();
-}
-
-// Method that tell if a pool is spawned currently
-template<>
-bool SpawnedPoolData::IsSpawnedObject<Pool>(uint32 sub_pool_id) const
-{
-    return mSpawnedPools.find(sub_pool_id) != mSpawnedPools.end();
-}
-
-template<>
-void SpawnedPoolData::AddSpawn<Creature>(uint32 db_guid, uint32 pool_id)
-{
-    mSpawnedCreatures.insert(db_guid);
-    ++mSpawnedPools[pool_id];
-}
-
-template<>
-void SpawnedPoolData::AddSpawn<GameObject>(uint32 db_guid, uint32 pool_id)
-{
-    mSpawnedGameobjects.insert(db_guid);
-    ++mSpawnedPools[pool_id];
-}
-
-template<>
-void SpawnedPoolData::AddSpawn<Pool>(uint32 sub_pool_id, uint32 pool_id)
-{
-    mSpawnedPools[sub_pool_id] = 0;
-    ++mSpawnedPools[pool_id];
-}
-
-template<>
-void SpawnedPoolData::RemoveSpawn<Creature>(uint32 db_guid, uint32 pool_id)
-{
-    mSpawnedCreatures.erase(db_guid);
-    uint32& val = mSpawnedPools[pool_id];
-    if (val > 0)
-        --val;
-}
-
-template<>
-void SpawnedPoolData::RemoveSpawn<GameObject>(uint32 db_guid, uint32 pool_id)
-{
-    mSpawnedGameobjects.erase(db_guid);
-    uint32& val = mSpawnedPools[pool_id];
-    if (val > 0)
-        --val;
-}
-
-template<>
-void SpawnedPoolData::RemoveSpawn<Pool>(uint32 sub_pool_id, uint32 pool_id)
-{
-    mSpawnedPools.erase(sub_pool_id);
-    uint32& val = mSpawnedPools[pool_id];
-    if (val > 0)
-        --val;
-}
-
-////////////////////////////////////////////////////////////
 // Methods of template class PoolGroup
 
 // Method to add a gameobject/creature guid to the proper list depending on pool type and chance value
@@ -120,7 +41,7 @@ void PoolGroup<T>::AddEntry(PoolObject& poolitem, uint32 maxentries)
 
 // Method to check the chances are proper in this object pool
 template <class T>
-bool PoolGroup<T>::CheckPool() const
+bool PoolGroup<T>::CheckPool(void)
 {
     if (EqualChanced.size() == 0)
     {
@@ -133,8 +54,21 @@ bool PoolGroup<T>::CheckPool() const
     return true;
 }
 
+// Method that tell if the gameobject, creature or pool is spawned currently
 template <class T>
-PoolObject* PoolGroup<T>::RollOne(SpawnedPoolData& spawns, uint32 triggerFrom)
+bool PoolGroup<T>::IsSpawnedObject(uint32 guid)
+{
+    for (uint32 i = 0; i < ExplicitlyChanced.size(); ++i)
+        if (ExplicitlyChanced[i].guid == guid)
+            return ExplicitlyChanced[i].spawned;
+    for (uint32 i = 0; i < EqualChanced.size(); ++i)
+        if (EqualChanced[i].guid == guid)
+            return EqualChanced[i].spawned;
+    return false;
+}
+
+template <class T>
+void PoolGroup<T>::RollOne(int32& index, PoolObjectList** store, uint32 triggerFrom)
 {
     if (!ExplicitlyChanced.empty())
     {
@@ -145,53 +79,62 @@ PoolObject* PoolGroup<T>::RollOne(SpawnedPoolData& spawns, uint32 triggerFrom)
             roll -= ExplicitlyChanced[i].chance;
             // Triggering object is marked as spawned at this time and can be also rolled (respawn case)
             // so this need explicit check for this case
-            if (roll < 0 && (ExplicitlyChanced[i].guid == triggerFrom || !spawns.IsSpawnedObject<T>(ExplicitlyChanced[i].guid)))
-                return &ExplicitlyChanced[i];
+            if (roll < 0 && (!ExplicitlyChanced[i].spawned || ExplicitlyChanced[i].guid == triggerFrom))
+            {
+                index = i;
+                *store = &ExplicitlyChanced;
+                return;
+            }
         }
     }
 
     if (!EqualChanced.empty())
     {
-        int32 index = irand(0, EqualChanced.size()-1);
+        index = irand(0, EqualChanced.size()-1);
         // Triggering object is marked as spawned at this time and can be also rolled (respawn case)
         // so this need explicit check for this case
-        if (EqualChanced[index].guid == triggerFrom || !spawns.IsSpawnedObject<T>(EqualChanced[index].guid))
-            return &EqualChanced[index];
+        if (!EqualChanced[index].spawned || EqualChanced[index].guid == triggerFrom)
+        {
+            *store = &EqualChanced;
+            return;
+        }
     }
 
-    return NULL;
+    index = -1;
 }
 
 // Main method to despawn a creature or gameobject in a pool
 // If no guid is passed, the pool is just removed (event end case)
 // If guid is filled, cache will be used and no removal will occur, it just fill the cache
 template<class T>
-void PoolGroup<T>::DespawnObject(SpawnedPoolData& spawns, uint32 guid)
+void PoolGroup<T>::DespawnObject(uint32 guid)
 {
     for (size_t i = 0; i < EqualChanced.size(); ++i)
     {
-        // if spawned
-        if (spawns.IsSpawnedObject<T>(EqualChanced[i].guid))
+        if (EqualChanced[i].spawned)
         {
-            // any or specially requested
             if (!guid || EqualChanced[i].guid == guid)
             {
                 Despawn1Object(EqualChanced[i].guid);
-                spawns.RemoveSpawn<T>(EqualChanced[i].guid,poolId);
+                EqualChanced[i].spawned = false;
+
+                if (m_SpawnedPoolAmount > 0)
+                    --m_SpawnedPoolAmount;
             }
         }
     }
 
     for (size_t i = 0; i < ExplicitlyChanced.size(); ++i)
     {
-        // spawned
-        if (spawns.IsSpawnedObject<T>(ExplicitlyChanced[i].guid))
+        if (ExplicitlyChanced[i].spawned)
         {
-            // any or specially requested
             if (!guid || ExplicitlyChanced[i].guid == guid)
             {
                 Despawn1Object(ExplicitlyChanced[i].guid);
-                spawns.RemoveSpawn<T>(ExplicitlyChanced[i].guid,poolId);
+                ExplicitlyChanced[i].spawned = false;
+
+                if (m_SpawnedPoolAmount > 0)
+                    --m_SpawnedPoolAmount;
             }
         }
     }
@@ -253,10 +196,10 @@ void PoolGroup<Pool>::RemoveOneRelation(uint16 child_pool_id)
 }
 
 template <class T>
-void PoolGroup<T>::SpawnObject(SpawnedPoolData& spawns, uint32 limit, uint32 triggerFrom)
+void PoolGroup<T>::SpawnObject(uint32 limit, uint32 triggerFrom)
 {
     uint32 lastDespawned = 0;
-    int count = limit - spawns.GetSpawnedObjects(poolId);
+    int count = limit - m_SpawnedPoolAmount;
 
     // If triggered from some object respawn this object is still marked as spawned
     // and also counted into m_SpawnedPoolAmount so we need increase count to be
@@ -267,41 +210,43 @@ void PoolGroup<T>::SpawnObject(SpawnedPoolData& spawns, uint32 limit, uint32 tri
     // This will try to spawn the rest of pool, not guaranteed
     for (int i = 0; i < count; ++i)
     {
-        PoolObject* obj = RollOne(spawns,triggerFrom);
-        if (!obj)
+        int index;
+        PoolObjectList* store;
+
+        RollOne(index, &store, triggerFrom);
+        if (index == -1)
             continue;
-        if (obj->guid == lastDespawned)
+        if ((*store)[index].guid == lastDespawned)
             continue;
 
-        if (obj->guid == triggerFrom)
+        if ((*store)[index].guid == triggerFrom)
         {
-            assert(spawns.IsSpawnedObject<T>(obj->guid));
-            assert(spawns.GetSpawnedObjects(poolId) > 0);
-            ReSpawn1Object(obj);
+            (*store)[index].spawned = ReSpawn1Object(triggerFrom);
             triggerFrom = 0;
             continue;
         }
-
-        spawns.AddSpawn<T>(obj->guid,poolId);
-        Spawn1Object(obj);
+        else
+            (*store)[index].spawned = Spawn1Object((*store)[index].guid);
 
         if (triggerFrom)
         {
             // One spawn one despawn no count increase
-            DespawnObject(spawns, triggerFrom);
+            DespawnObject(triggerFrom);
             lastDespawned = triggerFrom;
             triggerFrom = 0;
         }
+        else
+            ++m_SpawnedPoolAmount;
     }
 }
 
 // Method that is actualy doing the spawn job on 1 creature
 template <>
-void PoolGroup<Creature>::Spawn1Object(PoolObject* obj)
+bool PoolGroup<Creature>::Spawn1Object(uint32 guid)
 {
-    if (CreatureData const* data = sObjectMgr.GetCreatureData(obj->guid))
+    if (CreatureData const* data = sObjectMgr.GetCreatureData(guid))
     {
-        sObjectMgr.AddCreatureToGrid(obj->guid, data);
+        sObjectMgr.AddCreatureToGrid(guid, data);
 
         // Spawn if necessary (loaded grids only)
         Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(data->mapid));
@@ -309,25 +254,27 @@ void PoolGroup<Creature>::Spawn1Object(PoolObject* obj)
         if (!map->Instanceable() && map->IsLoaded(data->posX, data->posY))
         {
             Creature* pCreature = new Creature;
-            //sLog.outDebug("Spawning creature %u",obj->guid);
-            if (!pCreature->LoadFromDB(obj->guid, map))
+            //sLog.outDebug("Spawning creature %u",guid);
+            if (!pCreature->LoadFromDB(guid, map))
             {
                 delete pCreature;
-                return;
+                return false;
             }
             else
                 map->Add(pCreature);
         }
+        return true;
     }
+    return false;
 }
 
 // Same for 1 gameobject
 template <>
-void PoolGroup<GameObject>::Spawn1Object(PoolObject* obj)
+bool PoolGroup<GameObject>::Spawn1Object(uint32 guid)
 {
-    if (GameObjectData const* data = sObjectMgr.GetGOData(obj->guid))
+    if (GameObjectData const* data = sObjectMgr.GetGOData(guid))
     {
-        sObjectMgr.AddGameobjectToGrid(obj->guid, data);
+        sObjectMgr.AddGameobjectToGrid(guid, data);
         // Spawn if necessary (loaded grids only)
         // this base map checked as non-instanced and then only existed
         Map* map = const_cast<Map*>(sMapMgr.CreateBaseMap(data->mapid));
@@ -335,11 +282,11 @@ void PoolGroup<GameObject>::Spawn1Object(PoolObject* obj)
         if (!map->Instanceable() && map->IsLoaded(data->posX, data->posY))
         {
             GameObject* pGameobject = new GameObject;
-            //sLog.outDebug("Spawning gameobject %u", obj->guid);
-            if (!pGameobject->LoadFromDB(obj->guid, map))
+            //sLog.outDebug("Spawning gameobject %u", guid);
+            if (!pGameobject->LoadFromDB(guid, map))
             {
                 delete pGameobject;
-                return;
+                return false;
             }
             else
             {
@@ -347,38 +294,52 @@ void PoolGroup<GameObject>::Spawn1Object(PoolObject* obj)
                     map->Add(pGameobject);
             }
         }
+        return true;
     }
+    return false;
 }
 
 // Same for 1 pool
 template <>
-void PoolGroup<Pool>::Spawn1Object(PoolObject* obj)
+bool PoolGroup<Pool>::Spawn1Object(uint32 child_pool_id)
 {
-    sPoolMgr.SpawnPool(obj->guid);
+    sPoolMgr.SpawnPool(child_pool_id, 0, 0);
+    sPoolMgr.SpawnPool(child_pool_id, 0, TYPEID_GAMEOBJECT);
+    sPoolMgr.SpawnPool(child_pool_id, 0, TYPEID_UNIT);
+    return true;
 }
 
 // Method that does the respawn job on the specified creature
 template <>
-void PoolGroup<Creature>::ReSpawn1Object(PoolObject* obj)
+bool PoolGroup<Creature>::ReSpawn1Object(uint32 guid)
 {
-    if (CreatureData const* data = sObjectMgr.GetCreatureData(obj->guid))
-        if (Creature* pCreature = ObjectAccessor::GetCreatureInWorld(MAKE_NEW_GUID(obj->guid, data->id, HIGHGUID_UNIT)))
+    if (CreatureData const* data = sObjectMgr.GetCreatureData(guid))
+    {
+        if (Creature* pCreature = ObjectAccessor::GetCreatureInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT)))
             pCreature->GetMap()->Add(pCreature);
+        return true;
+    }
+    return false;
 }
 
-// Method that does the respawn job on the specified gameobject
+// Same for 1 gameobject
 template <>
-void PoolGroup<GameObject>::ReSpawn1Object(PoolObject* obj)
+bool PoolGroup<GameObject>::ReSpawn1Object(uint32 guid)
 {
-    if (GameObjectData const* data = sObjectMgr.GetGOData(obj->guid))
-        if (GameObject* pGameobject = ObjectAccessor::GetGameObjectInWorld(MAKE_NEW_GUID(obj->guid, data->id, HIGHGUID_GAMEOBJECT)))
+    if (GameObjectData const* data = sObjectMgr.GetGOData(guid))
+    {
+        if (GameObject* pGameobject = ObjectAccessor::GetGameObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT)))
             pGameobject->GetMap()->Add(pGameobject);
+        return true;
+    }
+    return false;
 }
 
 // Nothing to do for a child Pool
 template <>
-void PoolGroup<Pool>::ReSpawn1Object(PoolObject* /*obj*/)
+bool PoolGroup<Pool>::ReSpawn1Object(uint32 /*guid*/)
 {
+    return true;
 }
 
 
@@ -387,6 +348,7 @@ void PoolGroup<Pool>::ReSpawn1Object(PoolObject* /*obj*/)
 
 PoolManager::PoolManager()
 {
+    m_IsPoolSystemStarted = false;
 }
 
 void PoolManager::LoadFromDB()
@@ -418,7 +380,7 @@ void PoolManager::LoadFromDB()
 
     uint32 count = 0;
 
-    barGoLink bar((int)result->GetRowCount());
+    barGoLink bar(result->GetRowCount());
     do
     {
         ++count;
@@ -456,7 +418,7 @@ void PoolManager::LoadFromDB()
     else
     {
 
-        barGoLink bar2((int)result->GetRowCount());
+        barGoLink bar2(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -488,7 +450,6 @@ void PoolManager::LoadFromDB()
 
             PoolObject plObject = PoolObject(guid, chance);
             PoolGroup<Creature>& cregroup = mPoolCreatureGroups[pool_id];
-            cregroup.SetPoolId(pool_id);
             cregroup.AddEntry(plObject, pPoolTemplate->MaxLimit);
             SearchPair p(guid, pool_id);
             mCreatureSearchMap.insert(p);
@@ -518,7 +479,7 @@ void PoolManager::LoadFromDB()
     else
     {
 
-        barGoLink bar2((int)result->GetRowCount());
+        barGoLink bar2(result->GetRowCount());
         do
         {
             Field *fields = result->Fetch();
@@ -559,7 +520,6 @@ void PoolManager::LoadFromDB()
 
             PoolObject plObject = PoolObject(guid, chance);
             PoolGroup<GameObject>& gogroup = mPoolGameobjectGroups[pool_id];
-            gogroup.SetPoolId(pool_id);
             gogroup.AddEntry(plObject, pPoolTemplate->MaxLimit);
             SearchPair p(guid, pool_id);
             mGameobjectSearchMap.insert(p);
@@ -587,7 +547,7 @@ void PoolManager::LoadFromDB()
     else
     {
 
-        barGoLink bar2( (int)result->GetRowCount() );
+        barGoLink bar2( result->GetRowCount() );
         do
         {
             Field *fields = result->Fetch();
@@ -624,7 +584,6 @@ void PoolManager::LoadFromDB()
 
             PoolObject plObject = PoolObject(child_pool_id, chance);
             PoolGroup<Pool>& plgroup = mPoolPoolGroups[mother_pool_id];
-            plgroup.SetPoolId(mother_pool_id);
             plgroup.AddEntry(plObject, pPoolTemplateMother->MaxLimit);
             SearchPair p(child_pool_id, mother_pool_id);
             mPoolSearchMap.insert(p);
@@ -676,64 +635,88 @@ void PoolManager::Initialize()
                 sLog.outErrorDb("Pool Id (%u) has all creatures or gameobjects with explicit chance sum <>100 and no equal chance defined. The pool system cannot pick one to spawn.", pool_entry);
                 continue;
             }
-            SpawnPool(pool_entry);
+            SpawnPool(pool_entry, 0, 0);
+            SpawnPool(pool_entry, 0, TYPEID_GAMEOBJECT);
+            SpawnPool(pool_entry, 0, TYPEID_UNIT);
             count++;
         } while (result->NextRow());
         delete result;
     }
 
     sLog.outBasic("Pool handling system initialized, %u pools spawned.", count);
+    m_IsPoolSystemStarted = true;
 }
 
 // Call to spawn a pool, if cache if true the method will spawn only if cached entry is different
-// If it's same, the creature is respawned only (added back to map)
-template<>
-void PoolManager::SpawnPool<Creature>(uint16 pool_id, uint32 db_guid)
+// If it's same, the gameobject/creature is respawned only (added back to map)
+void PoolManager::SpawnPool(uint16 pool_id, uint32 guid, uint32 type)
 {
-    if (!mPoolCreatureGroups[pool_id].isEmpty())
-        mPoolCreatureGroups[pool_id].SpawnObject(mSpawnedData, mPoolTemplate[pool_id].MaxLimit, db_guid);
-}
-
-// Call to spawn a pool, if cache if true the method will spawn only if cached entry is different
-// If it's same, the gameobject is respawned only (added back to map)
-template<>
-void PoolManager::SpawnPool<GameObject>(uint16 pool_id, uint32 db_guid)
-{
-    if (!mPoolGameobjectGroups[pool_id].isEmpty())
-        mPoolGameobjectGroups[pool_id].SpawnObject(mSpawnedData, mPoolTemplate[pool_id].MaxLimit, db_guid);
-}
-
-// Call to spawn a pool, if cache if true the method will spawn only if cached entry is different
-// If it's same, the pool is respawned only
-template<>
-void PoolManager::SpawnPool<Pool>(uint16 pool_id, uint32 sub_pool_id)
-{
-    if (!mPoolPoolGroups[pool_id].isEmpty())
-        mPoolPoolGroups[pool_id].SpawnObject(mSpawnedData, mPoolTemplate[pool_id].MaxLimit, sub_pool_id);
-}
-
-void PoolManager::SpawnPool( uint16 pool_id )
-{
-    SpawnPool<Pool>(pool_id, 0);
-    SpawnPool<GameObject>(pool_id, 0);
-    SpawnPool<Creature>(pool_id, 0);
+    switch (type)
+    {
+        case TYPEID_UNIT:
+            if (!mPoolCreatureGroups[pool_id].isEmpty())
+                mPoolCreatureGroups[pool_id].SpawnObject(mPoolTemplate[pool_id].MaxLimit, guid);
+            break;
+        case TYPEID_GAMEOBJECT:
+            if (!mPoolGameobjectGroups[pool_id].isEmpty())
+                mPoolGameobjectGroups[pool_id].SpawnObject(mPoolTemplate[pool_id].MaxLimit, guid);
+            break;
+        default:
+            if (!mPoolPoolGroups[pool_id].isEmpty())
+                mPoolPoolGroups[pool_id].SpawnObject(mPoolTemplate[pool_id].MaxLimit, guid);
+    }
 }
 
 // Call to despawn a pool, all gameobjects/creatures in this pool are removed
 void PoolManager::DespawnPool(uint16 pool_id)
 {
     if (!mPoolCreatureGroups[pool_id].isEmpty())
-        mPoolCreatureGroups[pool_id].DespawnObject(mSpawnedData);
+        mPoolCreatureGroups[pool_id].DespawnObject();
 
     if (!mPoolGameobjectGroups[pool_id].isEmpty())
-        mPoolGameobjectGroups[pool_id].DespawnObject(mSpawnedData);
+        mPoolGameobjectGroups[pool_id].DespawnObject();
 
     if (!mPoolPoolGroups[pool_id].isEmpty())
-        mPoolPoolGroups[pool_id].DespawnObject(mSpawnedData);
+        mPoolPoolGroups[pool_id].DespawnObject();
+}
+
+// Call to update the pool when a gameobject/creature part of pool [pool_id] is ready to respawn
+// Here we cache only the creature/gameobject whose guid is passed as parameter
+// Then the spawn pool call will use this cache to decide
+void PoolManager::UpdatePool(uint16 pool_id, uint32 guid, uint32 type)
+{
+    if (uint16 motherpoolid = IsPartOfAPool(pool_id, 0))
+        SpawnPool(motherpoolid, 0, 0);
+    else
+        SpawnPool(pool_id, guid, type);
+}
+
+// Method that tell if the gameobject/creature is part of a pool and return the pool id if yes
+uint16 PoolManager::IsPartOfAPool(uint32 guid, uint32 type)
+{
+    if (type == 0) // pool of pool
+    {
+        SearchMap::const_iterator itr = mPoolSearchMap.find(guid);
+        if (itr != mPoolSearchMap.end())
+            return itr->second;
+    }
+    else if (type == TYPEID_GAMEOBJECT)
+    {
+        SearchMap::const_iterator itr = mGameobjectSearchMap.find(guid);
+        if (itr != mGameobjectSearchMap.end())
+            return itr->second;
+    }
+    else // creature
+    {
+        SearchMap::const_iterator itr = mCreatureSearchMap.find(guid);
+        if (itr != mCreatureSearchMap.end())
+            return itr->second;
+    }
+    return 0;
 }
 
 // Method that check chance integrity of the creatures and gameobjects in this pool
-bool PoolManager::CheckPool(uint16 pool_id) const
+bool PoolManager::CheckPool(uint16 pool_id)
 {
     return pool_id <= max_pool_id &&
         mPoolGameobjectGroups[pool_id].CheckPool() &&
@@ -741,18 +724,15 @@ bool PoolManager::CheckPool(uint16 pool_id) const
         mPoolPoolGroups[pool_id].CheckPool();
 }
 
-// Call to update the pool when a gameobject/creature part of pool [pool_id] is ready to respawn
-// Here we cache only the creature/gameobject whose guid is passed as parameter
-// Then the spawn pool call will use this cache to decide
-template<typename T>
-void PoolManager::UpdatePool(uint16 pool_id, uint32 db_guid_or_pool_id)
+// Method that tell if a creature or gameobject in pool_id is spawned currently
+bool PoolManager::IsSpawnedObject(uint16 pool_id, uint32 guid, uint32 type)
 {
-    if (uint16 motherpoolid = IsPartOfAPool<Pool>(pool_id))
-        SpawnPool<Pool>(motherpoolid, pool_id);
+    if (pool_id > max_pool_id)
+        return false;
+    if (type == 0)
+        return mPoolPoolGroups[pool_id].IsSpawnedObject(guid);
+    else if (type == TYPEID_GAMEOBJECT)
+        return mPoolGameobjectGroups[pool_id].IsSpawnedObject(guid);
     else
-        SpawnPool<T>(pool_id, db_guid_or_pool_id);
+        return mPoolCreatureGroups[pool_id].IsSpawnedObject(guid);
 }
-
-template void PoolManager::UpdatePool<Pool>(uint16 pool_id, uint32 db_guid_or_pool_id);
-template void PoolManager::UpdatePool<GameObject>(uint16 pool_id, uint32 db_guid_or_pool_id);
-template void PoolManager::UpdatePool<Creature>(uint16 pool_id, uint32 db_guid_or_pool_id);
