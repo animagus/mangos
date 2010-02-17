@@ -648,10 +648,11 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
                             Unit::AuraList const& auraList = ((Player*)m_caster)->GetAurasByType(SPELL_AURA_MOD_DURATION_OF_EFFECTS_BY_DISPEL);
                             for(Unit::AuraList::const_iterator iter = auraList.begin(); iter!=auraList.end(); ++iter)
                             {
-                                if (int32 chance = (*iter)->GetSpellProto()->CalculateSimpleValue(2))
+                                if ((*iter)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_ROGUE && (*iter)->GetSpellProto()->SpellIconID == 1960)
                                 {
-                                    if (roll_chance_i(chance))
-                                        needConsume = false;
+                                    if (int32 chance = (*iter)->GetSpellProto()->CalculateSimpleValue(2))
+                                        if (roll_chance_i(chance))
+                                            needConsume = false;
                                     break;
                                 }
                             }
