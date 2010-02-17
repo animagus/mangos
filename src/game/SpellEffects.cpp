@@ -1462,6 +1462,13 @@ void Spell::EffectDummy(uint32 i)
                         return;
                     m_caster->CastSpell(unitTarget,60934,true,NULL);
                     return;
+                case 26374:                                 // Elune's Candle
+                    if (!unitTarget)
+                        return;
+                    if (!m_CastItem)
+                        return;
+                    m_caster->CastSpell(unitTarget,26636,true,m_CastItem);
+                    return;
                 case 62990:                                 // Chop Tree 
                     if (!unitTarget)
                         return;
