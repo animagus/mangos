@@ -1500,6 +1500,16 @@ void Spell::EffectDummy(uint32 i)
                     }
                     return;
                 }
+                case 46606:                                 // Plague Canister Dummy
+                {
+                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT)
+                        return;
+
+                    unitTarget->CastSpell(m_caster, 43160, true);
+                    unitTarget->setDeathState(JUST_DIED);
+                    unitTarget->SetHealth(0);
+                    return;
+                }
                 case 46797:                                 // Quest - Borean Tundra - Set Explosives Cart
                     if (!unitTarget)
                         return;
