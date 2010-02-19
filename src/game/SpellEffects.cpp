@@ -2734,6 +2734,12 @@ void Spell::EffectApplyAura(uint32 i)
     // Now Reduce spell duration using data received at spell hit
     int32 duration = Aur->GetAuraMaxDuration();
     int32 limitduration = GetDiminishingReturnsLimitDuration(m_diminishGroup,m_spellInfo);
+    
+    // Fear (warlock's spell) duration recalculation in PvP
+    // Need for some talents, because Mod Mechanic Duration is applied BEFORE PvP limitation of spell's duration
+    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000040000000000))
+        limitduration = int32(float(duration) / GetSpellDuration(m_spellInfo) * limitduration);
+    
     unitTarget->ApplyDiminishingToDuration(m_diminishGroup, duration, m_caster, m_diminishLevel,limitduration);
     Aur->setDiminishGroup(m_diminishGroup);
 
