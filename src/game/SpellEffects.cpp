@@ -5443,6 +5443,15 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     m_caster->CastSpell(unitTarget, 22682, true);
                     return;
                 }
+                // Elune's Blessing
+                case 26393:
+                {
+                    if(!unitTarget || !unitTarget->isAlive())
+                        return;
+                    
+                    unitTarget->CastSpell(unitTarget, 26394, true);
+                    return;
+                }
                 // Summon Black Qiraji Battle Tank
                 case 26656:
                 {

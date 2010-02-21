@@ -1754,15 +1754,11 @@
 						Name="eye_of_eternity"
 						>
 						<File
-							RelativePath=".\boss_malygos.cpp"
+							RelativePath="..\scripts\northrend\nexus\eye_of_eternity\boss_malygos.cpp"
 							>
 						</File>
 						<File
-							RelativePath=".\eye_of_eternity.h"
-							>
-						</File>
-						<File
-							RelativePath=".\instance_eye_of_eternity.cpp"
+							RelativePath="..\scripts\northrend\nexus\eye_of_eternity\eye_of_eternity.h"
 							>
 						</File>
 					</Filter>
