@@ -92,7 +92,7 @@ enum
     //NPCs spells
     SPELL_ARCANE_SHOCK             = 57058,
     SPELL_ARCANE_SHOCK_H           = 60073,
-    SPELL_ARCANE_BARRAGE           = 67996, // 63934 have TARGET_SELF, need implement 56397
+    SPELL_ARCANE_BARRAGE           = 59381, // 63934 have TARGET_SELF, need implement 56397
 
 
     //////////////// PHASE 3 ////////////////
@@ -291,7 +291,7 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
 
         fly_fix = true;
 
-        m_uiEnrageTimer = 900000;
+        m_uiEnrageTimer = 800000;
         m_uiSpeechTimer[0] = 2000;
         m_uiSpeechTimer[1] = 10000;
         m_uiSpeechTimer[2] = 11000;
@@ -310,6 +310,9 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetUInt32Value(UNIT_FIELD_BYTES_0, 50331648);
         m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 50331648);
+
+        if(m_pInstance)
+            m_pInstance->SetData(TYPE_MALYGOS, NOT_STARTED);
     }
 
     void JustReachedHome()
@@ -329,28 +332,6 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
         //Summon exit portal
         if(!GetClosestGameObjectWithEntry(m_creature, GO_EXIT_PORTAL, 120.0f))
             m_creature->SummonGameObject(GO_EXIT_PORTAL, GOPositions[2].x, GOPositions[2].y, GOPositions[2].z, GOPositions[2].o, 0.0f, 0.0f, 0.0f, 0.0f, 25000);
-
-        /*// magic to make go visible
-        if(GameObject *pPortal = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(DATA_GO_EXIT_PORTAL)))
-        {
-            pPortal->SetRespawnTime(5);
-            pPortal->Respawn();
-            pPortal->Refresh();
-        }
-        
-        if(GameObject *pIris = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(DATA_GO_FOCUSING_IRIS)))
-        {
-            pIris->SetRespawnTime(5);
-            pIris->Respawn();
-            pIris->Refresh();
-        }
-
-        if(GameObject *pIrisH = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(DATA_GO_FOCUSING_IRIS_H)))
-        {
-            pIrisH->SetRespawnTime(5);
-            pIrisH->Respawn();
-            pIrisH->Refresh();
-        }*/
     }
 
     void AttackStart(Unit* pWho)
@@ -372,9 +353,9 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
         DoScriptText(SAY_AGGRO1, m_creature);
         //Despawn exit portal
         if(GameObject *pPortal = GetClosestGameObjectWithEntry(m_creature, GO_EXIT_PORTAL, 120.0f))
-        {
             pPortal->Delete();
-        }        
+        if(m_pInstance)
+            m_pInstance->SetData(TYPE_MALYGOS, IN_PROGRESS);
     }
 
     /*void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
@@ -424,6 +405,8 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
     }*/
     void JustDied(Unit* pKiller)
     {
+        if(m_pInstance)
+            m_pInstance->SetData(TYPE_MALYGOS, DONE);
     }
     void KilledUnit(Unit* pVictim)
     {
@@ -677,7 +660,7 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
     }
     void UpdateAI(const uint32 uiDiff)
     {
-        if (fly_fix)
+        /*if (fly_fix)
         {
             float x, y, z;
             if(Creature *pTrigger = GetClosestCreatureWithEntry(m_creature, NPC_AOE_TRIGGER, 180.0f))
@@ -687,11 +670,12 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
                 DoMovement(x, y, z, 0, true);
             }
             fly_fix = false;
-        }
+        }*/
 
         if(m_uiPhase == PHASE_NOSTART)
         {
-            if(m_uiSubPhase == SUBPHASE_FLY_UP){
+            if(m_uiSubPhase == SUBPHASE_FLY_UP)
+            {
                 float x, y, z;
                 if(Creature *pTrigger = GetClosestCreatureWithEntry(m_creature, NPC_AOE_TRIGGER, 180.0f))
                 {
@@ -701,7 +685,8 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
                 }
                 m_uiSubPhase = SUBPHASE_UP;
             }
-            else if(m_uiSubPhase == SUBPHASE_UP){
+            else if(m_uiSubPhase == SUBPHASE_UP)
+            {
                 if(m_uiSpeechTimer[m_uiSpeechCount] <= uiDiff)
                 {
                     DoScriptText(SAY_INTRO1-m_uiSpeechCount, m_creature);
@@ -711,7 +696,8 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
                     }
                 }else m_uiSpeechTimer[m_uiSpeechCount] -= uiDiff;
             }
-            else if(m_uiSubPhase == SUBPHASE_FLY_DOWN1){
+            else if(m_uiSubPhase == SUBPHASE_FLY_DOWN1)
+            {
                 if(m_uiTimer <= uiDiff)
                 {
                     float x, y, z;
@@ -738,7 +724,7 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
         //Enrage timer.....
         if(m_uiEnrageTimer <= uiDiff)
         {
-            DoCast(m_creature, SPELL_BERSERK);
+            DoCast(m_creature, SPELL_BERSERK,true);
             m_uiEnrageTimer = 600000;
         }else m_uiEnrageTimer -= uiDiff;
 
@@ -785,7 +771,7 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
             }else m_uiVortexTimer -= uiDiff;
 
             //Arcane Breath
-            if(m_uiArcaneBreathTimer <= uiDiff)
+            if(m_uiArcaneBreathTimer <= uiDiff && m_uiSubPhase != SUBPHASE_VORTEX)
             {
                 DoCast(m_creature, m_bIsRegularMode ? SPELL_ARCANE_BREATH : SPELL_ARCANE_BREATH_H);
                 m_uiArcaneBreathTimer = 15000 + urand(3000, 8000);
@@ -795,7 +781,7 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
             if(m_uiPowerSparkTimer<= uiDiff)
             {
                 PowerSpark(1);
-                m_uiPowerSparkTimer = 40000;
+                m_uiPowerSparkTimer = 30000;
             }else m_uiPowerSparkTimer -= uiDiff;
 
             //Health check
@@ -1047,7 +1033,9 @@ struct MANGOS_DLL_DECL mob_power_sparkAI : public ScriptedAI
 
             uiDamage = 0;
             m_creature->SetHealth(1);
-            m_creature->CastSpell(m_creature, SPELL_POWER_SPARK_PLAYERS, false);
+            m_creature->CastSpell(m_creature, SPELL_POWER_SPARK_PLAYERS, true);
+            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             m_uiCheckTimer = 25000;
             if(pMalygos && pMalygos->isAlive())
                 ((boss_malygosAI*)pMalygos->AI())->m_lSparkGUIDList.clear();

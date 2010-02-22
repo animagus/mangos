@@ -36,8 +36,18 @@ struct MANGOS_DLL_DECL instance_eye_of_eternity : public ScriptedInstance
 
     void Initialize()
     {
+        memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
         m_uiPortalGuid = 0;
         m_uiIrisGuid = 0;
+    }
+
+    bool IsEncounterInProgress() const
+    {
+        for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
+            if (m_auiEncounter[i] == IN_PROGRESS)
+                return true;
+
+        return false;
     }
 
     void OnObjectCreate(GameObject* pGo)
@@ -56,11 +66,33 @@ struct MANGOS_DLL_DECL instance_eye_of_eternity : public ScriptedInstance
 
     void SetData(uint32 uiType, uint32 uiData)
     {
-        debug_log("SD2: Instance eye_of_eternity: SetData received for type %u with data %u", uiType, uiData);
+        switch (uiType)
+        {
+        case TYPE_MALYGOS:
+            m_auiEncounter[0] = uiData;
+            break;
+        }
+        if (uiData == DONE)
+        {
+            OUT_SAVE_INST_DATA;
+
+            std::ostringstream saveStream;
+            saveStream << m_auiEncounter[0];
+
+            strInstData = saveStream.str();
+
+            SaveToDB();
+            OUT_SAVE_INST_DATA_COMPLETE;
+        }
     }
 
     uint32 GetData(uint32 uiType)
     {
+        switch (uiType)
+        {
+        case TYPE_MALYGOS:
+            return m_auiEncounter[0];
+        }
         return 0;
     }
 
@@ -83,20 +115,20 @@ struct MANGOS_DLL_DECL instance_eye_of_eternity : public ScriptedInstance
         return strInstData.c_str();
     }
 
-    void Load(const char* chrIn)
+    void Load(const char* in)
     {
-        if (!chrIn)
+        if (!in)
         {
             OUT_LOAD_INST_DATA_FAIL;
             return;
         }
 
-        OUT_LOAD_INST_DATA(chrIn);
+        OUT_LOAD_INST_DATA(in);
 
-        std::istringstream loadStream(chrIn);
-        loadStream >> m_auiEncounter[0] >> m_auiEncounter[1] >> m_auiEncounter[2] >> m_auiEncounter[3];
+        std::istringstream loadStream(in);
+        loadStream >> m_auiEncounter[0];
 
-        for(uint8 i = 0; i < MAX_ENCOUNTER; ++i)
+        for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
         {
             if (m_auiEncounter[i] == IN_PROGRESS)
                 m_auiEncounter[i] = NOT_STARTED;
