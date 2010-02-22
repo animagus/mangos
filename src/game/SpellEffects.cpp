@@ -5012,6 +5012,11 @@ void Spell::EffectWeaponDmg(uint32 i)
                         bonus /= 2.0f;
                     totalDamagePercentMod *= 1.0f + bonus;
                 }
+
+                // Heart Strike secondary target
+                if (m_spellInfo->SpellIconID == 3145)
+                    if (m_targets.getUnitTarget() != unitTarget)
+                        weaponDamagePercentMod /= 2.0f;
             }
 
             // Glyph of Blood Strike
@@ -5107,18 +5112,6 @@ void Spell::EffectWeaponDmg(uint32 i)
     {
         if(m_caster->GetTypeId()==TYPEID_PLAYER)
             ((Player*)m_caster)->AddComboPoints(unitTarget, 1);
-    }
-    else if(m_spellInfo->SpellFamilyName==SPELLFAMILY_PALADIN)
-    {
-        // Judgement of Blood/of the Martyr backlash damage (33%)
-        if(m_spellInfo->SpellFamilyFlags & 0x0000000800000000LL && m_spellInfo->SpellIconID==153)
-        {
-            int32 damagePoint  = m_damage * 33 / 100;
-            if(m_spellInfo->Id == 31898)
-                m_caster->CastCustomSpell(m_caster, 32220, &damagePoint, NULL, NULL, true);
-            else
-                m_caster->CastCustomSpell(m_caster, 53725, &damagePoint, NULL, NULL, true);
-        }
     }
 
     // take ammo
