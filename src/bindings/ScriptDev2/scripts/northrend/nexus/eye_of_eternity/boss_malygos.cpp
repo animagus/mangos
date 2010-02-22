@@ -407,6 +407,11 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
     {
         if(m_pInstance)
             m_pInstance->SetData(TYPE_MALYGOS, DONE);
+
+        //Summon exit portal
+        if(!GetClosestGameObjectWithEntry(m_creature, GO_EXIT_PORTAL, 120.0f))
+            m_creature->SummonGameObject(GO_EXIT_PORTAL, GOPositions[2].x, GOPositions[2].y, GOPositions[2].z, GOPositions[2].o, 0.0f, 0.0f, 0.0f, 0.0f, 25000);
+
     }
     void KilledUnit(Unit* pVictim)
     {
