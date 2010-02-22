@@ -350,6 +350,7 @@ scripts/northrend/nexus/nexus/def_nexus.h \
 scripts/northrend/nexus/nexus/instance_nexus.cpp \
 scripts/northrend/nexus/eye_of_eternity/eye_of_eternity.h \
 scripts/northrend/nexus/eye_of_eternity/boss_malygos.cpp \
+scripts/northrend/nexus/eye_of_eternity/instance_eye_of_eternity.cpp
 scripts/northrend/obsidian_sanctum/boss_sartharion.cpp \
 scripts/northrend/obsidian_sanctum/instance_obsidian_sanctum.cpp \
 scripts/northrend/obsidian_sanctum/obsidian_sanctum.h \

@@ -2249,6 +2249,11 @@ void Aura::TriggerSpell()
             case 48094:
                 target->CastSpell(target, trigger_spell_id, true, NULL, this, casterGUID);
                 return;
+            // Arcane Breath
+            case 56272:
+            case 60072:
+                target->CastSpell(target, trigger_spell_id, true, NULL, this, target->GetGUID());
+                return;
             // Beacon of Light
             case 53563:
                 // original caster must be target (beacon)
@@ -3228,7 +3233,7 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
             {
                 SpellEntry const* aurSpellInfo = (*iter)->GetSpellProto();
 
-                uint32 aurMechMask = (1 << aurSpellInfo->Mechanic-1) & GetAllSpellMechanicMask(aurSpellInfo);
+                uint32 aurMechMask = (1 << (aurSpellInfo->Mechanic-1)) & GetAllSpellMechanicMask(aurSpellInfo);
 
                 // If spell that caused this aura has Crowd Control or Daze effect
                 if((aurMechMask & MECHANIC_NOT_REMOVED_BY_SHAPESHIFT) ||

@@ -1733,21 +1733,21 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float 
 		sLog.outErrorDb("Gameobject template %u not found in database!", entry);
 		return NULL;
 	}
-	Map *map = GetMap();
-	GameObject *go = new GameObject();
-	if(!go->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), entry, map, GetPhaseMask(), x,y,z,ang,rotation0,rotation1,rotation2,rotation3,100,GO_STATE_READY))
+	
+    Map *map = GetMap();
+	GameObject *go = new GameObject;
+    uint32 lowGUID = sObjectMgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+	if(!go->Create(lowGUID, entry, map, GetPhaseMask(), x,y,z,ang,rotation0,rotation1,rotation2,rotation3,100,GO_STATE_READY))
 	{
 		delete go;
 		return NULL;
 	}
-	go->SetRespawnTime(respawnTime);
-	if(GetTypeId() == TYPEID_PLAYER || GetTypeId()==TYPEID_UNIT) //not sure how to handle this
-		((Unit*)this)->AddGameObject(go);
-	else
-		go->SetSpawnedByDefault(false);
-	map->Add(go);
 
-	return go;
+	go->SetRespawnTime(respawnTime/IN_MILISECONDS);
+    go->SetUInt32Value(GAMEOBJECT_LEVEL, 80);
+    map->Add(go);
+
+    return go;
 }
 
 namespace MaNGOS
