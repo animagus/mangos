@@ -508,8 +508,8 @@ bool ChatHandler::HandleGonameCommand(const char* args)
             // when porting out from the bg, it will be reset to 0
             _player->SetBattleGroundId(target->GetBattleGroundId(), target->GetBattleGroundTypeId());
             // remember current position as entry point for return at bg end teleportation
-            if (!target->GetMap()->IsBattleGroundOrArena())
-                target->SetBattleGroundEntryPoint();
+            if (!_player->GetMap()->IsBattleGroundOrArena())
+                _player->SetBattleGroundEntryPoint();
         }
         else if(cMap->IsDungeon())
         {
