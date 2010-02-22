@@ -1477,11 +1477,6 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     if (spellId_1 == 40216 && spellId_2 == 42016 )
                         return false;
 
-                    //  Moonfire and Lacarate
-                    if ((spellInfo_1->SpellIconID == 225 && spellInfo_2->SpellIconID == 2246) ||
-                        (spellInfo_2->SpellIconID == 225 && spellInfo_1->SpellIconID == 2246))
-                        return false;
-
                     // Gift of the Wild and drums of wild
                     if ((spellInfo_1->SpellIconID == 2435 && spellInfo_2->SpellIconID == 123) ||
                         (spellInfo_1->SpellIconID == 123 && spellInfo_2->SpellIconID == 2435))
@@ -1530,9 +1525,12 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     if (spellInfo_1->SpellIconID == 332 && spellInfo_2->SpellIconID == 1800)
                         return true;
 
-                    //Inner Fire and Consecration
-                    if ((spellInfo_1->SpellIconID == 51 && (spellInfo_2->SpellIconID == 51 && spellInfo_2->SpellFamilyName == SPELLFAMILY_PRIEST)) ||
-                        (spellInfo_2->SpellIconID == 51 && (spellInfo_1->SpellIconID == 51 && spellInfo_1->SpellFamilyName == SPELLFAMILY_PRIEST)))
+                    break;
+                }
+                case SPELLFAMILY_SHAMAN:
+                {
+                    // Hyperspeed Acceleration and Elemental Oath
+                    if (spellId_1 == 54758 && spellInfo_2->SpellIconID == 3053)
                         return false;
 
                     break;
@@ -1653,6 +1651,7 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                 if ((spellInfo_1->SpellFamilyFlags & UI64LIT(0x200000)) && (spellInfo_2->SpellFamilyFlags & UI64LIT(0x8000)) ||
                     (spellInfo_2->SpellFamilyFlags & UI64LIT(0x200000)) && (spellInfo_1->SpellFamilyFlags & UI64LIT(0x8000)))
                     return false;
+
                 // Dispersion
                 if ((spellInfo_1->Id == 47585 && spellInfo_2->Id == 60069) ||
                     (spellInfo_2->Id == 47585 && spellInfo_1->Id == 60069))
@@ -1671,6 +1670,12 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                      (spellInfo_1->SpellIconID == 685 && spellInfo_2->SpellIconID == 1669) ||
                      (spellInfo_2->SpellIconID == 685 && spellInfo_1->SpellIconID == 1669))
                      return true;
+            }
+            else if (spellInfo_2->SpellFamilyName == SPELLFAMILY_PALADIN)
+            {
+                // Inner Fire and Consecration
+                if (spellInfo_1->SpellIconID == 51 && spellInfo_1->SpellVisual[0] == 211 && spellInfo_2->SpellIconID == 51 && spellInfo_2->SpellVisual[0] == 5600)
+                    return false;
             }
             break;
         case SPELLFAMILY_DRUID:
@@ -1717,6 +1722,11 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
 
                 // Frenzied Regeneration and Savage Defense
                 if( spellInfo_1->Id == 22842 && spellInfo_2->Id == 62606 || spellInfo_2->Id == 22842 && spellInfo_1->Id == 62606 )
+                    return false;
+
+                // Moonfire and Lacerate
+                if (spellInfo_1->SpellIconID == 225 && spellInfo_1->SpellVisual[0] == 1263 && spellInfo_2->SpellIconID == 2246 && spellInfo_2->SpellVisual[0] == 8146 ||
+                    spellInfo_2->SpellIconID == 225 && spellInfo_2->SpellVisual[0] == 1263 && spellInfo_1->SpellIconID == 2246 && spellInfo_1->SpellVisual[0] == 8146)
                     return false;
             }
 
@@ -1778,7 +1788,13 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                 return false;
             break;
         case SPELLFAMILY_PALADIN:
-            if( spellInfo_2->SpellFamilyName == SPELLFAMILY_PALADIN )
+            if (spellInfo_2->SpellFamilyName == SPELLFAMILY_PRIEST)
+            {
+                // Consecration and Inner Fire
+                if (spellInfo_1->SpellIconID == 51 && spellInfo_1->SpellVisual[0] == 5600 && spellInfo_2->SpellIconID == 51 && spellInfo_2->SpellVisual[0] == 211)
+                    return false;
+            }
+            else if( spellInfo_2->SpellFamilyName == SPELLFAMILY_PALADIN )
             {
                 // Paladin Seals
                 if (IsSealSpell(spellInfo_1) && IsSealSpell(spellInfo_2))
@@ -1806,8 +1822,8 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     return false;
 
                 // Seal of Vengeance/Corruption and Righteous Vengeance
-                if (spellInfo_1->SpellIconID == 2292 && spellInfo_2->SpellIconID == 3025 ||
-                    spellInfo_2->SpellIconID == 2292 && spellInfo_1->SpellIconID == 3025)
+                if (spellInfo_1->SpellIconID == 2292 && spellInfo_1->SpellVisual[0] == 7902 && spellInfo_2->SpellIconID == 3025 && spellInfo_2->SpellVisual[0] == 5652 ||
+                    spellInfo_2->SpellIconID == 2292 && spellInfo_2->SpellVisual[0] == 7902 && spellInfo_1->SpellIconID == 3025 && spellInfo_1->SpellVisual[0] == 5652)
                     return false;
             }
 
@@ -1828,7 +1844,13 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                 return false;
             break;
         case SPELLFAMILY_SHAMAN:
-            if( spellInfo_2->SpellFamilyName == SPELLFAMILY_SHAMAN )
+            if (spellInfo_2->SpellFamilyName == SPELLFAMILY_GENERIC)
+            {
+                // Elemental Oath and Hyperspeed Acceleration
+                if (spellInfo_1->SpellIconID == 3053 && spellId_2 == 54758)
+                    return false;
+            }
+            else if( spellInfo_2->SpellFamilyName == SPELLFAMILY_SHAMAN )
             {
                 // Windfury weapon
                 if( spellInfo_1->SpellIconID==220 && spellInfo_2->SpellIconID==220 &&
