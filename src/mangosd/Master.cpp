@@ -420,12 +420,12 @@ bool Master::_StartDB()
         sLog.outError("Database not specified in configuration file");
         return false;
     }
-    sLog.outString("World Database: %s", dbstring.c_str());
+    sLog.outString("World Database: ok");
 
     ///- Initialise the world database
     if(!WorldDatabase.Initialize(dbstring.c_str()))
     {
-        sLog.outError("Cannot connect to world database %s",dbstring.c_str());
+        sLog.outError("Cannot connect to world database");
         return false;
     }
 
@@ -445,12 +445,12 @@ bool Master::_StartDB()
         WorldDatabase.HaltDelayThread();
         return false;
     }
-    sLog.outString("Character Database: %s", dbstring.c_str());
+    sLog.outString("Character Database: ok");
 
     ///- Initialise the Character database
     if(!CharacterDatabase.Initialize(dbstring.c_str()))
     {
-        sLog.outError("Cannot connect to Character database %s",dbstring.c_str());
+        sLog.outError("Cannot connect to Character database");
 
         ///- Wait for already started DB delay threads to end
         WorldDatabase.HaltDelayThread();
@@ -463,11 +463,11 @@ bool Master::_StartDB()
         sLog.outError("log database not specified in configuration file");
         return false;
     }
-    sLog.outString("log Database: %s", dbstring.c_str());
+    sLog.outString("log Database: ok");
 
     if(!LogDatabase.Initialize(dbstring.c_str()))
     {
-        sLog.outError("Cannot connect to log database %s", dbstring.c_str());
+        sLog.outError("Cannot connect to log database");
         return false;
     }
 
@@ -492,10 +492,10 @@ bool Master::_StartDB()
     }
 
     ///- Initialise the login database
-    sLog.outString("Login Database: %s", dbstring.c_str() );
+    sLog.outString("Login Database: ok");
     if(!loginDatabase.Initialize(dbstring.c_str()))
     {
-        sLog.outError("Cannot connect to login database %s",dbstring.c_str());
+        sLog.outError("Cannot connect to login database ");
 
         ///- Wait for already started DB delay threads to end
         WorldDatabase.HaltDelayThread();
