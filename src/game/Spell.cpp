@@ -2532,6 +2532,7 @@ void Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
     // add non-triggered (with cast time and without)
     if (!m_IsTriggeredSpell)
     {
+        m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNK11);
         // add to cast type slot
         m_caster->SetCurrentCastedSpell( this );
 
