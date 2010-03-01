@@ -18355,7 +18355,7 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
             data << uint32(count);
             GetSession()->SendPacket(&data);
 
-            if( it->IsEligibleForRefund() && crItem->ExtendedCost != NULL )
+            if( it->IsEligibleForRefund() && crItem->ExtendedCost )
                 AddRefundable(it->GetGUID(), crItem->ExtendedCost);
 
             SendNewItem(it, pProto->BuyCount*count, true, false, false);
@@ -18403,7 +18403,7 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
             data << uint32(count);
             GetSession()->SendPacket(&data);
 
-            if( it->IsEligibleForRefund() && crItem->ExtendedCost != NULL )
+            if( it->IsEligibleForRefund() && crItem->ExtendedCost )
                 AddRefundable(it->GetGUID(), crItem->ExtendedCost);
 
             SendNewItem(it, pProto->BuyCount*count, true, false, false);
