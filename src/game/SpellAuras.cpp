@@ -363,7 +363,7 @@ static AuraType const frozenAuraTypes[] = { SPELL_AURA_MOD_ROOT, SPELL_AURA_MOD_
 
 Aura::Aura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem) :
 m_spellmod(NULL), m_caster_guid(0), m_target(target), m_castItemGuid(castItem?castItem->GetGUID():0),
-m_timeCla(1000), m_periodicTimer(0), m_periodicTick(0), m_removeMode(AURA_REMOVE_BY_DEFAULT), m_AuraDRGroup(DIMINISHING_NONE),
+m_timeCla(1000), m_periodicTimer(0), m_periodicTick(0), m_origDuration(0), m_removeMode(AURA_REMOVE_BY_DEFAULT), m_AuraDRGroup(DIMINISHING_NONE),
 m_effIndex(eff), m_auraSlot(MAX_AURAS), m_auraFlags(AFLAG_NONE), m_auraLevel(1), m_procCharges(0), m_stackAmount(1),
 m_positive(false), m_permanent(false), m_isPeriodic(false), m_isAreaAura(false), m_isPersistent(false),
 m_isRemovedOnShapeLost(true), m_in_use(0), m_deleted(false)
@@ -425,6 +425,8 @@ m_isRemovedOnShapeLost(true), m_in_use(0), m_deleted(false)
     if(m_maxduration == -1 || m_isPassive && m_spellProto->DurationIndex == 0)
         m_permanent = true;
 
+    m_origDuration = m_maxduration;
+
     Player* modOwner = caster ? caster->GetSpellModOwner() : NULL;
 
     if(!m_permanent && modOwner)
@@ -442,8 +444,11 @@ m_isRemovedOnShapeLost(true), m_in_use(0), m_deleted(false)
     m_effIndex = eff;
     SetModifier(AuraType(m_spellProto->EffectApplyAuraName[eff]), damage, m_spellProto->EffectAmplitude[eff], m_spellProto->EffectMiscValue[eff], damage);
 
-    // Apply periodic time mod
-    if(modOwner && m_modifier.periodictime)
+    //Apply haste to channeled spells
+    if(GetSpellProto()->AttributesEx & (SPELL_ATTR_EX_CHANNELED_1 | SPELL_ATTR_EX_CHANNELED_2) && m_modifier.periodictime)
+        ApplyHasteToPeriodic();
+    // Apply periodic time mod, for channeled spells its in Aura::ApplyHasteToPeriodic()
+    else if(modOwner && m_modifier.periodictime)
         modOwner->ApplySpellMod(GetId(), SPELLMOD_ACTIVATION_TIME, m_modifier.periodictime);
 
     // Start periodic on next tick or at aura apply
@@ -8311,4 +8316,32 @@ void Aura::HandleAllowOnlyAbility(bool apply, bool Real)
     m_target->UpdateDamagePhysical(BASE_ATTACK);
     m_target->UpdateDamagePhysical(RANGED_ATTACK);
     m_target->UpdateDamagePhysical(OFF_ATTACK);
+}
+
+void Aura::ApplyHasteToPeriodic()
+{
+    int32 periodic = m_modifier.periodictime;
+    int32 duration = m_origDuration;
+    if(duration == 0 || periodic == 0)
+        return;
+    
+    int32 ticks = duration / periodic;
+
+    if(!GetCaster())
+        return;
+
+    Player* modOwner = GetCaster()->GetSpellModOwner();
+
+    if(modOwner)
+        modOwner->ApplySpellMod(GetId(), SPELLMOD_ACTIVATION_TIME, periodic);
+
+    if( !(GetSpellProto()->Attributes & (SPELL_ATTR_UNK4|SPELL_ATTR_TRADESPELL)) )
+        duration = int32(duration * GetCaster()->GetFloatValue(UNIT_MOD_CAST_SPEED));
+
+    if(m_origDuration != duration)
+    {
+        periodic = int32(periodic * GetCaster()->GetFloatValue(UNIT_MOD_CAST_SPEED));
+        m_maxduration = periodic * ticks;
+    }
+    m_modifier.periodictime = periodic;
 }
