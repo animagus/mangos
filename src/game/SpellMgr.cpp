@@ -563,6 +563,8 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
                         return false;
                     break;
                 case SPELL_AURA_MOD_DAMAGE_TAKEN:           // dependent from bas point sign (positive -> negative)
+                    if (spellproto->SpellIconID == 242 && spellproto->SpellFamilyName == SPELLFAMILY_MAGE)
+                        return true;
                     if(spellproto->CalculateSimpleValue(effIndex) > 0)
                         return false;
                     break;
