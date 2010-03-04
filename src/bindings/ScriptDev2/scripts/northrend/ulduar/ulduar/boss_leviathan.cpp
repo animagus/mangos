@@ -29,7 +29,7 @@ EndScriptData */
 #define SAY_SLAY -1
 */
 
-#define SPELL_ENRAGE 48142
+#define SPELL_ENRAGE 64238
 
 struct MANGOS_DLL_DECL boss_flameleviatanAI : public ScriptedAI
 {
@@ -47,7 +47,7 @@ struct MANGOS_DLL_DECL boss_flameleviatanAI : public ScriptedAI
 
     void Reset()
     {
-        m_uiEnrageTimer = 547000;
+        m_uiEnrageTimer = 540000;
 
         if(m_pInstance)
             m_pInstance->SetData(TYPE_LEVIATHAN, NOT_STARTED);
