@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
 * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -30,39 +30,39 @@ enum
 
     //razorscale air phase
     SPELL_FIREBALL                = 62796,
-    SPELL_FIREBALL_H            = 63815,
-    SPELL_WING_BUFFET            = 62666,
+    SPELL_FIREBALL_H              = 63815,
+    SPELL_WING_BUFFET             = 62666,
     SPELL_STUN                    = 62794,
     //both
-    SPELL_BERSERK                = 47008,
+    SPELL_BERSERK                 = 47008,
     DEVOURING_FLAME_VISUAL        = 63236,
     SPELL_FLAME_BREATH            = 63317,
-    SPELL_FLAME_BREATH_H        = 64021,
+    SPELL_FLAME_BREATH_H          = 64021,
     //ground
     SPELL_FLAME_BUFFET            = 64016,
-    SPELL_FLAME_BUFFET_H        = 64023,
-    SPELL_FUSE_ARMOR            = 64771,
+    SPELL_FLAME_BUFFET_H          = 64023,
+    SPELL_FUSE_ARMOR              = 64771,
 
     //devouring flame target
-    AURA_DEVOURING_FLAME        = 64709,
+    AURA_DEVOURING_FLAME          = 64709,
     AURA_DEVOURING_FLAME_H        = 64734,
 
     //dark rune watcher
-    SPELL_LIGHTNING_BOLT        = 63809,
+    SPELL_LIGHTNING_BOLT          = 63809,
     SPELL_LIGHTNING_BOLT_H        = 64696,
-    SPELL_CHAIN_LIGHTNING        = 64758,
-    SPELL_CHAIN_LIGHTNING_H        = 64759,
+    SPELL_CHAIN_LIGHTNING         = 64758,
+    SPELL_CHAIN_LIGHTNING_H       = 64759,
 
     //dark rune sentinel
     SPELL_BATTLE_SHOUT            = 46763,
-    SPELL_BATTLE_SHOUT_H        = 64062,
-    SPELL_WHIRLWIND                = 63808,
+    SPELL_BATTLE_SHOUT_H          = 64062,
+    SPELL_WHIRLWIND               = 63808,
 
     //dark rune guardian
-    SPELL_STORMSTRIKE            = 64757,
+    SPELL_STORMSTRIKE             = 64757,
 
     //NPC ids
-    MOB_DARK_RUNE_WATCHER        = 33453,
+    MOB_DARK_RUNE_WATCHER         = 33453,
     MOB_DARK_RUNE_SENTINEL        = 33846,
     MOB_DARK_RUNE_GUARDIAN        = 33388
 };
@@ -89,16 +89,16 @@ struct MANGOS_DLL_DECL npc_expedition_commanderAI : public ScriptedAI
     {
         if (!m_pInstance)
             return;
-        if(m_pInstance->GetData(TYPE_RAZORSCALE) == NOT_STARTED || m_pInstance->GetData(TYPE_RAZORSCALE) == FAIL){
-
-        debug_log("SD2: Razorscale - event initiated by player %s", pPlayer->GetName());
-
-        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_RAZORSCALE))))
-                {
-                    pTemp->SetInCombatWithZone();
-                    pTemp->AddThreat(pPlayer,0.0f);
-                    pTemp->AI()->AttackStart(pPlayer);
-                }
+        if(m_pInstance->GetData(TYPE_RAZORSCALE) == NOT_STARTED || m_pInstance->GetData(TYPE_RAZORSCALE) == FAIL)
+        {
+            debug_log("SD2: Razorscale - event initiated by player %s", pPlayer->GetName());
+            
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(NPC_RAZORSCALE))))
+            {
+                pTemp->SetInCombatWithZone();
+                pTemp->AddThreat(pPlayer,0.0f);
+                pTemp->AI()->AttackStart(pPlayer);
+            }
         }else debug_log("SD2: Razorscale - player %s is a moron. he tried to start the event when its already done, or over", pPlayer->GetName());
     }
 
@@ -384,11 +384,12 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
     {
         if (m_pInstance)
             m_pInstance->SetData(TYPE_RAZORSCALE, IN_PROGRESS);
+
         airphase = true;
         SetCombatMovement(false);
         m_creature->GetMotionMaster()->MoveIdle();
         m_creature->GetMap()->CreatureRelocation(m_creature, RazorscaleBossX[1], RazorscaleBossY[1], RazorscaleBossZ[1], 0.0f);
-        m_creature->SendMonsterMove(RazorscaleBossX[1], RazorscaleBossY[1], RazorscaleBossZ[1], SPLINETYPE_NORMAL, m_creature->GetSplineFlags(), 1);
+        m_creature->SendMonsterMove(RazorscaleBossX[1], RazorscaleBossY[1], RazorscaleBossZ[1], MONSTER_MOVE_SPLINE, m_creature->GetMonsterMoveFlags(), 1);
     }
 
     void JustReachedHome()
@@ -479,7 +480,7 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
         if (Timetoground < diff && airphase)
         {
             m_creature->GetMap()->CreatureRelocation(m_creature, RazorscaleBossX[2], RazorscaleBossY[2], RazorscaleBossZ[2], 1.5);
-            m_creature->SendMonsterMove(RazorscaleBossX[2], RazorscaleBossY[2], RazorscaleBossZ[2], SPLINETYPE_NORMAL, m_creature->GetSplineFlags(), 1);
+            m_creature->SendMonsterMove(RazorscaleBossX[2], RazorscaleBossY[2], RazorscaleBossZ[2], MONSTER_MOVE_NONE, m_creature->GetMonsterMoveFlags(), 1);
             grounded = true;
             Stun_Timer = 2000;
             Ground_Cast = 40000;
@@ -510,7 +511,7 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
         if (Grounded_Timer < diff && grounded)
         {
             m_creature->GetMap()->CreatureRelocation(m_creature, RazorscaleBossX[1], RazorscaleBossY[1], RazorscaleBossZ[1], 0.0f);
-            m_creature->SendMonsterMove(RazorscaleBossX[1], RazorscaleBossY[1], RazorscaleBossZ[1], SPLINETYPE_NORMAL, m_creature->GetSplineFlags(), 1);
+            m_creature->SendMonsterMove(RazorscaleBossX[1], RazorscaleBossY[1], RazorscaleBossZ[1], MONSTER_MOVE_SPLINE, m_creature->GetMonsterMoveFlags(), 1);
             grounded = false;
             Fireball_Timer = 10000;
             Devouring_Flame_Timer = 18000;
