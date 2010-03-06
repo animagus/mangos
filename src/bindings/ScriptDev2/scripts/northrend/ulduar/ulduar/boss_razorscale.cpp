@@ -93,7 +93,7 @@ struct MANGOS_DLL_DECL npc_expedition_commanderAI : public ScriptedAI
         {
             debug_log("SD2: Razorscale - event initiated by player %s", pPlayer->GetName());
             
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(NPC_RAZORSCALE))))
+            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(TYPE_RAZORSCALE))))
             {
                 pTemp->SetInCombatWithZone();
                 pTemp->AddThreat(pPlayer,0.0f);
@@ -332,7 +332,7 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
         RazorscaleAddX[1] = 564.140198; RazorscaleAddY[1] = -222.049149; RazorscaleAddZ[1] = 391.517212; //left
         RazorscaleAddX[2] = 591; RazorscaleAddY[2] = -209; RazorscaleAddZ[2] = 392; //middle
         RazorscaleBossX[2] = 587.629761; RazorscaleBossY[2] = -179.022522; RazorscaleBossZ[2] = 391.625061; //ground
-        RazorscaleBossX[1] = 587.629761; RazorscaleBossY[1] = -179.022522; RazorscaleBossZ[1] = 435.415070; //air
+        RazorscaleBossX[1] = 587.629761; RazorscaleBossY[1] = -179.022522; RazorscaleBossZ[1] = 460.415070; //air
 
         Reset();
     }
@@ -453,7 +453,7 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
 
         if (wave3_spawn < diff && airphase && !grounded)
         {
-            switch(urand(0, 2)) //33% chance of spawning
+            switch(urand(0, 1)) //50% chance of spawning
             {
                 case 0:
                 break;
@@ -465,15 +465,13 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
                             pTemp->AI()->AttackStart(pTarget);
                         }
                 break;
-                case 2:
-                break;
             }
             wave3_spawn = 54000;
         }else wave3_spawn -= diff;
 
         if (Berserk_Timer < diff && !berserk)
         {
-            DoCast(m_creature, SPELL_BERSERK);
+            DoCast(m_creature, SPELL_BERSERK, true);
             berserk = true;
         }else Berserk_Timer -= diff;
 
@@ -490,7 +488,7 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
 
         if (Stun_Timer < diff && grounded)
         {
-            DoCast(m_creature, SPELL_STUN);
+            DoCast(m_creature, SPELL_STUN, true);
             Stun_Timer = 60000;
         }else Stun_Timer -= diff;
 
