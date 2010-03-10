@@ -2274,8 +2274,14 @@ void Aura::TriggerSpell()
     }
 
     // All ok cast by default case
-    if(triggeredSpellInfo)
+    if(triggeredSpellInfo) {
+        // Workaround for spells that are triggered for the creation of items, perhaps quest items
+        if (triggeredSpellInfo->Effect[0] == SPELL_EFFECT_CREATE_ITEM && target->GetTypeId() != TYPEID_PLAYER)
+        {
+            target = GetCaster();
+        }
         target->CastSpell(target, triggeredSpellInfo, true, NULL, this, casterGUID);
+    }
     else
     {
         if (Unit* caster = GetCaster())
