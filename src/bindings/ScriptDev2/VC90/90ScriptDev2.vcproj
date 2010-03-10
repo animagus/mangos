@@ -1866,6 +1866,10 @@
 						Name="ulduar"
 						>
 						<File
+							RelativePath="..\scripts\northrend\ulduar\ulduar\boss_ignis.cpp"
+							>
+						</File>
+						<File
 							RelativePath="..\scripts\northrend\ulduar\ulduar\boss_leviathan.cpp"
 							>
 						</File>
@@ -1874,7 +1878,15 @@
 							>
 						</File>
 						<File
+							RelativePath="..\scripts\northrend\ulduar\ulduar\boss_xt002.cpp"
+							>
+						</File>
+						<File
 							RelativePath="..\scripts\northrend\ulduar\ulduar\instance_ulduar.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\ulduar\ulduar\ulduar.cpp"
 							>
 						</File>
 						<File

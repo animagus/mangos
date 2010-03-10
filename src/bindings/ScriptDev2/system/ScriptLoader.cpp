@@ -301,6 +301,9 @@ extern void AddSC_boss_sjonnir();
 extern void AddSC_halls_of_stone();
 extern void AddSC_boss_flameleviatan();
 extern void AddSC_boss_razorscale();
+extern void AddSC_boss_xt002();
+extern void AddSC_boss_ignis();
+extern void AddSC_ulduar();
 extern void AddSC_instance_ulduar();                        //ulduar
 extern void AddSC_boss_ingvar();                            //utgarde_keep
 extern void AddSC_boss_keleseth();
@@ -703,6 +706,9 @@ void AddScripts()
     AddSC_halls_of_stone();
     AddSC_boss_flameleviatan();
     AddSC_boss_razorscale();
+    AddSC_boss_ignis();
+    AddSC_boss_xt002();
+    AddSC_ulduar();
     AddSC_instance_ulduar();                                //ulduar
     AddSC_boss_ingvar();                                    //utgarde_keep
     AddSC_boss_keleseth();
