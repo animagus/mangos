@@ -1577,6 +1577,12 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
             // Dragonmaw Illusion, Blood Elf Illusion, Human Illusion, Illidari Agent Illusion, Scarlet Crusade Disguise
             if(spellInfo_1->SpellIconID == 1691 && spellInfo_2->SpellIconID == 1691)
                 return false;
+
+            // Abolish Disease and Infected Wound
+            if ( (spellInfo_1->Id == 29306 && spellInfo_2->Id == 552) ||
+                (spellInfo_2->Id == 29306 && spellInfo_1->Id == 552) )
+                return false;
+
             break;
         case SPELLFAMILY_MAGE:
             if( spellInfo_2->SpellFamilyName == SPELLFAMILY_MAGE )
@@ -1706,11 +1712,6 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     (spellInfo_2->Id == 47585 && spellInfo_1->Id == 60069))
                     return false;
 
-                // Abolish Disease and Infected Wound
-                if ( (spellInfo_1->Id == 29306 && spellInfo_2->Id == 552) ||
-                     (spellInfo_2->Id == 29306 && spellInfo_1->Id == 552) )
-                     return false;
-
                 // Power Word: Fortitude and Runescroll of Fortitude 
                 if ( (spellInfo_1->SpellIconID == 685 && spellInfo_2->SpellIconID == 2557) ||
                      (spellInfo_2->SpellIconID == 685 && spellInfo_1->SpellIconID == 2557) ||
@@ -1726,6 +1727,12 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                 if (spellInfo_1->SpellIconID == 51 && spellInfo_1->SpellVisual[0] == 211 && spellInfo_2->SpellIconID == 51 && spellInfo_2->SpellVisual[0] == 5600)
                     return false;
             }
+
+            // Abolish Disease and Infected Wound
+            if ( (spellInfo_1->Id == 29306 && spellInfo_2->Id == 552) ||
+                (spellInfo_2->Id == 29306 && spellInfo_1->Id == 552) )
+                return false;
+
             break;
         case SPELLFAMILY_DRUID:
             if( spellInfo_2->SpellFamilyName == SPELLFAMILY_DRUID )
