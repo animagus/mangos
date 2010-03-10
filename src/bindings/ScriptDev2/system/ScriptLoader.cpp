@@ -188,6 +188,12 @@ extern void AddSC_wetlands();
 
 //kalimdor
 extern void AddSC_instance_blackfathom_deeps();             //blackfathom_deeps
+extern void AddSC_boss_lord_epoch();
+extern void AddSC_boss_malganis();
+extern void AddSC_boss_meathook();
+extern void AddSC_boss_salramm();
+extern void AddSC_culling_of_stratholme();
+extern void AddSC_instance_culling_of_stratholme();
 extern void AddSC_boss_aeonus();                            //COT, dark_portal
 extern void AddSC_boss_chrono_lord_deja();
 extern void AddSC_boss_temporus();
@@ -593,6 +599,12 @@ void AddScripts()
 
     //kalimdor
     AddSC_instance_blackfathom_deeps();                     //blackfathom_deeps
+    AddSC_boss_lord_epoch();
+    AddSC_boss_malganis();
+    AddSC_boss_meathook();
+    AddSC_boss_salramm();
+    AddSC_culling_of_stratholme();
+    AddSC_instance_culling_of_stratholme();
     AddSC_boss_aeonus();                                    //COT, dark_portal
     AddSC_boss_chrono_lord_deja();
     AddSC_boss_temporus();

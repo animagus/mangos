@@ -389,12 +389,14 @@ struct MANGOS_DLL_DECL npc_lake_frogAI : public ScriptedAI
 
     uint32 maidenTimer;
 
-    void Reset() {
+    void Reset()
+    {
         m_creature->RemoveAurasDueToSpell(62550);
         maidenTimer = 40000;
     }
 
-    bool IsMaiden() {
+    bool IsMaiden() 
+    {
         return (m_creature->getTransForm() == 62550);
     }
 
@@ -403,25 +405,28 @@ struct MANGOS_DLL_DECL npc_lake_frogAI : public ScriptedAI
         bool isFrog = !IsMaiden();
         bool giveAshwoodBrand = false;
 
-        if (emote == TEXTEMOTE_KISS) {
-            if (isFrog) {
-                if (!pPlayer->HasAura(62581)) {
-                    if (!pPlayer->HasAura(62574)) {
+        if (emote == TEXTEMOTE_KISS) 
+        {
+            if (isFrog) 
+            {
+                if (!pPlayer->HasAura(62581)) 
+                {
+                    if (!pPlayer->HasAura(62574))
                         m_creature->CastSpell(pPlayer, 62581, false);
-                    } else {
+                    else 
+                    {
                         pPlayer->RemoveAurasDueToSpell(62574);
                         giveAshwoodBrand = true;
                     }
                 }
             }
-            if (giveAshwoodBrand) {
-                uint16 log_slot = pPlayer->FindQuestSlot( 13673 );
-                QuestStatus q_status = pPlayer->GetQuestStatus(13673);
-                if (log_slot < MAX_QUEST_LOG_SIZE && q_status != QUEST_STATUS_COMPLETE) {
-                    if (urand(0, 4) == 1) {
-                        m_creature->CastSpell(m_creature, 62550, false);
-                        m_creature->CastSpell(pPlayer, 62554, true, NULL);
-                    }
+            
+            if (giveAshwoodBrand) 
+            {
+                if (urand(0, 4) == 1) 
+                {
+                    m_creature->CastSpell(m_creature, 62550, false);
+                    m_creature->CastSpell(pPlayer, 62554, true, NULL);
                 }
             }
         }     
@@ -429,10 +434,11 @@ struct MANGOS_DLL_DECL npc_lake_frogAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (IsMaiden()) {
-            if (maidenTimer <=  diff) {
+        if (IsMaiden())
+        {
+            if (maidenTimer <=  diff)
                 Reset();
-            } else
+            else
                 maidenTimer -= diff;
         }
     }
