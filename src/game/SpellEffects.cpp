@@ -1502,6 +1502,10 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(m_caster, spell_id, true);
                     return;
                 }
+                case 42287: // Salvage Wreckage
+                {
+                    m_caster->CastSpell(m_caster, 42288, true, NULL);
+                }
             }
             break;
         }
