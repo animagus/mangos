@@ -1733,21 +1733,21 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float 
 		sLog.outErrorDb("Gameobject template %u not found in database!", entry);
 		return NULL;
 	}
-	Map *map = GetMap();
-	GameObject *go = new GameObject();
-	if(!go->Create(sObjectMgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT), entry, map, GetPhaseMask(), x,y,z,ang,rotation0,rotation1,rotation2,rotation3,100,GO_STATE_READY))
+	
+    Map *map = GetMap();
+	GameObject *go = new GameObject;
+    uint32 lowGUID = sObjectMgr.GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+	if(!go->Create(lowGUID, entry, map, GetPhaseMask(), x,y,z,ang,rotation0,rotation1,rotation2,rotation3,100,GO_STATE_READY))
 	{
 		delete go;
 		return NULL;
 	}
-	go->SetRespawnTime(respawnTime);
-	if(GetTypeId() == TYPEID_PLAYER || GetTypeId()==TYPEID_UNIT) //not sure how to handle this
-		((Unit*)this)->AddGameObject(go);
-	else
-		go->SetSpawnedByDefault(false);
-	map->Add(go);
 
-	return go;
+	go->SetRespawnTime(respawnTime/IN_MILISECONDS);
+    go->SetUInt32Value(GAMEOBJECT_LEVEL, 80);
+    map->Add(go);
+
+    return go;
 }
 
 namespace MaNGOS
@@ -1897,6 +1897,9 @@ void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, 
     // set first used pos in lists
     selector.InitializeAngle();
 
+    uint32 localCounter = 0;
+    uint32 localCounter2 = 0;
+
     // select in positions after current nodes (selection one by one)
     while(selector.NextAngle(angle))                        // angle for free pos
     {
@@ -1906,6 +1909,9 @@ void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, 
 
         if(IsWithinLOS(x,y,z))
             return;
+
+        if(++localCounter > 100)
+            break;
     }
 
     // BAD NEWS: not free pos (or used or have LOS problems)
@@ -1946,6 +1952,9 @@ void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, 
 
         if(IsWithinLOS(x,y,z))
             return;
+
+        if(++localCounter2 > 100)
+            break;
     }
 
     // BAD BAD NEWS: all found pos (free and used) have LOS problem :(

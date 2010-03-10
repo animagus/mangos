@@ -84,7 +84,21 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         sLog.outError("WorldSession::HandleMoveWorldportAckOpcode: player %s (%d) was teleported far but couldn't be added to map. (map:%u, x:%f, y:%f, "
             "z:%f) We port him to his homebind instead..", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), loc.mapid, loc.coord_x, loc.coord_y, loc.coord_z);
         // teleport the player home
-        GetPlayer()->TeleportToHomebind();
+        if (mInstance)
+        {
+            WorldSafeLocsEntry const *ClosestGrave = NULL;
+
+            // Special handle for battleground maps
+            if( BattleGround *bg = GetPlayer()->GetBattleGround() )
+                ClosestGrave = bg->GetClosestGraveYard(GetPlayer());
+            else
+                ClosestGrave = sObjectMgr.GetClosestGraveYard( GetPlayer()->GetPositionX(), GetPlayer()->GetPositionY(), GetPlayer()->GetPositionZ(), GetPlayer()->GetMapId(), GetPlayer()->GetTeam() );
+
+            if(ClosestGrave)
+                GetPlayer()->TeleportTo(ClosestGrave->map_id, ClosestGrave->x, ClosestGrave->y, ClosestGrave->z, GetPlayer()->GetOrientation());         
+        }
+        else
+            GetPlayer()->TeleportToHomebind();
         return;
     }
 

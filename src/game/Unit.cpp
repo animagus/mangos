@@ -1358,6 +1358,11 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *da
             damageInfo->HitInfo |= HITINFO_BLOCK;
             damageInfo->procEx|=PROC_EX_BLOCK;
             damageInfo->blocked_amount = damageInfo->target->GetShieldBlockValue();
+
+            // Target has a chance to double the blocked amount if it has SPELL_AURA_MOD_BLOCK_CRIT_CHANCE
+            if (roll_chance_i(pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_BLOCK_CRIT_CHANCE)))
+                damageInfo->blocked_amount *= 2;
+
             if (damageInfo->blocked_amount >= damageInfo->damage)
             {
                 damageInfo->TargetState = VICTIMSTATE_BLOCKS;
@@ -2792,6 +2797,9 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     if (pVictim->GetTypeId()==TYPEID_PLAYER)
         HitChance -= int32(((Player*)pVictim)->GetRatingBonusValue(CR_HIT_TAKEN_SPELL)*100.0f);
 
+    if( spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY )
+        HitChance = 10000; // Cannot resist SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY flagged spells.
+
     if (HitChance <  100) HitChance =  100;
     if (HitChance > 10000) HitChance = 10000;
 
@@ -2838,8 +2846,9 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
         return SPELL_MISS_NONE;
 
     // Check for immune
-    if (pVictim->IsImmunedToDamage(GetSpellSchoolMask(spell)))
-        return SPELL_MISS_IMMUNE;
+    if (!(spell->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY))
+        if (pVictim->IsImmunedToDamage(GetSpellSchoolMask(spell)))
+            return SPELL_MISS_IMMUNE;
 
     // Try victim reflect spell
     if (canReflect)
@@ -4859,7 +4868,8 @@ void Unit::SendAttackStateUpdate(CalcDamageInfo *damageInfo)
     data.append(damageInfo->attacker->GetPackGUID());
     data.append(damageInfo->target->GetPackGUID());
     data << uint32(damageInfo->damage);                     // Full damage
-    data << uint32(0);                                      // overkill value
+    int32 overkill = damageInfo->damage - damageInfo->target->GetHealth();
+    data << uint32(overkill < 0 ? 0 : overkill);            // Overkill
     data << uint8(count);                                   // Sub damage count
 
     for(int i = 0; i < count; ++i)
@@ -5592,6 +5602,14 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     pVictim->RemoveSpellsCausingAura(SPELL_AURA_PERIODIC_DAMAGE_PERCENT);
                     return true;
                 }
+                // Glyph of Icy Veins
+                case 56374:
+                {
+                    //pVictim->RemoveSpellsCausingAura(SPELL_AURA_MOD_HASTE, true, false);
+                    //pVictim->RemoveSpellsCausingAura(SPELL_AURA_HASTE_SPELLS, true, false);
+                    pVictim->RemoveSpellsCausingAura(SPELL_AURA_MOD_DECREASE_SPEED);
+                    return true;
+                }
             }
             break;
         }
@@ -5920,6 +5938,13 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     triggered_spell_id = 56131;
                     break;
                 }
+                // Glyph of Prayer of Healing
+                case 55680:
+                {
+                    basepoints0 = int32(damage * 20 / 100 / 2);   // divided in two ticks
+                    triggered_spell_id = 56161;
+                    break;
+                }
             }
             break;
         }
@@ -6018,9 +6043,37 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     triggered_spell_id = 32747;
                     break;
                 }
+                // Glyph of Rejuvenation
+                case 54754:
+                {
+                    // less 50% health
+                    if (pVictim->GetMaxHealth() < 2 * pVictim->GetHealth())
+                        return false;
+                    basepoints0 = triggerAmount * damage / 100;
+                    triggered_spell_id = 54755;
+                    break;
+                }
+            }
+            // King of the Jungle
+            if (dummySpell->SpellIconID == 2850)
+            {
+                // Effect 0 for Enrage
+                if (effIndex == 0 && procSpell->Id == 5229)
+                {
+                    triggered_spell_id = 51185;
+                    basepoints0 = triggerAmount;
+                    break;
+                }
+                // Effect 1 for Tiger's Fury
+                else if (effIndex == 1 && (procSpell->SpellFamilyFlags2 & UI64LIT(0x0000000000000800)))
+                {
+                    triggered_spell_id = 51178;
+                    basepoints0 = triggerAmount;
+                    break;
+                }
             }
             // Eclipse
-            if (dummySpell->SpellIconID == 2856)
+            else if (dummySpell->SpellIconID == 2856)
             {
                 if (!procSpell)
                     return false;
@@ -6188,7 +6241,10 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             if ((dummySpell->SpellFamilyFlags & UI64LIT(0x000000008000000)) && effIndex==0)
             {
                 triggered_spell_id = 25742;
-				basepoints0 = GetAttackTime(BASE_ATTACK) / 1000;
+                float ap = GetTotalAttackPowerValue(BASE_ATTACK);
+                int32 holy = SpellBaseDamageBonus(SPELL_SCHOOL_MASK_HOLY) +
+                             SpellBaseDamageBonusForVictim(SPELL_SCHOOL_MASK_HOLY, pVictim);
+                basepoints0 = int32(GetAttackTime(BASE_ATTACK) * int32(ap * 0.022f + holy * 0.044f) / 1000);
                 break;
             }
             // Righteous Vengeance
@@ -6644,7 +6700,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 // Earthen Power (Rank 1,2)
                 case 51523:
                 case 51524:
-                    triggered_spell_id = 63532;
+                    triggered_spell_id = 59566;
                     break;
                 // Shaman T8 Elemental 4P Bonus
                 case 64928:
@@ -6695,8 +6751,29 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             // Flametongue Weapon proc
             if (dummySpell->SpellFamilyFlags & UI64LIT(0x0000000000200000))
             {
+                if(GetTypeId()!=TYPEID_PLAYER)
+                    return false;
+                if(!castItem || !castItem->IsEquipped())
+                    return false;
                 triggered_spell_id = 10444;
-                basepoints0 = GetAttackTime(BASE_ATTACK) * (dummySpell->EffectBasePoints[0]+1) / 100000;
+                float coeff = 0.0;
+                int32 fire = SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FIRE) +
+                             SpellBaseDamageBonusForVictim(SPELL_SCHOOL_MASK_FIRE, pVictim);
+                // Off-Hand case
+                if (castItem->GetSlot() == EQUIPMENT_SLOT_OFFHAND)
+                {
+                    coeff = GetAttackTime(OFF_ATTACK) * 0.03811f / 1000;
+                    basepoints0 = int32(GetAttackTime(OFF_ATTACK) * dummySpell->EffectBasePoints[0] / 100000);
+                }
+                // Main-Hand case
+                else
+                {
+                    coeff = GetAttackTime(BASE_ATTACK) * 0.03811f / 1000;
+                    basepoints0 = int32(GetAttackTime(BASE_ATTACK) * dummySpell->EffectBasePoints[0] / 100000);
+                }
+                basepoints0 += int32(fire * coeff);
+                // Temporary fix (halve damage) because of double procs
+                basepoints0 = int32(basepoints0 * 0.5f);
                 break;
             }
             // Improved Water Shield
@@ -8984,6 +9061,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         case SPELLFAMILY_DEATHKNIGHT:
         {
             {
+              //Crypt Fever
               AuraList const& mOverrideClassScript= owner->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
               for(AuraList::const_iterator i = mOverrideClassScript.begin(); i != mOverrideClassScript.end(); ++i)
               {
@@ -8994,6 +9072,20 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                           case 49032 : this->CastSpell(pVictim, 50508, false, NULL, (*i)); break;
                           case 49631 : this->CastSpell(pVictim, 50509, false, NULL, (*i)); break;
                           case 49632 : this->CastSpell(pVictim, 50510, false, NULL, (*i)); break;
+                      }
+                  }
+              }
+              //Ebon Plaguebringer
+              for(AuraList::const_iterator i = mOverrideClassScript.begin(); i != mOverrideClassScript.end(); ++i)
+              {
+                  if ((*i)->GetModifier()->m_miscvalue == 7282)
+                  {
+                      pVictim->RemoveSingleSpellAurasFromStack(50510);
+                      switch((*i)->GetSpellProto()->Id)
+                      {
+                          case 51099 : this->CastSpell(pVictim, 51726, false, NULL, (*i)); break;
+                          case 51160 : this->CastSpell(pVictim, 51734, false, NULL, (*i)); break;
+                          case 51161 : this->CastSpell(pVictim, 51735, false, NULL, (*i)); break;
                       }
                   }
               }
@@ -9104,14 +9196,6 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         DoneTotal  += int32(DoneAdvertisedBenefit * coeff * SpellModSpellDamage);
         TakenTotal += int32(TakenAdvertisedBenefit * coeff);
     }
-    // Flametongue Weapon Proc: spell bonus scales with weapon speed
-    else if (spellProto->Id == 10444)
-    {
-        float coeff;
-        coeff = GetAttackTime(BASE_ATTACK) * 0.03811f / 1000;
-        DoneTotal  += int32(DoneAdvertisedBenefit * coeff * SpellModSpellDamage);
-        TakenTotal += int32(TakenAdvertisedBenefit * coeff);
-    }
     // Default calculation
     else if (DoneAdvertisedBenefit || TakenAdvertisedBenefit)
     {
@@ -9195,7 +9279,7 @@ int32 Unit::SpellBaseDamageBonus(SpellSchoolMask schoolMask)
         }
 
     }
-    return DoneAdvertisedBenefit;
+    return DoneAdvertisedBenefit > 0 ? DoneAdvertisedBenefit : 0;
 }
 
 int32 Unit::SpellBaseDamageBonusForVictim(SpellSchoolMask schoolMask, Unit *pVictim)
@@ -9219,7 +9303,7 @@ int32 Unit::SpellBaseDamageBonusForVictim(SpellSchoolMask schoolMask, Unit *pVic
             TakenAdvertisedBenefit += (*i)->GetModifier()->m_amount;
     }
 
-    return TakenAdvertisedBenefit;
+    return TakenAdvertisedBenefit > 0 ? TakenAdvertisedBenefit : 0;
 }
 
 bool Unit::isSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType)
@@ -9522,19 +9606,17 @@ uint32 Unit::SpellHealingBonus(Unit *pVictim, SpellEntry const *spellProto, uint
             case 8477: // Nourish Heal Boost
             {
                 int32 stepPercent = (*i)->GetModifier()->m_amount;
-                int32 modPercent = 0;
-                AuraMap const& victimAuras = pVictim->GetAuras();
-                for (AuraMap::const_iterator itr = victimAuras.begin(); itr != victimAuras.end(); ++itr)
-                {
-                    if (itr->second->GetCasterGUID()!=GetGUID())
-                        continue;
-                    SpellEntry const* m_spell = itr->second->GetSpellProto();
-                    if (m_spell->SpellFamilyName != SPELLFAMILY_DRUID ||
-                        !(m_spell->SpellFamilyFlags & UI64LIT(0x0000001000000050)))
-                        continue;
-                    modPercent += stepPercent * itr->second->GetStackAmount();
-                }
-                DoneTotalMod *= (modPercent+100.0f)/100.0f;
+
+                int ownHotCount = 0;                        // counted HoT types amount, not stacks
+
+                Unit::AuraList const& RejorRegr = pVictim->GetAurasByType(SPELL_AURA_PERIODIC_HEAL);
+                for(Unit::AuraList::const_iterator i = RejorRegr.begin(); i != RejorRegr.end(); ++i)
+                    if ((*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID &&
+                        (*i)->GetCasterGUID() == GetGUID())
+                        ++ownHotCount;
+
+                if (ownHotCount)
+                    TakenTotalMod *= (stepPercent * ownHotCount + 100.0f) / 100.0f;
                 break;
             }
             case 7871: // Glyph of Lesser Healing Wave
@@ -9624,6 +9706,25 @@ uint32 Unit::SpellHealingBonus(Unit *pVictim, SpellEntry const *spellProto, uint
             if((*itr)->GetId() == 29203)
                 TakenTotalMod *= ((*itr)->GetModifier()->m_amount+100.0f) / 100.0f;
     }
+    // Nourish 20% of heal increase if target is affected by Druids HOTs
+    else if (spellProto->SpellFamilyName == SPELLFAMILY_DRUID && (spellProto->SpellFamilyFlags & UI64LIT(0x0200000000000000)))
+    {
+        int ownHotCount = 0;                        // counted HoT types amount, not stacks
+        Unit::AuraList const& RejorRegr = pVictim->GetAurasByType(SPELL_AURA_PERIODIC_HEAL);
+        for(Unit::AuraList::const_iterator i = RejorRegr.begin(); i != RejorRegr.end(); ++i)
+            if ((*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID &&
+                (*i)->GetCasterGUID() == GetGUID())
+                ++ownHotCount;
+
+        if (ownHotCount)
+        {
+            TakenTotalMod *= 1.2f;                          // base bonus at HoTs
+
+            if (Aura* glyph = GetAura(62971,0))             // Glyph of Nourish
+                TakenTotalMod *= (glyph->GetModifier()->m_amount * ownHotCount + 100.0f) / 100.0f;
+        }
+    }
+
 
     // Healing taken percent
     float minval = pVictim->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
@@ -9638,6 +9739,13 @@ uint32 Unit::SpellHealingBonus(Unit *pVictim, SpellEntry const *spellProto, uint
     for(AuraList::const_iterator i = mHealingGet.begin(); i != mHealingGet.end(); ++i)
         if ((*i)->isAffectedOnSpell(spellProto))
             TakenTotalMod *= ((*i)->GetModifier()->m_amount + 100.0f) / 100.0f;
+
+    if (damagetype == DOT)
+    {
+        AuraList const& mDecreaseHealingDoT = pVictim->GetAurasByType(SPELL_AURA_DECREASE_PERIODIC_HEAL);
+        for(AuraList::const_iterator i = mDecreaseHealingDoT.begin(); i != mDecreaseHealingDoT.end(); ++i)
+            TakenTotalMod *= ((*i)->GetModifier()->m_amount + 100.0f) / 100.0f;
+    }
 
     heal = (heal + TakenTotal) * TakenTotalMod;
 
@@ -9725,7 +9833,8 @@ bool Unit::IsImmunedToSpell(SpellEntry const* spellInfo)
             return true;
 
     if (!(spellInfo->AttributesEx & SPELL_ATTR_EX_UNAFFECTED_BY_SCHOOL_IMMUNE) &&         // unaffected by school immunity
-        !(spellInfo->AttributesEx & SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY))              // can remove immune (by dispell or immune it)
+        !(spellInfo->AttributesEx & SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY) && 
+        !(spellInfo->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY))              // can remove immune (by dispell or immune it)
     {
         SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
         for(SpellImmuneList::const_iterator itr = schoolList.begin(); itr != schoolList.end(); ++itr)
@@ -11237,6 +11346,40 @@ int32 Unit::CalculateSpellDuration(SpellEntry const* spellProto, uint8 effect_in
             duration = int32(int64(duration) * (100+durationMod) /100);
 
         if (duration < 0) duration = 0;
+
+        if (unitPlayer && target == this)
+        {
+            switch(spellProto->SpellFamilyName)
+            {
+                case SPELLFAMILY_DRUID:
+                {
+                    if (spellProto->SpellFamilyFlags & UI64LIT(0x100))
+                    {
+                        // Glyph of Thorns
+                        if (Aura * aur = GetAura(57862, 0))
+                            duration += aur->GetModifier()->m_amount * MINUTE * IN_MILISECONDS;
+                    }
+                    break;
+                }
+
+                case SPELLFAMILY_PALADIN:
+                {
+                    if (spellProto->SpellFamilyFlags & UI64LIT(0x00000002))
+                    {
+                        // Glyph of Blessing of Might
+                        if (Aura * aur = GetAura(57958, 0))
+                            duration += aur->GetModifier()->m_amount * MINUTE * IN_MILISECONDS;
+                    }
+                    else if (spellProto->SpellFamilyFlags & UI64LIT(0x00010000))
+                    {
+                        // Glyph of Blessing of Wisdom
+                        if (Aura * aur = GetAura(57979, 0))
+                            duration += aur->GetModifier()->m_amount * MINUTE * IN_MILISECONDS;
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     return duration;

@@ -334,6 +334,10 @@ bool Pet::LoadPetFromDB( Player* owner, uint32 petentry, uint32 petnumber, bool 
         }
     }
 
+    //set last used pet number (for use in BG's)
+    if(owner->GetTypeId() == TYPEID_PLAYER && isControlled() && !isTemporarySummoned() && (getPetType() == SUMMON_PET || getPetType() == HUNTER_PET))
+        ((Player*)owner)->SetLastPetNumber(pet_number);
+
     m_loading = false;
 
     SynchronizeLevelWithOwner();
@@ -1422,7 +1426,7 @@ bool Pet::addSpell(uint32 spell_id,ActiveStates active /*= ACT_DECIDE*/, PetSpel
     if (IsPassiveSpell(spell_id))
         CastSpell(this, spell_id, true);
     else
-        m_charmInfo->AddSpellToActionBar(spell_id);
+        m_charmInfo->AddSpellToActionBar(spell_id, ActiveStates(newspell.active));
 
     if(newspell.active == ACT_ENABLED)
 	{

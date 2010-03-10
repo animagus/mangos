@@ -287,6 +287,8 @@ extern void AddSC_boss_keristrasza();
 extern void AddSC_boss_ormorok();
 extern void AddSC_boss_telestra();
 extern void AddSC_instance_nexus();
+extern void AddSC_boss_malygos();
+extern void AddSC_instance_eye_of_eternity();
 extern void AddSC_boss_sartharion();                        //obsidian_sanctum
 extern void AddSC_instance_obsidian_sanctum();
 extern void AddSC_boss_bjarngrim();                         //Ulduar, halls_of_lightning
@@ -297,6 +299,8 @@ extern void AddSC_instance_halls_of_lightning();
 extern void AddSC_boss_maiden_of_grief();                   //Ulduar, halls_of_stone
 extern void AddSC_boss_sjonnir();
 extern void AddSC_halls_of_stone();
+extern void AddSC_boss_flameleviatan();
+extern void AddSC_boss_razorscale();
 extern void AddSC_instance_ulduar();                        //ulduar
 extern void AddSC_boss_ingvar();                            //utgarde_keep
 extern void AddSC_boss_keleseth();
@@ -685,6 +689,8 @@ void AddScripts()
     AddSC_boss_ormorok();
     AddSC_boss_telestra();
     AddSC_instance_nexus();
+    AddSC_boss_malygos();
+    AddSC_instance_eye_of_eternity();
     AddSC_boss_sartharion();                                //obsidian_sanctum
     AddSC_instance_obsidian_sanctum();
     AddSC_boss_bjarngrim();                                 //Ulduar, halls_of_lightning
@@ -695,6 +701,8 @@ void AddScripts()
     AddSC_boss_maiden_of_grief();                           //Ulduar, halls_of_stone
     AddSC_boss_sjonnir();
     AddSC_halls_of_stone();
+    AddSC_boss_flameleviatan();
+    AddSC_boss_razorscale();
     AddSC_instance_ulduar();                                //ulduar
     AddSC_boss_ingvar();                                    //utgarde_keep
     AddSC_boss_keleseth();

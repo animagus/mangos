@@ -1433,6 +1433,14 @@ void WorldSession::HandleSetDungeonDifficultyOpcode( WorldPacket & recv_data )
     {
         if(pGroup->IsLeader(_player->GetGUID()))
         {
+            //do not let set dungeon difficulty if any one in this group in dungeon
+            Group::MemberSlotList g_members = pGroup->GetMemberSlots();
+            for (Group::member_citerator itr = g_members.begin(); itr != g_members.end(); itr++)
+            {
+                Player *gm_member = sObjectMgr.GetPlayer(itr->guid);
+                if (gm_member && gm_member->GetMap() && gm_member->GetMap()->IsDungeon())
+                    return;
+            }
             // the difficulty is set even if the instances can't be reset
             //_player->SendDungeonDifficulty(true);
             pGroup->ResetInstances(INSTANCE_RESET_CHANGE_DIFFICULTY, false, _player);
@@ -1477,6 +1485,14 @@ void WorldSession::HandleSetRaidDifficultyOpcode( WorldPacket & recv_data )
     {
         if(pGroup->IsLeader(_player->GetGUID()))
         {
+            //do not let set dungeon difficulty if any one in this group in dungeon
+            Group::MemberSlotList g_members = pGroup->GetMemberSlots();
+            for (Group::member_citerator itr = g_members.begin(); itr != g_members.end(); itr++)
+            {
+                Player *gm_member = sObjectMgr.GetPlayer(itr->guid);
+                if (gm_member && gm_member->GetMap() && gm_member->GetMap()->IsDungeon())
+                    return;
+            }
             // the difficulty is set even if the instances can't be reset
             //_player->SendDungeonDifficulty(true);
             pGroup->ResetInstances(INSTANCE_RESET_CHANGE_DIFFICULTY, true, _player);
@@ -1565,4 +1581,30 @@ void WorldSession::HandleWorldStateUITimerUpdate(WorldPacket& recv_data)
     WorldPacket data(SMSG_WORLD_STATE_UI_TIMER_UPDATE, 4);
     data << uint32(time(NULL));
     SendPacket(&data);
+}
+
+void WorldSession::HandleReadyForAccountDataTimes(WorldPacket& /*recv_data*/)
+{
+    // empty opcode
+    sLog.outDebug("WORLD: CMSG_READY_FOR_ACCOUNT_DATA_TIMES");
+
+    SendAccountDataTimes(GLOBAL_CACHE_MASK);
+}
+
+void WorldSession::HandleHearthandResurrect(WorldPacket & /*recv_data*/)
+{
+    sLog.outDebug("WORLD: CMSG_HEARTH_AND_RESURRECT");
+
+    AreaTableEntry const* atEntry = sAreaStore.LookupEntry(_player->GetAreaId());
+    if(!atEntry || !(atEntry->flags & AREA_FLAG_CAN_HEARTH_AND_RES))
+        return;
+
+    // Can't use in flight
+    if (_player->isInFlight())
+        return;
+
+    // Send Everytime
+    _player->BuildPlayerRepop();
+    _player->ResurrectPlayer(100);
+    _player->TeleportToHomebind();
 }

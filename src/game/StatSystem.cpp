@@ -128,6 +128,7 @@ bool Player::UpdateAllStats()
     for(int i = POWER_MANA; i < MAX_POWERS; ++i)
         UpdateMaxPower(Powers(i));
 
+    UpdateAllRatings();
     UpdateAllCritPercentages();
     UpdateAllSpellCritChances();
     UpdateDefenseBonusesMod();
@@ -243,6 +244,18 @@ void Player::ApplyFeralAPBonus(int32 amount, bool apply)
     UpdateAttackPowerAndDamage();
 }
 
+void Player::ApplyFeralWeaponAPBonus(int32 amount, bool apply)
+{
+    m_weaponFeralAP += apply ? amount : -amount;
+    UpdateAttackPowerAndDamage();
+}
+
+void Player::ApplyFeralWeaponEnchantAPBonus(int32 amount, bool apply)
+{
+    m_weaponEnchantFeralAP += apply ? amount : -amount;
+    UpdateAttackPowerAndDamage();
+}
+
 void Player::UpdateAttackPowerAndDamage(bool ranged )
 {
     float val2 = 0.0f;
@@ -293,21 +306,25 @@ void Player::UpdateAttackPowerAndDamage(bool ranged )
             {
                 //Check if Predatory Strikes is skilled
                 float mLevelMult = 0.0;
+                float mBaseFeralAPMult = 1.0;
+                float mWeaponFeralAPMult = 0.0;
                 switch(m_form)
                 {
                     case FORM_CAT:
                     case FORM_BEAR:
                     case FORM_DIREBEAR:
-                    case FORM_MOONKIN:
                     {
                         Unit::AuraList const& mDummy = GetAurasByType(SPELL_AURA_DUMMY);
                         for(Unit::AuraList::const_iterator itr = mDummy.begin(); itr != mDummy.end(); ++itr)
                         {
                             // Predatory Strikes (effect 0)
                             if ((*itr)->GetEffIndex()==0 && (*itr)->GetSpellProto()->SpellIconID == 1563)
-                            {
                                 mLevelMult = (*itr)->GetModifier()->m_amount / 100.0f;
-                                break;
+                            // Predatory Strikes (effect 1)
+                            else if ((*itr)->GetEffIndex()==1 && (*itr)->GetSpellProto()->SpellIconID == 1563)
+                            {
+                                mBaseFeralAPMult = (100 + (*itr)->GetModifier()->m_amount) / 100.0f;
+                                mWeaponFeralAPMult = (*itr)->GetModifier()->m_amount / 100.0f;
                             }
                         }
                         break;
@@ -318,12 +335,16 @@ void Player::UpdateAttackPowerAndDamage(bool ranged )
                 switch(m_form)
                 {
                     case FORM_CAT:
-                        val2 = getLevel()*(mLevelMult+2.0f) + GetStat(STAT_STRENGTH)*2.0f + GetStat(STAT_AGILITY) - 20.0f + m_baseFeralAP; break;
+                        val2 = getLevel()*mLevelMult + GetStat(STAT_STRENGTH)*2.0f + GetStat(STAT_AGILITY) - 20.0f;
+                        val2 += m_baseFeralAP*mBaseFeralAPMult + (m_weaponFeralAP + m_weaponEnchantFeralAP)*mWeaponFeralAPMult;
+                        break;
                     case FORM_BEAR:
                     case FORM_DIREBEAR:
-                        val2 = getLevel()*(mLevelMult+3.0f) + GetStat(STAT_STRENGTH)*2.0f - 20.0f + m_baseFeralAP; break;
+                        val2 = getLevel()*mLevelMult + GetStat(STAT_STRENGTH)*2.0f - 20.0f;
+                        val2 += m_baseFeralAP*mBaseFeralAPMult + (m_weaponFeralAP + m_weaponEnchantFeralAP)*mWeaponFeralAPMult;
+                        break;
                     case FORM_MOONKIN:
-                        val2 = getLevel()*(mLevelMult+1.5f) + GetStat(STAT_STRENGTH)*2.0f - 20.0f + m_baseFeralAP; break;
+                        val2 = GetStat(STAT_STRENGTH)*2.0f - 20.0f + m_baseFeralAP; break;
                     default:
                         val2 = GetStat(STAT_STRENGTH)*2.0f - 20.0f; break;
                 }

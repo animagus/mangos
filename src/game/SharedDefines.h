@@ -982,9 +982,9 @@ enum Mechanics
 // Daze and all croud control spells except polymorph are not removed
 #define MECHANIC_NOT_REMOVED_BY_SHAPESHIFT ( \
     (1<<(MECHANIC_CHARM -1))|(1<<(MECHANIC_DISORIENTED-1))|(1<<(MECHANIC_FEAR  -1))| \
-    (1<<(MECHANIC_PACIFY-1))|(1<<(MECHANIC_STUN       -1))|(1<<(MECHANIC_FREEZE-1))| \
+    (1<<(MECHANIC_STUN  -1))|(1<<(MECHANIC_FREEZE-1))| \
     (1<<(MECHANIC_BANISH-1))|(1<<(MECHANIC_SHACKLE    -1))|(1<<(MECHANIC_HORROR-1))| \
-    (1<<(MECHANIC_TURN  -1))|(1<<(MECHANIC_DAZE       -1))|(1<<(MECHANIC_SAPPED-1)))
+    (1<<(MECHANIC_TURN  -1))|(1<<(MECHANIC_SAPPED-1)))
 
 // Spell dispell type
 enum DispelType
@@ -2431,14 +2431,12 @@ enum DiminishingGroup
     DIMINISHING_TRIGGER_STUN,                               // By aura proced stuns, usualy chance on hit talents
     DIMINISHING_CONTROL_ROOT,                               // Immobilizing effects from casted spells
     DIMINISHING_TRIGGER_ROOT,                               // Immobilizing effects from triggered spells like Frostbite
-    DIMINISHING_FEAR_BLIND,                                 // Fears & blind
-    DIMINISHING_CHARM,
-    DIMINISHING_POLYMORPH_GOUGE_SAP,
-    // Warlock Specific
-    DIMINISHING_DEATHCOIL,                                  // Death Coil Diminish only with another Death Coil
-    // Druid Specific
-    DIMINISHING_CYCLONE,                                    // From 2.3.0
     // Shared Class Specific
+    DIMINISHING_FEAR_CHARM_BLIND,                           // Fears & charm and Blind
+    DIMINISHING_DISORIENT,
+    DIMINISHING_HORROR,
+    // Druid Specific
+    DIMINISHING_CYCLONE,
     DIMINISHING_CHEAPSHOT_POUNCE,
     DIMINISHING_DISARM,                                     // From 2.3.0
     DIMINISHING_SILENCE,                                    // From 2.3.0

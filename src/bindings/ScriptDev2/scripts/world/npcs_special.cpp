@@ -2048,6 +2048,44 @@ bool GossipSelect_npc_locksmith(Player* pPlayer, Creature* pCreature, uint32 uiS
     return true;
 }
 
+/*######
+## npc_love_air
+######*/
+
+struct MANGOS_DLL_DECL npc_love_airAI : public ScriptedAI
+{
+    npc_love_airAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+
+    void Reset() {}
+
+    void ReceiveEmote(Player* pPlayer, uint32 emote)
+    {
+        if (emote == TEXTEMOTE_LOVE)
+        {
+            // todo odekolon and gender
+            if (pPlayer->HasAura(26680) || pPlayer->HasAura(26898) || !pPlayer->HasAura(26682))
+                return;
+            
+            uint32 roll = 0;
+            roll = urand(0, 1);
+            switch(roll)
+            {
+            case 0: pPlayer->CastSpell(pPlayer,27509,true); break;
+            //case 1: pPlayer->CastSpell(pPlayer,27242,true); break;
+            case 1: pPlayer->CastSpell(pPlayer,26898,true); break;
+            }
+
+            if (roll != 1)
+                pPlayer->CastSpell(pPlayer,26680,true);
+        }           
+    }
+};
+
+CreatureAI* GetAI_npc_love_air(Creature* pCreature)
+{
+    return new npc_love_airAI(pCreature);
+}
+
 void AddSC_npcs_special()
 {
     Script* newscript;
@@ -2168,5 +2206,10 @@ void AddSC_npcs_special()
     newscript->Name = "npc_locksmith";
     newscript->pGossipHello =  &GossipHello_npc_locksmith;
     newscript->pGossipSelect = &GossipSelect_npc_locksmith;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_love_air";
+    newscript->GetAI = &GetAI_npc_love_air;
     newscript->RegisterSelf();
 }

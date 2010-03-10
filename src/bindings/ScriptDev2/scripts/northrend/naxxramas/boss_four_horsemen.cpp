@@ -179,6 +179,19 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
 
                 if (pGo)
                     m_pInstance->DoRespawnGameObject(pGo->GetGUID(),604800);
+
+                Map::PlayerList const &PlList = m_pInstance->instance->GetPlayers();
+                if (PlList.isEmpty())
+                    return;
+                for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+                {
+                    if (Player* pPlayer = i->getSource())
+                    {
+                        if (!m_creature->IsWithinDistInMap(pPlayer,200))
+                            continue;
+                        pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET,59450);
+                    }
+                }
             }
         }
     }
@@ -210,7 +223,7 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
         {
             target = GetNearTarget();
 
-            if (!target || (target && m_creature->GetDistance(target) <= 45.0f))
+            if (!target || (target && m_creature->GetDistance(target) > 45.0f))
             {
                 if (Condemnation_Timer <= diff)
                 {
@@ -368,6 +381,19 @@ struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
                 
                 if (pGo)
                     m_pInstance->DoRespawnGameObject(pGo->GetGUID(),604800);
+
+                Map::PlayerList const &PlList = m_pInstance->instance->GetPlayers();
+                if (PlList.isEmpty())
+                    return;
+                for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+                {
+                    if (Player* pPlayer = i->getSource())
+                    {
+                        if (!m_creature->IsWithinDistInMap(pPlayer,200))
+                            continue;
+                        pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET,59450);
+                    }
+                }
             }
         }
     }
@@ -532,6 +558,19 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
 
                 if (pGo)
                     m_pInstance->DoRespawnGameObject(pGo->GetGUID(),604800);
+
+                Map::PlayerList const &PlList = m_pInstance->instance->GetPlayers();
+                if (PlList.isEmpty())
+                    return;
+                for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+                {
+                    if (Player* pPlayer = i->getSource())
+                    {
+                        if (!m_creature->IsWithinDistInMap(pPlayer,200))
+                            continue;
+                        pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET,59450);
+                    }
+                }
             }
         }
     }
@@ -712,11 +751,22 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
             if (HorsemenDead)
             {
                 m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, DONE);
-
                 GameObject* pGo = GetClosestGameObjectWithEntry(m_creature,!m_bIsRegularMode?193426:181366,200.0f);
-
                 if (pGo)
                     m_pInstance->DoRespawnGameObject(pGo->GetGUID(),604800);
+                
+                Map::PlayerList const &PlList = m_pInstance->instance->GetPlayers();
+                if (PlList.isEmpty())
+                    return;
+                for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+                {
+                    if (Player* pPlayer = i->getSource())
+                    {
+                        if (!m_creature->IsWithinDistInMap(pPlayer,200))
+                            continue;
+                        pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET,59450);
+                    }
+                }
             }
         }
     }
@@ -749,7 +799,7 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
         {
             target = GetNearTarget();
 
-            if (!target || (target && m_creature->GetDistance(target) <= 45.0f))
+            if (!target || (target && m_creature->GetDistance(target) > 45.0f))
             {
                 if (Condemnation_Timer <= diff)
                 {

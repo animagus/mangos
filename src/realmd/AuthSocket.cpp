@@ -325,7 +325,7 @@ void AuthSocket::_SetVSFields(const std::string& rI)
     const char *v_hex, *s_hex;
     v_hex = v.AsHexStr();
     s_hex = s.AsHexStr();
-    
+
     if(!mp) //not update v and s when we use mp
       loginDatabase.PExecute("UPDATE account SET v = '%s', s = '%s' WHERE username = '%s'", v_hex, s_hex, _safelogin.c_str() );
 
@@ -427,7 +427,7 @@ bool AuthSocket::_HandleLogonChallenge()
     std::string address = GetRemoteAddress();
     loginDatabase.escape_string(address);
     //QueryResult *result = loginDatabase.PQuery(  "SELECT * FROM ip_banned WHERE ip = '%s'",address.c_str());
-	
+
     // COUNT ACTIVE, CURRENT BANS
     QueryResult *result = loginDatabase.PQuery(
         "SELECT COUNT(*) FROM `hosts_banned` WHERE "
@@ -437,34 +437,19 @@ bool AuthSocket::_HandleLogonChallenge()
         "AND `is_active` > 0"
         , address.c_str()
     );
-	
-    // COUNT IF WE HAVE RIGHTS TO CONNECT
-    QueryResult *accessresult = loginDatabase.PQuery(
-        "SELECT COUNT(*) FROM `hosts_subnets` AS hs INNER JOIN `net_groups` AS ng ON (hs.`net_group` = ng.`id`) "
-        "WHERE INET_ATON( SUBSTRING_INDEX( hs.`ip_mask`, '/', 1 ) ) = "
-        "INET_ATON( '%s' ) >> 32-SUBSTRING_INDEX( hs.`ip_mask` , '/', -1 ) << 32-SUBSTRING_INDEX( hs.`ip_mask` , '/', -1 ) "
-        "AND (ng.`max_connections` IS NULL OR ng.`max_connections` > 0) "
-        "ORDER BY hs.`priority` DESC, hs.`id` ASC"
-        , GetRemoteAddress().c_str()
-    );
-	
-	
-    if(!(*accessresult)[0].GetBool() || (*result)[0].GetBool())
+
+    if((*result)[0].GetBool())
     {
         pkt << (uint8)REALM_AUTH_ACCOUNT_BANNED;
         sLog.outBasic("[AuthChallenge] Banned ip %s tries to login!",GetRemoteAddress().c_str ());
         if(result)
             delete result;
-        if(accessresult)
-            delete accessresult;
     }
     else
     {
-        if(accessresult)
-            delete accessresult;
         if(result)
             delete result;
-		
+
         ///- Get the account details from the account table
         // No SQL injection (escaped user name)
 
@@ -542,7 +527,7 @@ bool AuthSocket::_HandleLogonChallenge()
                 	    "AND `account_id` = %u "
                     	"ORDER BY `date_to` DESC, `date_from` DESC, `id` DESC"
 	                   	, (*result)[1].GetUInt32()
-                    );                
+                    );
                     if(banresult)
                     {
                         if((*banresult)[0].GetUInt64() == (*banresult)[1].GetUInt64())
@@ -553,7 +538,7 @@ bool AuthSocket::_HandleLogonChallenge()
                         else
                         {
                             pkt << (uint8) REALM_AUTH_ACCOUNT_FREEZED;
-                            sLog.outBasic("[AuthChallenge] Temporarily banned account %s tries to login!",_login.c_str ());			
+                            sLog.outBasic("[AuthChallenge] Temporarily banned account %s tries to login!",_login.c_str ());
                         }
 
                         banned = true;
@@ -562,7 +547,7 @@ bool AuthSocket::_HandleLogonChallenge()
                 }
                 if(!banned)
                 {
-                
+
                     std::string rI;
 
                     if(mp) //get master password, upper it and calculate sha1 hash
@@ -574,7 +559,7 @@ bool AuthSocket::_HandleLogonChallenge()
                         sha.UpdateData(hashsrc);
                         sha.Finalize();
 
-                        loginDatabase.PExecute("UPDATE account SET v = '0', s = '0' WHERE username = '%s'", _safelogin.c_str()); 
+                        loginDatabase.PExecute("UPDATE account SET v = '0', s = '0' WHERE username = '%s'", _safelogin.c_str());
 
                         BigNumber bnum;
                         bnum.SetBinary(sha.GetDigest(), sha.GetLength());
@@ -843,7 +828,7 @@ bool AuthSocket::_HandleLogonProof()
         sha.Initialize();
         sha.UpdateBigNumbers(&A, &M, &K, NULL);
         sha.Finalize();
-        
+
         SendProof(sha);
 
         ///- Set _authed to true!
@@ -1070,7 +1055,7 @@ bool AuthSocket::_HandleRealmList()
 }
 
 void AuthSocket::LoadRealmlist(ByteBuffer &pkt, uint32 acctid, std::string alt_address)
-{   
+{
     std::string address;
     switch(_build)
     {
@@ -1079,7 +1064,7 @@ void AuthSocket::LoadRealmlist(ByteBuffer &pkt, uint32 acctid, std::string alt_a
         {
             pkt << uint32(0);
             pkt << uint8(sRealmList.size());
-            
+
             for(RealmList::RealmMap::const_iterator  i = sRealmList.begin(); i != sRealmList.end(); ++i)
             {
                 uint8 AmountOfCharacters;
@@ -1111,19 +1096,19 @@ void AuthSocket::LoadRealmlist(ByteBuffer &pkt, uint32 acctid, std::string alt_a
                 pkt << uint8(i->second.timezone);                   // realm category
                 pkt << uint8(0x00);                                 // unk, may be realm number/id?
             }
-            
+
             pkt << uint8(0x00);
             pkt << uint8(0x02);
             break;
         }
-            
+
         case 8606:                                          // 2.4.3
         case 10505:                                         // 3.2.2a
         default:                                            // and later
         {
             pkt << uint32(0);
             pkt << uint16(sRealmList.size());
-            
+
             for(RealmList::RealmMap::const_iterator  i = sRealmList.begin(); i != sRealmList.end(); ++i)
             {
                 uint8 AmountOfCharacters;
@@ -1157,7 +1142,7 @@ void AuthSocket::LoadRealmlist(ByteBuffer &pkt, uint32 acctid, std::string alt_a
                 pkt << uint8(i->second.timezone);                   // realm category
                 pkt << uint8(0x2C);                                 // unk, may be realm number/id?
             }
-            
+
             pkt << uint8(0x10);
             pkt << uint8(0x00);
             break;

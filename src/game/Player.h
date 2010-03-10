@@ -1253,6 +1253,8 @@ class MANGOS_DLL_SPEC Player : public Unit
         Item* EquipItem( uint16 pos, Item *pItem, bool update );
         void AutoUnequipOffhandIfNeed();
         bool StoreNewItemInBestSlots(uint32 item_id, uint32 item_count);
+        Item* StoreNewItemInInventorySlot(uint32 itemEntry, uint32 amount);
+
         void AutoStoreLoot(uint8 bag, uint8 slot, uint32 loot_id, LootStore const& store, bool broadcast = false);
         void AutoStoreLoot(uint32 loot_id, LootStore const& store, bool broadcast = false) { AutoStoreLoot(NULL_BAG,NULL_SLOT,loot_id,store,broadcast); }
 
@@ -1792,16 +1794,20 @@ class MANGOS_DLL_SPEC Player : public Unit
         void UpdateMaxHealth();
         void UpdateMaxPower(Powers power);
         void ApplyFeralAPBonus(int32 amount, bool apply);
+        void ApplyFeralWeaponAPBonus(int32 amount, bool apply);
+        void ApplyFeralWeaponEnchantAPBonus(int32 amount, bool apply);
         void UpdateAttackPowerAndDamage(bool ranged = false);
         void UpdateShieldBlockValue();
         void UpdateDamagePhysical(WeaponAttackType attType);
         void ApplySpellPowerBonus(int32 amount, bool apply);
         void UpdateSpellDamageAndHealingBonus();
+        void ApplyRatingMod(CombatRating cr, int32 value, bool apply);
+        void UpdateRating(CombatRating cr);
+        void UpdateAllRatings();
 
         void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, float& min_damage, float& max_damage);
 
         void UpdateDefenseBonusesMod();
-        void ApplyRatingMod(CombatRating cr, int32 value, bool apply);
         float GetMeleeCritFromAgility();
         float GetDodgeFromAgility();
         float GetSpellCritFromIntellect();
@@ -2277,6 +2283,10 @@ class MANGOS_DLL_SPEC Player : public Unit
         void SendSavedInstances();
         static void ConvertInstancesToGroup(Player *player, Group *group = NULL, uint64 player_guid = 0);
 
+        // last used pet number (for BG's)
+        uint32 GetLastPetNumber() const { return m_lastpetnumber; }
+        void SetLastPetNumber(uint32 petnumber) { m_lastpetnumber = petnumber; }
+
         /*********************************************************/
         /***                   GROUP SYSTEM                    ***/
         /*********************************************************/
@@ -2332,8 +2342,14 @@ class MANGOS_DLL_SPEC Player : public Unit
         bool isActiveObject() const { return true; }
         bool canSeeSpellClickOn(Creature const* creature) const;
 
-        inline uint32 GetChampioningFaction() const { return m_ChampioningFaction; }
-        inline void SetChampioningFaction(uint32 faction) { m_ChampioningFaction = faction; } 
+        /*********************************************************/
+        /***                ITEM REFUND SYSTEM                 ***/
+        /*********************************************************/
+
+        void AddRefundable( uint64 itemGUID,  uint32 extendedcost );
+        void RemoveRefundable( uint64 itemGUID );
+        uint32 LookupRefundable(uint64 itemGUID);
+
     protected:
 
         uint32 m_contestedPvPTimer;
@@ -2461,8 +2477,6 @@ class MANGOS_DLL_SPEC Player : public Unit
         PlayerTalentMap *m_talents[MAX_TALENT_SPECS];
         uint32 m_lastPotionId;                              // last used health/mana potion in combat, that block next potion use
 
-        uint32 m_ChampioningFaction;
-
         uint32 m_activeSpec;
         uint32 m_specsCount;
 
@@ -2474,6 +2488,8 @@ class MANGOS_DLL_SPEC Player : public Unit
         int16 m_baseRatingValue[MAX_COMBAT_RATING];
         uint16 m_baseSpellPower;
         uint16 m_baseFeralAP;
+        uint16 m_weaponFeralAP;
+        uint16 m_weaponEnchantFeralAP;
         uint16 m_baseManaRegen;
         float m_armorPenetrationPct;
 
@@ -2553,6 +2569,9 @@ class MANGOS_DLL_SPEC Player : public Unit
         uint64 m_auraUpdateMask;
 
         uint64 m_miniPet;
+
+        // last used pet number (for BG's)
+        uint32 m_lastpetnumber;
 
         // Player summoning
         time_t m_summon_expire;

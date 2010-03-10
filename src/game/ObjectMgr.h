@@ -269,6 +269,8 @@ struct GraveYardData
 };
 typedef std::multimap<uint32,GraveYardData> GraveYardMap;
 
+typedef std::map<uint64, uint32> ItemRefundableMap;
+
 enum ConditionType
 {                                                           // value1       value2  for the Condition enumed
     CONDITION_NONE                  = 0,                    // 0            0
@@ -826,6 +828,8 @@ class ObjectMgr
         uint32 GetScriptId(const char *name);
 
         int GetOrNewIndexForLocale(LocaleConstant loc);
+
+        ItemRefundableMap mItemRefundableMap;
 
         SpellClickInfoMapBounds GetSpellClickInfoMapBounds(uint32 creature_id) const
         {

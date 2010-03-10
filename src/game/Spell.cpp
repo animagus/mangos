@@ -192,7 +192,7 @@ void SpellCastTargets::Update(Unit* caster)
     {
         if(m_targetMask & TARGET_FLAG_ITEM)
             m_itemTarget = ((Player*)caster)->GetItemByGuid(m_itemTargetGUID);
-        else
+        else if(m_targetMask & TARGET_FLAG_TRADE_ITEM)
         {
             Player* pTrader = ((Player*)caster)->GetTrader();
             if(pTrader && m_itemTargetGUID < TRADE_SLOT_COUNT)
@@ -1366,6 +1366,18 @@ void Spell::SetTargetMap(uint32 effIndex, uint32 targetMode, UnitList& targetUni
             }
             break;
         }
+        case SPELLFAMILY_PALADIN:
+            if (m_spellInfo->Id == 20424)                   // Seal of Command (2 more target for single targeted spell)
+            {
+                // overwrite EffectChainTarget for non single target spell
+                if (Spell* currSpell = m_caster->GetCurrentSpell(CURRENT_GENERIC_SPELL))
+                    if (currSpell->m_spellInfo->MaxAffectedTargets > 0 ||
+                        currSpell->m_spellInfo->EffectChainTarget[0] > 0 ||
+                        currSpell->m_spellInfo->EffectChainTarget[1] > 0 ||
+                        currSpell->m_spellInfo->EffectChainTarget[2] > 0)
+                        EffectChainTarget = 0;              // no chain targets
+            }
+            break;
         case SPELLFAMILY_DRUID:
         {
             if (m_spellInfo->SpellFamilyFlags2 & 0x00000100)// Starfall
@@ -1771,11 +1783,11 @@ void Spell::SetTargetMap(uint32 effIndex, uint32 targetMode, UnitList& targetUni
             {
                 case 64844:                                     // Divine Hymn
                     // target amount stored in parent spell dummy effect but hard to access
-                    FillRaidOrPartyHealthPriorityTargets(targetUnitMap, m_caster, m_caster, radius, 3, true, false, false);
+                    FillRaidOrPartyHealthPriorityTargets(targetUnitMap, m_caster, m_caster, radius, 3, true, false, true);
                     break;
                 case 64904:                                     // Hymn of Hope
                     // target amount stored in parent spell dummy effect but hard to access
-                    FillRaidOrPartyManaPriorityTargets(targetUnitMap, m_caster, m_caster, radius, 3, true, false, false);
+                    FillRaidOrPartyManaPriorityTargets(targetUnitMap, m_caster, m_caster, radius, 3, true, false, true);
                     break;
                 default:
                     FillAreaTargets(targetUnitMap, m_targets.m_destX, m_targets.m_destY, radius, PUSH_SELF_CENTER, SPELL_TARGETS_FRIENDLY);
@@ -2622,9 +2634,6 @@ void Spell::cast(bool skipCheck)
         {
             if (m_spellInfo->Mechanic == MECHANIC_BANDAGE)  // Bandages
                 AddPrecastSpell(11196);                     // Recently Bandaged
-            else if(m_spellInfo->SpellIconID == 1662 && m_spellInfo->AttributesEx & 0x20)
-                                                            // Blood Fury (Racial)
-                AddPrecastSpell(23230);                     // Blood Fury - Healing Reduction
             else if(m_spellInfo->Id == 20594)               // Stoneskin
                 AddTriggeredSpell(65116);                   // Stoneskin - armor 10% for 8 sec
             break;
@@ -2715,7 +2724,7 @@ void Spell::cast(bool skipCheck)
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
         if (!m_IsTriggeredSpell && m_CastItem)
-            ((Player*)m_caster)->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_USE_ITEM, m_CastItem->GetEntry());
+            ((Player*)m_caster)->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_USE_ITEM, m_CastItem->GetEntry(),0,m_targets.getUnitTarget());
 
         ((Player*)m_caster)->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CAST_SPELL, m_spellInfo->Id);
     }
@@ -3226,13 +3235,15 @@ void Spell::SendSpellStart()
     if(m_spellInfo->runeCostID)
         castFlags |= CAST_FLAG_UNKNOWN10;
 
+    Unit *caster = m_originalCaster ? m_originalCaster : m_caster;
+
     WorldPacket data(SMSG_SPELL_START, (8+8+4+4+2));
     if(m_CastItem)
         data.append(m_CastItem->GetPackGUID());
     else
-        data.append(m_caster->GetPackGUID());
+        data.append(caster->GetPackGUID());
 
-    data.append(m_caster->GetPackGUID());
+    data.append(caster->GetPackGUID());
     data << uint8(m_cast_count);                            // pending spell cast?
     data << uint32(m_spellInfo->Id);                        // spellId
     data << uint32(castFlags);                              // cast flags
@@ -3289,14 +3300,16 @@ void Spell::SendSpellGo()
         castFlags |= CAST_FLAG_UNKNOWN7;                    // rune cooldowns list
     }
 
+    Unit *caster = m_originalCaster ? m_originalCaster : m_caster;
+
     WorldPacket data(SMSG_SPELL_GO, 50);                    // guess size
 
     if(m_CastItem)
         data.append(m_CastItem->GetPackGUID());
     else
-        data.append(m_caster->GetPackGUID());
+        data.append(caster->GetPackGUID());
 
-    data.append(m_caster->GetPackGUID());
+    data.append(caster->GetPackGUID());
     data << uint8(m_cast_count);                            // pending spell cast?
     data << uint32(m_spellInfo->Id);                        // spellId
     data << uint32(castFlags);                              // cast flags
@@ -3505,7 +3518,7 @@ void Spell::SendLogExecute()
                         data.append(unit->GetPackGUID());
                     else
                         data << uint8(0);
-                    data << uint32(0);                      // count?
+                    data << uint32(m_caster->m_extraAttacks);
                     break;
                 case SPELL_EFFECT_INTERRUPT_CAST:
                     if(Unit *unit = m_targets.getUnitTarget())
@@ -3642,6 +3655,9 @@ void Spell::SendChannelStart(uint32 duration)
             }
         }
     }
+
+    //Apply haste rating
+    duration = ApplyHasteToChannelSpell(duration, m_spellInfo, this);
 
     WorldPacket data( MSG_CHANNEL_START, (8+4+4) );
     data.append(m_caster->GetPackGUID());
@@ -4305,13 +4321,15 @@ SpellCastResult Spell::CheckCast(bool strict)
             if(target->IsImmunedToSpell(m_spellInfo))
                 return SPELL_FAILED_TARGET_AURASTATE;
 
-        //Must be behind the target.
+        // Must be behind the target.
         if( m_spellInfo->AttributesEx2 == 0x100000 && (m_spellInfo->AttributesEx & 0x200) == 0x200 && target->HasInArc(M_PI, m_caster) )
         {
-            //Exclusion for Pounce:  Facing Limitation was removed in 2.0.1, but it still uses the same, old Ex-Flags
-            //Exclusion for Mutilate:Facing Limitation was removed in 2.0.1 and 3.0.3, but they still use the same, old Ex-Flags
+            // Exclusion for Pounce:  Facing Limitation was removed in 2.0.1, but it still uses the same, old Ex-Flags
+            // Exclusion for Mutilate:Facing Limitation was removed in 2.0.1 and 3.0.3, but they still use the same, old Ex-Flags
+            // Exclusion for Throw
             if ((m_spellInfo->SpellFamilyName != SPELLFAMILY_DRUID || (m_spellInfo->SpellFamilyFlags != UI64LIT(0x0000000000020000))) &&
-                (m_spellInfo->SpellFamilyName != SPELLFAMILY_ROGUE || (m_spellInfo->SpellFamilyFlags != UI64LIT(0x0020000000000000))))
+                (m_spellInfo->SpellFamilyName != SPELLFAMILY_ROGUE || (m_spellInfo->SpellFamilyFlags != UI64LIT(0x0020000000000000))) &&
+                 m_spellInfo->Id != 2764)
             {
                 SendInterrupted(2);
                 return SPELL_FAILED_NOT_BEHIND;

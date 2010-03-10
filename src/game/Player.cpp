@@ -429,6 +429,7 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
     //returning reagents for temporarily removed pets
     //when dying/logging out
     m_oldpetspell = 0;
+    m_lastpetnumber = 0;
 
     ////////////////////Rest System/////////////////////
     time_inn_enter=0;
@@ -484,6 +485,8 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
 
     m_baseSpellPower = 0;
     m_baseFeralAP = 0;
+    m_weaponFeralAP = 0;
+    m_weaponEnchantFeralAP = 0;
     m_baseManaRegen = 0;
     m_armorPenetrationPct = 0.0f;
 
@@ -507,8 +510,6 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
 
     m_lastFallTime = 0;
     m_lastFallZ = 0;
-
-    m_ChampioningFaction = 0;
 }
 
 Player::~Player ()
@@ -827,6 +828,22 @@ bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount)
     // item can't be added
     sLog.outError("STORAGE: Can't equip or store initial item %u for race %u class %u , error msg = %u",titem_id,getRace(),getClass(),msg);
     return false;
+}
+
+// helper function, mainly for script side, but can be used for simple task in mangos also.
+Item* Player::StoreNewItemInInventorySlot(uint32 itemEntry, uint32 amount)
+{
+    ItemPosCountVec vDest;
+
+    uint8 msg = CanStoreNewItem(INVENTORY_SLOT_BAG_0, NULL_SLOT, vDest, itemEntry, amount);
+
+    if (msg == EQUIP_ERR_OK)
+    {
+        if (Item* pItem = StoreNewItem(vDest, itemEntry, true, Item::GenerateItemRandomPropertyId(itemEntry)))
+            return pItem;
+    }
+
+    return NULL;
 }
 
 void Player::SendMirrorTimer(MirrorTimerType Type, uint32 MaxValue, uint32 CurrentValue, int32 Regen)
@@ -4680,7 +4697,7 @@ void Player::RepopAtGraveyard()
     AreaTableEntry const *zone = GetAreaEntryByAreaID(GetAreaId());
 
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
-    if ((!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) || GetTransport())
+    if ((!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) || GetTransport() || GetPositionZ() < -300.0f)
     {
         ResurrectPlayer(0.5f);
         SpawnCorpseBones();
@@ -5036,7 +5053,36 @@ void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
 {
     m_baseRatingValue[cr]+=(apply ? value : -value);
 
-    int32 amount = uint32(m_baseRatingValue[cr]);
+    // explicit affected values
+    switch (cr)
+    {
+        case CR_HASTE_MELEE:
+        {
+            float RatingChange = value / GetRatingCoefficient(cr);
+            ApplyAttackTimePercentMod(BASE_ATTACK,RatingChange,apply);
+            ApplyAttackTimePercentMod(OFF_ATTACK,RatingChange,apply);
+            break;
+        }
+        case CR_HASTE_RANGED:
+        {
+            float RatingChange = value / GetRatingCoefficient(cr);
+            ApplyAttackTimePercentMod(RANGED_ATTACK, RatingChange, apply);
+            break;
+        }
+        case CR_HASTE_SPELL:
+        {
+            float RatingChange = value / GetRatingCoefficient(cr);
+            ApplyCastTimePercentMod(RatingChange,apply);
+            break;
+        }
+    }
+
+    UpdateRating(cr);
+}
+
+void Player::UpdateRating(CombatRating cr)
+{
+    int32 amount = m_baseRatingValue[cr];
     // Apply bonus from SPELL_AURA_MOD_RATING_FROM_STAT
     // stat used stored in miscValueB for this aura
     AuraList const& modRatingFromStat = GetAurasByType(SPELL_AURA_MOD_RATING_FROM_STAT);
@@ -5046,9 +5092,6 @@ void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
     if (amount < 0)
         amount = 0;
     SetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr, uint32(amount));
-
-    float RatingCoeffecient = GetRatingCoefficient(cr);
-    float RatingChange = 0.0f;
 
     bool affectStats = CanModifyStats();
 
@@ -5101,18 +5144,9 @@ void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
             break;
         case CR_CRIT_TAKEN_SPELL:                           // Implemented in Unit::SpellCriticalBonus (only for chance to crit)
             break;
-        case CR_HASTE_MELEE:
-            RatingChange = value / RatingCoeffecient;
-            ApplyAttackTimePercentMod(BASE_ATTACK,RatingChange,apply);
-            ApplyAttackTimePercentMod(OFF_ATTACK,RatingChange,apply);
-            break;
+        case CR_HASTE_MELEE:                                // Implemented in Player::ApplyRatingMod
         case CR_HASTE_RANGED:
-            RatingChange = value / RatingCoeffecient;
-            ApplyAttackTimePercentMod(RANGED_ATTACK, RatingChange, apply);
-            break;
         case CR_HASTE_SPELL:
-            RatingChange = value / RatingCoeffecient;
-            ApplyCastTimePercentMod(RatingChange,apply);
             break;
         case CR_WEAPON_SKILL_MAINHAND:                      // Implemented in Unit::RollMeleeOutcomeAgainst
         case CR_WEAPON_SKILL_OFFHAND:
@@ -5130,6 +5164,12 @@ void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
                 UpdateArmorPenetration();
             break;
     }
+}
+
+void Player::UpdateAllRatings()
+{
+    for(int cr = 0; cr < MAX_COMBAT_RATING; ++cr)
+        UpdateRating(CombatRating(cr));
 }
 
 void Player::SetRegularAttackTime()
@@ -6070,54 +6110,37 @@ void Player::RewardReputation(Unit *pVictim, float rate)
     if(!Rep)
         return;
 
-    uint32 ChampioningFaction = 0;
+     uint32 Repfaction1 = Rep->repfaction1;
+     uint32 Repfaction2 = Rep->repfaction2;
+     uint32 tabardFactionID = 0;
+     
+     // Championning tabard reputation system
+     // aura 57818 is a hidden aura common to northrend tabards allowing championning.
+     if(HasAura(57818))
+     {
+         InstanceTemplate const* mInstance = sObjectMgr.GetInstanceTemplate(pVictim->GetMapId());
+         MapEntry const* StoredMap = sMapStore.LookupEntry(pVictim->GetMapId());
 
-    if (GetChampioningFaction())
-    {
-        // support for: Championing - http://www.wowwiki.com/Championing
-
-        Map const *pMap = GetMap();
-        if (pMap && pMap->IsDungeon())
-        {
-            uint32 map_id = pMap->GetId();
-            if (pMap->GetDifficulty() == DUNGEON_DIFFICULTY_HEROIC)
-            {
-                switch (map_id)
-                {
-                    case 575:
-                    case 578:
-                    case 595:
-                    case 602:
-                        ChampioningFaction = GetChampioningFaction();
-                }
-            }
-            else
-            {
-                switch (map_id)
-                {
-                    case 574:
-                    case 575:
-                    case 576:
-                    case 578:
-                    case 595:
-                    case 599:
-                    case 600:
-                    case 601:
-                    case 602:
-                    case 604:
-                    case 608:
-                    case 619:
-                        ChampioningFaction = GetChampioningFaction();
-                }
-            }
-        }
-    }
+         // only for expansion 2 map (wotlk), and : min level >= lv75 or dungeon only heroic mod
+         // entering a lv80 designed instance require a min level>=75. note : min level != suggested level
+         if ( StoredMap->Expansion() == 2 && ( mInstance->levelMin >= 75 || pVictim->GetMap()->GetDifficulty() == DUNGEON_DIFFICULTY_HEROIC ) )
+         {             
+             if( Item* pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_TABARD ) )
+             {                 
+                 if ( tabardFactionID = pItem->GetProto()->RequiredReputationFaction ) 
+                 {
+                      Repfaction1 = tabardFactionID;
+                      Repfaction2 = tabardFactionID;
+                 }
+             }
+         }
+     }
 
     if(Rep->repfaction1 && (!Rep->team_dependent || GetTeam()==ALLIANCE))
     {
-        int32 donerep1 = CalculateReputationGain(pVictim->getLevel(), Rep->repvalue1, ChampioningFaction ? ChampioningFaction : Rep->repfaction1, false);
+        int32 donerep1 = CalculateReputationGain(pVictim->getLevel(), Rep->repvalue1, Repfaction1, false);
         donerep1 = int32(donerep1*rate);
-        FactionEntry const *factionEntry1 = sFactionStore.LookupEntry(ChampioningFaction ? ChampioningFaction : Rep->repfaction1); 
+        FactionEntry const *factionEntry1 = sFactionStore.LookupEntry(Repfaction1);
         uint32 current_reputation_rank1 = GetReputationMgr().GetRank(factionEntry1);
         if (factionEntry1 && current_reputation_rank1 <= Rep->reputation_max_cap1)
             GetReputationMgr().ModifyReputation(factionEntry1, donerep1);
@@ -6133,9 +6156,9 @@ void Player::RewardReputation(Unit *pVictim, float rate)
 
     if(Rep->repfaction2 && (!Rep->team_dependent || GetTeam()==HORDE))
     {
-        int32 donerep2 = CalculateReputationGain(pVictim->getLevel(), Rep->repvalue2, ChampioningFaction ? ChampioningFaction : Rep->repfaction2, false);
+        int32 donerep2 = CalculateReputationGain(pVictim->getLevel(), Rep->repvalue2, Repfaction2, false);
         donerep2 = int32(donerep2*rate);
-        FactionEntry const *factionEntry2 = sFactionStore.LookupEntry(ChampioningFaction ? ChampioningFaction : Rep->repfaction2);
+        FactionEntry const *factionEntry2 = sFactionStore.LookupEntry(Repfaction2);
         uint32 current_reputation_rank2 = GetReputationMgr().GetRank(factionEntry2);
         if (factionEntry2 && current_reputation_rank2 <= Rep->reputation_max_cap2)
             GetReputationMgr().ModifyReputation(factionEntry2, donerep2);
@@ -6902,6 +6925,8 @@ void Player::_ApplyItemBonuses(ItemPrototype const *proto, uint8 slot, bool appl
             case ITEM_MOD_ATTACK_POWER:
                 HandleStatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_VALUE, float(val), apply);
                 HandleStatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, float(val), apply);
+                if(slot == EQUIPMENT_SLOT_MAINHAND)
+                    ApplyFeralWeaponAPBonus(int32(val), apply);                
                 break;
             case ITEM_MOD_RANGED_ATTACK_POWER:
                 HandleStatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, float(val), apply);
@@ -12442,6 +12467,8 @@ void Player::ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool
                         case ITEM_MOD_ATTACK_POWER:
                             HandleStatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_VALUE, float(enchant_amount), apply);
                             HandleStatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, float(enchant_amount), apply);
+                            if(item->GetSlot() == EQUIPMENT_SLOT_MAINHAND)
+                                ((Player*)this)->ApplyFeralWeaponEnchantAPBonus(enchant_amount, apply);
                             sLog.outDebug("+ %u ATTACK_POWER", enchant_amount);
                             break;
                         case ITEM_MOD_RANGED_ATTACK_POWER:
@@ -15288,8 +15315,6 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     // cleanup aura list explicitly before skill load wher some spells can be applied
     RemoveAllAuras();
 
-    _LoadSkills(holder->GetResult(PLAYER_LOGIN_QUERY_LOADSKILLS));
-
     // make sure the unit is considered out of combat for proper loading
     ClearInCombat();
 
@@ -15305,9 +15330,12 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 
     // reset stats before loading any modifiers
     InitStatsForLevel();
-    InitTaxiNodesForLevel();
     InitGlyphsForLevel();
+    InitTaxiNodesForLevel();
     InitRunes();
+
+    // load skills after InitStatsForLevel because it triggering aura apply also
+    _LoadSkills(holder->GetResult(PLAYER_LOGIN_QUERY_LOADSKILLS));
 
     // apply original stats mods before spell loading or item equipment that call before equip _RemoveStatsMods()
 
@@ -17273,7 +17301,7 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
     if (pet && m_temporaryUnsummonedPetNumber != pet->GetCharmInfo()->GetPetNumber() && mode == PET_SAVE_AS_CURRENT)
         mode = PET_SAVE_NOT_IN_SLOT;
 
-    if(returnreagent && pet && mode != PET_SAVE_AS_CURRENT)
+    if(returnreagent && pet && mode != PET_SAVE_AS_CURRENT && !InBattleGround())
     {
         //returning of reagents only for players, so best done here
         uint32 spellId = pet ? pet->GetUInt32Value(UNIT_CREATED_BY_SPELL) : m_oldpetspell;
@@ -18343,6 +18371,9 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
             data << uint32(count);
             GetSession()->SendPacket(&data);
 
+            if( it->IsEligibleForRefund() && crItem->ExtendedCost )
+                AddRefundable(it->GetGUID(), crItem->ExtendedCost);
+
             SendNewItem(it, pProto->BuyCount*count, true, false, false);
         }
     }
@@ -18387,6 +18418,9 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
             data << uint32(crItem->maxcount > 0 ? new_count : 0xFFFFFFFF);
             data << uint32(count);
             GetSession()->SendPacket(&data);
+
+            if( it->IsEligibleForRefund() && crItem->ExtendedCost )
+                AddRefundable(it->GetGUID(), crItem->ExtendedCost);
 
             SendNewItem(it, pProto->BuyCount*count, true, false, false);
 
@@ -19925,7 +19959,8 @@ uint32 Player::GetResurrectionSpellId()
     }
 
     // Reincarnation (passive spell)                        // prio: 1
-    if(prio < 1 && HasSpell(20608) && !HasSpellCooldown(21169) && HasItemCount(17030,1))
+    // Glyph of Renewed Life remove reagent requiremnnt
+    if (prio < 1 && HasSpell(20608) && !HasSpellCooldown(21169) && (HasItemCount(17030,1) || HasAura(58059, 0)))
         spell_id = 21169;
 
     return spell_id;
@@ -20469,6 +20504,7 @@ bool Player::CanUseBattleGroundObject()
              !HasStealthAura() &&                           // not stealthed
              !HasInvisibilityAura() &&                      // not invisible
              !HasAura(SPELL_RECENTLY_DROPPED_FLAG, 0) &&    // can't pickup
+             !HasAura(54861) &&                             // can't pickup while Nitro Boosts effect is active (since patch 3.1)
              isAlive()                                      // live player
            );
 }
@@ -22033,3 +22069,37 @@ void Player::SetHomebindToCurrentPos()
         m_homebindMapId, m_homebindZoneId, m_homebindX, m_homebindY, m_homebindZ, GetGUIDLow());
 }
 
+void Player::AddRefundable( uint64 itemGUID,  uint32 extendedcost )
+{
+    std::pair< uint64, uint32 > insertpair;
+    
+    Item *item = GetItemByGuid(itemGUID);
+
+    if( item == NULL )
+        return;
+	
+    item->SetPlayedtimeField(GetTotalPlayedTime());
+
+    insertpair.first = itemGUID;
+    insertpair.second = extendedcost;
+
+    sObjectMgr.mItemRefundableMap.insert(insertpair);
+}
+
+void Player::RemoveRefundable(uint64 itemGUID)
+{
+    sObjectMgr.mItemRefundableMap.erase(itemGUID);
+}
+
+uint32 Player::LookupRefundable(uint64 itemGUID)
+{
+    ItemRefundableMap::iterator itr;
+    uint32 RefundableEntry = 0;
+
+    itr = sObjectMgr.mItemRefundableMap.find(itemGUID);
+
+    if (itr != sObjectMgr.mItemRefundableMap.end())
+        RefundableEntry = itr->second;
+
+    return RefundableEntry;
+}

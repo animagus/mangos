@@ -659,6 +659,8 @@ class MANGOS_DLL_SPEC WorldSession
         void HandleTimeSyncResp(WorldPacket& recv_data);
         void HandleWhoisOpcode(WorldPacket& recv_data);
         void HandleResetInstancesOpcode(WorldPacket& recv_data);
+        void HandleHearthandResurrect(WorldPacket & recv_data);
+        void HandleReadyForAccountDataTimes(WorldPacket & recv_data);
 
         // Arena Team
         void HandleInspectArenaTeamsOpcode(WorldPacket& recv_data);
@@ -683,7 +685,11 @@ class MANGOS_DLL_SPEC WorldSession
         void HandleSocketOpcode(WorldPacket& recv_data);
 
         void HandleCancelTempEnchantmentOpcode(WorldPacket& recv_data);
+
+        // Refund 
         void HandleItemRefundInfoRequest(WorldPacket& recv_data);
+        void HandleItemRefundRequest(WorldPacket& recv_data);
+        void SendRefundInfo( uint64 GUID );
 
         void HandleChannelVoiceOnOpcode(WorldPacket & recv_data);
         void HandleVoiceSessionEnableOpcode(WorldPacket& recv_data);

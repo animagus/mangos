@@ -180,7 +180,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
 			IceBlockMap::iterator itr = iceblocks.find(pTarget->GetGUID());
 			if (itr != iceblocks.end() && !itr->second)
 			{
-				if (GameObject *iceblock = m_creature->SummonGameObject(GO_ICEBLOCK, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, 0, 0, 0, 0, 25000))
+				if (GameObject *iceblock = m_creature->SummonGameObject(GO_ICEBLOCK, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, 0, 0, 0, 0, 1000))
 					itr->second = iceblock->GetGUID();
 			}
 		}
