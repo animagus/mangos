@@ -231,6 +231,13 @@ scripts/kalimdor/azshara.cpp \
 scripts/kalimdor/azuremyst_isle.cpp \
 scripts/kalimdor/blackfathom_deeps/blackfathom_deeps.h \
 scripts/kalimdor/blackfathom_deeps/instance_blackfathom_deeps.cpp \
+scripts/kalimdor/caverns_of_time/culling_of_stratholme/boss_lord_epoch.cpp \
+scripts/kalimdor/caverns_of_time/culling_of_stratholme/boss_malganis.cpp \
+scripts/kalimdor/caverns_of_time/culling_of_stratholme/boss_meathook.cpp \
+scripts/kalimdor/caverns_of_time/culling_of_stratholme/boss_salramm.cpp \
+scripts/kalimdor/caverns_of_time/culling_of_stratholme/culling_of_stratholme.cpp \
+scripts/kalimdor/caverns_of_time/culling_of_stratholme/def_culling_of_stratholme.h \
+scripts/kalimdor/caverns_of_time/culling_of_stratholme/instance_culling_of_stratholme.cpp \
 scripts/kalimdor/bloodmyst_isle.cpp \
 scripts/kalimdor/boss_azuregos.cpp \
 scripts/kalimdor/caverns_of_time/dark_portal/boss_aeonus.cpp \
@@ -371,6 +378,9 @@ scripts/northrend/ulduar/ulduar/instance_ulduar.cpp \
 scripts/northrend/ulduar/ulduar/ulduar.h \
 scripts/northrend/ulduar/ulduar/boss_leviathan.cpp \
 scripts/northrend/ulduar/ulduar/boss_razorscale.cpp \
+scripts/northrend/ulduar/ulduar/boss_ignis.cpp \
+scripts/northrend/ulduar/ulduar/boss_xt002.cpp \
+scripts/northrend/ulduar/ulduar/ulduar.cpp \
 scripts/northrend/utgarde_keep/utgarde_keep/boss_ingvar.cpp \
 scripts/northrend/utgarde_keep/utgarde_keep/boss_keleseth.cpp \
 scripts/northrend/utgarde_keep/utgarde_keep/boss_skarvald_and_dalronn.cpp \

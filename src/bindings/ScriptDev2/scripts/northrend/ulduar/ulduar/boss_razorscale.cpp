@@ -566,7 +566,7 @@ void AddSC_boss_razorscale()
 
     NewScript = new Script;
     NewScript->Name = "boss_razorscale";
-    NewScript->GetAI = GetAI_boss_razorscale;
+    NewScript->GetAI = &GetAI_boss_razorscale;
     NewScript->RegisterSelf();
 
     NewScript = new Script;
