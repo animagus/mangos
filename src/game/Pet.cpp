@@ -979,8 +979,9 @@ bool Pet::InitStatsForLevel(uint32 petlevel, Unit* owner)
 				case 1964: //force of nature
 					{
 						SetCreateHealth(30 + 30*petlevel);
-						SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 2.5f - (petlevel / 2)));
-						SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 2.5f + (petlevel / 2)));
+                        SetBonusDamage(int32(owner->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_NATURE) * 0.10f));
+						SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 8.5f - (petlevel * 2) ));
+						SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 8.5f + (petlevel * 2) ));
 						break;
 					}
 				case 15352: //earth elemental 36213
@@ -1012,6 +1013,20 @@ bool Pet::InitStatsForLevel(uint32 petlevel, Unit* owner)
 						SetCreateHealth(28 + 30*petlevel);
 						break;
 					}
+                case 19668: // Shadowfiend
+                    {
+                        SetAttackTime(BASE_ATTACK, 1500);
+                        SetAttackTime(OFF_ATTACK, 1500);
+                        SetAttackTime(RANGED_ATTACK, 1500);
+
+                        SetBonusDamage(int32(owner->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_SHADOW) * 0.20f));
+						SetCreateMana(28 + 10*petlevel);
+						SetCreateHealth(28 + 30*petlevel);
+
+						SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 1.5f - (petlevel / 4)));
+						SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 1.5f + (petlevel / 4)));
+                        break;
+                    }
 				default:
 					{
 

@@ -1234,7 +1234,7 @@ class MANGOS_DLL_SPEC Unit : public WorldObject
         void SetPet(Pet* pet);
         void SetCharm(Unit* pet);
 
-        void AddGuardian(Pet* pet);
+        virtual void AddGuardian(Pet* pet);
         void RemoveGuardian(Pet* pet);
         void RemoveGuardians();
         Pet* FindGuardianWithEntry(uint32 entry);

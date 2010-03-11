@@ -1579,6 +1579,26 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
                alreadyDone.insert(*i);
                uint32 damage=(*i)->GetModifier()->m_amount;
                SpellEntry const *i_spellProto = (*i)->GetSpellProto();
+
+               Unit * caster = (*i)->GetCaster();
+               if (i_spellProto->SpellFamilyName == SPELLFAMILY_DRUID) {
+                   // Thorns, add scale from spd
+                   if (caster->GetTypeId() == TYPEID_PLAYER && i_spellProto->SpellIconID == 53)
+                   {
+                       damage += ((Player*)caster)->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+SPELL_SCHOOL_NATURE)*0.075f;
+                   }
+
+                   // TODO: make this scale for all classes ?
+                   Unit::AuraList const& dummyAuras = caster->GetAurasByType(SPELL_AURA_DUMMY);
+                   for(Unit::AuraList::const_iterator caster_aura = dummyAuras.begin(); caster_aura != dummyAuras.end(); ++caster_aura)
+                   {
+                       if ((*caster_aura)->isAffectedOnSpell(i_spellProto))
+                       {
+                           damage *= ((*caster_aura)->GetModifier()->m_amount+100.0f) / 100.0f;
+                       }
+                   }
+               }
+
                //Calculate absorb resist ??? no data in opcode for this possibly unable to absorb or resist?
                //uint32 absorb;
                //uint32 resist;
@@ -7484,6 +7504,31 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                         return false;
                 }
             }
+            // for Druid's Treants
+            else if (auraSpellInfo->Id==50419 && GetTypeId() != TYPEID_PLAYER && ((Creature*)this)->isPet())
+            {
+                Pet *pet = ((Pet*)this);
+                if (pet->GetEntry() == 1964) {
+                    Unit * owner = pet->GetOwner();
+
+                    int chance = 0;
+
+                    Unit::AuraList const& brambles = owner->GetAurasByType(SPELL_AURA_ADD_FLAT_MODIFIER);
+                    for(Unit::AuraList::const_iterator i = brambles.begin(); i != brambles.end(); ++i)
+                    {
+                        if ( (*i)->GetSpellProto()->SpellIconID == 53 && (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID && \
+                            GetSpellSchoolMask((*i)->GetSpellProto()) == SPELL_SCHOOL_MASK_NORMAL)
+                        {
+                            chance = (*i)->getAuraSpellMod()->value;
+                            break;
+                        }
+                    }
+
+                    if (!roll_chance_i(chance)) {
+                        return false;
+                    }
+                }
+            }
             break;
         }
         case SPELLFAMILY_HUNTER:
@@ -9013,6 +9058,24 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     // Custom scripted damage
     switch(spellProto->SpellFamilyName)
     {
+        case SPELLFAMILY_DRUID:
+        {
+           // Brambles
+           if (spellProto->SpellFamilyFlags & UI64LIT(0x00000000100))
+           {
+               Unit::AuraList const& dummyAuras = GetAurasByType(SPELL_AURA_DUMMY);
+               for(Unit::AuraList::const_iterator i = dummyAuras.begin(); i != dummyAuras.end(); ++i)
+               {
+                   if ((*i)->isAffectedOnSpell(spellProto))
+                   {
+                       DoneTotalMod *= ((*i)->GetModifier()->m_amount+100.0f) / 100.0f;
+                       break;
+                   }
+               }
+           }
+
+           break;
+        }
         case SPELLFAMILY_MAGE:
         {
             // Ice Lance

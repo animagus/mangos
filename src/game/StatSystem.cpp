@@ -1090,6 +1090,7 @@ void Pet::UpdateDamagePhysical(WeaponAttackType attType)
     float mindamage = ((base_value + weapon_mindamage) * base_pct + total_value) * total_pct;
     float maxdamage = ((base_value + weapon_maxdamage) * base_pct + total_value) * total_pct;
 
+    Unit* owner = GetOwner();
     //  Pet's base damage changes depending on happiness
     if (getPetType() == HUNTER_PET && attType == BASE_ATTACK)
     {
@@ -1108,6 +1109,20 @@ void Pet::UpdateDamagePhysical(WeaponAttackType attType)
                 mindamage = mindamage * 0.75;
                 maxdamage = maxdamage * 0.75;
                 break;
+        }
+    }
+
+    // Brambles
+    if(getPetType() == GUARDIAN_PET && owner->getClass() == CLASS_DRUID)
+    {
+        Unit::AuraList const& auras = owner->GetAurasByType(SPELL_AURA_ADD_FLAT_MODIFIER);
+        for(Unit::AuraList::const_iterator i = auras.begin(); i != auras.end(); ++i)
+        {
+            if ((*i)->GetSpellProto()->SpellIconID == 53 && (*i)->GetEffIndex() == 2)
+            {
+                mindamage *= ((*i)->GetModifier()->m_amount+100.0f) / 100.0f;
+                maxdamage *= ((*i)->GetModifier()->m_amount+100.0f) / 100.0f;
+            }
         }
     }
 

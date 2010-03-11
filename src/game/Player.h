@@ -1134,6 +1134,8 @@ class MANGOS_DLL_SPEC Player : public Unit
 
         void InitStatsForLevel(bool reapplyMods = false);
 
+        virtual void AddGuardian(Pet* pet);
+
         // Played Time Stuff
         time_t m_logintime;
         time_t m_Last_tick;

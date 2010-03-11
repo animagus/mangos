@@ -2532,6 +2532,24 @@ void Player::GiveLevel(uint32 level)
     GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_LEVEL);
 }
 
+void Player::AddGuardian(Pet* pet)
+{
+    Unit::AddGuardian(pet);
+    //force of nature
+    if (getClass() == CLASS_DRUID && pet->GetEntry() == 1964)
+    {
+       Unit::AuraList const& dummyAuras = GetAurasByType(SPELL_AURA_DUMMY);
+       for(Unit::AuraList::const_iterator i = dummyAuras.begin(); i != dummyAuras.end(); ++i)
+       {
+           if ( (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID && (*i)->GetSpellProto()->SpellIconID == 53)
+           {
+               pet->CastSpell(pet, 50419, false); // aura trigger spell handled in Unit::HandleProcTriggerSpell
+               break;
+           }
+       }
+    }
+}
+
 void Player::InitTalentForLevel()
 {
     uint32 level = getLevel();
