@@ -1113,8 +1113,10 @@ void Pet::UpdateDamagePhysical(WeaponAttackType attType)
     }
 
     // Brambles
-    if(getPetType() == GUARDIAN_PET && owner->getClass() == CLASS_DRUID)
+    if(getPetType() == GUARDIAN_PET && owner && owner->getClass() == CLASS_DRUID && \
+        GetEntry() == 1964)
     {
+
         Unit::AuraList const& auras = owner->GetAurasByType(SPELL_AURA_ADD_FLAT_MODIFIER);
         for(Unit::AuraList::const_iterator i = auras.begin(); i != auras.end(); ++i)
         {

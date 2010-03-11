@@ -1581,7 +1581,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
                SpellEntry const *i_spellProto = (*i)->GetSpellProto();
 
                Unit * caster = (*i)->GetCaster();
-               if (i_spellProto->SpellFamilyName == SPELLFAMILY_DRUID) {
+               if (i_spellProto->SpellFamilyName == SPELLFAMILY_DRUID && caster) {
                    // Thorns, add scale from spd
                    if (caster->GetTypeId() == TYPEID_PLAYER && i_spellProto->SpellIconID == 53)
                    {
