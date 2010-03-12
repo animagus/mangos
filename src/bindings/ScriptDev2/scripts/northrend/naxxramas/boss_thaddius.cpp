@@ -604,6 +604,19 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
 
         if (m_pInstance)
             m_pInstance->SetData(ENCOUNT_THADDIUS, DONE);
+
+        Map::PlayerList const &PList = m_pInstance->instance->GetPlayers();
+        for(Map::PlayerList::const_iterator i = PList.begin(); i != PList.end(); ++i)
+        {
+            if (Player* pPlayer = i->getSource())
+            {
+                pPlayer->RemoveAurasDueToSpell(SPELL_CHARGE_POSITIVE_NEARDMG);
+                pPlayer->RemoveAurasDueToSpell(SPELL_CHARGE_NEGATIVE_NEARDMG);
+
+                pPlayer->RemoveAurasDueToSpell(SPELL_CHARGE_POSITIVE_DMGBUFF);
+                pPlayer->RemoveAurasDueToSpell(SPELL_CHARGE_NEGATIVE_DMGBUFF);
+            }
+        }
     }
 
     void KilledUnit(Unit *victim)
