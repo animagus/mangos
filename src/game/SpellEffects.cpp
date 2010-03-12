@@ -2741,6 +2741,10 @@ void Spell::EffectApplyAura(uint32 i)
     if(!unitTarget)
         return;
 
+    // Disable second spell effect for 60547
+    if (m_spellInfo->Id == 60547 && i == 1)
+        return;
+
     // ghost spell check, allow apply any auras at player loading in ghost mode (will be cleanup after load)
     if ( (!unitTarget->isAlive() && !(IsDeathOnlySpell(m_spellInfo) || IsDeathPersistentSpell(m_spellInfo))) &&
         (unitTarget->GetTypeId() != TYPEID_PLAYER || !((Player*)unitTarget)->GetSession()->PlayerLoading()) )
