@@ -7508,8 +7508,12 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
             else if (auraSpellInfo->Id==50419 && GetTypeId() != TYPEID_PLAYER && ((Creature*)this)->isPet())
             {
                 Pet *pet = ((Pet*)this);
-                if (pet->GetEntry() == 1964) {
-                    Unit * owner = pet->GetOwner();
+                if (pet->GetEntry() == 1964)
+                {
+                    Unit *owner = pet->GetOwner();
+
+                    if (!owner)
+                        return false;
 
                     int chance = 0;
 
@@ -7524,9 +7528,8 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                         }
                     }
 
-                    if (!roll_chance_i(chance)) {
+                    if (!roll_chance_i(chance))
                         return false;
-                    }
                 }
             }
             break;
