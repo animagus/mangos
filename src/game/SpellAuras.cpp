@@ -8241,10 +8241,18 @@ void Aura::HandleAuraCloneCaster( bool Apply, bool Real)
 void Aura::HandleAbilityIgnoreAurastate( bool Apply, bool Real )
 {
     if(Apply && Real)
-		switch (GetId())
-	{
+        switch (GetId())
+    {
 		case 44544:	SetAuraCharges(2);	break;
 		case 52437:	SetAuraCharges(1);	break;
+        case 64976: // for alowing charge in combat and Warbringer
+        case 57499: // for alowing charge in different stances, too
+            {
+                SetAuraSlot(255);
+                SetAuraFlags(19);
+                SendAuraUpdate(false);
+                break
+            }
 		default:
 			break;
 	}
