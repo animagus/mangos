@@ -859,53 +859,38 @@ bool Pet::InitStatsForLevel(uint32 petlevel, Unit* owner)
     {
         case SUMMON_PET:
         {
-            if(owner->getClass() == CLASS_WARLOCK)
+            if(owner->GetTypeId() == TYPEID_PLAYER)
             {
-                //the damage bonus used for pets is either fire or shadow damage, whatever is higher
-                uint32 fire  = owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE);
-                uint32 shadow = owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
-                uint32 val  = (fire > shadow) ? fire : shadow;
-
-                SetBonusDamage(int32 (val * 0.15f));
-
-                SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)) + val*0.57f/14);
-                SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)) + val*0.57f/14);
-
-                //bonusAP += val * 0.57;
-                break;
-            }
-            else
-            {
-                switch(GetEntry())
+                switch(owner->getClass())
                 {
-                    case 37994: // Water Elemental with glyph
-                    case 510: // Water Elemental
+                    case CLASS_WARLOCK:
                     {
-                        //40% damage bonus of mage's frost damage
-                        float val = owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FROST) * 0.4f;
-                        if(val < 0)
-                            val = 0;
-                        SetBonusDamage(int32(val));
-                        break;
-                    }
-                    case 19668: // Shadowfiend
-                    {
-                        //35% damage bonus of priest's shadow damage per hit
-                        float val = owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) * 0.35f;
-                        if(val < 0)
-                            val = 0;
-                        SetBonusDamage(int32(val));
-                        SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4) + val) );
-                        SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4) + val) );
-                        break;
-                    }
-                default:
-                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)) );
-                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)) );
-                    break;
 
+                        //the damage bonus used for pets is either fire or shadow damage, whatever is higher
+                        uint32 fire  = owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE);
+                        uint32 shadow = owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+                        uint32 val  = (fire > shadow) ? fire : shadow;
+
+                        SetBonusDamage(int32 (val * 0.15f));
+                        //bonusAP += val * 0.57;
+                        break;
+                    }
+                    case CLASS_MAGE:
+                    {
+                                                            //40% damage bonus of mage's frost damage
+                        float val = owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FROST) * 0.4;
+                        if(val < 0)
+                            val = 0;
+                        SetBonusDamage( int32(val));
+                        break;
+                    }
+                    default:
+                        break;
                 }
             }
+
+            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)) );
+            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)) );
 
             //SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, float(cinfo->attackpower));
 
@@ -978,72 +963,86 @@ bool Pet::InitStatsForLevel(uint32 petlevel, Unit* owner)
             }
             break;
         }
-    default:
-        {
-            switch (GetEntry())
-            {
-            case 510: // mage Water Elemental
-                {
-                    //40% damage bonus of mage's frost damage
-                    float val = owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FROST) * 0.4;
-                    if(val < 0)
-                        val = 0;
-                    SetBonusDamage(int32(val));
-                    break;
-                }
-            case 1964: //force of nature
-                {
-                    SetCreateHealth(30 + 30*petlevel);
-                    SetBonusDamage(int32(owner->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_NATURE) * 0.10f));
-                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 8.5f - (petlevel * 2) ));
-                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 8.5f + (petlevel * 2) ));
-                    break;
-                }
-            case 15352: //earth elemental 36213
-                {
-                    SetCreateHealth(100 + 120*petlevel);
-                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
-                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
-                    break;
-                }
-            case 15438: //fire elemental
-                {
-                    SetCreateHealth(40*petlevel);
-                    SetCreateMana(28 + 10*petlevel);
-                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 4 - petlevel));
-                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 4 + petlevel));
-                    break;
-                }
-            case 31216: // Mirror Image
-                {
-                    SetBonusDamage(int32(owner->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FROST) * 0.33f));
-                    SetCreateMana(160*petlevel);
-                    SetCreateHealth(35*petlevel);
-                    break;
-                }
-            case 27829: // Ebon Gargoyle
-                {
-                    SetBonusDamage( int32(owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.4f));
-                    SetCreateMana(28 + 10*petlevel);
-                    SetCreateHealth(28 + 30*petlevel);
-                    break;
-                }
-            default:
-                {
+		default:
+			{
+				switch (GetEntry())
+				{
+				case 510: // mage Water Elemental
+					{
+						//40% damage bonus of mage's frost damage
+						float val = owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FROST) * 0.4;
+						if(val < 0)
+							val = 0;
+						SetBonusDamage(int32(val));
+						break;
+					}
+				case 1964: //force of nature
+					{
+						SetCreateHealth(30 + 30*petlevel);
+                        SetBonusDamage(int32(owner->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_NATURE) * 0.10f));
+						SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 8.5f - (petlevel * 2) ));
+						SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 8.5f + (petlevel * 2) ));
+						break;
+					}
+				case 15352: //earth elemental 36213
+					{
+						SetCreateHealth(100 + 120*petlevel);
+						SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
+						SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
+						break;
+					}
+				case 15438: //fire elemental
+					{
+						SetCreateHealth(40*petlevel);
+						SetCreateMana(28 + 10*petlevel);
+						SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 4 - petlevel));
+						SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 4 + petlevel));
+						break;
+					}
+				case 31216: // Mirror Image
+					{
+						SetBonusDamage(int32(owner->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_FROST) * 0.33f));
+						SetCreateMana(160*petlevel);
+						SetCreateHealth(35*petlevel);
+						break;
+					}
+				case 27829: // Ebon Gargoyle
+					{
+						SetBonusDamage( int32(owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.4f));
+						SetCreateMana(28 + 10*petlevel);
+						SetCreateHealth(28 + 30*petlevel);
+						break;
+					}
+                case 19668: // Shadowfiend
+                    {
+                        SetAttackTime(BASE_ATTACK, 1500);
+                        SetAttackTime(OFF_ATTACK, 1500);
+                        SetAttackTime(RANGED_ATTACK, 1500);
 
-                    SetCreateMana(28 + 10*petlevel);
-                    SetCreateHealth(28 + 30*petlevel);
-                    // FIXME: this is wrong formula, possible each guardian pet have own damage formula
-                    //these formula may not be correct; however, it is designed to be close to what it should be
-                    //this makes dps 0.5 of pets level
-                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
-                    //damage range is then petlevel / 2
-                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
-                    break;
-                }
-            }
-            break;
-        }
+                        SetBonusDamage(int32(owner->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_SHADOW) * 0.20f));
+						SetCreateMana(28 + 10*petlevel);
+						SetCreateHealth(28 + 30*petlevel);
+
+						SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 1.5f - (petlevel / 4)));
+						SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 1.5f + (petlevel / 4)));
+                        break;
+                    }
+				default:
+					{
+
+						SetCreateMana(28 + 10*petlevel);
+						SetCreateHealth(28 + 30*petlevel);
+						// FIXME: this is wrong formula, possible each guardian pet have own damage formula
+						//these formula may not be correct; however, it is designed to be close to what it should be
+						//this makes dps 0.5 of pets level
+						SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
+						//damage range is then petlevel / 2
+						SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
+						break;
+					}
+				}
+				break;
+			}
     }
 
     for (int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
