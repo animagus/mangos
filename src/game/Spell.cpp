@@ -6266,6 +6266,13 @@ bool Spell::CheckTarget( Unit* target, uint32 eff )
 
             // all ok by some way or another, skip normal check
             break;
+        case SPELL_EFFECT_APPLY_AURA:
+            if (m_spellInfo->SpellFamilyName == SPELLFAMILY_GENERIC && m_spellInfo->Category == 0) {
+                // Not allow apply aura effect if target not set
+                if (!m_spellInfo->EffectImplicitTargetA[eff] && !m_spellInfo->EffectImplicitTargetA[eff])
+                    return false;
+            }
+            break;
         default:                                            // normal case
             // Get GO cast coordinates if original caster -> GO
             WorldObject *caster = NULL;
