@@ -107,6 +107,9 @@ class Log : public MaNGOS::Singleton<Log, MaNGOS::ClassLevelLockable<Log, ACE_Th
                                                             // any log level
         void outMenu( const char * str, ... )        ATTR_PRINTF(2,3);
                                                             // any log level
+        // Randy // anticheat log  // any log level
+        void outCheat( const char * str, ... )        ATTR_PRINTF(2,3);
+
         void outErrorDb( const char * str, ... )     ATTR_PRINTF(2,3);
                                                             // any log level
         void outChar( const char * str, ... )        ATTR_PRINTF(2,3);
@@ -136,6 +139,8 @@ class Log : public MaNGOS::Singleton<Log, MaNGOS::ClassLevelLockable<Log, ACE_Th
         FILE* charLogfile;
         FILE* dberLogfile;
         FILE* worldLogfile;
+
+        FILE* cheatLogfile; // Randy // anticheat
 
         // log/console control
         uint32 m_logLevel;

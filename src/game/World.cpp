@@ -1009,6 +1009,16 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_TIMERBAR_FIRE_GMLEVEL]    = sConfig.GetIntDefault("TimerBar.Fire.GMLevel", SEC_CONSOLE);
     m_configs[CONFIG_TIMERBAR_FIRE_MAX]        = sConfig.GetIntDefault("TimerBar.Fire.Max", 1);
 
+    // Randy // anticheat config
+    m_configs[CONFIG_ANTICHEAT_SPEED_CHECK_ENABLE] = sConfig.GetBoolDefault("Anticheat.EnableSpeedCheck", false);
+    m_configs[CONFIG_ANTICHEAT_SPEED_BAN_ENABLE] = sConfig.GetBoolDefault("Anticheat.EnableSpeedBan", false);
+    m_configs[CONFIG_ANTICHEAT_HIGHLEVEL] = sConfig.GetIntDefault("Anticheat.HighLevels", 60);
+    m_configs[CONFIG_ANTICHEAT_HIGHLEVEL_MAXSPEED] = sConfig.GetIntDefault("Anticheat.HighLevelsMaxSpeed", 20);
+    m_configs[CONFIG_ANTICHEAT_LOWLEVEL_MAXSPEED] = sConfig.GetIntDefault("Anticheat.LowLevelsMaxSpeed", 15);
+    m_configs[CONFIG_ANTICHEAT_MIN_CHECK_LEVEL] = sConfig.GetIntDefault("Anticheat.MinCheckLevel", 1);
+    m_configs[CONFIG_ANTICHEAT_GMICON_BAN_ENABLE] = sConfig.GetBoolDefault("Anticheat.GMIconBan", false);
+    // --
+
     m_VisibleUnitGreyDistance = sConfig.GetFloatDefault("Visibility.Distance.Grey.Unit", 1);
     if(m_VisibleUnitGreyDistance >  MAX_VISIBILITY_DISTANCE)
     {
