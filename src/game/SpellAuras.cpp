@@ -8251,7 +8251,7 @@ void Aura::HandleAbilityIgnoreAurastate( bool Apply, bool Real )
                 SetAuraSlot(255);
                 SetAuraFlags(19);
                 SendAuraUpdate(false);
-                break
+                break;
             }
 		default:
 			break;
