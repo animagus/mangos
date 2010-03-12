@@ -2862,7 +2862,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellEntry const *spell, bool 
 
     // All positive spells can`t miss
     // TODO: client not show miss log for this spells - so need find info for this in dbc and use it!
-    if (IsPositiveSpell(spell->Id))
+    if (IsPositiveSpell(spell->Id) && IsFriendlyTo(pVictim))
         return SPELL_MISS_NONE;
 
     // Check for immune
@@ -4118,6 +4118,25 @@ void Unit::RemoveAura(uint32 spellId, uint32 effindex, Aura* except)
         {
             RemoveAura(iter);
             iter = m_Auras.lower_bound(spair);
+        }
+        else
+            ++iter;
+    }
+}
+
+void Unit::RemoveAurasBySpellMechanic(uint32 mechMask)
+{
+    Unit::AuraMap& auras = GetAuras();
+    for(Unit::AuraMap::iterator iter = auras.begin(); iter != auras.end();)
+    {
+        SpellEntry const *spell = iter->second->GetSpellProto();
+        if (spell->Mechanic & mechMask)
+        {
+            RemoveAurasDueToSpell(spell->Id);
+            if(auras.empty())
+                break;
+            else
+                iter = auras.begin();
         }
         else
             ++iter;

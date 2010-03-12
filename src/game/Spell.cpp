@@ -978,6 +978,15 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if (target->reflectResult == SPELL_MISS_NONE)       // If reflected spell hit caster -> do all effect on him
             DoSpellHitOnUnit(m_caster, mask);
     }
+    else if (missInfo == SPELL_MISS_IMMUNE)
+    {
+        // Shattering Throw
+        if (m_spellInfo->Id == 64382)
+        {
+            unitTarget->RemoveAurasBySpellMechanic(MECHANIC_IMMUNE_SHIELD);
+            return;
+        }
+    }
 
     // All calculated do it!
     // Do healing and triggers
@@ -1073,7 +1082,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
 
     // Recheck immune (only for delayed spells)
     if (m_spellInfo->speed && (
-        unit->IsImmunedToDamage(GetSpellSchoolMask(m_spellInfo)) ||
+        (!(m_spellInfo->Attributes & SPELL_ATTR_UNAFFECTED_BY_INVULNERABILITY) && unit->IsImmunedToDamage(GetSpellSchoolMask(m_spellInfo))) ||
         unit->IsImmunedToSpell(m_spellInfo)))
     {
         realCaster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_IMMUNE);
