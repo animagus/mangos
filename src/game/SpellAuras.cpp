@@ -1376,9 +1376,16 @@ bool Aura::isAffectedOnSpell(SpellEntry const *spell) const
     // Check family name
     if (spell->SpellFamilyName != m_spellProto->SpellFamilyName)
         return false;
-	// Special case for 44544 Fingers of Frost
-	if ( (m_spellProto->EffectMiscValue[0] & GetSpellSchoolMask(spell)) && m_spellProto->SpellIconID == 2947 )
-		return true;
+
+    // Special case for 44544 Fingers of Frost
+    if ( (m_spellProto->EffectMiscValue[0] & GetSpellSchoolMask(spell)) && m_spellProto->SpellIconID == 2947 )
+        return true;
+    // Twisted Faith and Mind Flay
+    if ( m_modifier.m_miscvalue == 7377 && \
+        spell->SpellFamilyName == SPELLFAMILY_PRIEST && \
+        (spell->SpellFamilyFlags & UI64LIT(0x800000)) )
+        return true;
+
     // Check EffectClassMask
     uint32 const *ptr = getAuraSpellClassMask();
     if (((uint64*)ptr)[0] & spell->SpellFamilyFlags)
