@@ -872,6 +872,8 @@ bool Pet::InitStatsForLevel(uint32 petlevel, Unit* owner)
                         uint32 val  = (fire > shadow) ? fire : shadow;
 
                         SetBonusDamage(int32 (val * 0.15f));
+                        SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)) + val*0.57/14);
+                        SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)) + val*0.57/14);
                         //bonusAP += val * 0.57;
                         break;
                     }
@@ -882,15 +884,31 @@ bool Pet::InitStatsForLevel(uint32 petlevel, Unit* owner)
                         if(val < 0)
                             val = 0;
                         SetBonusDamage( int32(val));
+                        SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)) );
+                        SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)) );
+                        break;
+                    }
+                    case CLASS_PRIEST:
+                    {
+                        // Shadowfiend
+                        if( GetEntry() == 19668 )
+                        {
+                            // 35.7 %
+                            float val = owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW) * 0.357f;
+                            if(val < 0)
+                                val = 0;
+                            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)) + val);
+                            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)) + val);
+                        }
                         break;
                     }
                     default:
+                        SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)) );
+                        SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)) );
                         break;
                 }
             }
 
-            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)) );
-            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)) );
 
             //SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, float(cinfo->attackpower));
 
@@ -1013,20 +1031,6 @@ bool Pet::InitStatsForLevel(uint32 petlevel, Unit* owner)
 						SetCreateHealth(28 + 30*petlevel);
 						break;
 					}
-                case 19668: // Shadowfiend
-                    {
-                        SetAttackTime(BASE_ATTACK, 1500);
-                        SetAttackTime(OFF_ATTACK, 1500);
-                        SetAttackTime(RANGED_ATTACK, 1500);
-
-                        SetBonusDamage(int32(owner->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_SHADOW) * 0.20f));
-						SetCreateMana(28 + 10*petlevel);
-						SetCreateHealth(28 + 30*petlevel);
-
-						SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 1.5f - (petlevel / 4)));
-						SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 1.5f + (petlevel / 4)));
-                        break;
-                    }
 				default:
 					{
 
