@@ -9035,13 +9035,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             case 7377:
             {
                 if (pVictim->GetAura(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_PRIEST, UI64LIT(0x0000000000008000), 0, GetGUID()))
-                    {
-                      if (this->HasAura(55687))
-                        DoneTotalMod *= ((*i)->GetModifier()->m_amount+100.0f + 10.0f)/100.0f;
-                      else
-                        DoneTotalMod *= ((*i)->GetModifier()->m_amount+100.0f)/100.0f;
-                      break;
-                    }
+                    DoneTotalMod *= ((*i)->GetModifier()->m_amount+100.0f)/100.0f;
                 break;
             }
             // Marked for Death
@@ -9104,6 +9098,25 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                 if (pVictim->GetHealth() * 100 / pVictim->GetMaxHealth() <= 25)
                   DoneTotalMod *= 4;
             }
+            break;
+        }
+        case SPELLFAMILY_PRIEST:
+        {
+            // Glyph of Shadow Word: Pain
+            if (spellProto->SpellFamilyFlags & UI64LIT(0x00000800000))
+            {
+                Aura *dummy = GetDummyAura(55687);
+                if ( dummy && pVictim->GetAura(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_PRIEST, 0x0000000000008000LL, 0, GetGUID()))
+                    DoneTotalMod *= (dummy->GetModifier()->m_amount+100.0f)/100.0f;
+            }
+            // Glyph of Smite
+            else if (spellProto->SpellFamilyFlags & UI64LIT(0x000000080))
+            {
+                Aura *dummy = GetDummyAura(55692);
+                if (dummy && pVictim->GetAura(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_PRIEST, 0x0000000100000LL, 0, GetGUID()))
+                    DoneTotalMod *= (dummy->GetModifier()->m_amount+100.0f)/100.0f;
+            }
+
             break;
         }
         case SPELLFAMILY_DEATHKNIGHT:
