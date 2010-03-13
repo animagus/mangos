@@ -6231,6 +6231,30 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         {
             switch(m_spellInfo->Id)
             {
+                // Summon Ghoul
+                case 46584:
+                {
+                    // Corpse or dust check
+                    if(((Player*)m_caster)->HasItemCount(37201,1))
+                    {
+                        // Look for Master of Ghouls talent dummy spell (52143)
+                        if( m_caster->GetTypeId()==TYPEID_PLAYER && ((Player*)m_caster)->HasSpell(52143) )
+                        {
+                            // Player has talent; cast pet ghoul spell
+                            m_caster->CastSpell(m_caster, 52150, false);
+                            ((Player*)m_caster)->DestroyItemCount(37201,1,true);
+                        }
+                        else
+                        {
+                            // Player has not got talent; cast time limited ghoul spell
+                            m_caster->CastSpell(m_caster, 46585, false);
+                            ((Player*)m_caster)->DestroyItemCount(37201,1,true);
+                        }
+                    }
+                    else
+                        m_caster->CastStop();
+                        break;
+                    }
                 // Pestilence
                 case 50842:
                 {
