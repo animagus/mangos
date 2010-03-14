@@ -1012,6 +1012,7 @@ void World::LoadConfigSettings(bool reload)
     // Randy // anticheat config
     m_configs[CONFIG_ANTICHEAT_SPEED_CHECK_ENABLE] = sConfig.GetBoolDefault("Anticheat.EnableSpeedCheck", false);
     m_configs[CONFIG_ANTICHEAT_SPEED_BAN_ENABLE] = sConfig.GetBoolDefault("Anticheat.EnableSpeedBan", false);
+    m_configs[CONFIG_ANTICHEAT_BAN_TIME] = sConfig.GetIntDefault("Anticheat.BanTime", 120);
     m_configs[CONFIG_ANTICHEAT_HIGHLEVEL] = sConfig.GetIntDefault("Anticheat.HighLevels", 60);
     m_configs[CONFIG_ANTICHEAT_HIGHLEVEL_MAXSPEED] = sConfig.GetIntDefault("Anticheat.HighLevelsMaxSpeed", 20);
     m_configs[CONFIG_ANTICHEAT_LOWLEVEL_MAXSPEED] = sConfig.GetIntDefault("Anticheat.LowLevelsMaxSpeed", 15);
@@ -1876,7 +1877,7 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
         case BAN_IP:
             //No SQL injection as strings are escaped
             resultAccounts = loginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'",nameOrIP.c_str());
-            loginDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+%u,'%s','%s')",nameOrIP.c_str(),duration_secs,safe_author.c_str(),reason.c_str());
+            loginDatabase.PExecute("INSERT INTO hosts_banned VALUES ('%s',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+%u, 1, '%s', '', '%s')",nameOrIP.c_str(),duration_secs,reason.c_str(),safe_author.c_str());
             break;
         case BAN_ACCOUNT:
             //No SQL injection as string is escaped
@@ -1907,8 +1908,8 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
         if(mode!=BAN_IP)
         {
             //No SQL injection as strings are escaped
-            loginDatabase.PExecute("INSERT INTO account_banned VALUES ('%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, '%s', '%s', '1')",
-                account,duration_secs,safe_author.c_str(),reason.c_str());
+            loginDatabase.PExecute("INSERT INTO account_banned VALUES ('%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, 1, '%s', '', '%s')",
+                account, duration_secs, reason.c_str(), safe_author.c_str());
         }
 
         if (WorldSession* sess = FindSession(account))
