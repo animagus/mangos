@@ -599,6 +599,10 @@ void AchievementMgr::SendAchievementEarned(AchievementEntry const* achievement)
         sLog.outDebug("AchievementMgr::SendAchievementEarned(%u)", achievement->ID);
     #endif
 
+    // Not broadcast a hidden achievement
+    if(achievement->flags & ACHIEVEMENT_FLAG_HIDDEN)
+        return;
+
     if(Guild* guild = sObjectMgr.GetGuildById(GetPlayer()->GetGuildId()))
     {
         MaNGOS::AchievementChatBuilder say_builder(*GetPlayer(), CHAT_MSG_GUILD_ACHIEVEMENT, LANG_ACHIEVEMENT_EARNED,achievement->ID);
@@ -1865,6 +1869,10 @@ void AchievementMgr::BuildAllDataPacket(WorldPacket *data)
 {
     for(CompletedAchievementMap::const_iterator iter = m_completedAchievements.begin(); iter!=m_completedAchievements.end(); ++iter)
     {
+        const AchievementEntry *achiev = sAchievementStore.LookupEntry(iter->first);
+        if(achiev->flags & ACHIEVEMENT_FLAG_HIDDEN)
+            continue;
+
         *data << uint32(iter->first);
         *data << uint32(secsToTimeBitFields(iter->second.date));
     }
