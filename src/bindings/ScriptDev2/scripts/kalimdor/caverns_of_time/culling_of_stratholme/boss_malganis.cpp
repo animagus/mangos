@@ -193,7 +193,7 @@ struct MANGOS_DLL_DECL boss_malganisAI : public ScriptedAI
 				if (Sleep_Timer < diff)
 				{
 					if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-						DoCast(target, m_bIsHeroic ? SPELL_SLEEP_H : SPELL_SLEEP_N);
+						DoCast(target, !m_bIsRegularMode ? SPELL_SLEEP_H : SPELL_SLEEP_N);
                         switch(rand()%2)
                         {
 							case 0: DoScriptText(SAY_MALGANIS_SLEEP01, m_creature); break;
