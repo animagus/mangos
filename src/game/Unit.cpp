@@ -8692,8 +8692,10 @@ Pet* Unit::GetPet() const
 {
     if(uint64 pet_guid = GetPetGUID())
     {
-        if(Pet* pet = GetMap()->GetPet(pet_guid))
-            return pet;
+        Map *m = GetMapWithoutAssert();
+        if(m)
+            if(Pet* pet = m->GetPet(pet_guid))
+                return pet;
         sLog.outError("Unit::GetPet: Pet %u not exist.",GUID_LOPART(pet_guid));
         const_cast<Unit*>(this)->SetPet(0);
     }
