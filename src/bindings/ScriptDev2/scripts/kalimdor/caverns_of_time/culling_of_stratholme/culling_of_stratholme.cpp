@@ -170,8 +170,9 @@ struct MANGOS_DLL_DECL npc_arthasAI : public npc_escortAI
 	void Reset() 
 	{
 		if(arthas_event == 2) { } 
-		else 
-			arthas_event = 0;
+		else
+        arthas_event = 0;
+        uiZombie_counter = 0;
 		FinalFight = 1;
 		phase = 1;
 		phasetim = 20000;  
@@ -195,6 +196,11 @@ struct MANGOS_DLL_DECL npc_arthasAI : public npc_escortAI
 	{
 		DoCast(m_creature, SPELL_ARTHAS_AURA);
 	}
+
+    void JustReachedHome()
+    {
+        arthas_event = 0;
+    }
 
     void MoveInLineOfSight(Unit* pWho)
     {
@@ -236,6 +242,9 @@ struct MANGOS_DLL_DECL npc_arthasAI : public npc_escortAI
 	{
 		if (!pWho)
 			return;
+
+        if (arthas_event == 1)
+            return;
 
 		if (m_creature->Attack(pWho, true))
 		{
@@ -688,13 +697,14 @@ struct MANGOS_DLL_DECL npc_arthasAI : public npc_escortAI
                     phasetim = 500;
                     if (uiZombie_counter < ENCOUNTER_ZOMBIE_NUMBER)
                     {
-						if (Creature* TempZombie = GetClosestCreatureWithEntry(StalkerM, NPC_CITY_MAN, 100.0f))
-                        {
-							TempZombie->UpdateEntry(NPC_ZOMBIE, 0);
+                        if (StalkerM)
+                            if (Creature* TempZombie = GetClosestCreatureWithEntry(StalkerM, NPC_CITY_MAN, 100.0f))
+                            {
+                                TempZombie->UpdateEntry(NPC_ZOMBIE, 0);
+                                tmpZombie = 4;
+                            }
                             uiZombie_counter++;
-							++phase;
-							tmpZombie = 4;
-						}
+                            ++phase;
                     }
                     else
                     {
@@ -706,11 +716,12 @@ struct MANGOS_DLL_DECL npc_arthasAI : public npc_escortAI
                     phasetim = 500;
                     if (uiZombie_counter < ENCOUNTER_ZOMBIE_NUMBER)
                     {
-						if (Creature* TempZombie = GetClosestCreatureWithEntry(StalkerM, NPC_CRAZY_MAN, 100.0f))
-                        {
-							TempZombie->UpdateEntry(NPC_ZOMBIE, 0);
-							uiZombie_counter++;
-						}
+                        if (StalkerM)
+                            if (Creature* TempZombie = GetClosestCreatureWithEntry(StalkerM, NPC_CRAZY_MAN, 100.0f))
+                            {
+                                TempZombie->UpdateEntry(NPC_ZOMBIE, 0);
+                            }
+                            uiZombie_counter++;
                     }
                     else
                     {
@@ -1126,22 +1137,25 @@ struct MANGOS_DLL_DECL npc_time_riftCSAI : public ScriptedAI
 			case 1:
 				if (Creature* pArthas = GetClosestCreatureWithEntry(m_creature, NPC_ARTHAS, 180.0f))
 					Arthas = pArthas;
-				Drakonian01 = m_creature->SummonCreature(NPC_DRAKONIAN,m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ()+1,3.229f,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,900000);
+				Drakonian01 = m_creature->SummonCreature(NPC_DRAKONIAN,m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ()+1,3.229f,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,30000);
 				Drakonian01->GetMotionMaster()->MovePoint(0, Arthas->GetPositionX(), Arthas->GetPositionY(), Arthas->GetPositionZ());
 				++Step;
 				Steptim = 3000;
 				break;
 			case 3:
-				Drakonian02 = m_creature->SummonCreature(NPC_DRAKONIAN,m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ()+1,3.229f,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,900000);
+				Drakonian02 = m_creature->SummonCreature(NPC_DRAKONIAN,m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ()+1,3.229f,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,30000);
 				Drakonian02->GetMotionMaster()->MovePoint(0, Arthas->GetPositionX(), Arthas->GetPositionY(), Arthas->GetPositionZ());
 				++Step;
 				Steptim = 3000;
 				break;
 			case 5:
-				Drakonian03 = m_creature->SummonCreature(NPC_DRAKONIAN,m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ()+1,3.229f,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,900000);
-				Drakonian03->GetMotionMaster()->MovePoint(0, Arthas->GetPositionX(), Arthas->GetPositionY(), Arthas->GetPositionZ());
-				++Step;
-				Steptim = 3000;
+                if  (rand()%1)
+                {
+                    Drakonian03 = m_creature->SummonCreature(NPC_DRAKONIAN,m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ()+1,3.229f,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,30000);
+                    Drakonian03->GetMotionMaster()->MovePoint(0, Arthas->GetPositionX(), Arthas->GetPositionY(), Arthas->GetPositionZ());
+                }
+                ++Step;
+                Steptim = 3000;
 				break;
 		}
 		

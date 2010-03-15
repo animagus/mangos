@@ -30,7 +30,8 @@ EndScriptData */
 #define GO_SHKAF_GATE       188686
 #define GO_MALGANIS_GATE1   187711    
 #define GO_MALGANIS_GATE2   187723 
-#define GO_MALGANIS_CHEST   190663 
+#define GO_MALGANIS_CHEST_N   190663
+#define GO_MALGANIS_CHEST_H   193597
 
 struct MANGOS_DLL_DECL instance_culling_of_stratholme : public ScriptedInstance
 {
@@ -46,6 +47,7 @@ struct MANGOS_DLL_DECL instance_culling_of_stratholme : public ScriptedInstance
     uint64 m_uiMalGate1GUID;
     uint64 m_uiMalGate2GUID;
     uint64 m_uiMalChestGUID;
+    uint64 m_uiMalChest2GUID;
 
     uint64 m_uilordEpochGUID;
     uint64 m_uiMeathookGUID;
@@ -59,6 +61,7 @@ struct MANGOS_DLL_DECL instance_culling_of_stratholme : public ScriptedInstance
         m_uiMalGate1GUID = 0;
         m_uiMalGate2GUID = 0;
         m_uiMalChestGUID = 0;
+        m_uiMalChest2GUID = 0;
 
         m_uilordEpochGUID = 0;
 		m_uiMeathookGUID = 0;
@@ -111,6 +114,8 @@ struct MANGOS_DLL_DECL instance_culling_of_stratholme : public ScriptedInstance
 			case NPC_MALGANIS:
 			{
                 m_uiMalganisGUID = pCreature->GetGUID();
+                /*pCreature->SetVisibility(VISIBILITY_OFF);
+                pCreature->setFaction(35);*/
                 break;
 			}
 		}
@@ -127,8 +132,12 @@ struct MANGOS_DLL_DECL instance_culling_of_stratholme : public ScriptedInstance
         if (pGo->GetEntry() == GO_MALGANIS_GATE2)
             m_uiMalGate2GUID = pGo->GetGUID();
 
-        if (pGo->GetEntry() == GO_MALGANIS_CHEST)
+        if (pGo->GetEntry() == GO_MALGANIS_CHEST_N)
             m_uiMalChestGUID = pGo->GetGUID();
+
+        if (pGo->GetEntry() == GO_MALGANIS_CHEST_H)
+            m_uiMalChest2GUID = pGo->GetGUID();
+
     }
 
     uint64 GetData64(uint32 uiData)
@@ -143,7 +152,8 @@ struct MANGOS_DLL_DECL instance_culling_of_stratholme : public ScriptedInstance
             case DATA_GO_SHKAF_GATE: return m_uiShkafGateGUID;
             case DATA_GO_MAL_GATE1: return m_uiMalGate1GUID;
             case DATA_GO_MAL_GATE2: return m_uiMalGate2GUID;
-            case DATA_GO_MAL_CHEST: return m_uiMalChestGUID;
+            case DATA_GO_MAL_CHEST_N: return m_uiMalChestGUID;
+            case DATA_GO_MAL_CHEST_H: return m_uiMalChest2GUID;
         }
 
         return 0;
@@ -192,6 +202,7 @@ struct MANGOS_DLL_DECL instance_culling_of_stratholme : public ScriptedInstance
 				{
 					needSave = true;
 					DoRespawnGameObject(m_uiMalChestGUID,86400); //respawn time for the chest 1 day
+                    DoRespawnGameObject(m_uiMalChest2GUID,86400); //respawn time for the chest 1 day
 				}
                 m_auiEncounter[4] = uiData;
                 break;

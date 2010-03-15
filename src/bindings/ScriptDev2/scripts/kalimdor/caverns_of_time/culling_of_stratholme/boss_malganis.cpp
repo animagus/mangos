@@ -64,7 +64,7 @@ struct MANGOS_DLL_DECL boss_malganisAI : public ScriptedAI
 	boss_malganisAI(Creature *c) : ScriptedAI(c)
 	{
 		m_pInstance = (ScriptedInstance*)c->GetInstanceData();
-        m_bIsHeroic = c->GetMap()->IsRegularDifficulty();
+        m_bIsRegularMode = c->GetMap()->IsRegularDifficulty();
         Reset();
 	}
 
@@ -78,7 +78,7 @@ struct MANGOS_DLL_DECL boss_malganisAI : public ScriptedAI
 	Creature* Malganis;
 	Creature* Arthas;
 	bool Outro;
-	bool m_bIsHeroic;
+	bool m_bIsRegularMode;
 	uint32 Step;
 	uint32 Steptim;
 	uint32 Motion;
@@ -100,6 +100,7 @@ struct MANGOS_DLL_DECL boss_malganisAI : public ScriptedAI
 		MindBlast_Timer = 11300;
 		Sleep_Timer = 17300;
 		Vampire_Timer = 30000;
+        Arthas = NULL;
 
 		if(Finish == true) {}
 		else
@@ -109,6 +110,15 @@ struct MANGOS_DLL_DECL boss_malganisAI : public ScriptedAI
 		{
 			m_creature->SetDeadByDefault(true);
 		}
+
+        if (m_pInstance)
+        {
+            GameObject* pGate = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(DATA_GO_MAL_GATE2));
+            if (pGate)
+            {
+                pGate->SetGoState(GO_STATE_ACTIVE);
+            }
+        }
 	}
 
 	void Aggro(Unit* who)
@@ -155,7 +165,7 @@ struct MANGOS_DLL_DECL boss_malganisAI : public ScriptedAI
 			if (Swamp_Timer < diff)
 			{
 				if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-					DoCast(target, m_bIsHeroic ? SPELL_SWAMP_H : SPELL_SWAMP_N);
+					DoCast(target, !m_bIsRegularMode ? SPELL_SWAMP_H : SPELL_SWAMP_N);
 
 				Swamp_Timer = 7300;
 			}
@@ -165,7 +175,7 @@ struct MANGOS_DLL_DECL boss_malganisAI : public ScriptedAI
 			if (MindBlast_Timer < diff)
 			{
 				if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-					DoCast(target, m_bIsHeroic ? SPELL_MIND_BLAST_H : SPELL_MIND_BLAST_N);
+					DoCast(target, !m_bIsRegularMode ? SPELL_MIND_BLAST_H : SPELL_MIND_BLAST_N);
 
 				MindBlast_Timer = 11300;
 			}
@@ -224,7 +234,11 @@ struct MANGOS_DLL_DECL boss_malganisAI : public ScriptedAI
                     for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                     {
 						if (Player* pPlayer = itr->getSource()) 
+                        {
+                            pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET,58630);
+                            pPlayer->KilledMonsterCredit(31006, m_creature->GetGUID());
                             pPlayer->KilledMonsterCredit(NPC_MALGANIS, m_creature->GetGUID());
+                        }
                     }
                 }
 				Finish = true;
@@ -303,12 +317,16 @@ struct MANGOS_DLL_DECL boss_malganisAI : public ScriptedAI
                     DoScriptText(SAY_ARTHAS_OUTRO03, Arthas);
                     if (m_pInstance)
                     {
-						GameObject* pChest = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(DATA_GO_MAL_CHEST));
+						GameObject* pChest = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(DATA_GO_MAL_CHEST_N));
 						// this is the npc at who the players can turn in the quest
 						Arthas->SummonCreature(30997,2296.665f,1502.362f,128.362f,4.961f,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,900000);
 						// those here gonna lock out the instance for the cd time
 						m_pInstance->SetData(TYPE_ARTHAS_EVENT, DONE);
 						m_pInstance->SetData(TYPE_MALGANIS_EVENT, DONE);
+                        GameObject* pGo = GetClosestGameObjectWithEntry(m_creature, m_bIsRegularMode?190663:193597,200.0f);
+
+                        if (pGo)
+                            m_pInstance->DoRespawnGameObject(pGo->GetGUID(),604800);
                     }
                     ++Step;
                     Steptim =11000;
