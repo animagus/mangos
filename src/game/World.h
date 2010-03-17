@@ -223,18 +223,6 @@ enum WorldConfigs
     CONFIG_TIMERBAR_BREATH_MAX,
     CONFIG_TIMERBAR_FIRE_GMLEVEL,
     CONFIG_TIMERBAR_FIRE_MAX,
-
-    // Randy // antispeedhack
-    CONFIG_ANTICHEAT_SPEED_CHECK_ENABLE,
-    CONFIG_ANTICHEAT_SPEED_BAN_ENABLE,
-    CONFIG_ANTICHEAT_BAN_TIME,
-    CONFIG_ANTICHEAT_HIGHLEVEL,
-    CONFIG_ANTICHEAT_HIGHLEVEL_MAXSPEED,
-    CONFIG_ANTICHEAT_LOWLEVEL_MAXSPEED,
-    CONFIG_ANTICHEAT_MIN_CHECK_LEVEL,
-    CONFIG_ANTICHEAT_GMICON_BAN_ENABLE,
-    // ---
-
     CONFIG_VALUE_COUNT
 };
 
@@ -504,7 +492,6 @@ class World
 
         void KickAll();
         void KickAllLess(AccountTypes sec);
-        BanReturn BanAccount(BanMode mode, std::string nameOrIP, uint32 duration, std::string reason, std::string author);
         BanReturn BanAccount(BanMode mode, std::string nameOrIP, std::string duration, std::string reason, std::string author);
         bool RemoveBanAccount(BanMode mode, std::string nameOrIP);
 

@@ -249,9 +249,6 @@ void Log::Initialize()
 
     // Char log settings
     m_charLog_Dump = sConfig.GetBoolDefault("CharLogDump", false);
-
-    // Randy // anticheat
-    cheatLogfile = openLogFile("CheatLogFile",NULL,"w");
 }
 
 FILE* Log::openLogFile(char const* configFileName,char const* configTimeStampFlag, char const* mode)
@@ -322,7 +319,6 @@ std::string Log::GetTimestampStr()
     snprintf(buf,20,"%04d-%02d-%02d_%02d-%02d-%02d",aTm->tm_year+1900,aTm->tm_mon+1,aTm->tm_mday,aTm->tm_hour,aTm->tm_min,aTm->tm_sec);
     return std::string(buf);
 }
-
 
 void Log::outTitle( const char * str)
 {
@@ -396,36 +392,6 @@ void Log::outString( const char * str, ... )
         fflush(logfile);
     }
     fflush(stdout);
-}
-
-// Randy // anticheat log
-void Log::outCheat(const char * str, ... )
-{
-    if (!str) return;
-
-    if(m_colored) SetColor(false,m_colors[LogError]);
-    if(m_includeTime) outTime();
-
-    va_list ap;
-
-    va_start(ap, str);
-    vutf8printf(stderr, str, &ap);
-    va_end(ap);
-
-    if(m_colored) ResetColor(false);
-    fprintf( stderr, "\n" );
-
-    if(cheatLogfile)
-    {
-        outTimestamp(cheatLogfile);
-        va_start(ap, str);
-        vfprintf(cheatLogfile, str, ap);
-        va_end(ap);
-        fprintf(cheatLogfile, "\n" );
-        fflush(cheatLogfile);
-    }
-
-    fflush(stderr);
 }
 
 void Log::outError( const char * err, ... )

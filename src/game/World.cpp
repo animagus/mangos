@@ -1009,17 +1009,6 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_TIMERBAR_FIRE_GMLEVEL]    = sConfig.GetIntDefault("TimerBar.Fire.GMLevel", SEC_CONSOLE);
     m_configs[CONFIG_TIMERBAR_FIRE_MAX]        = sConfig.GetIntDefault("TimerBar.Fire.Max", 1);
 
-    // Randy // anticheat config
-    m_configs[CONFIG_ANTICHEAT_SPEED_CHECK_ENABLE] = sConfig.GetBoolDefault("Anticheat.EnableSpeedCheck", false);
-    m_configs[CONFIG_ANTICHEAT_SPEED_BAN_ENABLE] = sConfig.GetBoolDefault("Anticheat.EnableSpeedBan", true);
-    m_configs[CONFIG_ANTICHEAT_BAN_TIME] = sConfig.GetIntDefault("Anticheat.BanTime", 120);
-    m_configs[CONFIG_ANTICHEAT_HIGHLEVEL] = sConfig.GetIntDefault("Anticheat.HighLevels", 60);
-    m_configs[CONFIG_ANTICHEAT_HIGHLEVEL_MAXSPEED] = sConfig.GetIntDefault("Anticheat.HighLevelsMaxSpeed", 20);
-    m_configs[CONFIG_ANTICHEAT_LOWLEVEL_MAXSPEED] = sConfig.GetIntDefault("Anticheat.LowLevelsMaxSpeed", 15);
-    m_configs[CONFIG_ANTICHEAT_MIN_CHECK_LEVEL] = sConfig.GetIntDefault("Anticheat.MinCheckLevel", 1);
-    m_configs[CONFIG_ANTICHEAT_GMICON_BAN_ENABLE] = sConfig.GetBoolDefault("Anticheat.GMIconBan", false);
-    // --
-
     m_VisibleUnitGreyDistance = sConfig.GetFloatDefault("Visibility.Distance.Grey.Unit", 1);
     if(m_VisibleUnitGreyDistance >  MAX_VISIBILITY_DISTANCE)
     {
@@ -1859,20 +1848,16 @@ void World::KickAllLess(AccountTypes sec)
         if(itr->second->GetSecurity() < sec)
             itr->second->KickPlayer();
 }
-BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string duration, std::string reason, std::string author)
-{
-    uint32 duration_secs = TimeStringToSecs(duration);
-    return BanAccount(mode, nameOrIP, duration_secs, reason, author);
-}
 
 /// Ban an account or ban an IP address, duration will be parsed using TimeStringToSecs if it is positive, otherwise permban
-BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, uint32 duration, std::string reason, std::string author)
+BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string duration, std::string reason, std::string author)
 {
     loginDatabase.escape_string(nameOrIP);
     loginDatabase.escape_string(reason);
     std::string safe_author=author;
     loginDatabase.escape_string(safe_author);
-    
+
+    uint32 duration_secs = TimeStringToSecs(duration);
     QueryResult *resultAccounts = NULL;                     //used for kicking
 
     ///- Update the database with ban information
@@ -1881,7 +1866,7 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, uint32 duration,
         case BAN_IP:
             //No SQL injection as strings are escaped
             resultAccounts = loginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'",nameOrIP.c_str());
-            loginDatabase.PExecute("INSERT INTO hosts_banned VALUES(account_id,date_from,date_to,comment,author) ('%s',NOW(),NOW()+%u, '%s', '%s')",nameOrIP.c_str(),duration,reason.c_str(),safe_author.c_str());
+            loginDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+%u,'%s','%s')",nameOrIP.c_str(),duration_secs,safe_author.c_str(),reason.c_str());
             break;
         case BAN_ACCOUNT:
             //No SQL injection as string is escaped
@@ -1912,8 +1897,8 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, uint32 duration,
         if(mode!=BAN_IP)
         {
             //No SQL injection as strings are escaped
-            loginDatabase.PExecute("INSERT INTO accounts_banned(account_id,date_from,date_to,comment,author) VALUES ('%u', NOW(), NOW()+%u, '%s', '%s')",
-                account, duration, reason.c_str(), safe_author.c_str());
+            loginDatabase.PExecute("INSERT INTO account_banned VALUES ('%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, '%s', '%s', '1')",
+                account,duration_secs,safe_author.c_str(),reason.c_str());
         }
 
         if (WorldSession* sess = FindSession(account))

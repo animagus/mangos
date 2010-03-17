@@ -1865,12 +1865,6 @@ class MANGOS_DLL_SPEC Player : public Unit
         void SendResetInstanceFailed(uint32 reason, uint32 MapId);
         void SendResetFailedNotify(uint32 mapid);
 
-        // Randy // antispeedhack
-        int m_top_spd_cnt;
-        float m_top_speed;
-        uint32 m_move_time;
-        uint32 m_prev_move_time;
-
         bool SetPosition(float x, float y, float z, float orientation, bool teleport = false);
         void UpdateUnderwaterState( Map * m, float x, float y, float z );
 
