@@ -5882,39 +5882,6 @@ bool Player::SetPosition(float x, float y, float z, float orientation, bool tele
     const float old_z = GetPositionZ();
     const float old_r = GetOrientation();
 
-
-    // ------------------------------------
-    // Randy // antispeedhack
-    if (sWorld.getConfig(CONFIG_ANTICHEAT_SPEED_CHECK_ENABLE))
-    if (!isGameMaster())
-    {
-        float distance = 758*(abs(old_x - x) + abs(old_y - y)); // *1000 - compensate milliseconds in time interval
-        uint32 mstime = getMSTime();
-        uint32 move_time = getMSTimeDiff(m_prev_move_time, mstime);
-        if (move_time >= 1000)
-        {
-            float speed = distance / move_time;
-            //sLog.outDetail("[%s] SPEED: %5.3f", GetName(), speed);
-            if (speed > m_top_speed) m_top_spd_cnt++;
-            if ((speed == 0.0) || (GetTransport())) m_top_spd_cnt = 0;
-            if (m_top_spd_cnt > 3)
-            {
-                sLog.outCheat("Player [%u][%s][%u] Speedhack detected! Last speed: %5.3f", GetGUIDLow(), GetName(), GetSession()->GetAccountId(), speed);
-                //sLog.outError("Player [%d][%s] Speedhack detected, banned! Last speed: %5.3f", GetGUIDLow(), GetName(), speed); // chancge to special anicheat logfile
-                m_top_speed = 1000; // preventing multiple banning & yelling if any problem with it
-                if (sWorld.getConfig(CONFIG_ANTICHEAT_SPEED_BAN_ENABLE))
-                {
-                    Yell(m_session->GetMangosString(LANG_ANTICHEAT_SPD_BAN), LANG_UNIVERSAL);
-                    sWorld.BanAccount(BAN_CHARACTER, GetName(), "0", "speedhack", "GM-Robot");
-                    return true; // ?
-                }
-            }
-            m_prev_move_time = mstime;
-        }
-    }
-    // ------------------------------------
-
-
     if( teleport || old_x != x || old_y != y || old_z != z || old_r != orientation )
     {
         if (teleport || old_x != x || old_y != y || old_z != z)
@@ -15589,22 +15556,6 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
 
     _LoadDeclinedNames(holder->GetResult(PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES));
     _LoadEquipmentSets(holder->GetResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
-
-    // Randy // antispeedhack
-    if (sWorld.getConfig(CONFIG_ANTICHEAT_SPEED_CHECK_ENABLE))
-    {
-        if (getLevel() > sWorld.getConfig(CONFIG_ANTICHEAT_HIGHLEVEL))
-            m_top_speed = sWorld.getConfig(CONFIG_ANTICHEAT_HIGHLEVEL_MAXSPEED);
-        else
-            if (getLevel() > sWorld.getConfig(CONFIG_ANTICHEAT_MIN_CHECK_LEVEL))
-                m_top_speed = sWorld.getConfig(CONFIG_ANTICHEAT_LOWLEVEL_MAXSPEED);
-            else
-                m_top_speed = 1000; // low lvls not checked (reason is - anti-probing by 1-2 lvls)
-
-        m_top_spd_cnt = 0; // Randy // antispeedhack
-        m_prev_move_time = getMSTime();
-    }
-    // -----
 
     return true;
 }
