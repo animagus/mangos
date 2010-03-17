@@ -100,7 +100,8 @@ void BattleGroundDS::AddPlayer(Player *plr)
 
     m_PlayerScores[plr->GetGUID()] = sc;
 
-    UpdateArenaWorldState();
+    UpdateWorldState(0xe11, GetAlivePlayersCountByTeam(ALLIANCE));
+    UpdateWorldState(0xe10, GetAlivePlayersCountByTeam(HORDE));
 }
 
 void BattleGroundDS::RemovePlayer(Player * /*plr*/, uint64 /*guid*/)
@@ -108,7 +109,8 @@ void BattleGroundDS::RemovePlayer(Player * /*plr*/, uint64 /*guid*/)
     if (GetStatus() == STATUS_WAIT_LEAVE)
         return;
 
-    UpdateArenaWorldState();
+    UpdateWorldState(0xe11, GetAlivePlayersCountByTeam(ALLIANCE));
+    UpdateWorldState(0xe10, GetAlivePlayersCountByTeam(HORDE));
     CheckArenaWinConditions();
 }
 
@@ -125,7 +127,8 @@ void BattleGroundDS::HandleKillPlayer(Player* player, Player* killer)
 
     BattleGround::HandleKillPlayer(player,killer);
 
-    UpdateArenaWorldState();
+    UpdateWorldState(0xe11, GetAlivePlayersCountByTeam(ALLIANCE));
+    UpdateWorldState(0xe10, GetAlivePlayersCountByTeam(HORDE));
     CheckArenaWinConditions();
 }
 
@@ -144,6 +147,7 @@ void BattleGroundDS::HandleAreaTrigger(Player *Source, uint32 Trigger)
             Source->GetSession()->SendAreaTriggerMessage("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);
             break;
     }
+}
 
 bool BattleGroundDS::HandlePlayerUnderMap(Player *player)
 {
@@ -153,8 +157,9 @@ bool BattleGroundDS::HandlePlayerUnderMap(Player *player)
 
 void BattleGroundDS::FillInitialWorldStates(WorldPacket &data)
 {
+    data << uint32(0xe11) << uint32(GetAlivePlayersCountByTeam(ALLIANCE));           // 7
+    data << uint32(0xe10) << uint32(GetAlivePlayersCountByTeam(HORDE));           // 8
     data << uint32(3610) << uint32(1);           // 9
-    UpdateArenaWorldState();
 }
 void BattleGroundDS::Reset()
 {
