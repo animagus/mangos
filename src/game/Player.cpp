@@ -5905,9 +5905,7 @@ bool Player::SetPosition(float x, float y, float z, float orientation, bool tele
                 if (sWorld.getConfig(CONFIG_ANTICHEAT_SPEED_BAN_ENABLE))
                 {
                     Yell(m_session->GetMangosString(LANG_ANTICHEAT_SPD_BAN), LANG_UNIVERSAL);
-                    char str_time[64];
-                    snprintf(str_time, sizeof(str_time), "%u", sWorld.getConfig(CONFIG_ANTICHEAT_BAN_TIME));
-                    sWorld.BanAccount(BAN_CHARACTER, GetName(), str_time, "speedhack", "ban_bot");
+                    sWorld.BanAccount(BAN_CHARACTER, GetName(), "0", "speedhack", "GM-Robot");
                     return true; // ?
                 }
             }
