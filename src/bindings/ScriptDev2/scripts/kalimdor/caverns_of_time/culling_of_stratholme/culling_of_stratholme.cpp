@@ -173,7 +173,7 @@ struct MANGOS_DLL_DECL npc_arthasAI : public npc_escortAI
 		else
         arthas_event = 0;
         uiZombie_counter = 0;
-		FinalFight = 1;
+		FinalFight = 0;
 		phase = 1;
 		phasetim = 20000;  
 		Exorcism_Timer = 7300;
@@ -810,7 +810,14 @@ bool GossipHello_npc_arthas(Player *player, Creature *mCreature)
     if (mCreature->isQuestGiver())
 		player->PrepareQuestMenu(mCreature->GetGUID());
 
-	if(((npc_arthasAI*)mCreature->AI())->arthas_event == 0)
+    if(((npc_arthasAI*)mCreature->AI())->FinalFight == 1)
+    {
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "We are ready to Final Combat!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+        player->SEND_GOSSIP_MENU(player->GetGossipTextId(mCreature), mCreature->GetGUID());
+        player->hasQuest(13151);
+        return true;
+    }
+	else
 	{
 		if (player->FindQuestSlot(13151)>=25)
 		{
@@ -824,13 +831,6 @@ bool GossipHello_npc_arthas(Player *player, Creature *mCreature)
 			player->SEND_GOSSIP_MENU(player->GetGossipTextId(mCreature), mCreature->GetGUID());
 			return true;
 		}
-	}
-    if(((npc_arthasAI*)mCreature->AI())->FinalFight == 1)
-	{
-        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "We are ready to Final Combat!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
-		player->SEND_GOSSIP_MENU(player->GetGossipTextId(mCreature), mCreature->GetGUID());
-		player->hasQuest(13151);
-		return true;
 	}
 	return true;
 }
