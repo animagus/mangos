@@ -642,8 +642,6 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
     }
 
     /* process position-change */
-    if (check_passed)
-    {
     WorldPacket data(opcode, recv_data.size());
     movementInfo.time = getMSTime();
     movementInfo.guid = mover->GetGUID();
@@ -691,7 +689,7 @@ void WorldSession::HandleMovementOpcodes( WorldPacket & recv_data )
         }
         //movement anticheat >>>
         if (plMover->m_anti_AlarmCount > 0){
-            sLog.outError("MA-%s produce %lu anticheat alarms",plMover->GetName(),plMover->m_anti_AlarmCount);
+            sLog.outError("MA-%s produce %d anticheat alarms",plMover->GetName(),plMover->m_anti_AlarmCount);
             plMover->m_anti_AlarmCount = 0;
         }
     // end movement anticheat
