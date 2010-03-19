@@ -1931,7 +1931,7 @@ void Spell::SetTargetMap(uint32 effIndex, uint32 targetMode, UnitList& targetUni
         {
             if (m_spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN && m_spellInfo->SpellIconID == 276) // Stoneclaw Totem absorb has wrong target
             {
-                TagUnitMap.push_back(m_caster);
+                targetUnitMap.push_back(m_caster);
                 break;
             }
 
