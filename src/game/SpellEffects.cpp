@@ -1551,6 +1551,30 @@ void Spell::EffectDummy(uint32 i)
                 {
                     m_caster->CastSpell(m_caster, 42288, true, NULL);
                 }
+                case 42489: // Cast Ooze Zap When Energized
+                {
+                    if (i == 0)
+                    {
+                        if (!unitTarget)
+                            return;
+                        if (unitTarget->isAlive())
+                        {
+                            m_caster->CastSpell(unitTarget, 42483, true, 0, 0, m_caster->GetGUID());
+                        }
+                    }
+                    break;
+                }
+                case 42485: // End of Ooze Channel
+                {
+                    if (!unitTarget || !unitTarget->isAlive())
+                        return;
+                    m_caster->DealDamage(unitTarget, unitTarget->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    if(m_originalCaster && m_originalCaster->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        ((Player*)m_originalCaster)->KilledMonsterCredit(23797, 0);
+                    }
+                    break;
+                }
             }
             break;
         }
