@@ -102,9 +102,7 @@ struct MANGOS_DLL_DECL boss_malganisAI : public ScriptedAI
 		Vampire_Timer = 30000;
         Arthas = NULL;
 
-		if(Finish == true) {}
-		else
-			Finish = false;
+        Finish = false;
 
 		if(m_pInstance->GetData(TYPE_MALGANIS_EVENT) == DONE || m_pInstance->GetData(TYPE_ARTHAS_EVENT) == DONE)
 		{
@@ -121,6 +119,14 @@ struct MANGOS_DLL_DECL boss_malganisAI : public ScriptedAI
         }
 	}
 
+    void AttackStart(Unit* pWho)
+    {
+        if (m_pInstance)
+        {
+            if(m_pInstance->GetData(TYPE_EPOCH_EVENT) != DONE)
+                return;
+        }
+    }
 	void Aggro(Unit* who)
 	{
 		DoScriptText(SAY_MALGANIS_AGGRO, m_creature);
@@ -268,6 +274,8 @@ struct MANGOS_DLL_DECL boss_malganisAI : public ScriptedAI
                     DoScriptText(SAY_MALGANIS_ESCAPE01, Malganis);
                     if (Creature* pArthas = GetClosestCreatureWithEntry(m_creature, NPC_ARTHAS, 150.0f))
 						Arthas = pArthas;
+                    if (!Arthas)
+                        break;
                     Arthas->setFaction(35);
                     Arthas->RemoveAllAuras();
                     Arthas->DeleteThreatList();
