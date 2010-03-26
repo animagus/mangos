@@ -2108,7 +2108,7 @@ struct MANGOS_DLL_DECL npc_fjord_turkeyAI : public ScriptedAI
         if (!killer)
              return;
 
-        if (killer->GetTypeId != TYPEID_PLAYER)
+        if (killer->GetTypeId() != TYPEID_PLAYER)
             return;
 
         killer->CastSpell(killer,25285,true);
