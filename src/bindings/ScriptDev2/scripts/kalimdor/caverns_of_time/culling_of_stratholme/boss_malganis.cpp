@@ -121,10 +121,28 @@ struct MANGOS_DLL_DECL boss_malganisAI : public ScriptedAI
 
     void AttackStart(Unit* pWho)
     {
+        if (!pWho)
+            return;
+
         if (m_pInstance)
         {
-            if(m_pInstance->GetData(TYPE_EPOCH_EVENT) != DONE)
-                return;
+            if (uint64 EpochGUID = m_pInstance->GetData64(DATA_EPOCH))
+                if (Creature* Epoch = m_pInstance->instance->GetCreature(EpochGUID))
+                    if (Epoch->isAlive())
+                        return;
+        }
+
+        if (m_creature->Attack(pWho, true))
+        {
+            m_creature->AddThreat(pWho, 0.0f);
+            m_creature->SetInCombatWith(pWho);
+            pWho->SetInCombatWith(m_creature);
+
+            if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
+                m_creature->GetMotionMaster()->MovementExpired();
+
+            if (IsCombatMovement())
+                m_creature->GetMotionMaster()->MoveChase(pWho);
         }
     }
 	void Aggro(Unit* who)

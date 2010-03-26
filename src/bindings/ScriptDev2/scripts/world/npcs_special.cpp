@@ -2092,6 +2092,34 @@ CreatureAI* GetAI_npc_love_air(Creature* pCreature)
     return new npc_love_airAI(pCreature);
 }
 
+/*######
+## npc_fjord_turkey
+######*/
+
+struct MANGOS_DLL_DECL npc_fjord_turkeyAI : public ScriptedAI
+{
+    npc_fjord_turkeyAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+
+    void Reset() {}
+
+    // only cast spell to achievement
+    void JustDied(Unit *killer)
+    {
+        if (!killer)
+             return;
+
+        if (killer->GetTypeId != TYPEID_PLAYER)
+            return;
+
+        killer->CastSpell(killer,25285,true);
+    }
+};
+
+CreatureAI* GetAI_npc_fjord_turkey(Creature* pCreature)
+{
+    return new npc_fjord_turkeyAI(pCreature);
+}
+
 void AddSC_npcs_special()
 {
     Script* newscript;
@@ -2217,5 +2245,10 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name = "npc_love_air";
     newscript->GetAI = &GetAI_npc_love_air;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_fjord_turkey";
+    newscript->GetAI = &GetAI_npc_fjord_turkey;
     newscript->RegisterSelf();
 }
