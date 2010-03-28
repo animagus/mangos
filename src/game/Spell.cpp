@@ -822,7 +822,8 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
 
     // Calculate hit result
     // Procs can miss, weapon enchants can miss, triggered spells and effects cannot miss (miss already calculated in triggering spell)
-    bool canMiss = (m_triggeredByAuraSpell || !m_IsTriggeredSpell);
+    // exception: Auto Shot
+    bool canMiss = (m_triggeredByAuraSpell || !m_IsTriggeredSpell || m_spellInfo->Id == 75);
     target.missCondition = m_caster->SpellHitResult(pVictim, m_spellInfo, m_canReflect, canMiss);
 
     // Spell have speed - need calculate incoming time

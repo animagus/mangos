@@ -2618,15 +2618,7 @@ bool Unit::isSpellBlocked(Unit *pVictim, SpellEntry const * /*spellProto*/, Weap
 float Unit::MeleeSpellMissChance(Unit *pVictim, WeaponAttackType attType, int32 skillDiff, SpellEntry const *spell)
 {
     // Calculate hit chance (more correct for chance mod)
-    int32 HitChance;
-
-    // PvP - PvE melee chances
-    int32 lchance = pVictim->GetTypeId() == TYPEID_PLAYER ? 5 : 7;
-    int32 leveldif = pVictim->getLevelForTarget(this) - getLevelForTarget(pVictim);
-    if(leveldif < 3)
-        HitChance = 95 - leveldif;
-    else
-        HitChance = 93 - (leveldif - 2) * lchance;
+    int32 HitChance = 95;
 
     // Hit chance depends from victim auras
     if(attType == RANGED_ATTACK)
@@ -2647,8 +2639,23 @@ float Unit::MeleeSpellMissChance(Unit *pVictim, WeaponAttackType attType, int32 
     else
         miss_chance -= m_modMeleeHitChance;
 
-    // bonus from skills is 0.04%
-    miss_chance -= skillDiff * 0.04f;
+    // Modify miss chance from skill difference
+    // Creature/Player attacks Player
+    if (pVictim->GetTypeId() == TYPEID_PLAYER)
+    {
+        if (skillDiff < 0)
+            miss_chance += -skillDiff * 0.04f;
+        else if (skillDiff > 0)
+            miss_chance += -skillDiff * 0.02f;
+    }
+    // Creature/Player attacks Creature
+    else
+    {
+        if(abs(skillDiff) <= 10)
+            miss_chance += -skillDiff * 0.1f;
+        else
+            miss_chance += 1 + (-skillDiff - 10) * 0.4f;
+    }
 
     // Limit miss chance from 0 to 60%
     if (miss_chance < 0.0f)
@@ -2962,24 +2969,13 @@ float Unit::MeleeMissChanceCalc(const Unit *pVictim, WeaponAttackType attType) c
             misschance = 24.0f;
     }
 
-    // PvP : PvE melee misschances per leveldif > 2
-    int32 chance = pVictim->GetTypeId() == TYPEID_PLAYER ? 5 : 7;
-
-    int32 leveldif = int32(pVictim->getLevelForTarget(this)) - int32(getLevelForTarget(pVictim));
-    if(leveldif < 0)
-        leveldif = 0;
-
     // Hit chance from attacker based on ratings and auras
     float m_modHitChance;
     if (attType == RANGED_ATTACK)
         m_modHitChance = m_modRangedHitChance;
     else
         m_modHitChance = m_modMeleeHitChance;
-
-    if(leveldif < 3)
-        misschance += (leveldif - m_modHitChance);
-    else
-        misschance += ((leveldif - 2) * chance - m_modHitChance);
+    misschance -= m_modHitChance;
 
     // Hit chance for victim based on ratings
     if (pVictim->GetTypeId()==TYPEID_PLAYER)
@@ -2996,14 +2992,29 @@ float Unit::MeleeMissChanceCalc(const Unit *pVictim, WeaponAttackType attType) c
     else
         misschance -= pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_MELEE_HIT_CHANCE);
 
-    // Modify miss chance from skill difference ( bonus from skills is 0.04% )
+    // Modify miss chance from skill difference
     int32 skillBonus = int32(GetWeaponSkillValue(attType,pVictim)) - int32(pVictim->GetDefenseSkillValue(this));
-    misschance -= skillBonus * 0.04f;
+    // Creature/Player attacks Player
+    if (pVictim->GetTypeId() == TYPEID_PLAYER)
+    {
+        if (skillBonus < 0)
+            misschance += -skillBonus * 0.04f;
+        else if (skillBonus > 0)
+            misschance += -skillBonus * 0.02f;
+    }
+    // Creature/Player attacks Creature
+    else
+    {
+        if(abs(skillBonus) <= 10)
+            misschance += -skillBonus * 0.1f;
+        else
+            misschance += 1 + (-skillBonus - 10) * 0.4f;
+    }
 
     // Limit miss chance from 0 to 60%
-    if ( misschance < 0.0f)
+    if (misschance < 0.0f)
         return 0.0f;
-    if ( misschance > 60.0f)
+    if (misschance > 60.0f)
         return 60.0f;
 
     return misschance;
