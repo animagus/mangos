@@ -2656,18 +2656,21 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 m_target->CastSpell(m_target,m_modifier.m_amount,true,NULL,this);
             return;
         }
-
-        if (m_removeMode == AURA_REMOVE_BY_DEATH)
+        // Arcane Missiles
+        if (m_spellProto->SpellFamilyName == SPELLFAMILY_MAGE && (m_spellProto->SpellFamilyFlags & UI64LIT(0x0000000000000800)))
         {
-            // Stop caster Arcane Missle chanelling on death
-            if (m_spellProto->SpellFamilyName == SPELLFAMILY_MAGE &&
-                (m_spellProto->SpellFamilyFlags & UI64LIT(0x0000000000000800)))
+            //Remove arcane blast
+            Unit* caster = GetCaster();
+            if (caster)
+                caster->RemoveAurasDueToSpell(36032);
+
+            if (caster && m_removeMode == AURA_REMOVE_BY_DEATH)
             {
-                if (Unit* caster = GetCaster())
-                    caster->InterruptSpell(CURRENT_CHANNELED_SPELL);
+                caster->InterruptSpell(CURRENT_CHANNELED_SPELL);
                 return;
             }
         }
+        
     }
 
     // AT APPLY & REMOVE
