@@ -3063,16 +3063,21 @@ void Aura::HandleAuraMounted(bool apply, bool Real)
 
     if(apply)
     {
+        uint32 team = 0;
+        if (m_target->GetTypeId()==TYPEID_PLAYER)
+            team = ((Player*)m_target)->GetTeam();
+        if (m_spellProto->Id == 16082 && team == HORDE) 
+        {
+            // black horse for horde players
+            m_modifier.m_miscvalue = 8883;
+        }
+
         CreatureInfo const* ci = ObjectMgr::GetCreatureTemplate(m_modifier.m_miscvalue);
         if(!ci)
         {
             sLog.outErrorDb("AuraMounted: `creature_template`='%u' not found in database (only need it modelid)", m_modifier.m_miscvalue);
             return;
         }
-
-        uint32 team = 0;
-        if (m_target->GetTypeId()==TYPEID_PLAYER)
-            team = ((Player*)m_target)->GetTeam();
 
         uint32 display_id = sObjectMgr.ChooseDisplayId(team,ci);
         CreatureModelInfo const *minfo = sObjectMgr.GetCreatureModelRandomGender(display_id);
