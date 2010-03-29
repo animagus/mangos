@@ -3066,7 +3066,7 @@ void Aura::HandleAuraMounted(bool apply, bool Real)
         uint32 team = 0;
         if (m_target->GetTypeId()==TYPEID_PLAYER)
             team = ((Player*)m_target)->GetTeam();
-        if (m_spellProto->Id == 16082 && team == HORDE) 
+        if (m_spellProto->Id == 66090 && team == HORDE) 
         {
             // black horse for horde players
             m_modifier.m_miscvalue = 8883;
