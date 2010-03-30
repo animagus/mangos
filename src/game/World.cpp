@@ -1487,6 +1487,7 @@ void World::SetInitialWorldSettings()
                                                             //Update "uptime" table based on configuration entry in minutes.
     m_timers[WUPDATE_CORPSES].SetInterval(20*MINUTE*IN_MILISECONDS);
                                                             //erase corpses every 20 minutes
+    m_timers[WUPDATE_DELETECHARS].SetInterval(DAY*1000);    // check for chars to delete every day
 
     //to set mailtimer to return mails every day between 4 and 5 am
     //mailtimer is increased when updating auctions
@@ -1516,6 +1517,9 @@ void World::SetInitialWorldSettings()
 
     sLog.outString("Deleting expired bans..." );
     loginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
+
+    // delete old characters from the db
+    Player::DeleteOldChars();
 
     sLog.outString("Calculate next daily quest reset time..." );
     InitDailyQuestResetTime();
@@ -1680,6 +1684,13 @@ void World::Update(uint32 diff)
         uint32 nextGameEvent = sGameEventMgr.Update();
         m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);
         m_timers[WUPDATE_EVENTS].Reset();
+    }
+
+    ///- delete old deleted chars finally once every day
+    if (m_timers[WUPDATE_DELETECHARS].Passed())
+    {
+        m_timers[WUPDATE_DELETECHARS].Reset();
+        Player::DeleteOldChars();
     }
 
     /// </ul>

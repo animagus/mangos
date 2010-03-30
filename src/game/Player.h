@@ -1873,7 +1873,8 @@ class MANGOS_DLL_SPEC Player : public Unit
                                                             // overwrite Object::SendMessageToSetInRange
         void SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool own_team_only);
 
-        static void DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmChars = true);
+        static void DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmChars = true, bool deleteFinally = false);
+        static void DeleteOldChars();
 
         Corpse *GetCorpse() const;
         void SpawnCorpseBones();
