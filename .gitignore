@@ -29,6 +29,7 @@ INSTALL
 #
 # Build generated files
 #
+/objdir
 aclocal.m4
 autom4te.cache
 compile
