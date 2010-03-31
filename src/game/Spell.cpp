@@ -5060,6 +5060,17 @@ SpellCastResult Spell::CheckCast(bool strict)
                     return SPELL_FAILED_BAD_TARGETS;
                 break;
             }
+            case SPELL_EFFECT_LEAP_BACK:
+            {
+                // Disengage
+                if (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000400000000000)))
+                {
+                    if(!m_caster->isInCombat())
+                        return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+                }
+
+                break;
+            }
             default:break;
         }
     }
