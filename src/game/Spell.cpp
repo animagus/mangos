@@ -1784,6 +1784,9 @@ void Spell::SetTargetMap(uint32 effIndex, uint32 targetMode, UnitList& targetUni
             break;
         case TARGET_CASTER_COORDINATES:
         {
+            // Earthen Power - Destination must be totem's coordinates, not the shaman's
+            if (m_spellInfo->Id == 59566)
+                break;
             // Check original caster is GO - set its coordinates as dst cast
             WorldObject *caster = NULL;
             if (IS_GAMEOBJECT_GUID(m_originalCasterGUID))
@@ -1807,6 +1810,9 @@ void Spell::SetTargetMap(uint32 effIndex, uint32 targetMode, UnitList& targetUni
                 case 64904:                                     // Hymn of Hope
                     // target amount stored in parent spell dummy effect but hard to access
                     FillRaidOrPartyManaPriorityTargets(targetUnitMap, m_caster, m_caster, radius, 3, true, false, true);
+                    break;
+                case 59566:                                     // Earthen Power
+                    FillAreaTargets(targetUnitMap, m_targets.m_destX, m_targets.m_destY, radius, PUSH_DEST_CENTER, SPELL_TARGETS_FRIENDLY);
                     break;
                 default:
                     FillAreaTargets(targetUnitMap, m_targets.m_destX, m_targets.m_destY, radius, PUSH_SELF_CENTER, SPELL_TARGETS_FRIENDLY);
