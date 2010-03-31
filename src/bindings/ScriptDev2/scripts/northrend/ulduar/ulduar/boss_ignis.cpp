@@ -159,14 +159,29 @@ struct MANGOS_DLL_DECL mob_iron_constructAI : public ScriptedAI
         else
             brittle = false;
 
+        // проверка баффов
         if (Aura_Check_Timer < diff)
         {
+            // проверяем есть ли бафф жары и его колличество, если есть, раскаляем конструкта.
             if(Aura* aura = m_creature->GetAura(SPELL_HEAT,0))
-                if(aura->GetStackAmount() > 19)
+            {
+                if(aura->GetStackAmount() > 9)
                 {
-                    DoCast(m_creature, SPELL_BRITTLE); //TODO: change
+                    m_creature->RemoveAurasDueToSpell(SPELL_HEAT);
+                    DoCast(m_creature, SPELL_MOLTEN, true);
+                    //brittle = true;
+                }
+            }
+
+            // конструкт раскален, если в воде -> каст стуна.
+            if(Aura* aura = m_creature->GetAura(SPELL_MOLTEN,0))
+                if(m_creature->IsInWater())
+                {
+                    m_creature->RemoveAurasDueToSpell(SPELL_MOLTEN);
+                    DoCast(m_creature, SPELL_BRITTLE, true);
                     brittle = true;
                 }
+
             Aura_Check_Timer = 1000;
         }else Aura_Check_Timer -= diff;
         
@@ -289,6 +304,9 @@ struct MANGOS_DLL_DECL boss_ignisAI : public ScriptedAI
             if (Creature* pTemp = m_creature->SummonCreature(MOB_IRON_CONSTRUCT, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000))
                 if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
                 {
+                    pTemp->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                    pTemp->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    pTemp->setFaction(14);
                     pTemp->AddThreat(pTarget,0.0f);
                     pTemp->AI()->AttackStart(pTarget);
                     m_lIronConstructGUIDList.push_back(pTemp->GetGUID());
@@ -309,6 +327,9 @@ struct MANGOS_DLL_DECL boss_ignisAI : public ScriptedAI
             {
                 pTemp->AddThreat(m_creature->getVictim(),0.0f);
                 pTemp->AI()->AttackStart(m_creature->getVictim());
+
+                if (pTemp->IsInWater())
+                    pTemp->ForcedDespawn();
             }
             Scorch_Timer = 28000;
         }else Scorch_Timer -= diff;
