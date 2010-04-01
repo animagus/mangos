@@ -9182,18 +9182,47 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                     DoneTotalMod *= multiplier;
                 }
             }
-            // Torment the weak affected (Arcane Barrage, Arcane Blast, Frostfire Bolt, Arcane Missiles, Fireball)
-            if ((spellProto->SpellFamilyFlags & UI64LIT(0x0000900020200021)) &&
-                (pVictim->HasAuraType(SPELL_AURA_MOD_DECREASE_SPEED) || pVictim->HasAuraType(SPELL_AURA_MELEE_SLOW)))
+            // Torment the weak affected (Arcane Barrage, Arcane Blast, Frostfire Bolt, Arcane Missiles, Fireball, Frostbolt)
+            if ((spellProto->SpellFamilyFlags & UI64LIT(0x800020200020) && spellProto->SpellFamilyFlags2 == 0x0 ||
+                 spellProto->SpellFamilyFlags & UI64LIT(0x100000000001) && spellProto->SpellFamilyFlags2 == 0x8) &&
+                (pVictim->HasAuraType(SPELL_AURA_MOD_DECREASE_SPEED) || pVictim->HasAuraType(SPELL_AURA_MOD_HASTE)))
             {
-                //Search for Torment the weak dummy aura
-                Unit::AuraList const& ttw = GetAurasByType(SPELL_AURA_DUMMY);
-                for(Unit::AuraList::const_iterator i = ttw.begin(); i != ttw.end(); ++i)
+                bool snared = false, slowed = false;
+                // Search for snares on victim
+                Unit::AuraList const& slowingAuras = pVictim->GetAurasByType(SPELL_AURA_MOD_DECREASE_SPEED);
+                for(Unit::AuraList::const_iterator i = slowingAuras.begin(); i != slowingAuras.end(); ++i)
                 {
-                    if ((*i)->GetSpellProto()->SpellIconID == 3263)
+                    SpellEntry const* aurSpellInfo = (*i)->GetSpellProto();
+                    uint32 aurMechMask = GetAllSpellMechanicMask(aurSpellInfo);
+                    if (aurMechMask & (1 << (MECHANIC_SNARE-1)))
                     {
-                        DoneTotalMod *= ((*i)->GetModifier()->m_amount+100.0f) / 100.0f;
+                        snared = true;
                         break;
+                    }
+                }
+                // Search for attack slowing auras on victim
+                Unit::AuraList const& hasteAuras = pVictim->GetAurasByType(SPELL_AURA_MOD_HASTE);
+                for(Unit::AuraList::const_iterator i = hasteAuras.begin(); i != hasteAuras.end(); ++i)
+                {
+                    SpellEntry const* aurSpellInfo = (*i)->GetSpellProto();
+                    uint32 aurMechMask = GetAllSpellMechanicMask(aurSpellInfo);
+                    if (aurMechMask & (1 << (MECHANIC_PACIFY-1)))
+                    {
+                        slowed = true;
+                        break;
+                    }
+                }
+                if (snared || slowed)
+                {
+                    //Search for Torment the Weak dummy aura
+                    Unit::AuraList const& ttw = GetAurasByType(SPELL_AURA_DUMMY);
+                    for(Unit::AuraList::const_iterator i = ttw.begin(); i != ttw.end(); ++i)
+                    {
+                        if ((*i)->GetSpellProto()->SpellIconID == 3263)
+                        {
+                            DoneTotalMod *= ((*i)->GetModifier()->m_amount+100.0f) / 100.0f;
+                            break;
+                        }
                     }
                 }
             }
