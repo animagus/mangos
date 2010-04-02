@@ -1779,7 +1779,7 @@ void Spell::SetTargetMap(uint32 effIndex, uint32 targetMode, UnitList& targetUni
             else if (m_spellInfo->Id==52759)                // Ancestral Awakening (special target selection)
                 FillRaidOrPartyHealthPriorityTargets(targetUnitMap, m_caster, m_caster, radius, 1, true, false, true);
             else if (m_spellInfo->Id == 54171) // Divine Storm
-                FillRaidOrPartyHealthPriorityTargets(targetUnitMap, m_caster, m_caster, radius, 3, true, false, false);
+                FillRaidOrPartyHealthPriorityTargets(targetUnitMap, m_caster, m_caster, radius, 3, true, false, true);
             else
                 FillRaidOrPartyTargets(targetUnitMap, m_caster, m_caster, radius, true, true, true);
             break;
