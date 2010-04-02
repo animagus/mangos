@@ -1563,6 +1563,10 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     if (spellInfo_1->SpellIconID == 332 && spellInfo_2->SpellIconID == 1800)
                         return true;
 
+                    // Essence of Gossamer and Devotion Aura
+                    if (spellId_1 == 60218 && spellInfo_2->SpellIconID == 291)
+                        return false;
+
                     break;
                 }
                 case SPELLFAMILY_SHAMAN:
