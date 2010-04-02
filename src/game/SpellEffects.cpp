@@ -1578,6 +1578,13 @@ void Spell::EffectDummy(uint32 i)
                     }
                     break;
                 }
+                case 54171: // Divine Storm
+                {
+                    if (!unitTarget || !unitTarget->isAlive() || !m_originalCaster)
+                        return;
+                    m_originalCaster->CastCustomSpell(unitTarget, 54172, &m_currentBasePoints[0], &m_currentBasePoints[1], &m_currentBasePoints[2], true, 0, 0, m_originalCasterGUID);
+                    break;
+                }
             }
             break;
         }

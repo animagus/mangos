@@ -1038,6 +1038,11 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
                 dummy->GetModifier()->m_amount = damageInfo.damage;
 
         caster->DealSpellDamage(&damageInfo, true);
+        if (m_spellInfo->Id == 53385) // Divine Storm
+        {
+            int bp0 = (int)damageInfo.damage*(m_spellInfo->EffectBasePoints[1]/100.0f);
+            caster->CastCustomSpell(NULL, 54171, &bp0, NULL, NULL, true, 0, 0, caster->GetGUID());
+        }
     }
     // Passive spell hits/misses or active spells only misses (only triggers)
     else
@@ -1768,6 +1773,8 @@ void Spell::SetTargetMap(uint32 effIndex, uint32 targetMode, UnitList& targetUni
                 FillRaidOrPartyManaPriorityTargets(targetUnitMap, m_caster, m_caster, radius, 10, true, false, true);
             else if (m_spellInfo->Id==52759)                // Ancestral Awakening (special target selection)
                 FillRaidOrPartyHealthPriorityTargets(targetUnitMap, m_caster, m_caster, radius, 1, true, false, true);
+            else if (m_spellInfo->Id == 54171) // Divine Storm
+                FillRaidOrPartyHealthPriorityTargets(targetUnitMap, m_caster, m_caster, radius, 3, true, false, false);
             else
                 FillRaidOrPartyTargets(targetUnitMap, m_caster, m_caster, radius, true, true, true);
             break;
