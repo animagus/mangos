@@ -1040,7 +1040,12 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         caster->DealSpellDamage(&damageInfo, true);
         if (m_spellInfo->Id == 53385) // Divine Storm
         {
-            int bp0 = (int)damageInfo.damage*(m_spellInfo->EffectBasePoints[1]/100.0f);
+            int32 percentHeal = m_spellInfo->EffectBasePoints[1];
+            if (Aura* glyphOfDivineStorm = caster->GetAura(63220, 0)) // Glyph of Divine Storm
+            {
+                percentHeal += glyphOfDivineStorm->GetModifier()->m_amount;
+            }
+            int32 bp0 = (int)damageInfo.damage*(percentHeal/100.0f);
             caster->CastCustomSpell(NULL, 54171, &bp0, NULL, NULL, true, 0, 0, caster->GetGUID());
         }
     }
