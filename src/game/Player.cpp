@@ -1512,6 +1512,7 @@ bool Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
     *p_data << uint32(fields[13].GetUInt32());              // guild id
 
     uint32 char_flags = 0;
+    uint32 login_flags = 0;
     uint32 playerFlags = fields[14].GetUInt32();
     uint32 atLoginFlags = fields[15].GetUInt32();
     if(playerFlags & PLAYER_FLAGS_HIDE_HELM)
@@ -1532,7 +1533,13 @@ bool Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
 
     *p_data << uint32(char_flags);                          // character flags
     // character customize flags
-    *p_data << uint32(atLoginFlags & AT_LOGIN_CUSTOMIZE ? CHAR_CUSTOMIZE_FLAG_CUSTOMIZE : CHAR_CUSTOMIZE_FLAG_NONE);
+    if (atLoginFlags & AT_LOGIN_CUSTOMIZE)
+        login_flags = CHAR_CUSTOMIZE_FLAG_CUSTOMIZE;
+    else if (atLoginFlags & AT_LOGIN_FACTION_CHANGE)
+        login_flags = CHAR_CUSTOMIZE_FLAG_FACTION;
+    else login_flags = CHAR_CUSTOMIZE_FLAG_NONE;
+
+    *p_data << uint32(login_flags);
     *p_data << uint8(1);                                    // unknown
 
     // Pets info
