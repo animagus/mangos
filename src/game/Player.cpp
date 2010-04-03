@@ -1537,6 +1537,8 @@ bool Player::BuildEnumData( QueryResult * result, WorldPacket * p_data )
         login_flags = CHAR_CUSTOMIZE_FLAG_CUSTOMIZE;
     else if (atLoginFlags & AT_LOGIN_FACTION_CHANGE)
         login_flags = CHAR_CUSTOMIZE_FLAG_FACTION;
+    else if (atLoginFlags & AT_LOGIN_RACE_CHANGE)
+        login_flags = CHAR_CUSTOMIZE_FLAG_RACE;
     else login_flags = CHAR_CUSTOMIZE_FLAG_NONE;
 
     *p_data << uint32(login_flags);

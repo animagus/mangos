@@ -2066,6 +2066,15 @@ bool Map::IsInWater(float x, float y, float pZ) const
                 return true;
         }
 
+        if (const_cast<Map*>(this)->GetId() == 603)
+        {
+            if (x > 502.872f && x < 546.895f && y > 249.250f && y < 304.239f && pZ < 360.0f && pZ > 350.0f)
+                return true;
+
+            if (x > 627.364f && x < 669.549f && y > 249.250f && y < 304.239f && pZ < 360.0f && pZ > 350.0f)
+                return true;
+        }
+
     }
     return false;
 }
