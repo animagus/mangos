@@ -531,8 +531,7 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
             }
             if (!add4 && add3 && add2 && add1)
             {
-                Addcount = 0;
-                do
+                for (int i = 0; i < (m_bIsRegularMode ? 1 : 2); i++)
                 {
                     if (Creature* pTemp = m_creature->SummonCreature(NPC_PUMMELER, XtAddX[3], XtAddY[3], XtAddZ[3], 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
                     {
@@ -541,20 +540,21 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
                             pTemp->AddThreat(pTarget,0.0f);
                             pTemp->AI()->AttackStart(pTarget);
                             m_lPummelerGUIDList.push_back(pTemp->GetGUID());
-                            Addcount++;
                         }
                     }
-                }while(Addcount < m_bIsRegularMode ? 1 : 2);
-                
-                Addcount = 0;
-                do{
-                if (Creature* pTemp = m_creature->SummonCreature(NPC_SCRAPBOT, XtAddX[3], XtAddY[3], XtAddZ[3], 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
-                {
-                    pTemp->AddThreat(m_creature->getVictim(),1000.0f);
-                    pTemp->AI()->AttackStart(m_creature->getVictim());
-                    m_lScrapbotsGUIDList.push_back(pTemp->GetGUID());
-                    Addcount++;
                 }
+
+                Addcount = 0;
+                do
+                {
+                    if (Creature* pTemp = m_creature->SummonCreature(NPC_SCRAPBOT, XtAddX[3], XtAddY[3], XtAddZ[3], 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
+                    {
+                        pTemp->AddThreat(m_creature->getVictim(),1000.0f);
+                        pTemp->AI()->AttackStart(m_creature->getVictim());
+                        m_lScrapbotsGUIDList.push_back(pTemp->GetGUID());
+                        Addcount++;
+                    }
+
                 } while(Addcount<3);
                 Addcount = 0;
                 do
