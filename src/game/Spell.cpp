@@ -1372,6 +1372,10 @@ void Spell::SetTargetMap(uint32 effIndex, uint32 targetMode, UnitList& targetUni
                 case 31347:                                 // Doom TODO: exclude top threat target from target selection
                 case 33711:                                 // Murmur's Touch
                 case 38794:                                 // Murmur's Touch (h)
+                case 63018:                                 // Searing Light
+                case 65121:                                 // Searing Light (h)
+                case 63024:                                 // Gravity Bomb
+                case 64234:                                 // Gravity Bomb (h)
                     unMaxTargets = 1;
                     break;
                 case 28542:                                 // Life Drain

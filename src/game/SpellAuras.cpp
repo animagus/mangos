@@ -2260,8 +2260,14 @@ void Aura::TriggerSpell()
                 target->CastSpell(target, trigger_spell_id, true, NULL, this, casterGUID);
                 return;
             // Arcane Breath
+            // Searing Light
+            // Gravity Bomb
             case 56272:
             case 60072:
+            case 63018:
+            case 65121:
+            case 63024:
+            case 64234:
                 target->CastSpell(target, trigger_spell_id, true, NULL, this, target->GetGUID());
                 return;
             // Beacon of Light

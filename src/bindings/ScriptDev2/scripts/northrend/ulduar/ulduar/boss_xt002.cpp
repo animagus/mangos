@@ -395,7 +395,7 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
             add_summon_delay = 5000;
             DoScriptText(SAY_HEART_OPEN, m_creature);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            DoCast(m_creature, SPELL_STUN);
+            DoCast(m_creature, SPELL_STUN, true);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             m_creature->SummonCreature(NPC_HEART, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
         }
@@ -412,7 +412,7 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
             add_summon_delay = 5000;
             DoScriptText(SAY_HEART_OPEN, m_creature);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            DoCast(m_creature, SPELL_STUN);
+            DoCast(m_creature, SPELL_STUN, true);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             m_creature->SummonCreature(NPC_HEART, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
         }
@@ -429,7 +429,7 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
             add_summon_delay = 5000;
             DoScriptText(SAY_HEART_OPEN, m_creature);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            DoCast(m_creature, SPELL_STUN);
+            DoCast(m_creature, SPELL_STUN, true);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             m_creature->SummonCreature(NPC_HEART, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
         }
@@ -531,13 +531,21 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
             }
             if (!add4 && add3 && add2 && add1)
             {
-                if (Creature* pTemp = m_creature->SummonCreature(NPC_PUMMELER, XtAddX[3], XtAddY[3], XtAddZ[3], 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                Addcount = 0;
+                do
                 {
-                    pTemp->AddThreat(pTarget,0.0f);
-                    pTemp->AI()->AttackStart(pTarget);
-                    m_lPummelerGUIDList.push_back(pTemp->GetGUID());
-                }
+                    if (Creature* pTemp = m_creature->SummonCreature(NPC_PUMMELER, XtAddX[3], XtAddY[3], XtAddZ[3], 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
+                    {
+                        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                        {
+                            pTemp->AddThreat(pTarget,0.0f);
+                            pTemp->AI()->AttackStart(pTarget);
+                            m_lPummelerGUIDList.push_back(pTemp->GetGUID());
+                            Addcount++;
+                        }
+                    }
+                }while(Addcount < m_bIsRegularMode ? 1 : 2);
+                
                 Addcount = 0;
                 do{
                 if (Creature* pTemp = m_creature->SummonCreature(NPC_SCRAPBOT, XtAddX[3], XtAddY[3], XtAddZ[3], 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
@@ -546,7 +554,8 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
                     pTemp->AI()->AttackStart(m_creature->getVictim());
                     m_lScrapbotsGUIDList.push_back(pTemp->GetGUID());
                     Addcount++;
-                }} while(Addcount<3);
+                }
+                } while(Addcount<3);
                 Addcount = 0;
                 do
                 {
