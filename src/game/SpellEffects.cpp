@@ -6323,32 +6323,48 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         {
             switch(m_spellInfo->Id)
             {
-                // Summon Ghoul
+                // Raise Dead
                 case 46584:
                 {
-                    // Corpse or dust check
-                    if(((Player*)m_caster)->HasItemCount(37201,1))
+                    if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                        return;
+                    Player* p_caster = (Player*)m_caster;
+
+                    // do nothing if ghoul summon already exsists (in fact not possible, but...)
+                    if (p_caster->FindGuardianWithEntry(m_currentBasePoints[0]+1) || p_caster->GetPet())
                     {
-                        // Look for Master of Ghouls talent dummy spell (52143)
-                        if( m_caster->GetTypeId()==TYPEID_PLAYER && ((Player*)m_caster)->HasSpell(52143) )
-                        {
-                            // Player has talent; cast pet ghoul spell
-                            m_caster->CastSpell(m_caster, 52150, false);
-                            ((Player*)m_caster)->DestroyItemCount(37201,1,true);
-                        }
-                        else
-                        {
-                            // Player has not got talent; cast time limited ghoul spell
-                            m_caster->CastSpell(m_caster, 46585, false);
-                            ((Player*)m_caster)->DestroyItemCount(37201,1,true);
-                        }
+                        p_caster->RemoveSpellCooldown(m_spellInfo->Id, true);
+                        SendCastResult(SPELL_FAILED_ALREADY_HAVE_SUMMON);
+                        finish(false);
+                        return;
                     }
+
+                    // check if "Glyph of Raise Dead" ,corpse- or "Corpse Dust" is available
+                    bool canCast = p_caster->CanNoReagentCast(m_spellInfo) || FindCorpseUsing<MaNGOS::RaiseDeadObjectCheck>();
+                    if (!canCast && p_caster->HasItemCount(37201,1))
+                    {
+                        p_caster->DestroyItemCount(37201, 1, true);
+                        canCast = true;
+                    }
+
+                    // remove spellcooldown if can't cast and send result
+                    if (!canCast)
+                    {
+                        p_caster->RemoveSpellCooldown(m_spellInfo->Id, true);
+                        SendCastResult(SPELL_FAILED_REAGENTS);
+                        finish(false);
+                        return;
+                    }
+
+                    // check for "Master of Ghouls", id's stored in basepoints
+                    if (p_caster->HasAura(52143))
+                        p_caster->CastSpell(m_caster,m_currentBasePoints[2]+1,true);
                     else
-                        m_caster->CastStop();
-                        break;
-                    }
-                // Pestilence
-                case 50842:
+                        p_caster->CastSpell(m_caster,m_currentBasePoints[1]+1,true);
+
+                    break;
+                }
+                case 50842:                                 // Pestilence
                 {
                     if(!unitTarget)
                         return;
