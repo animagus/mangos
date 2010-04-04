@@ -338,7 +338,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleAuraModAttackPowerOfArmor,                 //285 SPELL_AURA_MOD_ATTACK_POWER_OF_ARMOR  implemented in Player::UpdateAttackPowerAndDamage
     &Aura::HandleNoImmediateEffect,                         //286 SPELL_AURA_ABILITY_PERIODIC_CRIT      implemented in Aura::IsCritFromAbilityAura called from Aura::PeriodicTick
     &Aura::HandleNoImmediateEffect,                         //287 SPELL_AURA_DEFLECT_SPELLS             implemented in Unit::MagicSpellHitResult and Unit::MeleeSpellHitResult
-    &Aura::HandleNULL,                                      //288 increase parry/deflect, prevent attack (single spell used 67801)
+    &Aura::HandleNoImmediateEffect,                         //288 SPELL_AURA_DEFLECT_RANGED_HIT
     &Aura::HandleUnused,                                    //289 unused (3.2.2a)
     &Aura::HandleAuraModAllCritChance,                      //290 SPELL_AURA_MOD_ALL_CRIT_CHANCE
     &Aura::HandleNoImmediateEffect,                         //291 SPELL_AURA_MOD_QUEST_XP_PCT           implemented in Player::GiveXP
@@ -760,9 +760,8 @@ void AreaAura::Update(uint32 diff)
                     MaNGOS::UnitListSearcher<MaNGOS::AnyFriendlyUnitInObjectRangeCheck> searcher(caster,targets, u_check);
                     TypeContainerVisitor<MaNGOS::UnitListSearcher<MaNGOS::AnyFriendlyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
                     TypeContainerVisitor<MaNGOS::UnitListSearcher<MaNGOS::AnyFriendlyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
-                    CellLock<GridReadGuard> cell_lock(cell, p);
-                    cell_lock->Visit(cell_lock, world_unit_searcher, *caster->GetMap(), *caster, m_radius);
-                    cell_lock->Visit(cell_lock, grid_unit_searcher, *caster->GetMap(), *caster, m_radius);
+                    cell.Visit(p, world_unit_searcher, *caster->GetMap(), *caster, m_radius);
+                    cell.Visit(p, grid_unit_searcher, *caster->GetMap(), *caster, m_radius);
                     break;
                 }
                 case AREA_AURA_ENEMY:
@@ -776,9 +775,8 @@ void AreaAura::Update(uint32 diff)
                     MaNGOS::UnitListSearcher<MaNGOS::AnyAoETargetUnitInObjectRangeCheck> searcher(caster, targets, u_check);
                     TypeContainerVisitor<MaNGOS::UnitListSearcher<MaNGOS::AnyAoETargetUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
                     TypeContainerVisitor<MaNGOS::UnitListSearcher<MaNGOS::AnyAoETargetUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
-                    CellLock<GridReadGuard> cell_lock(cell, p);
-                    cell_lock->Visit(cell_lock, world_unit_searcher, *caster->GetMap(), *caster, m_radius);
-                    cell_lock->Visit(cell_lock, grid_unit_searcher, *caster->GetMap(), *caster, m_radius);
+                    cell.Visit(p, world_unit_searcher, *caster->GetMap(), *caster, m_radius);
+                    cell.Visit(p, grid_unit_searcher, *caster->GetMap(), *caster, m_radius);
                     break;
                 }
                 case AREA_AURA_OWNER:
@@ -7915,10 +7913,8 @@ void Aura::PeriodicDummyTick()
                         TypeContainerVisitor<MaNGOS::UnitListSearcher<MaNGOS::AnyUnfriendlyVisibleUnitInObjectRangeCheck>, GridTypeMapContainer > grid_object_checker(checker);
                         TypeContainerVisitor<MaNGOS::UnitListSearcher<MaNGOS::AnyUnfriendlyVisibleUnitInObjectRangeCheck>, WorldTypeMapContainer > world_object_checker(checker);
 
-                        CellLock<GridReadGuard> cell_lock(cell, p);
-
-                        cell_lock->Visit(cell_lock, grid_object_checker,  *m_target->GetMap(), *m_target, radius);
-                        cell_lock->Visit(cell_lock, world_object_checker, *m_target->GetMap(), *m_target, radius);
+                        cell.Visit(p, grid_object_checker,  *m_target->GetMap(), *m_target, radius);
+                        cell.Visit(p, world_object_checker, *m_target->GetMap(), *m_target, radius);
                     }
 
                     if(targets.empty())
