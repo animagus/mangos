@@ -2496,7 +2496,7 @@ void Spell::EffectForceCast(uint32 i)
     }
 
     // small hack, may be it need implement in StackSpell?
-    if (m_spellInfo->Id == 62343 && unitTarget->HasAura(62373))
+    if (m_spellInfo->Id == 62343 && (unitTarget->HasAura(62373) || unitTarget->HasAura(62382)))
         return;
 
     unitTarget->CastSpell(unitTarget, spellInfo, true, NULL, NULL, m_originalCasterGUID);
