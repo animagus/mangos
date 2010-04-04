@@ -349,7 +349,7 @@ bool Unit::canReachWithAttack(Unit *pVictim) const
     return IsWithinDistInMap(pVictim, reach);
 }
 
-void Unit::RemoveSpellsCausingAura(AuraType auraType)
+void Unit::RemoveSpellsCausingAura(AuraType auraType, bool negative, bool positive)
 {
     if (auraType >= TOTAL_AURAS) return;
     AuraList::const_iterator iter, next;
@@ -358,7 +358,7 @@ void Unit::RemoveSpellsCausingAura(AuraType auraType)
         next = iter;
         ++next;
 
-        if (*iter)
+        if (*iter && ((negative && !(*iter)->IsPositive()) || (positive && (*iter)->IsPositive())) )
         {
             RemoveAurasDueToSpell((*iter)->GetId());
             if (!m_modAuras[auraType].empty())
@@ -2724,15 +2724,11 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
     // Ranged attack cannot be parry/dodge only deflect
     if (attType == RANGED_ATTACK)
     {
-        // only if in front
-        if (pVictim->HasInArc(M_PI,this))
-        {
-            int32 deflect_chance = pVictim->GetTotalAuraModifier(SPELL_AURA_DEFLECT_SPELLS)*100;
-            tmp+=deflect_chance;
-            if (roll < tmp)
-                return SPELL_MISS_DEFLECT;
-        }
-        return SPELL_MISS_NONE;
+        int32 deflect_chance = pVictim->GetTotalAuraModifier(SPELL_AURA_DEFLECT_RANGED_HIT)*100;
+        tmp+=deflect_chance;
+        if (roll < tmp)
+            return SPELL_MISS_DODGE;
+         return SPELL_MISS_NONE;
     }
 
     // Check for attack from behind
@@ -2879,14 +2875,10 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellEntry const *spell)
     if (rand < tmp)
         return SPELL_MISS_MISS;
 
-    // cast by caster in front of victim
-    if (pVictim->HasInArc(M_PI,this))
-    {
-        int32 deflect_chance = pVictim->GetTotalAuraModifier(SPELL_AURA_DEFLECT_SPELLS)*100;
-        tmp+=deflect_chance;
-        if (rand < tmp)
-            return SPELL_MISS_DEFLECT;
-    }
+    int32 deflect_chance = pVictim->GetTotalAuraModifier(SPELL_AURA_DEFLECT_SPELLS)*100;
+    tmp+=deflect_chance;
+    if (rand < tmp)
+        return SPELL_MISS_DEFLECT;
 
     return SPELL_MISS_NONE;
 }
@@ -3741,6 +3733,12 @@ bool Unit::AddAura(Aura *Aur)
                         Aur->GetModifier()->m_amount += int32(remainingDamage / Aur->GetAuraMaxTicks());
                     }
                     // can be only single (this check done at _each_ aura add
+                    RemoveAura(i2,AURA_REMOVE_BY_STACK);
+                    break;
+                }
+                // Judgements are always single 
+                else if (GetSpellSpecific(Aur->GetId()) == SPELL_JUDGEMENT)
+                {
                     RemoveAura(i2,AURA_REMOVE_BY_STACK);
                     break;
                 }
@@ -5913,7 +5911,19 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 // Divine Aegis
                 case 2820:
                 {
-                    basepoints0 = damage * triggerAmount/100;
+                    if(!pVictim || !pVictim->isAlive())
+                    return false;
+
+                    // find Divine Aegis on the target and get absorb amount
+                    Aura* DivineAegis = pVictim->GetAura(47753,0);
+                    if (DivineAegis)
+                        basepoints0 = DivineAegis->GetModifier()->m_amount;
+                    basepoints0 += damage * triggerAmount/100;
+
+                    // limit absorb amount
+                    if (basepoints0 > pVictim->getLevel()*125)
+                        basepoints0 = pVictim->getLevel()*125;
+
                     triggered_spell_id = 47753;
                     break;
                 }
@@ -7036,11 +7046,20 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             if (dummySpell->Id == 49028)
             {
                 // 1 dummy aura for dismiss rune blade
-                if (effIndex!=2)
+                if (effIndex != EFFECT_INDEX_1)
                     return false;
-                // TODO: wite script for this "fights on its own, doing the same attacks"
-                // NOTE: Trigger here on every attack and spell cast
-                return false;
+
+                Pet* runeBlade = FindGuardianWithEntry(27893);
+
+                if (runeBlade && pVictim && damage && procSpell)
+                {
+                    int32 procDmg = damage * 0.5;
+                    runeBlade->CastCustomSpell(pVictim, procSpell->Id, &procDmg, NULL, NULL, true, NULL, NULL, runeBlade->GetGUID());
+                    SendSpellNonMeleeDamageLog(pVictim, procSpell->Id, procDmg, SPELL_SCHOOL_MASK_NORMAL, 0, 0, false, 0, false);
+                    break;
+                }
+                else 
+                    return false;
             }
             // Mark of Blood
             if (dummySpell->Id == 49005)
@@ -8829,7 +8848,14 @@ void Unit::SetPet(Pet* pet)
     SetPetGUID(pet ? pet->GetGUID() : 0);
 
     if(pet && GetTypeId() == TYPEID_PLAYER)
+    {
         ((Player*)this)->SendPetGUIDs();
+
+        // set infinite cooldown for summon spell
+        SpellEntry const *spellInfo = sSpellStore.LookupEntry(pet->GetUInt32Value(UNIT_CREATED_BY_SPELL));
+        if (spellInfo && spellInfo->Attributes & SPELL_ATTR_DISABLED_WHILE_ACTIVE)
+            ((Player*)this)->AddSpellAndCategoryCooldowns(spellInfo, 0, NULL,true);
+    }
 
     // FIXME: hack, speed must be set only at follow
     if(pet && GetTypeId()==TYPEID_PLAYER)
@@ -8845,6 +8871,13 @@ void Unit::SetCharm(Unit* pet)
 void Unit::AddGuardian( Pet* pet )
 {
     m_guardianPets.insert(pet->GetGUID());
+
+    if(GetTypeId() == TYPEID_PLAYER)
+    {
+        SpellEntry const *spellInfo = sSpellStore.LookupEntry(pet->GetUInt32Value(UNIT_CREATED_BY_SPELL));
+        if (spellInfo && spellInfo->Attributes & SPELL_ATTR_DISABLED_WHILE_ACTIVE)
+            ((Player*)this)->AddSpellAndCategoryCooldowns(spellInfo, 0, NULL,true);
+    }
 }
 
 void Unit::RemoveGuardian( Pet* pet )
@@ -13113,17 +13146,14 @@ Unit* Unit::SelectNearbyTarget(Unit* except /*= NULL*/) const
 
     std::list<Unit *> targets;
 
-    {
-        MaNGOS::AnyUnfriendlyUnitInObjectRangeCheck u_check(this, this, ATTACK_DISTANCE);
-        MaNGOS::UnitListSearcher<MaNGOS::AnyUnfriendlyUnitInObjectRangeCheck> searcher(this, targets, u_check);
+    MaNGOS::AnyUnfriendlyUnitInObjectRangeCheck u_check(this, this, ATTACK_DISTANCE);
+    MaNGOS::UnitListSearcher<MaNGOS::AnyUnfriendlyUnitInObjectRangeCheck> searcher(this, targets, u_check);
 
-        TypeContainerVisitor<MaNGOS::UnitListSearcher<MaNGOS::AnyUnfriendlyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
-        TypeContainerVisitor<MaNGOS::UnitListSearcher<MaNGOS::AnyUnfriendlyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
+    TypeContainerVisitor<MaNGOS::UnitListSearcher<MaNGOS::AnyUnfriendlyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
+    TypeContainerVisitor<MaNGOS::UnitListSearcher<MaNGOS::AnyUnfriendlyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
 
-        CellLock<GridReadGuard> cell_lock(cell, p);
-        cell_lock->Visit(cell_lock, world_unit_searcher, *GetMap(), *this, ATTACK_DISTANCE);
-        cell_lock->Visit(cell_lock, grid_unit_searcher, *GetMap(), *this, ATTACK_DISTANCE);
-    }
+    cell.Visit(p, world_unit_searcher, *GetMap(), *this, ATTACK_DISTANCE);
+    cell.Visit(p, grid_unit_searcher, *GetMap(), *this, ATTACK_DISTANCE);
 
     // remove current target
     if(except)
