@@ -169,12 +169,16 @@ bool IsNoStackAuraDueToAura(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_
     SpellEntry const *spellInfo_1 = sSpellStore.LookupEntry(spellId_1);
     SpellEntry const *spellInfo_2 = sSpellStore.LookupEntry(spellId_2);
     if(!spellInfo_1 || !spellInfo_2) return false;
-    if(spellInfo_1->Id == spellId_2) return false;
+    if(spellId_1 == spellId_2) return false;
 
     if (spellInfo_1->Effect[effIndex_1] != spellInfo_2->Effect[effIndex_2] ||
         spellInfo_1->EffectItemType[effIndex_1] != spellInfo_2->EffectItemType[effIndex_2] ||
         spellInfo_1->EffectMiscValue[effIndex_1] != spellInfo_2->EffectMiscValue[effIndex_2] ||
         spellInfo_1->EffectApplyAuraName[effIndex_1] != spellInfo_2->EffectApplyAuraName[effIndex_2])
+        return false;
+
+    // Potion of Wild Magic stacks with everything
+    if (spellId_1 == 53909 || spellId_2 == 53909)
         return false;
 
     return true;
@@ -1469,10 +1473,6 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     if( spellInfo_1->SpellIconID == 502 && spellInfo_2->SpellIconID == 502 )
                         return false;
 
-                    // Lightning Speed and Crushing Waves
-                    if( spellInfo_1->SpellIconID == 2010 && spellInfo_2->SpellIconID == 2010 )
-                        return false;
-
                     //Kindred Spirits (allow stack for auras)
                     if (spellInfo_1->SpellIconID == 3559 && spellInfo_2->SpellIconID == 3559)
                         return false;
@@ -1492,6 +1492,14 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
 
                     // Improved Hamstring -> Hamstring (multi-family check)
                     if( (spellInfo_2->SpellFamilyFlags & UI64LIT(0x2)) && spellInfo_1->Id == 23694 )
+                        return false;
+
+                    break;
+                }
+                case SPELLFAMILY_WARLOCK:
+                {
+                    // Shadowflame and Glyph of Shadowflame
+                    if (spellId_1 == 63311 && spellInfo_2->SpellIconID == 3317)
                         return false;
 
                     break;
@@ -1521,15 +1529,6 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
 
                     break;
                 }
-                case SPELLFAMILY_WARLOCK:
-                {
-                    // Shadowflame and Glyph of Shadowflame
-                    if( (spellInfo_1->Id == 63311 && spellInfo_2->SpellIconID == 3317) ||
-                        (spellInfo_2->Id == 63311 && spellInfo_1->SpellIconID == 3317) )
-                        return false;
-
-                    break;
-                }
                 case SPELLFAMILY_HUNTER:
                 {
                     // Concussive Shot and Imp. Concussive Shot (multi-family check)
@@ -1555,17 +1554,13 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     if (spellInfo_1->Id == 67480 && spellInfo_2->Id == 20911)
                         return false;
 
-                    //Blessing of Kings and Blessing of Foggoten King check
-                    if (spellInfo_1->SpellIconID == 332 && spellInfo_2->SpellIconID == 332 && spellInfo_2->SpellVisual[0] == 9187)
-                        return true;
-
-                    //Greater Blessing of Kings and Blessing of Kings/Foggoten King check
-                    if (spellInfo_1->SpellIconID == 332 && spellInfo_2->SpellIconID == 1800)
-                        return true;
-
                     // Essence of Gossamer and Devotion Aura
                     if (spellId_1 == 60218 && spellInfo_2->SpellIconID == 291)
                         return false;
+
+                    // [Greater] Blessing of Kings and Blessing of Forgotten Kings
+                    if (spellId_1 == 69378 && (spellId_2 == 20217 || spellId_2 == 25898))
+                        return true;
 
                     break;
                 }
@@ -1639,6 +1634,33 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                 return false;
 
             break;
+        case SPELLFAMILY_WARRIOR:
+            if( spellInfo_2->SpellFamilyName == SPELLFAMILY_WARRIOR )
+            {
+                // Rend and Deep Wound
+                if( (spellInfo_1->SpellFamilyFlags & UI64LIT(0x20)) && (spellInfo_2->SpellFamilyFlags & UI64LIT(0x1000000000)) ||
+                    (spellInfo_2->SpellFamilyFlags & UI64LIT(0x20)) && (spellInfo_1->SpellFamilyFlags & UI64LIT(0x1000000000)) )
+                    return false;
+
+                // Battle Shout and Rampage
+                if( (spellInfo_1->SpellIconID == 456 && spellInfo_2->SpellIconID == 2006) ||
+                    (spellInfo_2->SpellIconID == 456 && spellInfo_1->SpellIconID == 2006) )
+                    return false;
+            }
+
+            // Hamstring -> Improved Hamstring (multi-family check)
+            if( (spellInfo_1->SpellFamilyFlags & UI64LIT(0x2)) && spellInfo_2->Id == 23694 )
+                return false;
+
+            // Defensive Stance and Scroll of Protection (multi-family check)
+            if( spellInfo_1->Id == 71 && spellInfo_2->SpellIconID == 276 && spellInfo_2->SpellVisual[0] == 196 )
+                return false;
+
+            // Bloodlust and Bloodthirst (multi-family check)
+            if( spellInfo_2->Id == 2825 && spellInfo_1->SpellIconID == 38 && spellInfo_1->SpellVisual[0] == 0 )
+                return false;
+
+            break;
         case SPELLFAMILY_WARLOCK:
             if( spellInfo_2->SpellFamilyName == SPELLFAMILY_WARLOCK )
             {
@@ -1670,33 +1692,9 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
             // Detect Invisibility and Mana Shield (multi-family check)
             if( spellInfo_1->Id == 132 && spellInfo_2->SpellIconID == 209 && spellInfo_2->SpellVisual[0] == 968 )
                 return false;
-            break;
-        case SPELLFAMILY_WARRIOR:
-            if( spellInfo_2->SpellFamilyName == SPELLFAMILY_WARRIOR )
-            {
-                // Rend and Deep Wound
-                if( (spellInfo_1->SpellFamilyFlags & UI64LIT(0x20)) && (spellInfo_2->SpellFamilyFlags & UI64LIT(0x1000000000)) ||
-                    (spellInfo_2->SpellFamilyFlags & UI64LIT(0x20)) && (spellInfo_1->SpellFamilyFlags & UI64LIT(0x1000000000)) )
-                    return false;
-
-                // Battle Shout and Rampage
-                if( (spellInfo_1->SpellIconID == 456 && spellInfo_2->SpellIconID == 2006) ||
-                    (spellInfo_2->SpellIconID == 456 && spellInfo_1->SpellIconID == 2006) )
-                    return false;
-            }
-
-            // Hamstring -> Improved Hamstring (multi-family check)
-            if( (spellInfo_1->SpellFamilyFlags & UI64LIT(0x2)) && spellInfo_2->Id == 23694 )
+            // Shadowflame and Glyph of Shadowflame
+            if (spellInfo_1->SpellIconID == 3317 && spellId_2 == 63311)
                 return false;
-
-            // Defensive Stance and Scroll of Protection (multi-family check)
-            if( spellInfo_1->Id == 71 && spellInfo_2->SpellIconID == 276 && spellInfo_2->SpellVisual[0] == 196 )
-                return false;
-
-            // Bloodlust and Bloodthirst (multi-family check)
-            if( spellInfo_2->Id == 2825 && spellInfo_1->SpellIconID == 38 && spellInfo_1->SpellVisual[0] == 0 )
-                return false;
-
             break;
         case SPELLFAMILY_PRIEST:
             if( spellInfo_2->SpellFamilyName == SPELLFAMILY_PRIEST )
@@ -1887,11 +1885,6 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     return false;
             }
 
-            // Inner Fire and Consecration
-            if(spellInfo_2->SpellFamilyName == SPELLFAMILY_PRIEST)
-                if(spellInfo_1->SpellIconID == 51 && spellInfo_2->SpellIconID == 51)
-                return false;
-
             // Blessing of Sanctuary (multi-family check, some from 16 spell icon spells)
             if (spellInfo_2->Id == 67480 && spellInfo_1->Id == 20911)
                 return false;
@@ -1907,6 +1900,10 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
             // *Seal of Command and Band of Eternal Champion (multi-family check)
             if( spellInfo_1->SpellIconID==561 && spellInfo_1->SpellVisual[0]==7992 && spellId_2 == 35081)
                 return false;
+
+            // [Greater] Blessing of Kings and Blessing of Forgotten Kings
+            if ((spellId_1 == 20217 || spellId_1 == 25898) && spellId_2 == 69378)
+                return true;
             break;
         case SPELLFAMILY_SHAMAN:
             if (spellInfo_2->SpellFamilyName == SPELLFAMILY_GENERIC)
