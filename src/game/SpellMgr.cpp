@@ -1722,6 +1722,11 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     (spellInfo_2->Id == 47585 && spellInfo_1->Id == 60069))
                     return false;
 
+                // Power Word: Shield and Divine Aegis
+                if ((spellInfo_1->SpellIconID == 566 && spellInfo_2->SpellIconID == 2820) ||
+                    (spellInfo_2->SpellIconID == 566 && spellInfo_1->SpellIconID == 2820))
+                    return false;
+
                 // Power Word: Fortitude and Runescroll of Fortitude 
                 if ( (spellInfo_1->SpellIconID == 685 && spellInfo_2->SpellIconID == 2557) ||
                      (spellInfo_2->SpellIconID == 685 && spellInfo_1->SpellIconID == 2557) ||
@@ -1745,10 +1750,6 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     (spellInfo_2->Id == 49868 && spellInfo_1->Id == 71167))
                     return false;
 
-                // Power Word: Shield and Divine Aegis
-                if ((spellInfo_1->SpellIconID == 566 && spellInfo_2->SpellIconID == 2820) ||
-                    (spellInfo_2->SpellIconID == 566 && spellInfo_1->SpellIconID == 2820))
-                    return false;
             }
 
             // Abolish Disease and Infected Wound
