@@ -1582,6 +1582,10 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                 (spellInfo_2->Id == 29306 && spellInfo_1->Id == 552) )
                 return false;
 
+            // Ignite and Molten
+            if (spellInfo_1->Id == 62373 && spellInfo_2->Id == 12654)
+                return false;
+
             break;
         case SPELLFAMILY_MAGE:
             if( spellInfo_2->SpellFamilyName == SPELLFAMILY_MAGE )
@@ -1631,6 +1635,10 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
 
             // Arcane Intellect and Insight
             if( spellInfo_1->SpellIconID == 125 && spellInfo_2->Id == 18820 )
+                return false;
+
+            // Ignite and Molten
+            if (spellInfo_1->Id == 12654 && spellInfo_2->Id == 62373)
                 return false;
 
             break;
@@ -1727,6 +1735,19 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
             {
                 // Inner Fire and Consecration
                 if (spellInfo_1->SpellIconID == 51 && spellInfo_1->SpellVisual[0] == 211 && spellInfo_2->SpellIconID == 51 && spellInfo_2->SpellVisual[0] == 5600)
+                    return false;
+
+                if ((spellInfo_1->Id == 15473 && spellInfo_2->Id == 71167) ||
+                    (spellInfo_2->Id == 15473 && spellInfo_1->Id == 71167))
+                    return false;
+                
+                if ((spellInfo_1->Id == 49868 && spellInfo_2->Id == 71167) ||
+                    (spellInfo_2->Id == 49868 && spellInfo_1->Id == 71167))
+                    return false;
+
+                // Power Word: Shield and Divine Aegis
+                if ((spellInfo_1->SpellIconID == 566 && spellInfo_2->SpellIconID == 2820) ||
+                    (spellInfo_2->SpellIconID == 566 && spellInfo_1->SpellIconID == 2820))
                     return false;
             }
 

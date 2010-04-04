@@ -1254,7 +1254,7 @@ void WorldSession::HandleCharFactionChange(WorldPacket& recv_data)
     uint32 at_loginFlags = fields[0].GetUInt32();
     delete result;
 
-    if (!(at_loginFlags & AT_LOGIN_FACTION_CHANGE))
+    if (!(at_loginFlags & AT_LOGIN_FACTION_CHANGE) && !(at_loginFlags & AT_LOGIN_RACE_CHANGE))
     {
         WorldPacket data(SMSG_CHAR_CUSTOMIZE, 1);
         data << uint8(CHAR_CREATE_ERROR);
@@ -1310,7 +1310,6 @@ void WorldSession::HandleCharFactionChange(WorldPacket& recv_data)
             WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 1);
             data << uint8(CHAR_CREATE_CHARACTER_IN_GUILD);
             SendPacket( &data );
-            delete guild;
             return;
         }
     }

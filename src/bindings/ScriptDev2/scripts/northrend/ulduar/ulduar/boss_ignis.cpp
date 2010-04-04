@@ -208,6 +208,7 @@ struct MANGOS_DLL_DECL boss_ignisAI : public ScriptedAI
 
     ScriptedInstance* m_pInstance;
     bool m_bIsRegularMode;
+    bool m_achievement_time;
 
     std::list<uint64> m_lIronConstructGUIDList;
 
@@ -217,6 +218,7 @@ struct MANGOS_DLL_DECL boss_ignisAI : public ScriptedAI
     uint32 Scorch_Timer;
     uint32 Summon_Timer;
     uint32 PotDmgCount;
+    uint32 m_achievement_t;
 
     uint64 m_uiPotTarget;
 
@@ -231,6 +233,8 @@ struct MANGOS_DLL_DECL boss_ignisAI : public ScriptedAI
         PotDmgCount = 0;
         m_uiPotTarget = 0;
         m_lIronConstructGUIDList.clear();
+        m_achievement_time = true;
+        m_achievement_t = 240000;
     }
 
     void JustDied(Unit* pKiller)
@@ -243,6 +247,23 @@ struct MANGOS_DLL_DECL boss_ignisAI : public ScriptedAI
             for(std::list<uint64>::iterator itr = m_lIronConstructGUIDList.begin(); itr != m_lIronConstructGUIDList.end(); ++itr)
                 if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
                     pTemp->ForcedDespawn();
+        }
+
+        Map::PlayerList const &PlList = m_pInstance->instance->GetPlayers();
+        if (PlList.isEmpty())
+            return;
+        for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+        {
+            if (Player* pPlayer = i->getSource())
+            {
+                if (!m_creature->IsWithinDistInMap(pPlayer,200))
+                    continue;
+
+                if (m_bIsRegularMode && m_achievement_time)
+                    pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,10073);
+                else if (!m_bIsRegularMode && m_achievement_time)
+                    pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,10072);
+            }
         }
     }
 
@@ -333,6 +354,11 @@ struct MANGOS_DLL_DECL boss_ignisAI : public ScriptedAI
             }
             Scorch_Timer = 28000;
         }else Scorch_Timer -= diff;
+
+        if (m_achievement_t < diff)
+        {
+            m_achievement_time = false;
+        }else m_achievement_t -= diff;
         
         DoMeleeAttackIfReady();
     }

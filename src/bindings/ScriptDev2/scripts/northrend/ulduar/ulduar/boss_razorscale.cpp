@@ -339,6 +339,7 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
 
     ScriptedInstance* m_pInstance;
     bool m_bIsRegularMode;
+    bool m_achievement;
 
     uint32 Fireball_Timer;
     uint32 Devouring_Flame_Timer;
@@ -354,6 +355,7 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
     uint32 Ground_Knockback;
     uint32 Timetoground;
     uint32 Stun_Timer;
+    uint32 Counter;
     bool airphase;
     bool grounded;
     bool berserk;
@@ -370,6 +372,8 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
         airphase = false;
         grounded = false;
         berserk = false;
+        m_achievement = true;
+        Counter = 0;
         if (m_pInstance)
             m_pInstance->SetData(TYPE_RAZORSCALE, NOT_STARTED);
     }
@@ -378,6 +382,23 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
     {
         if (m_pInstance)
             m_pInstance->SetData(TYPE_RAZORSCALE, DONE);
+
+        Map::PlayerList const &PlList = m_pInstance->instance->GetPlayers();
+        if (PlList.isEmpty())
+            return;
+        for(Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
+        {
+            if (Player* pPlayer = i->getSource())
+            {
+                if (!m_creature->IsWithinDistInMap(pPlayer,200))
+                    continue;
+
+                if (m_bIsRegularMode && Counter <= 2)
+                    pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,10062);
+                else if (!m_bIsRegularMode && Counter <= 2)
+                    pPlayer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE,m_creature->GetEntry(),1,0,0,10063);
+            }
+        }
     }
 
     void Aggro(Unit* pWho)
@@ -516,6 +537,7 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
             wave1_spawn = 7000;
             wave2_spawn = 9000;
             wave3_spawn = 11000;
+            Counter++;
         }else Grounded_Timer -= diff;
 
         if (airphase && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 50)
