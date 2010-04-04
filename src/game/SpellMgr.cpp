@@ -1742,14 +1742,6 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                 if (spellInfo_1->SpellIconID == 51 && spellInfo_1->SpellVisual[0] == 211 && spellInfo_2->SpellIconID == 51 && spellInfo_2->SpellVisual[0] == 5600)
                     return false;
 
-                if ((spellInfo_1->Id == 15473 && spellInfo_2->Id == 71167) ||
-                    (spellInfo_2->Id == 15473 && spellInfo_1->Id == 71167))
-                    return false;
-                
-                if ((spellInfo_1->Id == 49868 && spellInfo_2->Id == 71167) ||
-                    (spellInfo_2->Id == 49868 && spellInfo_1->Id == 71167))
-                    return false;
-
             }
 
             // Abolish Disease and Infected Wound
