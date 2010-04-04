@@ -101,7 +101,16 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
 		CanTheHundredClub = true;
 		CheckFrostResistTimer = 5000;
         ClearIceBlock();
+    }
 
+    void JustRespawned()
+    {
+        JustReachedHome();
+    }
+
+
+    void JustReachedHome()
+    {
         if (m_pInstance)
             m_pInstance->SetData(ENCOUNT_SAPPHIRON, NOT_STARTED);
     }

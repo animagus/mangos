@@ -75,7 +75,16 @@ struct MANGOS_DLL_DECL boss_razuviousAI : public ScriptedAI
         UnbalancingStrike_Timer = 30000;                    //30 seconds
         DisruptingShout_Timer = 25000;                      //25 seconds
         CommandSound_Timer = 40000;                         //40 seconds
+    }
 
+    void JustRespawned()
+    {
+        JustReachedHome();
+    }
+
+
+    void JustReachedHome()
+    {
         if (m_pInstance)
             m_pInstance->SetData(ENCOUNT_RAZUVIOUS, NOT_STARTED);
     }

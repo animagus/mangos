@@ -81,8 +81,6 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
 
         if (m_pInstance)
         {
-            m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, NOT_STARTED);
-
             if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
@@ -93,6 +91,17 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
         }
+    }
+
+    void JustRespawned()
+    {
+        JustReachedHome();
+    }
+
+    void JustReachedHome()
+    {
+        if (m_pInstance)
+            m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, NOT_STARTED);
     }
 
     void Aggro(Unit *who)
@@ -299,8 +308,6 @@ struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
 
         if (m_pInstance)
         {
-            m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, NOT_STARTED);
-
             if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
@@ -311,6 +318,17 @@ struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
         }
+    }
+
+    void JustRespawned()
+    {
+        JustReachedHome();
+    }
+
+    void JustReachedHome()
+    {
+        if (m_pInstance)
+            m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, NOT_STARTED);
     }
 
     void Aggro(Unit *who)
@@ -467,8 +485,6 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
 
         if (m_pInstance)
         {
-            m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, NOT_STARTED);
-
             if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
@@ -479,6 +495,17 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
         }
+    }
+
+    void JustRespawned()
+    {
+        JustReachedHome();
+    }
+
+    void JustReachedHome()
+    {
+        if (m_pInstance)
+            m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, NOT_STARTED);
     }
 
     void Aggro(Unit *who)
@@ -656,8 +683,6 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
 
         if (m_pInstance)
         {
-            m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, NOT_STARTED);
-
             if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
@@ -668,6 +693,17 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
         }
+    }
+
+    void JustRespawned()
+    {
+        JustReachedHome();
+    }
+
+    void JustReachedHome()
+    {
+        if (m_pInstance)
+            m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, NOT_STARTED);
     }
 
     void Aggro(Unit *who)

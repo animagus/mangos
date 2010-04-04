@@ -46,6 +46,17 @@ EndScriptData */
 //Spell by eye stalks
 #define SPELL_PLAGUECLOUD   29350
 
+// Blizzard Guardians
+#define BLIZZ_GUARDIAN1_X   2847.493652f
+#define BLIZZ_GUARDIAN1_Y   -3684.977783f
+#define BLIZZ_GUARDIAN1_Z   278.358521
+#define BLIZZ_GUARDIAN1_O   3.09f
+
+#define BLIZZ_GUARDIAN2_X   2771.178711f
+#define BLIZZ_GUARDIAN2_Y   -3760.006592f
+#define BLIZZ_GUARDIAN2_Z   273.619781f
+#define BLIZZ_GUARDIAN2_O   1.550458f
+
 struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
 {
     
@@ -53,6 +64,8 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
     {
         m_pInstance = ((ScriptedInstance*)pCreature->GetInstanceData());
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
+        blizzGuard1 = NULL;
+        blizzGuard2 = NULL;
         Reset();
     }
     ScriptedInstance* m_pInstance;
@@ -73,11 +86,10 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
     uint32 diseaseTimer;
     uint32 disruptTimer;
 
+    Creature* blizzGuard1, *blizzGuard2;
+
     void Reset()
     {
-        if(m_pInstance)
-            m_pInstance->SetData(ENCOUNT_HEIGAN, NOT_STARTED);
-
         ach_nodied_10 = true;
         ach_nodied_25 = true;
         m_ach_10ppl = true;
@@ -94,12 +106,33 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
         diseaseTimer=20000;
         disruptTimer=urand(5000, 10000);
     }
+
+    void JustRespawned()
+    {
+        JustReachedHome();
+    }
+
+    void JustReachedHome()
+    {
+        if (m_pInstance)
+            m_pInstance->SetData(ENCOUNT_HEIGAN, NOT_STARTED);
+        if (blizzGuard1)
+            blizzGuard1->ForcedDespawn();
+        if (blizzGuard2)
+            blizzGuard2->ForcedDespawn();
+    }
+
     void JustDied(Unit* who)
     {
         if (!m_pInstance)
             return;
         DoScriptText(SAY_DEATH, m_creature);
         m_pInstance->SetData(ENCOUNT_HEIGAN, DONE);
+
+        if (blizzGuard1)
+            blizzGuard1->ForcedDespawn();
+        if (blizzGuard2)
+            blizzGuard2->ForcedDespawn();
 
         Map::PlayerList const &PlList = m_pInstance->instance->GetPlayers();
         if (PlList.isEmpty())
@@ -161,6 +194,10 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
 
     void Aggro(Unit* who)
     {
+        // Cheaters must die =)
+        blizzGuard1 = m_creature->SummonCreature(5764, BLIZZ_GUARDIAN1_X, BLIZZ_GUARDIAN1_Y, BLIZZ_GUARDIAN1_Z, BLIZZ_GUARDIAN1_O, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 120*IN_MILISECONDS);
+        blizzGuard2 = m_creature->SummonCreature(5764, BLIZZ_GUARDIAN2_X, BLIZZ_GUARDIAN2_Y, BLIZZ_GUARDIAN2_Z, BLIZZ_GUARDIAN2_O, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 120*IN_MILISECONDS);  
+
         if(m_pInstance)
             m_pInstance->SetData(ENCOUNT_HEIGAN, IN_PROGRESS);
         CheckAch();

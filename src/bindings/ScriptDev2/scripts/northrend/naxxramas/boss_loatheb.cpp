@@ -101,6 +101,18 @@ struct MANGOS_DLL_DECL boss_loathebAI : public ScriptedAI
         Summon_Timer = 8000;
 	}
 
+    void JustRespawned()
+    {
+        JustReachedHome();
+    }
+
+
+    void JustReachedHome()
+    {
+        if (m_pInstance)
+            m_pInstance->SetData(ENCOUNT_LOATHEB, NOT_STARTED);
+    }
+
 	void Aggro(Unit *who)
     {
         if(m_pInstance)
