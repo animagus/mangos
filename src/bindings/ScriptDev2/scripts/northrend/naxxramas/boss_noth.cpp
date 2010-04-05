@@ -116,10 +116,20 @@ struct MANGOS_DLL_DECL boss_nothAI : public ScriptedAI
         Wave1_Timer = 10000;
         Creature_Summon = 0;
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
+    }
 
-        if(m_pInstance && m_creature->isAlive())
+    void JustRespawned()
+    {
+        JustReachedHome();
+    }
+
+
+    void JustReachedHome()
+    {
+        if (m_pInstance)
             m_pInstance->SetData(ENCOUNT_NOTH, NOT_STARTED);
     }
+
 
     void Aggro(Unit *who)
     {

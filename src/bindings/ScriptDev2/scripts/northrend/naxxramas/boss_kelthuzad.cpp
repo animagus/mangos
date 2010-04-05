@@ -299,10 +299,20 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
         Phase2 = false;
         Phase3 = false;
         m_creature->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
+    }
 
+    void JustRespawned()
+    {
+        JustReachedHome();
+    }
+
+
+    void JustReachedHome()
+    {
         if (m_pInstance)
             m_pInstance->SetData(ENCOUNT_KELTHUZAD, NOT_STARTED);
     }
+
 
     void KilledUnit()
     {

@@ -125,11 +125,19 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
         if (!CorpseScarabs.empty())
             for(std::list<Creature*>::iterator itr = CorpseScarabs.begin(); itr != CorpseScarabs.end(); ++itr)
                 (*itr)->AddObjectToRemoveList();
+    }
 
-        //if anubrekhan is alive -> this must be first time we entered Archanid Wing -> close all other doors
-        if(pInstance && m_creature->isAlive())
+    void JustRespawned()
+    {
+        JustReachedHome();
+    }
+
+    void JustReachedHome()
+    {
+        if (pInstance)
             pInstance->SetData(ENCOUNT_ANUBREKHAN, NOT_STARTED);
     }
+
 
     void JustDied(Unit*)
     {

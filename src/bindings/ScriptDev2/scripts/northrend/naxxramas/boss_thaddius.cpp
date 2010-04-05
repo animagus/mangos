@@ -389,10 +389,20 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
             if (Creature* pFeugen = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_FEUGEN))))
                 if (!pFeugen->isAlive())
                     pFeugen->Respawn();
-
-            m_pInstance->SetData(ENCOUNT_THADDIUS, NOT_STARTED);
         }
         m_creature->CastSpell(m_creature,28160,true);
+    }
+
+    void JustRespawned()
+    {
+        JustReachedHome();
+    }
+
+
+    void JustReachedHome()
+    {
+        if (m_pInstance)
+            m_pInstance->SetData(ENCOUNT_THADDIUS, NOT_STARTED);
     }
 
     void Aggro(Unit* who)

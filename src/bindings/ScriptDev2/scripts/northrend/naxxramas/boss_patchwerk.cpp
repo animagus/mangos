@@ -61,7 +61,16 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
         Enrage_Timer = 420000;                              //7 minutes 420,000
         Slimebolt_Timer = 450000;                           //7.5 minutes 450,000
         Enraged = false;
+    }
 
+    void JustRespawned()
+    {
+        JustReachedHome();
+    }
+
+
+    void JustReachedHome()
+    {
         if (m_pInstance)
             m_pInstance->SetData(ENCOUNT_PATCHWERK, NOT_STARTED);
     }

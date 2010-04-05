@@ -126,7 +126,15 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
 
         m_uiBerserkTimer = MINUTE*8*IN_MILISECONDS;
         m_lZombieGUIDList.clear();
+    }
 
+    void JustRespawned()
+    {
+        JustReachedHome();
+    }
+
+    void JustReachedHome()
+    {
         if (m_pInstance)
             m_pInstance->SetData(ENCOUNT_GLUTH, NOT_STARTED);
     }

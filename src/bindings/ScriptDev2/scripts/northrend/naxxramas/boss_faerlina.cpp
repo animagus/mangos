@@ -89,9 +89,6 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
         momma_said_25 = true;
         Ach_Timer = 10000;
         m_count_ppl = 0;
-        
-        if(pInstance && m_creature->isAlive())
-			pInstance->SetData(ENCOUNT_FAERLINA, NOT_STARTED);
 
         if (pInstance)
         {
@@ -107,6 +104,17 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
             if (pMinion)
                 pMinion->Respawn();
         }
+    }
+
+    void JustReachedHome()
+    {
+        if (pInstance)
+            pInstance->SetData(ENCOUNT_FAERLINA, NOT_STARTED);
+    }
+
+    void JustRespawned()
+    {
+        JustReachedHome();
     }
 
     void Aggro(Unit *who)

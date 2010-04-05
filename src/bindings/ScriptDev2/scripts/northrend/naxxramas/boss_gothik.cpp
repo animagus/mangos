@@ -163,7 +163,15 @@ struct MANGOS_DLL_DECL boss_gothikAI : public Scripted_NoMovementAI
         Blink_Timer = 30000;
 
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+    }
 
+    void JustRespawned()
+    {
+        JustReachedHome();
+    }
+
+    void JustReachedHome()
+    {
         if (m_pInstance)
             m_pInstance->SetData(ENCOUNT_GOTHIK, NOT_STARTED);
     }

@@ -175,9 +175,18 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         
         for (int i = 0; i < MAX_PLAYERS_WEB_WRAP; i++)
             WWplayers[i] = 0;
+    }
 
-		if(pInstance)
-			m_creature->isDead() ? (pInstance->SetData(ENCOUNT_MAEXXNA, DONE)):(pInstance->SetData(ENCOUNT_MAEXXNA, NOT_STARTED));
+    void JustRespawned()
+    {
+        JustReachedHome();
+    }
+
+
+    void JustReachedHome()
+    {
+        if (pInstance)
+            pInstance->SetData(ENCOUNT_MAEXXNA, NOT_STARTED);
     }
 
     void Aggro(Unit* who)
