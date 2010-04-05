@@ -1361,6 +1361,9 @@ bool GossipHello_npc_rogue_trainer(Player* pPlayer, Creature* pCreature)
     if (pCreature->isCanTrainingAndResetTalentsOf(pPlayer))
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "I wish to unlearn my talents", GOSSIP_SENDER_MAIN, GOSSIP_OPTION_UNLEARNTALENTS);
 
+    if (pPlayer->GetSpecsCount() == 1 && pCreature->isCanTrainingAndResetTalentsOf(pPlayer) && !(pPlayer->getLevel() < 40))
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "I wish to learn Dual Spec", GOSSIP_SENDER_MAIN, GOSSIP_OPTION_LEARNDUALSPEC);
+
     if (pPlayer->getClass() == CLASS_ROGUE && pPlayer->getLevel() >= 24 && !pPlayer->HasItemCount(17126,1) && !pPlayer->GetQuestRewardStatus(6681))
     {
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "<Take the letter>", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
@@ -1385,6 +1388,29 @@ bool GossipSelect_npc_rogue_trainer(Player* pPlayer, Creature* pCreature, uint32
         case GOSSIP_OPTION_UNLEARNTALENTS:
             pPlayer->CLOSE_GOSSIP_MENU();
             pPlayer->SendTalentWipeConfirm(pCreature->GetGUID());
+            break;
+        case GOSSIP_OPTION_LEARNDUALSPEC:
+            if(pPlayer->GetSpecsCount() == 1 && !(pPlayer->getLevel() < 40))
+            {
+                if (pPlayer->GetMoney() < 10000000)
+                {
+                    pPlayer->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, 0, 0, 0);
+                    pPlayer->CLOSE_GOSSIP_MENU();
+                    break;
+                }
+                else
+                {
+                    pPlayer->ModifyMoney(-10000000);
+
+                    // Cast spells that teach dual spec
+                    // Both are also ImplicitTarget self and must be cast by player
+                    pPlayer->CastSpell(pPlayer,63680,true,NULL,NULL,pPlayer->GetGUID());
+                    pPlayer->CastSpell(pPlayer,63624,true,NULL,NULL,pPlayer->GetGUID());
+
+                    // Should show another Gossip text with "Congratulations..."
+                    pPlayer->CLOSE_GOSSIP_MENU();
+                }
+            }
             break;
     }
     return true;
@@ -2120,6 +2146,44 @@ CreatureAI* GetAI_npc_fjord_turkey(Creature* pCreature)
     return new npc_fjord_turkeyAI(pCreature);
 }
 
+/*######
+## npc_spring_rabbit
+######*/
+
+struct MANGOS_DLL_DECL npc_spring_rabbitAI : public ScriptedAI
+{
+    npc_spring_rabbitAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+
+    uint32 Check_timer;
+
+    void Reset()
+    {
+        Check_timer = 5000;
+    }
+
+    
+    void UpdateAI(const uint32 diff)
+    {
+        if (Check_timer <= diff)
+        {
+            if (rand%1)
+            {
+                if (Creature* Rabbit = GetClosestCreatureWithEntry(m_creature,32791,8.0f))
+                {
+                    DoCast(Rabbit,61728);
+                }
+
+            }
+            Check_timer = 5000;
+        }else Check_timer -= diff;
+    }
+};
+
+CreatureAI* GetAI_npc_spring_rabbit(Creature* pCreature)
+{
+    return new npc_spring_rabbitAI(pCreature);
+}
+
 void AddSC_npcs_special()
 {
     Script* newscript;
@@ -2250,5 +2314,10 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name = "npc_fjord_turkey";
     newscript->GetAI = &GetAI_npc_fjord_turkey;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_spring_rabbit";
+    newscript->GetAI = &GetAI_npc_spring_rabbit;
     newscript->RegisterSelf();
 }

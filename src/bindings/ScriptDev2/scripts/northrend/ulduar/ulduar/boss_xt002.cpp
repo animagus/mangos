@@ -50,7 +50,7 @@ enum
     SPELL_EXPOSED_HEART      = 63849,
 
     //XE-321 Boombot
-    SPELL_BOOM               = 38831,            // replacing real spell
+    SPELL_BOOM               = 62834,            // replacing real spell
 
     //XM-024 Pummeller
     SPELL_CLEAVE             = 8374,
