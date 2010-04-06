@@ -6503,10 +6503,10 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     }
 
                     // check for "Master of Ghouls", id's stored in basepoints
-                    if (p_caster->HasAura(52143))
-                        p_caster->CastSpell(m_caster,m_currentBasePoints[2]+1,true);
+                    if (p_caster->HasSpell(52143))
+                        p_caster->CastSpell(m_caster,52150,true);
                     else
-                        p_caster->CastSpell(m_caster,m_currentBasePoints[1]+1,true);
+                        p_caster->CastSpell(m_caster,46585,true);
 
                     break;
                 }
