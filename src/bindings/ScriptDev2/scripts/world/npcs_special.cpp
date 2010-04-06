@@ -2166,7 +2166,7 @@ struct MANGOS_DLL_DECL npc_spring_rabbitAI : public ScriptedAI
     {
         if (Check_timer <= diff)
         {
-            if (rand%1)
+            if (rand()%1)
             {
                 if (Creature* Rabbit = GetClosestCreatureWithEntry(m_creature,32791,8.0f))
                 {
