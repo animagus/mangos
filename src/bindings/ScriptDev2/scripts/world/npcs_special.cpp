@@ -2155,27 +2155,93 @@ struct MANGOS_DLL_DECL npc_spring_rabbitAI : public ScriptedAI
     npc_spring_rabbitAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
 
     uint32 Check_timer;
+    uint32 Unlove_timer;
+    bool isLove;
+
 
     void Reset()
     {
+        Unit *owner = m_creature->GetOwner();
+        if (!owner)
+            return;
+
+        if (owner && !m_creature->hasUnitState(UNIT_STAT_FOLLOW))
+        {
+            m_creature->GetMotionMaster()->Clear(false);
+            m_creature->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+        }
+
         Check_timer = 5000;
+        Unlove_timer = 4000;
+        isLove = false;
     }
 
+    void EnterEvadeMode()
+    {
+        if (m_creature->IsInEvadeMode() || !m_creature->isAlive())
+            return;
+
+        Unit *owner = m_creature->GetCharmerOrOwner();
+
+        m_creature->AttackStop();
+        m_creature->CombatStop(true);
+        if (owner && !m_creature->hasUnitState(UNIT_STAT_FOLLOW))
+        {
+            m_creature->GetMotionMaster()->Clear(false);
+            m_creature->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
+        }
+    }
+
+    void AttackStart(Unit* pWho)
+    {
+        // mini-pet don't attack anything
+        return;
+    }
     
     void UpdateAI(const uint32 diff)
     {
-        if (Check_timer <= diff)
+        if (!isLove)
         {
-            if (rand()%1)
+            if (Check_timer <= diff)
             {
-                if (Creature* Rabbit = GetClosestCreatureWithEntry(m_creature,32791,8.0f))
+                if (rand()%2)
                 {
-                    DoCast(Rabbit,61728);
-                }
+                    std::list<Unit *> targets;
+                    CellPair p(MaNGOS::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
+                    Cell cell(p);
+                    cell.data.Part.reserved = ALL_DISTRICT;
+                    cell.SetNoCreate();
 
-            }
-            Check_timer = 5000;
-        }else Check_timer -= diff;
+                    MaNGOS::AnyFriendlyUnitInObjectRangeCheck u_check(m_creature, m_creature, 8.0f);
+                    MaNGOS::UnitListSearcher<MaNGOS::AnyFriendlyUnitInObjectRangeCheck> searcher(m_creature,targets, u_check);
+                    TypeContainerVisitor<MaNGOS::UnitListSearcher<MaNGOS::AnyFriendlyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
+                    TypeContainerVisitor<MaNGOS::UnitListSearcher<MaNGOS::AnyFriendlyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
+                    cell.Visit(p, world_unit_searcher, *m_creature->GetMap(), *m_creature, 8.0f);
+                    cell.Visit(p, grid_unit_searcher, *m_creature->GetMap(), *m_creature, 8.0f);
+
+                    for(std::list<Unit *>::iterator tIter = targets.begin(); tIter != targets.end(); tIter++)
+                    {
+                        if ((*tIter)->GetTypeId() == TYPEID_UNIT && (*tIter)->GetEntry() == 32791 && (*tIter)->GetGUID() != m_creature->GetGUID())
+                        {
+                            DoCast(*tIter,61728);
+                            if (Unit *owner = m_creature->GetOwner())
+                                owner->CastSpell(owner,61875,true);                            
+                            isLove = true;
+                            break;
+                        }
+                    }
+                }
+                Check_timer = 5000;
+            }else Check_timer -= diff;
+        } else
+        {
+            if (Unlove_timer <= diff)
+            {            
+                m_creature->InterruptNonMeleeSpells(false);
+                isLove = false;
+                Unlove_timer = 4000;
+            } else Unlove_timer -= diff;
+        }
     }
 };
 
