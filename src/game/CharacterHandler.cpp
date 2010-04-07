@@ -1233,6 +1233,7 @@ void WorldSession::HandleCharCustomize(WorldPacket& recv_data)
 void WorldSession::HandleCharFactionChange(WorldPacket& recv_data)
 {
     uint64 guid;
+    bool Faction, Race;
     std::string newname;
 
     recv_data >> guid;
@@ -1261,6 +1262,11 @@ void WorldSession::HandleCharFactionChange(WorldPacket& recv_data)
         SendPacket( &data );
         return;
     }
+
+    if (at_loginFlags & AT_LOGIN_FACTION_CHANGE)
+        Faction = true;
+    else 
+        Race = true;
 
     // prevent character rename to invalid name
     if (!normalizePlayerName(newname))
@@ -1330,6 +1336,10 @@ void WorldSession::HandleCharFactionChange(WorldPacket& recv_data)
         SendPacket( &data );
         return;
     }
+    
+    // remove from arena teams
+    if (Faction)
+        Player::LeaveAllArenaTeams(guid);
 
     CharacterDatabase.escape_string(newname);
     Player::Customize(guid, gender, skin, face, hairStyle, hairColor, facialHair);
