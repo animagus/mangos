@@ -853,6 +853,8 @@ bool ChatHandler::HandleDebugGetValueCommand(const char* args)
         // fill mail
         MailDraft draft(subject, itemTextId);
         Player* receiver = sObjectMgr.GetPlayer(name.c_str());
+        if (!receiver)
+            return;
         uint64 receiver_guid = sObjectMgr.GetPlayerGUIDByName(name);
 
         if(Item* item = Item::CreateItem(41133,1,NULL))
