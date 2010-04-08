@@ -111,6 +111,9 @@ public:
     notDirectGO go_vaccuum_enter_gate;
 
     notDirectGO go_horsemans_door;
+    notDirectGO go_horsemans_portal;
+    notDirectGO go_horsemans_eye_boss;
+
 	notDirectGO go_sapphiron_birth;
     notDirectGO go_kelthuzad_door;
     notDirectGO go_sapphiron_door;
@@ -262,12 +265,14 @@ public:
             case 181233: go_spiderwing_eye_boss.Init(go);        break;
             case 181212: go_spiderwing_eye_ramp.Init(go);        break;
             case 181575: go_spiderwing_portal.Init(go);          break;
+
             case 181200: go_noth_door.Init(go);                  break;
             case 181201: go_noth_exit.Init(go);                  break;
             case 181202: go_heigan_entry.Init(go);               break;
             case 181203: go_heigan_outerdoor.Init(go);           break;
             case 181496: go_heigan_exitgate.Init(go);            break;
             case 181241: go_loatheb_door.Init(go);               break;
+
             case 181231: go_plaguewing_eye_boss.Init(go);        break;
             case 181211: go_plaguewing_eye_ramp.Init(go);        break;
             case 181577: go_plaguewing_portal.Init(go);          break;
@@ -281,6 +286,9 @@ public:
             case 181124: go_vaccuum_enter_gate.Init(go);         break;
             case 181125: go_vaccuum_exit_gate.Init(go);          break;
             case 181119: go_horsemans_door.Init(go);             break;
+            case 181578: go_horsemans_portal.Init(go);           break;
+            case 181230: go_horsemans_eye_boss.Init(go);         break;
+
 			case 181356: go_sapphiron_birth.Init(go);            break;
             case 181228: go_kelthuzad_door.Init(go);             break;
             case 181225: go_sapphiron_door.Init(go);             break;
@@ -530,12 +538,16 @@ public:
                 {
                 case NOT_STARTED:
                     Open(go_horsemans_door);
+                    Close(go_horsemans_eye_boss);
+                    Disable(go_horsemans_portal);
                     break;
                 case IN_PROGRESS:
                     Close(go_horsemans_door);
                     break;
                 case DONE:
                     Open(go_horsemans_door);
+                    Open(go_horsemans_eye_boss);
+                    Enable(go_horsemans_portal);
                     break;
                 }
                 break;

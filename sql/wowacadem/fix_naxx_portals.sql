@@ -1,0 +1,2 @@
+UPDATE `mangos`.`gameobject_template` SET `flags`='0', `data0`='29273', `data10`='0', `data11`='0', `data12`='0' WHERE `entry`='181578' ;
+UPDATE `mangos`.`gameobject_template` SET `flags`='0', `data0`='29273', `data10`='0', `data11`='0', `data12`='0' WHERE `entry`='181577' ;
