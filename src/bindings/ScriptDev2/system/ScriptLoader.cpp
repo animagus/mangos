@@ -334,6 +334,8 @@ extern void AddSC_icecrown();
 extern void AddSC_sholazar_basin();
 extern void AddSC_storm_peaks();
 extern void AddSC_zuldrak();
+extern void AddSC_instance_violet_hold();                   //violet_hold
+extern void AddSC_violet_hold();
 
 //outland
 extern void AddSC_boss_exarch_maladaar();                   //auchindoun, auchenai_crypts
@@ -732,6 +734,8 @@ void AddScripts()
     AddSC_boss_svala();
     AddSC_boss_ymiron();
     AddSC_instance_pinnacle();
+    AddSC_instance_violet_hold();                           //violet_hold
+    AddSC_violet_hold();
 
     AddSC_boss_archavon();
     AddSC_boss_emalon();

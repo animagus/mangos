@@ -397,6 +397,9 @@ scripts/northrend/vault_of_archavon/boss_archavon.cpp \
 scripts/northrend/vault_of_archavon/boss_emalon.cpp \
 scripts/northrend/vault_of_archavon/def_vault_of_archavon.h \
 scripts/northrend/vault_of_archavon/instance_vault_of_archavon.cpp \
+scripts/northrend/violet_hold/instance_violet_hold.cpp \
+scripts/northrend/violet_hold/violet_hold.cpp \
+scripts/northrend/violet_hold/violet_hold.h \
 scripts/outland/auchindoun/auchenai_crypts/boss_exarch_maladaar.cpp \
 scripts/outland/auchindoun/mana_tombs/boss_nexusprince_shaffar.cpp \
 scripts/outland/auchindoun/mana_tombs/boss_pandemonius.cpp \
