@@ -113,6 +113,7 @@ public:
     notDirectGO go_horsemans_door;
     notDirectGO go_horsemans_portal;
     notDirectGO go_horsemans_eye_boss;
+    notDirectGO go_horsemans_eye_ramp;
 
 	notDirectGO go_sapphiron_birth;
     notDirectGO go_kelthuzad_door;
@@ -288,6 +289,7 @@ public:
             case 181119: go_horsemans_door.Init(go);             break;
             case 181578: go_horsemans_portal.Init(go);           break;
             case 181230: go_horsemans_eye_boss.Init(go);         break;
+            case 181210: go_horsemans_eye_ramp.Init(go);         break;
 
 			case 181356: go_sapphiron_birth.Init(go);            break;
             case 181228: go_kelthuzad_door.Init(go);             break;
@@ -539,6 +541,7 @@ public:
                 case NOT_STARTED:
                     Open(go_horsemans_door);
                     Close(go_horsemans_eye_boss);
+                    Close(go_horsemans_eye_ramp);
                     Disable(go_horsemans_portal);
                     break;
                 case IN_PROGRESS:
@@ -547,6 +550,7 @@ public:
                 case DONE:
                     Open(go_horsemans_door);
                     Open(go_horsemans_eye_boss);
+                    Open(go_horsemans_eye_ramp);
                     Enable(go_horsemans_portal);
                     break;
                 }
