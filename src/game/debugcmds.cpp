@@ -830,6 +830,45 @@ bool ChatHandler::HandleDebugSetValueCommand(const char* args)
 
 bool ChatHandler::HandleDebugGetValueCommand(const char* args)
 {
+    MailSender sender(MAIL_NORMAL,m_session ? m_session->GetPlayer()->GetGUIDLow() : 0, MAIL_STATIONERY_GM);
+
+    char* msgSubject = "Chilly the Penguin";
+    char* msgText = "Hello!\nPlease give a warm welcome to your new cool penguin pal!\nI'm so happy you could give this sassy little Spheniscidae a home.\n\n--Breanni";
+    std::string subject = msgSubject;
+    std::string text    = msgText;
+
+    QueryResult *resultDB = CharacterDatabase.Query("SELECT name FROM characters");
+    if (!resultDB)
+    {
+        SendSysMessage(LANG_ACCOUNT_LIST_EMPTY);
+        return true;
+    }
+
+    do
+    {
+        Field *fieldsDB = resultDB->Fetch();
+        std::string name = fieldsDB[0].GetCppString();
+        uint32 itemTextId = !text.empty() ? sObjectMgr.CreateItemText( text ) : 0;
+
+        // fill mail
+        MailDraft draft(subject, itemTextId);
+        Player* receiver = sObjectMgr.GetPlayer(name.c_str());
+        if (!receiver)
+            continue;
+        uint64 receiver_guid = sObjectMgr.GetPlayerGUIDByName(name);
+
+        if(Item* item = Item::CreateItem(41133,1,NULL))
+        {
+            item->SaveToDB();                               // save for prevent lost at next mail load, if send fail then item will deleted
+            draft.AddItem(item);
+        }
+
+        draft.SendMailTo(MailReceiver(receiver,receiver_guid), MailSender(MAIL_CREATURE, 195));
+    }while(resultDB->NextRow());
+
+    delete resultDB;
+    return true;
+
     if(!*args)
         return false;
 

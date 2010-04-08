@@ -889,25 +889,28 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 
             if(Spell* spell = pVictim->m_currentSpells[CURRENT_CHANNELED_SPELL])
             {
-                if (spell->getState() == SPELL_STATE_CASTING)
+                if( damagetype != DOT )
                 {
-                    uint32 channelInterruptFlags = spell->m_spellInfo->ChannelInterruptFlags;
-                    if( channelInterruptFlags & CHANNEL_FLAG_DELAY )
+                    if (spell->getState() == SPELL_STATE_CASTING)
                     {
-                        if(pVictim!=this)                   //don't shorten the duration of channeling if you damage yourself
-                            spell->DelayedChannel();
+                        uint32 channelInterruptFlags = spell->m_spellInfo->ChannelInterruptFlags;
+                        if( channelInterruptFlags & CHANNEL_FLAG_DELAY )
+                        {
+                            if(pVictim!=this)                   //don't shorten the duration of channeling if you damage yourself
+                                spell->DelayedChannel();
+                        }
+                        else if( (channelInterruptFlags & (CHANNEL_FLAG_DAMAGE | CHANNEL_FLAG_DAMAGE2)) )
+                        {
+                            sLog.outDetail("Spell %u canceled at damage!",spell->m_spellInfo->Id);
+                            pVictim->InterruptSpell(CURRENT_CHANNELED_SPELL);
+                        }
                     }
-                    else if( (channelInterruptFlags & (CHANNEL_FLAG_DAMAGE | CHANNEL_FLAG_DAMAGE2)) )
+                    else if (spell->getState() == SPELL_STATE_DELAYED)
+                        // break channeled spell in delayed state on damage
                     {
                         sLog.outDetail("Spell %u canceled at damage!",spell->m_spellInfo->Id);
                         pVictim->InterruptSpell(CURRENT_CHANNELED_SPELL);
                     }
-                }
-                else if (spell->getState() == SPELL_STATE_DELAYED)
-                    // break channeled spell in delayed state on damage
-                {
-                    sLog.outDetail("Spell %u canceled at damage!",spell->m_spellInfo->Id);
-                    pVictim->InterruptSpell(CURRENT_CHANNELED_SPELL);
                 }
             }
         }
@@ -1679,7 +1682,25 @@ uint32 Unit::CalcArmorReducedDamage(Unit* pVictim, const uint32 damage)
 
     // Apply Player CR_ARMOR_PENETRATION rating and percent talents
     if (GetTypeId()==TYPEID_PLAYER)
-        armor *= 1.0f - ((Player*)this)->GetArmorPenetrationPct() / 100.0f;
+    { 
+        // calculate Armor Penetration constant 
+        float targetLevel = (float)pVictim->getLevel(); 
+        float arPenConstant = 400.0f + 85.0f * targetLevel; 
+        if (targetLevel > 59.0f) 
+            arPenConstant += 382.5f * (targetLevel - 59.0f); // 85.0f * 4.5f = 382.5f 
+        // calculate  Armor Penetration cap 
+        float armorReduction = (armor + arPenConstant) / 3.0f; 
+        if (armor < armorReduction) 
+            armorReduction = armor; 
+ 
+        float armorPenetrationCoeff = ((Player*)this)->GetArmorPenetrationPct() / 100.0f; 
+ 
+        if (armorPenetrationCoeff > 1.0f) 
+            armorPenetrationCoeff = 1.0f; 
+ 
+        armorReduction *= armorPenetrationCoeff; 
+        armor -= armorReduction; 
+    }
 
     if (armor < 0.0f)
         armor = 0.0f;
@@ -1871,8 +1892,8 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
                 // Primal Tenacity
                 if (spellProto->SpellIconID == 2253)
                 {
-                    //reduces all damage taken while Stunned
-                    if (unitflag & UNIT_FLAG_STUNNED)
+                    //reduces all damage taken while Stunned in Cat Form
+                    if (pVictim->m_form == FORM_CAT && (unitflag & UNIT_FLAG_STUNNED))
                         RemainingDamage -= RemainingDamage * currentAbsorb / 100;
                     continue;
                 }
@@ -9143,7 +9164,8 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             case 5142: // Increased Lightning Damage
             case 5147: // Improved Consecration / Libram of Resurgence
             case 5148: // Idol of the Shooting Star
-            case 6008: // Increased Lightning Damage / Totem of Hex
+            case 6008: // Increased Lightning Damage
+            case 8627: // Totem of Hex
             {
                 DoneTotal+=(*i)->GetModifier()->m_amount;
                 break;

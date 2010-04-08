@@ -39,11 +39,20 @@ bool Player::UpdateStats(Stats stat)
 
     SetStat(stat, int32(value));
 
-    if(stat == STAT_STAMINA || stat == STAT_INTELLECT)
+
+    // deathknight's ghoul benefit from owner's strength
+    if(stat == STAT_STAMINA || stat == STAT_INTELLECT || stat == STAT_STRENGTH)
     {
         Pet *pet = GetPet();
         if(pet)
+        {
             pet->UpdateStats(stat);
+            if (getClass() == CLASS_DEATH_KNIGHT && pet->getPetType() == SUMMON_PET)
+            {
+                pet->RemoveAllAuras();
+                pet->CastPetAuras(true);
+            }
+        }
     }
 
     switch(stat)
@@ -890,21 +899,28 @@ bool Pet::UpdateStats(Stats stat)
     {
         if(owner)
         {
-            if (getPetType() == HUNTER_PET)
-                value += float(owner->GetStat(stat)) * 0.4725f;
-            else
+            switch (owner->getClass())
             {
-                CreatureInfo const *cinfo = GetCreatureInfo();
-                CreatureFamily petFamily = (CreatureFamily) cinfo->family;
-                switch (petFamily)
+                case CLASS_HUNTER:
+                    value += float(owner->GetStat(stat)) * 0.4725f; break;
+                case CLASS_WARLOCK:
                 {
-                    case CREATURE_FAMILY_FELHUNTER: value += float(owner->GetStat(stat)) * 0.7125f; break;
-                    case CREATURE_FAMILY_VOIDWALKER: value += float(owner->GetStat(stat)) * 0.825f; break;
-                    case CREATURE_FAMILY_FELGUARD: value += float(owner->GetStat(stat)) * 0.825f; break;
-                    case CREATURE_FAMILY_SUCCUBUS: value += float(owner->GetStat(stat)) * 0.6825f; break;
-                    case CREATURE_FAMILY_IMP: value += float(owner->GetStat(stat)) * 0.63f; break;
-                    default: value += float(owner->GetStat(stat)) * 0.3f; break;
+                    CreatureInfo const *cinfo = GetCreatureInfo();
+                    CreatureFamily petFamily = (CreatureFamily) cinfo->family;
+                    switch (petFamily)
+                    {
+                        case CREATURE_FAMILY_FELHUNTER: value += float(owner->GetStat(stat)) * 0.7125f; break;
+                        case CREATURE_FAMILY_VOIDWALKER: value += float(owner->GetStat(stat)) * 0.825f; break;
+                        case CREATURE_FAMILY_FELGUARD: value += float(owner->GetStat(stat)) * 0.825f; break;
+                        case CREATURE_FAMILY_SUCCUBUS: value += float(owner->GetStat(stat)) * 0.6825f; break;
+                        case CREATURE_FAMILY_IMP: value += float(owner->GetStat(stat)) * 0.63f; break;
+                        default: value += float(owner->GetStat(stat)) * 0.3f; break;
+                    }
                 }
+                case CLASS_DEATH_KNIGHT:
+                    value += float(owner->GetStat(stat)) * 0.3928f; break;
+                default:
+                    value += float(owner->GetStat(stat)) * 0.3f;
             }
         }
     }
@@ -1030,6 +1046,12 @@ void Pet::UpdateAttackPowerAndDamage(bool ranged)
         {
             bonusAP = owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.22f;
             SetBonusDamage( int32(owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.1287f));
+        }
+        //ghouls benefit from deathknight's attack power
+        else if(getPetType() == SUMMON_PET && owner->getClass() == CLASS_DEATH_KNIGHT)
+        {
+            bonusAP = owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.22f;
+            SetBonusDamage( int32(owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.1287f));
         }
         //demons benefit from warlocks shadow or fire damage
         else if(getPetType() == SUMMON_PET && owner->getClass() == CLASS_WARLOCK)

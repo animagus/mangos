@@ -356,17 +356,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleNULL,                                      //303 17 spells
     &Aura::HandleNULL,                                      //304 2 spells (alcohol effect?)
     &Aura::HandleAuraModIncreaseSpeed,                      //305 SPELL_AURA_MOD_MINIMUM_SPEED
-    &Aura::HandleNULL,                                      //306 1 spell
-    &Aura::HandleNULL,                                      //307 absorb healing?
-    &Aura::HandleNULL,                                      //308 new aura for hunter traps
-    &Aura::HandleNULL,                                      //309 absorb healing?
-    &Aura::HandleNULL,                                      //310 pet avoidance passive?
-    &Aura::HandleNULL,                                      //311 0 spells in 3.3
-    &Aura::HandleNULL,                                      //312 0 spells in 3.3
-    &Aura::HandleNULL,                                      //313 0 spells in 3.3
-    &Aura::HandleNULL,                                      //314 1 test spell (reduce duration of silince/magic)
-    &Aura::HandleNULL,                                      //315 underwater walking
-    &Aura::HandleNoImmediateEffect,                         //316 SPELL_AURA_APPLY_HASTE_TO_AURA makes haste affect HOT/DOT ticks
+    &Aura::HandleNULL                                       //306 1 spell
 };
 
 static AuraType const frozenAuraTypes[] = { SPELL_AURA_MOD_ROOT, SPELL_AURA_MOD_STUN, SPELL_AURA_NONE };
@@ -452,23 +442,8 @@ m_isRemovedOnShapeLost(true), m_in_use(0), m_deleted(false)
     m_effIndex = eff;
     SetModifier(AuraType(m_spellProto->EffectApplyAuraName[eff]), damage, m_spellProto->EffectAmplitude[eff], m_spellProto->EffectMiscValue[eff], damage);
 
-    bool applyHaste = GetSpellProto()->AttributesEx & (SPELL_ATTR_EX_CHANNELED_1 | SPELL_ATTR_EX_CHANNELED_2);
-    //SPELL_AURA_APPLY_HASTE_TO_AURA implentation
-    if(caster)
-    {
-        Unit::AuraList const& stateAuras = caster->GetAurasByType(SPELL_AURA_APPLY_HASTE_TO_AURA);
-        for(Unit::AuraList::const_iterator j = stateAuras.begin();j != stateAuras.end(); ++j)
-        {
-            if((*j)->isAffectedOnSpell(m_spellProto))
-            {
-                applyHaste = true;
-                break;
-            }
-        }
-    }
-
-    //Apply haste
-    if(applyHaste && m_modifier.periodictime)
+    //Apply haste to channeled spells
+    if(GetSpellProto()->AttributesEx & (SPELL_ATTR_EX_CHANNELED_1 | SPELL_ATTR_EX_CHANNELED_2) && m_modifier.periodictime)
         ApplyHasteToPeriodic();
     // Apply periodic time mod, for channeled spells its in Aura::ApplyHasteToPeriodic()
     else if(modOwner && m_modifier.periodictime)
