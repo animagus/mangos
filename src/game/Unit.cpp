@@ -9291,6 +9291,23 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                 if (pVictim->GetHealth() * 100 / pVictim->GetMaxHealth() <= 25)
                   DoneTotalMod *= 4;
             }
+
+            //Fire and Brimstone
+            if(spellProto->SpellIconID == 3178)
+                {
+                    if (pVictim->GetAura(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_WARLOCK, UI64LIT(0x0000000004), 0, GetGUID()))
+                        {
+                            Unit::AuraList const& fab = GetAurasByType(SPELL_AURA_DUMMY);
+                            for(Unit::AuraList::const_iterator i = fab.begin(); i != fab.end(); ++i)
+                            {
+                                if ((*i)->GetSpellProto()->SpellIconID == 3173)
+                                    {
+                                            DoneTotalMod *=((*i)->GetModifier()->m_amount+100.0f)/100.0f;
+                                    }
+                            };
+                        }
+                }
+
             break;
         }
         case SPELLFAMILY_PRIEST:
