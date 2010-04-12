@@ -143,6 +143,11 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
     {
         if (m_pInstance)
             m_pInstance->SetData(ENCOUNT_GLUTH, DONE);
+
+        for(std::list<uint64>::iterator itr = m_lZombieGUIDList.begin(); itr != m_lZombieGUIDList.end(); ++itr)
+            if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
+                if (pTemp->isAlive())
+                    ((TemporarySummon*) pTemp)->UnSummon();
     }
 
     void Aggro(Unit *who)
