@@ -1892,8 +1892,8 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
                 // Primal Tenacity
                 if (spellProto->SpellIconID == 2253)
                 {
-                    //reduces all damage taken while Stunned
-                    if (unitflag & UNIT_FLAG_STUNNED)
+                    //reduces all damage taken while Stunned in Cat Form
+                    if (pVictim->m_form == FORM_CAT && (unitflag & UNIT_FLAG_STUNNED))
                         RemainingDamage -= RemainingDamage * currentAbsorb / 100;
                     continue;
                 }
@@ -9164,7 +9164,8 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             case 5142: // Increased Lightning Damage
             case 5147: // Improved Consecration / Libram of Resurgence
             case 5148: // Idol of the Shooting Star
-            case 6008: // Increased Lightning Damage / Totem of Hex
+            case 6008: // Increased Lightning Damage
+            case 8627: // Totem of Hex
             {
                 DoneTotal+=(*i)->GetModifier()->m_amount;
                 break;
@@ -9290,6 +9291,23 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
                 if (pVictim->GetHealth() * 100 / pVictim->GetMaxHealth() <= 25)
                   DoneTotalMod *= 4;
             }
+
+            //Fire and Brimstone
+            if(spellProto->SpellIconID == 3178)
+                {
+                    if (pVictim->GetAura(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_WARLOCK, UI64LIT(0x0000000004), 0, GetGUID()))
+                        {
+                            Unit::AuraList const& fab = GetAurasByType(SPELL_AURA_DUMMY);
+                            for(Unit::AuraList::const_iterator i = fab.begin(); i != fab.end(); ++i)
+                            {
+                                if ((*i)->GetSpellProto()->SpellIconID == 3173)
+                                    {
+                                            DoneTotalMod *=((*i)->GetModifier()->m_amount+100.0f)/100.0f;
+                                    }
+                            };
+                        }
+                }
+
             break;
         }
         case SPELLFAMILY_PRIEST:

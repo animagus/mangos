@@ -86,7 +86,7 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
     uint32 diseaseTimer;
     uint32 disruptTimer;
 
-    Creature* blizzGuard1, *blizzGuard2;
+    TemporarySummon *blizzGuard1, *blizzGuard2;
 
     void Reset()
     {
@@ -116,10 +116,18 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
     {
         if (m_pInstance)
             m_pInstance->SetData(ENCOUNT_HEIGAN, NOT_STARTED);
-        if (blizzGuard1)
-            blizzGuard1->ForcedDespawn();
-        if (blizzGuard2)
-            blizzGuard2->ForcedDespawn();
+        despawnBlizzards();
+    }
+
+    void despawnBlizzards()
+    {
+        if (blizzGuard1) {
+            blizzGuard1->UnSummon();
+        }
+
+        if (blizzGuard2) {
+            blizzGuard2->UnSummon();
+        }
     }
 
     void JustDied(Unit* who)
@@ -129,10 +137,7 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
         DoScriptText(SAY_DEATH, m_creature);
         m_pInstance->SetData(ENCOUNT_HEIGAN, DONE);
 
-        if (blizzGuard1)
-            blizzGuard1->ForcedDespawn();
-        if (blizzGuard2)
-            blizzGuard2->ForcedDespawn();
+        despawnBlizzards();
 
         Map::PlayerList const &PlList = m_pInstance->instance->GetPlayers();
         if (PlList.isEmpty())
@@ -195,8 +200,8 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
     void Aggro(Unit* who)
     {
         // Cheaters must die =)
-        blizzGuard1 = m_creature->SummonCreature(5764, BLIZZ_GUARDIAN1_X, BLIZZ_GUARDIAN1_Y, BLIZZ_GUARDIAN1_Z, BLIZZ_GUARDIAN1_O, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 120*IN_MILISECONDS);
-        blizzGuard2 = m_creature->SummonCreature(5764, BLIZZ_GUARDIAN2_X, BLIZZ_GUARDIAN2_Y, BLIZZ_GUARDIAN2_Z, BLIZZ_GUARDIAN2_O, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 120*IN_MILISECONDS);  
+        blizzGuard1 = (TemporarySummon*)m_creature->SummonCreature(5764, BLIZZ_GUARDIAN1_X, BLIZZ_GUARDIAN1_Y, BLIZZ_GUARDIAN1_Z, BLIZZ_GUARDIAN1_O, TEMPSUMMON_MANUAL_DESPAWN, 120*IN_MILISECONDS);
+        blizzGuard2 = (TemporarySummon*)m_creature->SummonCreature(5764, BLIZZ_GUARDIAN2_X, BLIZZ_GUARDIAN2_Y, BLIZZ_GUARDIAN2_Z, BLIZZ_GUARDIAN2_O, TEMPSUMMON_MANUAL_DESPAWN, 120*IN_MILISECONDS);  
 
         if(m_pInstance)
             m_pInstance->SetData(ENCOUNT_HEIGAN, IN_PROGRESS);

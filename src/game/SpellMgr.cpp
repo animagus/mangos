@@ -1505,6 +1505,18 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
 
                     break;
                 }
+                case SPELLFAMILY_PRIEST:
+                {
+                    // Infected Wound and Abolish Disease
+                    if (spellId_1 == 29306 && spellId_2 == 552)
+                        return false;
+
+                    // Runescroll of Fortitude and Power Word: Fortitude / Prayer of Fortitude
+                    if (spellId_1 == 69377 && (spellInfo_2->SpellIconID == 685 || spellInfo_2->SpellIconID == 1669))
+                        return true;
+
+                    break;
+                }
                 case SPELLFAMILY_DRUID:
                 {
                     // Scroll of Stamina and Leader of the Pack (multi-family check)
@@ -1515,9 +1527,8 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     if (spellId_1 == 40216 && spellId_2 == 42016 )
                         return false;
 
-                    // Gift of the Wild and drums of wild
-                    if ((spellInfo_1->SpellIconID == 2435 && spellInfo_2->SpellIconID == 123) ||
-                        (spellInfo_1->SpellIconID == 123 && spellInfo_2->SpellIconID == 2435))
+                    // Drums of the Wild and Mark/Gift of the Wild
+                    if (spellId_1 == 69381 && (spellInfo_2->SpellIconID == 123 || spellInfo_2->SpellIconID == 2435))
                         return true;
 
                     break;
@@ -1576,11 +1587,6 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
             }
             // Dragonmaw Illusion, Blood Elf Illusion, Human Illusion, Illidari Agent Illusion, Scarlet Crusade Disguise
             if(spellInfo_1->SpellIconID == 1691 && spellInfo_2->SpellIconID == 1691)
-                return false;
-
-            // Abolish Disease and Infected Wound
-            if ( (spellInfo_1->Id == 29306 && spellInfo_2->Id == 552) ||
-                (spellInfo_2->Id == 29306 && spellInfo_1->Id == 552) )
                 return false;
 
             // Ignite and Molten
@@ -1727,28 +1733,21 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                 if ((spellInfo_1->SpellIconID == 566 && spellInfo_2->SpellIconID == 2820) ||
                     (spellInfo_2->SpellIconID == 566 && spellInfo_1->SpellIconID == 2820))
                     return false;
-
-                // Power Word: Fortitude and Runescroll of Fortitude 
-                if ( (spellInfo_1->SpellIconID == 685 && spellInfo_2->SpellIconID == 2557) ||
-                     (spellInfo_2->SpellIconID == 685 && spellInfo_1->SpellIconID == 2557) ||
-                     (spellInfo_1->SpellIconID == 1669 && spellInfo_2->SpellIconID == 2557) ||
-                     (spellInfo_2->SpellIconID == 1669 && spellInfo_1->SpellIconID == 2557) ||
-                     (spellInfo_1->SpellIconID == 685 && spellInfo_2->SpellIconID == 1669) ||
-                     (spellInfo_2->SpellIconID == 685 && spellInfo_1->SpellIconID == 1669))
-                     return true;
             }
             else if (spellInfo_2->SpellFamilyName == SPELLFAMILY_PALADIN)
             {
                 // Inner Fire and Consecration
                 if (spellInfo_1->SpellIconID == 51 && spellInfo_1->SpellVisual[0] == 211 && spellInfo_2->SpellIconID == 51 && spellInfo_2->SpellVisual[0] == 5600)
                     return false;
-
             }
 
             // Abolish Disease and Infected Wound
-            if ( (spellInfo_1->Id == 29306 && spellInfo_2->Id == 552) ||
-                (spellInfo_2->Id == 29306 && spellInfo_1->Id == 552) )
+            if (spellId_1 == 552 && spellId_2 == 29306)
                 return false;
+
+            // Power Word: Fortitude / Prayer of Fortitude and Runescroll of Fortitude
+            if ((spellInfo_1->SpellIconID == 685 || spellInfo_1->SpellIconID == 1669) && spellId_2 == 69377)
+                return true;
 
             break;
         case SPELLFAMILY_DRUID:
@@ -1810,6 +1809,10 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
             // Dragonmaw Illusion (multi-family check)
             if (spellId_1 == 42016 && spellId_2 == 40216 )
                 return false;
+
+            // Mark/Gift of the Wild and Drums of the Wild
+            if ((spellInfo_1->SpellIconID == 123 || spellInfo_1->SpellIconID == 2435) && spellId_2 == 69381)
+                return true;
 
             break;
         case SPELLFAMILY_ROGUE:
@@ -3653,6 +3656,13 @@ int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellEntry cons
             // Vampiric Embrace - limit to 60 seconds in PvP (3.1)
             if ((spellproto->SpellFamilyFlags & UI64LIT(0x00000000004)) && spellproto->SpellIconID == 150)
                 return 60000;
+            break;
+        }
+        case SPELLFAMILY_WARLOCK:
+        {
+            // Banish - limit to 6 seconds in PvP (3.1)
+            if (spellproto->SpellFamilyFlags & UI64LIT(0x800000000000000))
+                return 6000;
             break;
         }
         default:
