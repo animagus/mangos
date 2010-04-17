@@ -9293,7 +9293,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             }
 
             //Fire and Brimstone
-            if(spellProto->SpellIconID == 3178)
+            if((spellProto->SpellIconID == 3178) || (spellProto->SpellIconID == 2128 && spellProto->SpellVisual[0] == 7675))
                 {
                     if (pVictim->GetAura(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_WARLOCK, UI64LIT(0x0000000004), 0, GetGUID()))
                         {
