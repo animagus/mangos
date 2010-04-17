@@ -2618,6 +2618,11 @@ void Spell::EffectTriggerSpell(uint32 effIndex)
                 pet->CastSpell(pet, 28305, true);
             return;
         }
+		case 61716:
+		{
+			if (m_caster->GetAreaId() == 537)
+				unitTarget->CastSpell(unitTarget,61718,true);
+		}
     }
 
     // normal case
