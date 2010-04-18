@@ -983,6 +983,12 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     }
     else if (missInfo == SPELL_MISS_IMMUNE)
     {
+        // Mass Dispel
+        if (m_spellInfo->Id == 32592)
+        {
+            unitTarget->RemoveAurasBySpellMechanic(MECHANIC_IMMUNE_SHIELD);
+            return;
+        }
         // Shattering Throw
         if (m_spellInfo->Id == 64382)
         {

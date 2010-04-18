@@ -4196,13 +4196,13 @@ void Unit::RemoveAura(uint32 spellId, uint32 effindex, Aura* except)
     }
 }
 
-void Unit::RemoveAurasBySpellMechanic(uint32 mechMask)
+void Unit::RemoveAurasBySpellMechanic(uint32 mechanic)
 {
     Unit::AuraMap& auras = GetAuras();
     for(Unit::AuraMap::iterator iter = auras.begin(); iter != auras.end();)
     {
         SpellEntry const *spell = iter->second->GetSpellProto();
-        if (spell->Mechanic & mechMask)
+        if (spell->Mechanic == mechanic)
         {
             RemoveAurasDueToSpell(spell->Id);
             if(auras.empty())
