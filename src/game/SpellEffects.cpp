@@ -2622,6 +2622,7 @@ void Spell::EffectTriggerSpell(uint32 effIndex)
 		{
 			if (m_caster->GetAreaId() == 537)
 				unitTarget->CastSpell(unitTarget,61718,true);
+			break;
 		}
     }
 
