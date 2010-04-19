@@ -54,5 +54,6 @@ class BattleGroundDS : public BattleGround
         bool KnockbackCheck;
         uint32 m_uiTeleport;
         uint32 m_uiKnockback;
+		uint32 m_uiFall;
 };
 #endif

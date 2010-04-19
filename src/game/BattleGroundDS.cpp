@@ -80,6 +80,16 @@ void BattleGroundDS::Update(uint32 diff)
             // close the gate
             OpenDoorEvent(BG_EVENT_DOOR);
         }else m_uiTeleport -= diff;
+
+		if (m_uiFall < diff)
+		{
+			for(BattleGroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
+			{
+				Player * plr = sObjectMgr.GetPlayer(itr->first);
+				if (plr->GetPositionZ() < 0.5)
+					plr->TeleportTo(617, plr->GetPositionX(), plr->GetPositionY(), plr->GetPositionZ() + 8, plr->GetOrientation());
+			}
+		}else m_uiFall -= diff;
     }
 }
 
@@ -169,6 +179,7 @@ void BattleGroundDS::Reset()
     TeleportCheck = true;
     m_uiKnockback = 15000;
     KnockbackCheck = true;
+	m_uiFall = 3000;
 }
 
 bool BattleGroundDS::SetupBattleGround()
