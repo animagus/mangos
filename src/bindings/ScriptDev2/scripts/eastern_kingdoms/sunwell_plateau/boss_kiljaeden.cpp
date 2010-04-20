@@ -709,7 +709,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
                 //pSummon->SetMaxHealth(pTarget->GetMaxHealth());
                 //pSummon->SetHealth(pTarget->GetMaxHealth()); // WTF ?
                 pSummon->CastSpell(pTarget, SPELL_SINISTER_REFLECTION_CLASS, true);
-                pSummon->CastSpell(pTarget, SPELL_SINISTER_REFLECTION_CLONE, true);
+                //pSummon->CastSpell(pTarget, SPELL_SINISTER_REFLECTION_CLONE, true);
                 //pSummon->CastSpell(pTarget, SPELL_COPY_WEAPON, true);
                 //pSummon->CastSpell(pTarget, SPELL_COPY_WEAPON2, true);
                 //pSummon->CastSpell(pTarget, SPELL_COPY_OFFHAND, true);
