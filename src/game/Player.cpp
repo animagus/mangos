@@ -3812,11 +3812,12 @@ bool Player::resetTalents(bool no_cost)
     */
 
 
-    if(m_canTitanGrip)
+    if (CanTitanGrip())
     {
-        m_canTitanGrip = false;
+		SetCanTitanGrip(false);
         if(sWorld.getConfig(CONFIG_OFFHAND_CHECK_AT_SPELL_UNLEARN))
-            AutoUnequipOffhandIfNeed();
+			AutoUnequipOffhandIfNeed();
+        RemoveAurasDueToSpellByCancel(49152);
     }
 
     return true;
@@ -6685,6 +6686,9 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
     // check some item equip limitations (in result lost CanTitanGrip at talent reset, for example)
     AutoUnequipOffhandIfNeed();
 
+    if (CanTitanGrip() && IsTwoHandUsedInDualWield() && !HasAura(49152))
+        CastSpell(this, 49152, true);
+
     // recent client version not send leave/join channel packets for built-in local channels
     UpdateLocalChannels( newZone );
 
@@ -8558,8 +8562,8 @@ uint8 Player::FindEquipSlot( ItemPrototype const* proto, uint32 slot, bool swap 
             break;
         case INVTYPE_2HWEAPON:
             slots[0] = EQUIPMENT_SLOT_MAINHAND;
-            if (CanDualWield() && CanTitanGrip() && proto && proto->SubClass != ITEM_SUBCLASS_WEAPON_POLEARM && proto->SubClass != ITEM_SUBCLASS_WEAPON_STAFF)
-                slots[1] = EQUIPMENT_SLOT_OFFHAND;
+			if (CanDualWield() && CanTitanGrip() && IsTitanGripWeapon(proto))
+				slots[1] = EQUIPMENT_SLOT_OFFHAND;
             break;
         case INVTYPE_TABARD:
             slots[0] = EQUIPMENT_SLOT_TABARD;
@@ -11007,6 +11011,13 @@ Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
     if (ItemPrototype const *pProto = pItem->GetProto())
         GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EQUIP_EPIC_ITEM, slot, pProto->ItemLevel);
 
+    // titans grip dmg penalty for 2h weapons
+    if (slot == EQUIPMENT_SLOT_MAINHAND || slot == EQUIPMENT_SLOT_OFFHAND)
+    {
+        if (CanTitanGrip() && IsTwoHandUsedInDualWield() && !HasAura(49152))
+            CastSpell(this, 49152, true);
+    }
+
     return pItem;
 }
 
@@ -11149,6 +11160,13 @@ void Player::RemoveItem( uint8 bag, uint8 slot, bool update )
         pItem->SetSlot( NULL_SLOT );
         if( IsInWorld() && update )
             pItem->SendCreateUpdateToPlayer( this );
+
+        // titans grip dmg penalty for 2h weapons removed if player does not have any
+        if (slot == EQUIPMENT_SLOT_MAINHAND || slot == EQUIPMENT_SLOT_OFFHAND)
+        {
+            if (HasAura(49152) && !IsTwoHandUsedInDualWield())
+                RemoveAurasDueToSpellByCancel(49152);
+        }
     }
 }
 
@@ -19927,7 +19945,7 @@ void Player::AutoUnequipOffhandIfNeed()
         return;
 
     // need unequip offhand for 2h-weapon without TitanGrip (in any from hands)
-    if (CanTitanGrip() || (offItem->GetProto()->InventoryType != INVTYPE_2HWEAPON && !IsTwoHandUsed()))
+    if (CanTitanGrip() || !((IsTwoHandUsedInDualWield() && offItem->GetProto()->InventoryType != INVTYPE_NON_EQUIP)  || offItem->GetProto()->InventoryType == INVTYPE_2HWEAPON))
         return;
 
     ItemPosCountVec off_dest;
@@ -22225,4 +22243,47 @@ uint32 Player::LookupRefundable(uint64 itemGUID)
         RefundableEntry = itr->second;
 
     return RefundableEntry;
+}
+
+bool Player::CanTitanGrip() const
+{
+    Item *mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+
+    if (mainItem && !IsTitanGripWeapon(mainItem->GetProto()))
+        return false;
+
+    return m_canTitanGrip;
+}
+
+bool Player::IsTwoHandUsedInDualWield() const
+{
+    Item* offItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+
+    if (!offItem)
+        return false;
+
+    if (offItem->GetProto()->InventoryType == INVTYPE_2HWEAPON)
+        return true;
+
+    Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+
+    return mainItem && mainItem->GetProto()->InventoryType == INVTYPE_2HWEAPON;
+}
+
+bool Player::IsTitanGripWeapon(ItemPrototype const* proto) const
+{
+    switch(proto->SubClass)
+    {
+    case ITEM_SUBCLASS_WEAPON_AXE:
+    case ITEM_SUBCLASS_WEAPON_AXE2:
+    case ITEM_SUBCLASS_WEAPON_MACE:
+    case ITEM_SUBCLASS_WEAPON_MACE2:
+    case ITEM_SUBCLASS_WEAPON_SWORD:
+    case ITEM_SUBCLASS_WEAPON_SWORD2:
+    case ITEM_SUBCLASS_WEAPON_FIST:
+    case ITEM_SUBCLASS_WEAPON_DAGGER:
+        return true;
+    };
+
+    return false;
 }
