@@ -1280,6 +1280,7 @@ class MANGOS_DLL_SPEC Unit : public WorldObject
         void RemoveAllAuras(AuraRemoveMode mode = AURA_REMOVE_BY_DEFAULT);
         void RemoveArenaAuras(bool onleave = false);
         void RemoveAllAurasOnDeath();
+        void RemoveAurasByDurationRemaining(int32 duration);
 
         // removing specific aura FROM stack
         void RemoveSingleAuraFromStack(uint32 spellId, uint32 effindex, AuraRemoveMode mode = AURA_REMOVE_BY_DEFAULT);

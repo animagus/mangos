@@ -4623,6 +4623,18 @@ void Unit::RemoveAllAurasOnDeath()
     }
 }
 
+void Unit::RemoveAurasByDurationRemaining(int32 duration)
+{
+    // Used in arenas after removing Preparation aura
+    for(AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
+    {
+        if (iter->second->GetAuraDuration() > 0 && iter->second->GetAuraDuration() < duration)
+            RemoveAura(iter);
+        else
+            ++iter;
+    }
+}
+
 void Unit::DelayAura(uint32 spellId, uint32 effindex, int32 delaytime)
 {
     AuraMap::const_iterator iter = m_Auras.find(spellEffectPair(spellId, effindex));

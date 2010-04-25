@@ -458,7 +458,13 @@ void BattleGround::Update(uint32 diff)
 
                 for(BattleGroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
                     if (Player *plr = sObjectMgr.GetPlayer(itr->first))
+                    {
                         plr->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
+                        // All buffs with fewer than 25 seconds remaining are removed and rage/runic power is reset to 0.
+                        plr->RemoveAurasByDurationRemaining(25000);
+                        plr->SetPower(POWER_RAGE, 0);
+                        plr->SetPower(POWER_RUNIC_POWER, 0);
+                    }
 
                 CheckArenaWinConditions();
             }
