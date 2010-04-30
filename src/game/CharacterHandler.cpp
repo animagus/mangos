@@ -1343,7 +1343,7 @@ void WorldSession::HandleCharFactionChange(WorldPacket& recv_data)
 
     CharacterDatabase.escape_string(newname);
     Player::Customize(guid, gender, skin, face, hairStyle, hairColor, facialHair);
-    CharacterDatabase.PExecute("UPDATE characters set name = '%s', at_login = at_login & ~ %u, race = '%u' WHERE guid ='%u'", newname.c_str(), uint32(AT_LOGIN_FACTION_CHANGE), race, GUID_LOPART(guid));
+    CharacterDatabase.PExecute("UPDATE characters set name = '%s', at_login = at_login & ~ %u, race = '%u' WHERE guid ='%u'", newname.c_str(), uint32(at_loginFlags), race, GUID_LOPART(guid));
     CharacterDatabase.PExecute("DELETE FROM character_declinedname WHERE guid ='%u'", GUID_LOPART(guid));
 
     std::string IP_str = GetRemoteAddress();
