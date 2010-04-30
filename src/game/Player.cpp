@@ -2205,7 +2205,7 @@ Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
 GameObject* Player::GetGameObjectIfCanInteractWith(uint64 guid, uint32 gameobject_type) const
 {
 	// some basic checks
-    if (guid.IsEmpty() || !IsInWorld() || isInFlight())
+    if (!guid || !IsInWorld() || isInFlight())
         return NULL;
 
     // not in interactive state
