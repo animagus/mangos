@@ -423,6 +423,8 @@ enum UnitState
     UNIT_STAT_DISTRACTED      = 0x1000,
     UNIT_STAT_ISOLATED        = 0x2000,                     // area auras do not affect other players
     UNIT_STAT_ATTACK_PLAYER   = 0x4000,
+	// not react at move in sight or other    
+	UNIT_STAT_CAN_NOT_REACT   = (UNIT_STAT_STUNNED | UNIT_STAT_DIED | UNIT_STAT_CONFUSED | UNIT_STAT_FLEEING),
     UNIT_STAT_ALL_STATE       = 0xffff                      //(UNIT_STAT_STOPPED | UNIT_STAT_MOVING | UNIT_STAT_IN_COMBAT | UNIT_STAT_IN_FLIGHT)
 };
 
