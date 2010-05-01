@@ -2873,7 +2873,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
         case SPELLFAMILY_PRIEST:
         {
             // Penance
-            if (m_spellProto->SpellIconID == 225)
+            if (m_spellProto->SpellIconID == 225 || m_spellProto->SpellIconID == 2818)
             {
                 Unit* caster = GetCaster();
                 if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
