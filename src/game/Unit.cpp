@@ -9084,6 +9084,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     float TakenTotalMod = 1.0f;
     int32 DoneTotal = 0;
     int32 TakenTotal = 0;
+    int32 RelicBonus = 0;
 
     // ..done
     // Creature damage
@@ -9181,7 +9182,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
             case 6008: // Increased Lightning Damage
             case 8627: // Totem of Hex
             {
-                DoneTotal+=(*i)->GetModifier()->m_amount;
+                RelicBonus = (*i)->GetModifier()->m_amount;
                 break;
             }
             // Tundra Stalker
@@ -9451,7 +9452,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
     }
 
     // Taken/Done fixed damage bonus auras
-    int32 DoneAdvertisedBenefit  = SpellBaseDamageBonus(GetSpellSchoolMask(spellProto));
+    int32 DoneAdvertisedBenefit  = SpellBaseDamageBonus(GetSpellSchoolMask(spellProto)) + RelicBonus;
     int32 TakenAdvertisedBenefit = SpellBaseDamageBonusForVictim(GetSpellSchoolMask(spellProto), pVictim);
 
     // Pets just add their bonus damage to their spell damage
@@ -9850,6 +9851,7 @@ uint32 Unit::SpellHealingBonus(Unit *pVictim, SpellEntry const *spellProto, uint
     float  DoneTotalMod = 1.0f;
     int32  DoneTotal = 0;
     int32  TakenTotal = 0;
+    int32  RelicBonus = 0;
 
     // Healing done percent
     AuraList const& mHealingDonePct = GetAurasByType(SPELL_AURA_MOD_HEALING_DONE_PERCENT);
@@ -9869,7 +9871,7 @@ uint32 Unit::SpellHealingBonus(Unit *pVictim, SpellEntry const *spellProto, uint
             case 4415: // Increased Rejuvenation Healing
             case 4953:
             case 3736: // Hateful Totem of the Third Wind / Increased Lesser Healing Wave / LK Arena (4/5/6) Totem of the Third Wind / Savage Totem of the Third Wind
-                DoneTotal+=(*i)->GetModifier()->m_amount;
+                RelicBonus = (*i)->GetModifier()->m_amount;
                 break;
             case 7997: // Renewed Hope
             case 7998:
@@ -9916,7 +9918,7 @@ uint32 Unit::SpellHealingBonus(Unit *pVictim, SpellEntry const *spellProto, uint
     }
 
     // Taken/Done fixed damage bonus auras
-    int32 DoneAdvertisedBenefit  = SpellBaseHealingBonus(GetSpellSchoolMask(spellProto));
+    int32 DoneAdvertisedBenefit  = SpellBaseHealingBonus(GetSpellSchoolMask(spellProto)) + RelicBonus;
     int32 TakenAdvertisedBenefit = SpellBaseHealingBonusForVictim(GetSpellSchoolMask(spellProto), pVictim);
 
     float LvlPenalty = CalculateLevelPenalty(spellProto);
