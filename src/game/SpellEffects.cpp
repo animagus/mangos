@@ -4106,7 +4106,9 @@ void Spell::EffectDispel(uint32 i)
                 if (!aur->IsPositive())
                     positive = false;
                 else
-                    positive = (aur->GetSpellProto()->AttributesEx & SPELL_ATTR_EX_NEGATIVE)==0;
+                    positive = (aur->GetSpellProto()->AttributesEx & SPELL_ATTR_EX_NEGATIVE)==0 ||
+                                aur->GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && // Elemental Oath
+                                aur->GetSpellProto()->SpellIconID == 3053;
 
                 // do not remove positive auras if friendly target
                 //               negative auras if non-friendly target
