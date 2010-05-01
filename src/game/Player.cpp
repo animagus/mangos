@@ -3752,6 +3752,9 @@ bool Player::resetTalents(bool no_cost)
         }
     }
 
+    // to prevent stacking shaman's temp enchantments
+    RemoveAllEnchantments(TEMP_ENCHANTMENT_SLOT);
+
 	for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
     {
         TalentEntry const *talentInfo = sTalentStore.LookupEntry(i);
@@ -21340,6 +21343,9 @@ void Player::LearnTalent(uint32 talentId, uint32 talentRank)
     if(HasSpell(spellid))
         return;
 
+    // to prevent stacking shaman's temp enchantments
+    RemoveAllEnchantments(TEMP_ENCHANTMENT_SLOT);
+    
     // learn! (other talent ranks will unlearned at learning)
     learnSpell(spellid, false);
     AddTalent(spellid, m_activeSpec, true);
@@ -22078,6 +22084,9 @@ void Player::ActivateSpec(uint8 spec)
     _SaveActions();
 
     UnsummonPetTemporaryIfAny();
+    
+    // to prevent stacking shaman's temp enchantments
+    RemoveAllEnchantments(TEMP_ENCHANTMENT_SLOT);
 
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
     {
