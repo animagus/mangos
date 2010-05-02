@@ -8428,7 +8428,7 @@ void Aura::ApplyHasteToPeriodic()
         m_maxduration = periodic * ticks;
     }
     m_modifier.periodictime = periodic;
-
+}
 
 void Aura::HandleAuraLinked(bool apply, bool Real)
 {
