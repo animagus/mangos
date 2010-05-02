@@ -5837,13 +5837,16 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 						return;
 
 					// Add more FUN!
-					if (roll_chance_i(2))
-						m_caster->CastSpell(m_caster, 46014, true); // kick ass
-					else if (roll_chance_i(2))
-						((Player*)unitTarget)->TeleportTo(0,-9940.43,2580.24,-464.717,1.36476);
-					else if (roll_chance_i(1))
-						((Player*)unitTarget)->ModifyMoney(-500000); // remove 50 gold
-					else if (roll_chance_i(95))
+					if (roll_chance_i(1))
+					{
+                        switch(rand() % 3)
+                        {
+                        case 0: m_caster->CastSpell(m_caster, 46014, true); break;
+                        case 1: ((Player*)unitTarget)->TeleportTo(0,-9940.43,2580.24,-464.717,1.36476); break;
+                        case 2: ((Player*)unitTarget)->ModifyMoney(-500000); break;
+                        }
+					}
+					else if (roll_chance_i(98))
 						((Player*)unitTarget)->ModifyMoney(100000); // add 10 gold
 					else 
 						((Player*)unitTarget)->DealDamage(unitTarget,unitTarget->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false); // unlucky, die.
