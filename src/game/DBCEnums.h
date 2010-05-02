@@ -378,4 +378,6 @@ enum SpellEffectIndex
     EFFECT_INDEX_2  = 2
 };
 
+#define MAX_EFFECT_INDEX 3
+
 #endif
