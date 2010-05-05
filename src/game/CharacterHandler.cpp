@@ -1233,7 +1233,8 @@ void WorldSession::HandleCharCustomize(WorldPacket& recv_data)
 void WorldSession::HandleCharFactionChange(WorldPacket& recv_data)
 {
     uint64 guid;
-    bool Faction, Race;
+    bool Faction = false;
+    bool Race = false;
     std::string newname;
 
     recv_data >> guid;
