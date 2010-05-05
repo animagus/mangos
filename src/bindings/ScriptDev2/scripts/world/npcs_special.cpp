@@ -2250,6 +2250,86 @@ CreatureAI* GetAI_npc_spring_rabbit(Creature* pCreature)
     return new npc_spring_rabbitAI(pCreature);
 }
 
+/*######
+## npc_orphant
+######*/
+
+struct MANGOS_DLL_DECL npc_orphantAI : public ScriptedAI
+{
+    npc_orphantAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+
+    uint32 Check_timer;
+    uint32 Unlove_timer;
+    bool isLove;
+
+
+    void Reset()
+    {
+        Unit *owner = m_creature->GetOwner();
+        if (!owner)
+            return;
+
+        if (owner && !m_creature->hasUnitState(UNIT_STAT_FOLLOW))
+        {
+            m_creature->GetMotionMaster()->Clear(false);
+            m_creature->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+        }
+
+        Check_timer = 5000;
+        Unlove_timer = 4000;
+        isLove = false;
+    }
+
+    void EnterEvadeMode()
+    {
+        if (m_creature->IsInEvadeMode() || !m_creature->isAlive())
+            return;
+
+        Unit *owner = m_creature->GetCharmerOrOwner();
+
+        m_creature->AttackStop();
+        m_creature->CombatStop(true);
+        if (owner && !m_creature->hasUnitState(UNIT_STAT_FOLLOW))
+        {
+            m_creature->GetMotionMaster()->Clear(false);
+            m_creature->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
+        }
+    }
+
+    void AttackStart(Unit* pWho)
+    {
+        // mini-pet don't attack anything
+        return;
+    }
+    
+    void UpdateAI(const uint32 diff)
+    {
+        Unit *owner = m_creature->GetCharmerOrOwner();
+        if (!owner)
+            return;
+
+        if (Check_timer <= diff)
+        {
+            switch(m_creature->GetAreaId())
+            {
+            case 1599: owner->CastSpell(owner,65058,true); break; // Mor'shan Rampart Credit
+            case 1497: owner->CastSpell(owner,65059,true); break; // Lordaeron Throne Room Credit
+            case 1657: owner->CastSpell(owner,65056,true); break; // Bough of the Eternals Credit
+            case 146: owner->CastSpell(owner,65055,true); break; // Stonewrought Dam Credit
+            case 115: owner->CastSpell(owner,65054,true); break; // Lighthouse Credit
+            case 392: owner->CastSpell(owner,65057,true); break; // Ratchet Docks Credit
+            default: break;
+            }
+        }
+        else Check_timer -= diff;
+    }
+};
+
+CreatureAI* GetAI_npc_orphant(Creature* pCreature)
+{
+    return new npc_orphantAI(pCreature);
+}
+
 void AddSC_npcs_special()
 {
     Script* newscript;
@@ -2385,5 +2465,10 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name = "npc_spring_rabbit";
     newscript->GetAI = &GetAI_npc_spring_rabbit;
+    newscript->RegisterSelf();
+    
+    newscript = new Script;
+    newscript->Name = "npc_orphant";
+    newscript->GetAI = &GetAI_npc_orphant;
     newscript->RegisterSelf();
 }
