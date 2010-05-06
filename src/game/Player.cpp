@@ -2439,7 +2439,7 @@ void Player::GiveXP(uint32 xp, Unit* victim)
     if(level >= sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL))
         return;
 		
-	if(HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_XP_USER_DISABLED))
+	if(HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
 		return;
 
     if(victim)
