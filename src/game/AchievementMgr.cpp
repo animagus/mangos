@@ -97,6 +97,7 @@ bool AchievementCriteriaRequirement::IsValid(AchievementCriteriaEntry const* cri
         case ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET2:
         case ACHIEVEMENT_CRITERIA_TYPE_EQUIP_EPIC_ITEM:
         case ACHIEVEMENT_CRITERIA_TYPE_USE_ITEM:
+        case ACHIEVEMENT_CRITERIA_TYPE_SPECIAL_PVP_KILL:
             break;
         default:
             sLog.outErrorDb( "Table `achievement_criteria_requirement` have data for not supported criteria type (Entry: %u Type: %u), ignore.", criteria->ID, criteria->requiredType);
@@ -724,6 +725,7 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
             case ACHIEVEMENT_CRITERIA_TYPE_QUEST_ABANDONED:
             case ACHIEVEMENT_CRITERIA_TYPE_FLIGHT_PATHS_TAKEN:
             case ACHIEVEMENT_CRITERIA_TYPE_ACCEPTED_SUMMONINGS:
+            case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST_DAILY:
                 // AchievementMgr::UpdateAchievementCriteria might also be called on login - skip in this case
                 if(!miscvalue1)
                     continue;
@@ -1428,6 +1430,22 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
 
                     break;
                 }
+            case ACHIEVEMENT_CRITERIA_TYPE_SPECIAL_PVP_KILL:
+                {
+                    if (!miscvalue1)
+                        continue;
+
+                    // those requirements couldn't be found in the dbc
+                    AchievementCriteriaRequirementSet const* data = sAchievementMgr.GetCriteriaRequirementSet(achievementCriteria);
+                    if (!data)
+                        continue;
+
+                    if (!data->Meets(GetPlayer(),unit))
+                        continue;
+
+                    SetCriteriaProgress(achievementCriteria, 1, PROGRESS_ACCUMULATE);
+                    break;
+                }
             // std case: not exist in DBC, not triggered in code as result
             case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_HEALTH:
             case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_SPELLPOWER:
@@ -1437,7 +1455,6 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
             case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_RATING:
                 break;
             // FIXME: not triggered in code as result, need to implement
-            case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST_DAILY:
             case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_RAID:
             case ACHIEVEMENT_CRITERIA_TYPE_BG_OBJECTIVE_CAPTURE:
             case ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL_AT_AREA:
@@ -1446,8 +1463,7 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type, ui
             case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_TEAM_RATING:
             case ACHIEVEMENT_CRITERIA_TYPE_OWN_RANK:
             case ACHIEVEMENT_CRITERIA_TYPE_GET_KILLING_BLOWS:
-            case ACHIEVEMENT_CRITERIA_TYPE_MONEY_FROM_VENDORS:
-            case ACHIEVEMENT_CRITERIA_TYPE_SPECIAL_PVP_KILL:
+            case ACHIEVEMENT_CRITERIA_TYPE_MONEY_FROM_VENDORS:            
             case ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE_TYPE:
             case ACHIEVEMENT_CRITERIA_TYPE_GOLD_EARNED_BY_AUCTIONS:
             case ACHIEVEMENT_CRITERIA_TYPE_CREATE_AUCTION:
@@ -1526,6 +1542,8 @@ bool AchievementMgr::IsCompletedCriteria(AchievementCriteriaEntry const* achieve
             return progress->counter >= 1;
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUEST_COUNT:
             return progress->counter >= achievementCriteria->complete_quest_count.totalQuestCount;
+        case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST_DAILY:
+            return progress->counter >= achievementCriteria->complete_daily_quest_daily.numberOfDays;
         case ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUESTS_IN_ZONE:
             return progress->counter >= achievementCriteria->complete_quests_in_zone.questCount;
         case ACHIEVEMENT_CRITERIA_TYPE_DAMAGE_DONE:
@@ -1586,6 +1604,8 @@ bool AchievementMgr::IsCompletedCriteria(AchievementCriteriaEntry const* achieve
             return progress->counter >= achievementCriteria->loot_money.goldInCopper;
         case ACHIEVEMENT_CRITERIA_TYPE_USE_GAMEOBJECT:
             return progress->counter >= achievementCriteria->use_gameobject.useCount;
+        case ACHIEVEMENT_CRITERIA_TYPE_SPECIAL_PVP_KILL:
+            return progress->counter >= achievementCriteria->special_pvp_kill.killCount;
         case ACHIEVEMENT_CRITERIA_TYPE_FISH_IN_GAMEOBJECT:
             return progress->counter >= achievementCriteria->fish_in_gameobject.lootCount;
         case ACHIEVEMENT_CRITERIA_TYPE_LEARN_SKILLLINE_SPELLS:
