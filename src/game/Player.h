@@ -99,6 +99,11 @@ struct PlayerTalent
     uint8 spec             : 8;
 };
 
+// aliance horde
+/*static const uint32 SpellsToTransfers[]
+{
+    10059, 11417 // Portal To Stormwind / Orgrimmar    
+};*/
 // Spell modifier (used for modify other spells)
 struct SpellModifier
 {
@@ -570,6 +575,8 @@ enum AtLoginFlags
     AT_LOGIN_FACTION_CHANGE    = 0x40,
     AT_LOGIN_RACE_CHANGE       = 0x80,
 };
+
+
 
 typedef std::map<uint32, QuestStatusData> QuestStatusMap;
 
