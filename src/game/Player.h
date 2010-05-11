@@ -100,10 +100,10 @@ struct PlayerTalent
 };
 
 // aliance horde
-/*static const uint32 SpellsToTransfers[]
+static const uint32 SpellsToTransfers[][2] =
 {
-    10059, 11417 // Portal To Stormwind / Orgrimmar    
-};*/
+    { 10059, 11417 }, // Portal To Stormwind / Orgrimmar    
+};
 // Spell modifier (used for modify other spells)
 struct SpellModifier
 {
