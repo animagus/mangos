@@ -4395,6 +4395,9 @@ void Spell::EffectSummonGuardian(uint32 i, uint32 forceFaction)
 
     int32 amount = damage > 0 ? damage : 1;
 
+    if (m_spellInfo->Id == 19804)
+        amount = 1;
+
     for(int32 count = 0; count < amount; ++count)
     {
         Pet* spawnCreature = new Pet(GUARDIAN_PET);
