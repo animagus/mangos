@@ -22,7 +22,7 @@ SDCategory: Ulduar
 EndScriptData */
 
 #include "precompiled.h"
-#include "def_ulduar.h"
+#include "ulduar.h"
 
 enum
 {
@@ -302,7 +302,7 @@ struct MANGOS_DLL_DECL boss_brundirAI : public ScriptedAI
                     if (Creature* p2Temp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(NPC_MOLGEIM))))
                         if (!p2Temp->isAlive())
                         {
-                            m_pInstance->SetData(TYPE_IRON_COUNCIL, DONE);
+                            m_pInstance->SetData(TYPE_ASSEMBLY, DONE);
                             m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
                             pTemp->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
                             p2Temp->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
@@ -325,7 +325,7 @@ struct MANGOS_DLL_DECL boss_brundirAI : public ScriptedAI
             if (pTemp->isAlive())
                 pTemp->SetInCombatWithZone();
         if (m_pInstance)
-            m_pInstance->SetData(TYPE_IRON_COUNCIL, IN_PROGRESS);
+            m_pInstance->SetData(TYPE_ASSEMBLY, IN_PROGRESS);
     }
 
     void JustReachedHome()
@@ -337,7 +337,7 @@ struct MANGOS_DLL_DECL boss_brundirAI : public ScriptedAI
             if (!pTemp->isAlive())
                 pTemp->Respawn();
         if (m_pInstance)
-            m_pInstance->SetData(TYPE_IRON_COUNCIL, FAIL);
+            m_pInstance->SetData(TYPE_ASSEMBLY, FAIL);
     }
 
     void UpdateAI(const uint32 diff)
@@ -379,7 +379,7 @@ struct MANGOS_DLL_DECL boss_brundirAI : public ScriptedAI
                     m_creature->AI()->AttackStart(pTarget);
                 }
                 tendrils = true;
-                m_creature->SetSpeedRate(MOVE_RUN, 0.8f);
+                m_creature->SetSpeed(MOVE_RUN, 0.8f);
                 Tendrils_start_Timer = 3000;
                 Tendrils_end_Timer = 40000;
                 Tendrils_Change = 5000;
@@ -409,7 +409,7 @@ struct MANGOS_DLL_DECL boss_brundirAI : public ScriptedAI
             if (m_creature->HasAura(LIGHTNING_TENDRILS_VISUAL))
                 m_creature->RemoveAurasDueToSpell(LIGHTNING_TENDRILS_VISUAL);
             Tendrils_start_Timer = 90000;
-            m_creature->SetSpeedRate(MOVE_RUN, 1.8f);
+            m_creature->SetSpeed(MOVE_RUN, 1.8f);
             tendrils = false;
             Chain_Lightning_Timer = 5000;
             Overload_Timer = 35000;
@@ -573,7 +573,7 @@ struct MANGOS_DLL_DECL boss_molgeimAI : public ScriptedAI
                     if (Creature* p2Temp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(NPC_BRUNDIR))))
                         if (!p2Temp->isAlive())
                         {
-                            m_pInstance->SetData(TYPE_IRON_COUNCIL, DONE);
+                            m_pInstance->SetData(TYPE_ASSEMBLY, DONE);
                             m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
                             pTemp->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
                             p2Temp->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
@@ -596,7 +596,7 @@ struct MANGOS_DLL_DECL boss_molgeimAI : public ScriptedAI
             if (pTemp->isAlive())
                 pTemp->SetInCombatWithZone();
         if (m_pInstance)
-            m_pInstance->SetData(TYPE_IRON_COUNCIL, IN_PROGRESS);
+            m_pInstance->SetData(TYPE_ASSEMBLY, IN_PROGRESS);
     }
 
     void JustReachedHome()
@@ -608,7 +608,7 @@ struct MANGOS_DLL_DECL boss_molgeimAI : public ScriptedAI
             if (!pTemp->isAlive())
                 pTemp->Respawn();
         if (m_pInstance)
-            m_pInstance->SetData(TYPE_IRON_COUNCIL, FAIL);
+            m_pInstance->SetData(TYPE_ASSEMBLY, FAIL);
     }
 
     void UpdateAI(const uint32 diff)
@@ -829,7 +829,7 @@ struct MANGOS_DLL_DECL boss_steelbreakerAI : public ScriptedAI
                     if (Creature* p2Temp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(NPC_BRUNDIR))))
                         if (!p2Temp->isAlive())
                         {
-                            m_pInstance->SetData(TYPE_IRON_COUNCIL, DONE);
+                            m_pInstance->SetData(TYPE_ASSEMBLY, DONE);
                             m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
                             pTemp->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
                             p2Temp->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
@@ -853,7 +853,7 @@ struct MANGOS_DLL_DECL boss_steelbreakerAI : public ScriptedAI
                 pTemp->SetInCombatWithZone();
         DoCast(m_creature, m_bIsRegularMode ? SPELL_HIGH_VOLTAGE : SPELL_HIGH_VOLTAGE_H);
         if (m_pInstance)
-            m_pInstance->SetData(TYPE_IRON_COUNCIL, IN_PROGRESS);
+            m_pInstance->SetData(TYPE_ASSEMBLY, IN_PROGRESS);
     }
 
     void JustReachedHome()
@@ -865,7 +865,7 @@ struct MANGOS_DLL_DECL boss_steelbreakerAI : public ScriptedAI
             if (!pTemp->isAlive())
                 pTemp->Respawn();
         if (m_pInstance)
-            m_pInstance->SetData(TYPE_IRON_COUNCIL, FAIL);
+            m_pInstance->SetData(TYPE_ASSEMBLY, FAIL);
     }
 
     void UpdateAI(const uint32 diff)

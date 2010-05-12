@@ -22,7 +22,8 @@ SDCategory: Ulduar
 EndScriptData */
 
 #include "precompiled.h"
-#include "def_ulduar.h"
+#include "ulduar.h"
+
 #define DATA_LEFT_ARM NPC_KOLOGARN_LEFT_ARM
 #define DATA_RIGHT_ARM NPC_KOLOGARN_RIGHT_ARM
 #define DATA_KOLOGARN NPC_KOLOGARN
