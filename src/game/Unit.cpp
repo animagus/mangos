@@ -742,7 +742,12 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
             Player *killed = ((Player*)pVictim);
             if(BattleGround *bg = killed->GetBattleGround())
                 if(player)
-                    bg->HandleKillPlayer(killed, player);
+                {
+                    bg->HandleKillPlayer(killed, player); 
+                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL,1); 
+                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_GET_KILLING_BLOWS,1); 
+                    player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL_AT_AREA,1);
+                }
         }
         else if(pVictim->GetTypeId() == TYPEID_UNIT)
         {
@@ -11643,7 +11648,7 @@ int32 Unit::CalculateSpellDuration(SpellEntry const* spellProto, uint8 effect_in
         int32 durationMod_not_stack = target->GetMaxNegativeAuraModifierByMiscValue(SPELL_AURA_MECHANIC_DURATION_MOD_NOT_STACK, mechanic);
 
         if (!IsPositiveSpell(spellProto->Id))
-            durationMod_always += target->GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DURATION_OF_MAGIC_EFFECTS, spellProto->DmgClass);
+            durationMod_always += target->GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DURATION_OF_MAGIC_EFFECTS, spellProto->Dispel);
         
         int32 durationMod = 0;
         // Select strongest negative mod

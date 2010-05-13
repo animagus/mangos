@@ -309,6 +309,8 @@ extern void AddSC_boss_flameleviatan();
 extern void AddSC_boss_razorscale();
 extern void AddSC_boss_xt002();
 extern void AddSC_boss_ignis();
+extern void AddSC_boss_iron_council();
+extern void AddSC_boss_kologarn();
 extern void AddSC_ulduar();
 extern void AddSC_instance_ulduar();                        //ulduar
 extern void AddSC_boss_ingvar();                            //utgarde_keep
@@ -719,6 +721,8 @@ void AddScripts()
     AddSC_boss_flameleviatan();
     AddSC_boss_razorscale();
     AddSC_boss_ignis();
+    AddSC_boss_iron_council();
+    AddSC_boss_kologarn();
     AddSC_boss_xt002();
     AddSC_ulduar();
     AddSC_instance_ulduar();                                //ulduar

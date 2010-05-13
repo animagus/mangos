@@ -2438,6 +2438,9 @@ void Player::GiveXP(uint32 xp, Unit* victim)
     // XP to money conversion processed in Player::RewardQuest
     if(level >= sWorld.getConfig(CONFIG_MAX_PLAYER_LEVEL))
         return;
+		
+	if(HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_NO_XP_GAIN))
+		return;
 
     if(victim)
     {
@@ -6401,6 +6404,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor)
             ApplyModUInt32Value(PLAYER_FIELD_LIFETIME_HONORBALE_KILLS, 1, true);
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARN_HONORABLE_KILL);
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL,1);
+            UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SPECIAL_PVP_KILL, 1);
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HK_CLASS, pVictim->getClass());
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HK_RACE, pVictim->getRace());
         }
@@ -13716,6 +13720,7 @@ void Player::RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver
     {
         SetDailyQuestStatus(quest_id);
         GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST, 1);
+        GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_DAILY_QUEST_DAILY, 1);
     }
 
     if (!pQuest->IsRepeatable())
@@ -18757,7 +18762,7 @@ void Player::SendCooldownEvent(SpellEntry const *spellInfo, uint32 itemId, Spell
 
 void Player::UpdatePotionCooldown(Spell* spell)
 {
-    // no potion used i combat or still in combat
+    // no potion used in combat or still in combat
     if(!m_lastPotionId || isInCombat())
         return;
 
