@@ -6252,6 +6252,12 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
         {
             switch(dummySpell->Id)
             {
+                // Glyph of Backstab
+                case 56800:
+                {
+                    triggered_spell_id = 63975;
+                    break;
+                }
                 // Deadly Throw Interrupt
                 case 32748:
                 {
@@ -7101,6 +7107,13 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
             {
                 // TODO: need more info (cooldowns/PPM)
                 triggered_spell_id = 61607;
+                break;
+            }
+            // Unholy Blight
+            if (dummySpell->Id == 49194)
+            {
+                basepoints0 = triggerAmount * damage / 1000;
+                triggered_spell_id = 50536;
                 break;
             }
             // Vendetta
@@ -9346,6 +9359,13 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellEntry const *spellProto, uint3
         }
         case SPELLFAMILY_DEATHKNIGHT:
         {
+            // Glyph of Unholy Blight
+            if (spellProto->Id == 50536) 
+            { 
+                if (Aura *glyphAura = GetDummyAura(63332)) 
+                    DoneTotalMod *= (glyphAura->GetModifier()->m_amount + 100.0f)/ 100.0f; 
+                break; 
+            } 
             {
               //Crypt Fever
               AuraList const& mOverrideClassScript= owner->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
