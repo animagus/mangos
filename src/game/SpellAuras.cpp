@@ -4571,6 +4571,19 @@ void Aura::HandleModMechanicImmunity(bool apply, bool /*Real*/)
         }
     }
 
+    // Demonic Circle
+    if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && GetSpellProto()->SpellIconID == 3221)
+    {
+        if (m_target->GetTypeId() != TYPEID_PLAYER)
+            return;
+        if (apply)
+        {
+            GameObject* obj = m_target->GetGameObject(48018);
+            if (obj)
+                ((Player*)m_target)->TeleportTo(obj->GetMapId(),obj->GetPositionX(),obj->GetPositionY(),obj->GetPositionZ(),obj->GetOrientation());
+        }
+    }
+
     // Bestial Wrath
     if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_HUNTER && GetSpellProto()->SpellIconID == 1680)
     {
@@ -4877,15 +4890,13 @@ void Aura::HandleAuraPeriodicDummy(bool apply, bool Real)
             switch (spell->Id)
             {
                 case 48018:
-                    if (apply)
-                    {
-                        //SendFakeAuraUpdate(62388,false);
-                    }
-                    else
-                    {
-                        target->RemoveGameObject(spell->Id,true);
-                        //SendFakeAuraUpdate(62388,true);
-                    }
+                       if (apply)
+                          m_target->CastSpell(m_target, 62388, true);                
+                        else
+                        {
+                          m_target->RemoveGameObject(spell->Id,true);
+                          m_target->RemoveAurasDueToSpell(62388);
+                        }
                 break;
             }
         }
@@ -7569,6 +7580,27 @@ void Aura::PeriodicDummyTick()
                     return;
                 default:
                     break;
+            }
+            break;
+        }
+        case SPELLFAMILY_WARLOCK:
+        {
+            switch (spell->Id)
+            {
+            case 48018:
+                GameObject* obj = m_target->GetGameObject(spell->Id);
+                if (!obj)
+                {
+                    m_target->RemoveAurasDueToSpell(spell->Id);
+                    m_target->RemoveAurasDueToSpell(62388); 
+                    return;
+                }
+                // We must take a range of teleport spell, not summon.
+                const SpellEntry* goToCircleSpell = sSpellStore.LookupEntry(48020);
+                if (m_target->IsWithinDist(obj,GetSpellMaxRange(sSpellRangeStore.LookupEntry(goToCircleSpell->rangeIndex))))
+                    m_target->CastSpell(m_target, 62388, true);
+                else
+                    m_target->RemoveAurasDueToSpell(62388);
             }
             break;
         }
