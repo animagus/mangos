@@ -319,11 +319,19 @@ struct MANGOS_DLL_DECL boss_brundirAI : public ScriptedAI
     void Aggro(Unit* pWho)
     {
         if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(NPC_STEELBREAKER))))
-            if (pTemp->isAlive())
-                pTemp->SetInCombatWithZone();
+            if (!pTemp->isAlive())
+                pTemp->Respawn();
         if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(NPC_MOLGEIM))))
-            if (pTemp->isAlive())
-                pTemp->SetInCombatWithZone();
+            if (!pTemp->isAlive())
+                pTemp->Respawn();
+
+        m_creature->SetInCombatWithZone();
+        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(NPC_STEELBREAKER))))
+            if (pTemp->isAlive() && !pTemp->getVictim())
+                pTemp->AI()->AttackStart(pWho);
+        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(NPC_MOLGEIM))))
+            if (pTemp->isAlive() && !pTemp->getVictim())
+                pTemp->AI()->AttackStart(pWho);
         if (m_pInstance)
             m_pInstance->SetData(TYPE_ASSEMBLY, IN_PROGRESS);
     }
@@ -590,11 +598,19 @@ struct MANGOS_DLL_DECL boss_molgeimAI : public ScriptedAI
     void Aggro(Unit* pWho)
     {
         if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(NPC_STEELBREAKER))))
-            if (pTemp->isAlive())
-                pTemp->SetInCombatWithZone();
+            if (!pTemp->isAlive())
+                pTemp->Respawn();
         if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(NPC_BRUNDIR))))
-            if (pTemp->isAlive())
-                pTemp->SetInCombatWithZone();
+            if (!pTemp->isAlive())
+                pTemp->Respawn();
+
+        m_creature->SetInCombatWithZone();
+        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(NPC_STEELBREAKER))))
+            if (pTemp->isAlive() && !pTemp->getVictim())
+                pTemp->AI()->AttackStart(pWho);
+        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(NPC_BRUNDIR))))
+            if (pTemp->isAlive() && !pTemp->getVictim())
+                pTemp->AI()->AttackStart(pWho);
         if (m_pInstance)
             m_pInstance->SetData(TYPE_ASSEMBLY, IN_PROGRESS);
     }
@@ -846,12 +862,20 @@ struct MANGOS_DLL_DECL boss_steelbreakerAI : public ScriptedAI
     void Aggro(Unit* pWho)
     {
         if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(NPC_MOLGEIM))))
-            if (pTemp->isAlive())
-                pTemp->SetInCombatWithZone();
+            if (!pTemp->isAlive())
+                pTemp->Respawn();
         if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(NPC_BRUNDIR))))
-            if (pTemp->isAlive())
-                pTemp->SetInCombatWithZone();
-        DoCast(m_creature, m_bIsRegularMode ? SPELL_HIGH_VOLTAGE : SPELL_HIGH_VOLTAGE_H);
+            if (!pTemp->isAlive())
+                pTemp->Respawn();
+
+        m_creature->SetInCombatWithZone();
+        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(NPC_MOLGEIM))))
+            if (pTemp->isAlive() && !pTemp->getVictim())
+                pTemp->AI()->AttackStart(pWho);
+        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(NPC_BRUNDIR))))
+            if (pTemp->isAlive() && !pTemp->getVictim())
+                pTemp->AI()->AttackStart(pWho);
+        DoCast(m_creature, m_bIsRegularMode ? SPELL_HIGH_VOLTAGE : SPELL_HIGH_VOLTAGE_H, true);
         if (m_pInstance)
             m_pInstance->SetData(TYPE_ASSEMBLY, IN_PROGRESS);
     }

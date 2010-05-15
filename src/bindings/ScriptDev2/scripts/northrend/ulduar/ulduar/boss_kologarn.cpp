@@ -147,14 +147,15 @@ struct MANGOS_DLL_DECL boss_kologarn_left_armAI : public ScriptedAI
 
     void Aggro(Unit* pWho)
     {
+        m_creature->SetInCombatWithZone();
         if (m_pInstance)
         {
             if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_RIGHT_ARM))))
-                if (pTemp->isAlive())
-                    pTemp->SetInCombatWithZone();
+                if (pTemp->isAlive() && !pTemp->getVictim())
+                    pTemp->AI()->AttackStart(pWho);
             if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_KOLOGARN))))
-                if (pTemp->isAlive())
-                    pTemp->SetInCombatWithZone();
+                if (pTemp->isAlive() && !pTemp->getVictim())
+                    pTemp->AI()->AttackStart(pWho);
         }
     }
 
@@ -225,19 +226,20 @@ struct MANGOS_DLL_DECL boss_kologarn_right_armAI : public ScriptedAI
         gripdmg = 0;
         freedmg = 0;
         grip = false;
-        DoCast(m_creature, SPELL_ARM_VISUAL);
+        DoCast(m_creature, SPELL_ARM_VISUAL, true);
     }
 
     void Aggro(Unit* pWho)
     {
+        m_creature->SetInCombatWithZone();
         if (m_pInstance)
         {
             if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_LEFT_ARM))))
-                if (pTemp->isAlive())
-                    pTemp->SetInCombatWithZone();
+                if (pTemp->isAlive() && !pTemp->getVictim())
+                    pTemp->AI()->AttackStart(pWho);
             if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_KOLOGARN))))
-                if (pTemp->isAlive())
-                    pTemp->SetInCombatWithZone();
+                if (pTemp->isAlive() && !pTemp->getVictim())
+                    pTemp->AI()->AttackStart(pWho);
         }
     }
 
@@ -351,15 +353,16 @@ struct MANGOS_DLL_DECL boss_kologarnAI : public ScriptedAI
 
     void Aggro(Unit* pWho)
     {
+        m_creature->SetInCombatWithZone();
         if (m_pInstance)
         {
             m_pInstance->SetData(TYPE_KOLOGARN, IN_PROGRESS);
             if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_LEFT_ARM))))
-                if (pTemp->isAlive())
-                    pTemp->SetInCombatWithZone();
+                if (pTemp->isAlive() && !pTemp->getVictim())
+                    pTemp->AI()->AttackStart(pWho);
             if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_RIGHT_ARM))))
-                if (pTemp->isAlive())
-                    pTemp->SetInCombatWithZone();
+                if (pTemp->isAlive() && !pTemp->getVictim())
+                    pTemp->AI()->AttackStart(pWho);
         }
         //aggro yell
     }
