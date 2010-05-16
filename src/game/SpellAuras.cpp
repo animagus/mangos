@@ -2642,6 +2642,16 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                         ((Player*)caster)->CastSpell( caster, 50001, true );
                 return;
             }
+            case 51870:                                     // Collect Hair Sample
+                {
+                    if (Unit* pCaster = GetCaster())
+                    {
+                        if (m_removeMode == AURA_REMOVE_BY_DEFAULT)
+                            pCaster->CastSpell(m_target, 51872, true, NULL, this);
+                    }
+
+                    return;
+                }
             /*case 34477: //Misdirection
             case 57934: //Tricks of Trade
             {
