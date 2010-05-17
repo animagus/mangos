@@ -6696,12 +6696,12 @@ void Spell::SelectMountByAreaAndSkill(Unit* target, uint32 spellId75, uint32 spe
         {
             for (PlayerSpellMap::const_iterator iter = ((Player*)target)->GetSpellMap().begin(); iter != ((Player*)target)->GetSpellMap().end(); ++iter)
             {
-                if (iter->second.state != PLAYERSPELL_REMOVED)
+                if (iter->second->state != PLAYERSPELL_REMOVED)
                 {
                     SpellEntry const *spellInfo = sSpellStore.LookupEntry(iter->first);
                     for(int i = 0; i < MAX_EFFECT_INDEX; ++i)
                     {
-                        if(spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_FLIGHT_SPEED_MOUNTED)
+                        if(spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)
                         {
                             int32 mountSpeed = spellInfo->CalculateSimpleValue(SpellEffectIndex(i));
 

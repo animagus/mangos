@@ -1503,7 +1503,7 @@ void Spell::EffectDummy(uint32 i)
                     break;
                 case 51866:                                 // Kick Nass
                 {
-                    // It is possible that Nass Heartbeat (spell id 61438) is involved in this
+                    /*// It is possible that Nass Heartbeat (spell id 61438) is involved in this
                     // If so, unclear how it should work and using the below instead (even though it could be a bit hack-ish)
 
                     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT)
@@ -1541,7 +1541,7 @@ void Spell::EffectDummy(uint32 i)
                         unitTarget->CastSpell(pTargetDummy, 51870, true);
                     }
 
-                    return;
+                    return;*/
                 }
                 case 51872:                                 // Hair Sample Collected
                 {
