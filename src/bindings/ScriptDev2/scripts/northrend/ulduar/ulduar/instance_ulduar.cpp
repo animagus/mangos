@@ -37,6 +37,7 @@ struct MANGOS_DLL_DECL instance_ulduar : public ScriptedInstance
     uint64 m_uiXT002GUID;
     uint64 m_auiAssemblyGUIDs[3];
     uint64 m_uiKologarnGUID;
+    uint64 m_uiArmGUIDs[2];
     uint64 m_uiAuriayaGUID;
     uint64 m_uiMimironGUID;
     uint64 m_uiHodirGUID;
@@ -64,6 +65,7 @@ struct MANGOS_DLL_DECL instance_ulduar : public ScriptedInstance
 
         memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
         memset(&m_auiAssemblyGUIDs, 0, sizeof(m_auiAssemblyGUIDs));
+        memset(&m_uiArmGUIDs, 0, sizeof(m_uiArmGUIDs));
     }
 
     bool IsEncounterInProgress() const
@@ -103,6 +105,13 @@ struct MANGOS_DLL_DECL instance_ulduar : public ScriptedInstance
                 break;
             case NPC_BRUNDIR:
                 m_auiAssemblyGUIDs[2] = pCreature->GetGUID();
+                break;
+
+            case NPC_KOLOGARN_LEFT_ARM:
+                m_uiArmGUIDs[0] = pCreature->GetGUID();
+                break;
+            case NPC_KOLOGARN_RIGHT_ARM:
+                m_uiArmGUIDs[1] = pCreature->GetGUID();
                 break;
 
             case NPC_KOLOGARN:
@@ -207,6 +216,11 @@ struct MANGOS_DLL_DECL instance_ulduar : public ScriptedInstance
                 return m_uiYoggSaronGUID;
             case TYPE_ALGALON:
                 return m_uiAlgalonGUID;
+
+            case DATA_LEFT_ARM:
+                return m_uiArmGUIDs[0];
+            case DATA_RIGHT_ARM:
+                return m_uiArmGUIDs[1];
 
             // Assembly of Iron
             case DATA_STEELBREAKER:

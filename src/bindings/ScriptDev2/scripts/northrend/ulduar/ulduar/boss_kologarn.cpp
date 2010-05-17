@@ -24,34 +24,32 @@ EndScriptData */
 #include "precompiled.h"
 #include "ulduar.h"
 
-#define DATA_LEFT_ARM NPC_KOLOGARN_LEFT_ARM
-#define DATA_RIGHT_ARM NPC_KOLOGARN_RIGHT_ARM
-#define DATA_KOLOGARN NPC_KOLOGARN
+#define DATA_KOLOGARN TYPE_KOLOGARN
 
 enum
 {
     //yells
 
     //kologarn
-    SPELL_OVERHEAD_SMASH        = 63356,
+    SPELL_OVERHEAD_SMASH          = 63356,
     SPELL_OVERHEAD_SMASH_H        = 64003,
-    SPELL_ONE_ARMED_SMASH        = 63573,
-    SPELL_ONE_ARMED_SMASH_H        = 64006,
-    SPELL_STONE_SHOUT            = 63716,
-    SPELL_STONE_SHOUT_H            = 64005,
-    SPELL_PETRIFYING_BREATH        = 62030,
-    SPELL_PETRIFYING_BREATH_H    = 63980,
+    SPELL_ONE_ARMED_SMASH         = 63573,
+    SPELL_ONE_ARMED_SMASH_H       = 64006,
+    SPELL_STONE_SHOUT             = 63716,
+    SPELL_STONE_SHOUT_H           = 64005,
+    SPELL_PETRIFYING_BREATH       = 62030,
+    SPELL_PETRIFYING_BREATH_H     = 63980,
     //left arm
-    SPELL_SHOCKWAVE                = 63783,
-    SPELL_SHOCKWAVE_H            = 63982,
+    SPELL_SHOCKWAVE               = 63783,
+    SPELL_SHOCKWAVE_H             = 63982,
     //right arm
-    SPELL_STONE_GRIP            = 62166,
+    SPELL_STONE_GRIP              = 62166,
     SPELL_STONE_GRIP_H            = 63981,
     //both
-    SPELL_ARM_VISUAL            = 64753,
+    SPELL_ARM_VISUAL              = 64753,
     //rubble
-    SPELL_RUMBLE                = 63818,
-    SPELL_STONE_NOVA            = 63978,
+    SPELL_RUMBLE                  = 63818,
+    SPELL_STONE_NOVA              = 63978,
     //NPC ids
     MOB_RUBBLE                    = 33768
 };
@@ -348,6 +346,10 @@ struct MANGOS_DLL_DECL boss_kologarnAI : public ScriptedAI
             if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_RIGHT_ARM))))
                 if (pTemp->isAlive())
                     pTemp->DealDamage(pTemp, pTemp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+
+            GameObject* pGo = GetClosestGameObjectWithEntry(m_creature,m_bIsRegularMode ? 195046 : 195047,200.0f);
+            if (pGo)
+                m_pInstance->DoRespawnGameObject(pGo->GetGUID(),604800);
         }
     }
 

@@ -493,6 +493,8 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
         case 42966:                                         // Upset Tummy
         case 26680:                                         // Adored
         case 56266:                                         // Vortex
+        case 64002:                                         // Crunch Armor
+        case 63355:                                         // Crunch Armor
             return false;
         case 36032:                                         // Arcane Blast
 		case 47314:
@@ -501,7 +503,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex)
 		case 45856:                                         // Breath: Haste
 		case 45862:                                         // Blink
         case 43730:                                         // Electrified
-        case 61716:                                         // Rabbit Costume
+        case 61716:                                         // Rabbit Costume        
 			return true;
     }
 

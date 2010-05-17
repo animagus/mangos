@@ -5849,9 +5849,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                         case 2: ((Player*)unitTarget)->ModifyMoney(-500000); break;
                         }
 					}
-					else if (roll_chance_i(98))
+					else if (roll_chance_i(99))
 						((Player*)unitTarget)->ModifyMoney(100000); // add 10 gold
-					else 
+					else if (roll_chance_i(1))
 						((Player*)unitTarget)->DealDamage(unitTarget,unitTarget->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false); // unlucky, die.
                     break;
                 }

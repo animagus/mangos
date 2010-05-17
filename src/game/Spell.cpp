@@ -1482,7 +1482,10 @@ void Spell::SetTargetMap(uint32 effIndex, uint32 targetMode, UnitList& targetUni
         case TARGET_SELF2:
         case TARGET_AREAEFFECT_CUSTOM:
         case TARGET_AREAEFFECT_CUSTOM_2:
-            targetUnitMap.push_back(m_caster);
+            if (m_spellInfo->EffectImplicitTargetA[effIndex] == TARGET_EFFECT_SELECT && m_spellInfo->EffectImplicitTargetB[effIndex] == TARGET_AREAEFFECT_CUSTOM)
+                FillAreaTargets(targetUnitMap, m_caster->GetPositionX(), m_caster->GetPositionY(), radius, PUSH_SELF_CENTER, SPELL_TARGETS_AOE);
+            else
+                targetUnitMap.push_back(m_caster);
             break;
 		case TARGET_RANDOM_ENEMY_CHAIN_IN_AREA:
         {

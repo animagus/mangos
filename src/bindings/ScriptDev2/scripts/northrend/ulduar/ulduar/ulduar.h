@@ -28,6 +28,9 @@ enum
     DATA_MOLGEIM                = 21,
     DATA_BRUNDIR                = 22,
 
+    DATA_LEFT_ARM               = 23,
+    DATA_RIGHT_ARM              = 24,
+
     NPC_LEVIATHAN               = 33113,
     NPC_IGNIS                   = 33118,
     NPC_RAZORSCALE              = 33186,
