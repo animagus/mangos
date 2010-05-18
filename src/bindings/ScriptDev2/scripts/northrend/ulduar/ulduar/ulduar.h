@@ -31,6 +31,11 @@ enum
     DATA_LEFT_ARM               = 23,
     DATA_RIGHT_ARM              = 24,
 
+    DATA_SANCTUM_SENTRY_1       = 25,
+    DATA_SANCTUM_SENTRY_2       = 26,
+    DATA_SANCTUM_SENTRY_3       = 27,
+    DATA_SANCTUM_SENTRY_4       = 28,
+
     NPC_LEVIATHAN               = 33113,
     NPC_IGNIS                   = 33118,
     NPC_RAZORSCALE              = 33186,
@@ -42,6 +47,7 @@ enum
     NPC_KOLOGARN_LEFT_ARM       = 32933,
     NPC_KOLOGARN_RIGHT_ARM      = 32934,
     NPC_AURIAYA                 = 33515,
+    NPC_SANCTUM_SENTRY          = 34014,
     NPC_MIMIRON                 = 33350,
     NPC_HODIR                   = 32845,
     NPC_THORIM                  = 32865,

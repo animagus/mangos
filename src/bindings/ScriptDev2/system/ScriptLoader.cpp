@@ -311,6 +311,7 @@ extern void AddSC_boss_xt002();
 extern void AddSC_boss_ignis();
 extern void AddSC_boss_iron_council();
 extern void AddSC_boss_kologarn();
+extern void AddSC_boss_auriaya();
 extern void AddSC_ulduar();
 extern void AddSC_instance_ulduar();                        //ulduar
 extern void AddSC_boss_ingvar();                            //utgarde_keep
@@ -724,6 +725,7 @@ void AddScripts()
     AddSC_boss_iron_council();
     AddSC_boss_kologarn();
     AddSC_boss_xt002();
+    AddSC_boss_auriaya();
     AddSC_ulduar();
     AddSC_instance_ulduar();                                //ulduar
     AddSC_boss_ingvar();                                    //utgarde_keep

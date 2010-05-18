@@ -2268,6 +2268,18 @@ void Aura::TriggerSpell()
             case 64234:
                 target->CastSpell(target, trigger_spell_id, true, NULL, this, target->GetGUID());
                 return;
+            // Guardian Swarm
+            case 64396:
+                {
+                    if (Unit* caster = GetCaster())
+                    {
+                        // Summon Swarming Guardian
+                        Creature* pCreature = caster->SummonCreature(34034, caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), caster->GetOrientation(), TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 10000);
+                        if (pCreature)
+                            pCreature->AddThreat(target, 10000.0f);
+                    }
+                    return;
+                }
             // Beacon of Light
             case 53563:
                 // original caster must be target (beacon)

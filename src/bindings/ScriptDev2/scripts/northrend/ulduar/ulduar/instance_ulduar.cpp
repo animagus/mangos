@@ -39,6 +39,7 @@ struct MANGOS_DLL_DECL instance_ulduar : public ScriptedInstance
     uint64 m_uiKologarnGUID;
     uint64 m_uiArmGUIDs[2];
     uint64 m_uiAuriayaGUID;
+    uint64 m_lSanctumSentries[4];
     uint64 m_uiMimironGUID;
     uint64 m_uiHodirGUID;
     uint64 m_uiThorimGUID;
@@ -46,6 +47,7 @@ struct MANGOS_DLL_DECL instance_ulduar : public ScriptedInstance
     uint64 m_uiVezaxGUID;
     uint64 m_uiYoggSaronGUID;
     uint64 m_uiAlgalonGUID;
+    uint8 m_uiCount;
 
     void Initialize()
     {
@@ -62,10 +64,12 @@ struct MANGOS_DLL_DECL instance_ulduar : public ScriptedInstance
         m_uiVezaxGUID           = 0;
         m_uiYoggSaronGUID       = 0;
         m_uiAlgalonGUID         = 0;
+        m_uiCount               = 0;
 
         memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
         memset(&m_auiAssemblyGUIDs, 0, sizeof(m_auiAssemblyGUIDs));
         memset(&m_uiArmGUIDs, 0, sizeof(m_uiArmGUIDs));
+        memset(&m_lSanctumSentries, 0, sizeof(m_lSanctumSentries));
     }
 
     bool IsEncounterInProgress() const
@@ -119,6 +123,25 @@ struct MANGOS_DLL_DECL instance_ulduar : public ScriptedInstance
                 break;
             case NPC_AURIAYA:
                 m_uiAuriayaGUID = pCreature->GetGUID();
+                break;
+            case NPC_SANCTUM_SENTRY:
+                {
+                    ++m_uiCount;
+                    switch(m_uiCount)
+                    {
+                    case 1: m_lSanctumSentries[0] = pCreature->GetGUID();
+                        break;
+                    case 2: m_lSanctumSentries[1] = pCreature->GetGUID();
+                        break;
+                    case 3: m_lSanctumSentries[2] = pCreature->GetGUID();
+                        break;
+                    case 4: m_lSanctumSentries[3] = pCreature->GetGUID();
+                        break;
+                    case 5:
+                        m_uiCount = 0;
+                        break;
+                    }
+                }
                 break;
             case NPC_MIMIRON:
                 m_uiMimironGUID = pCreature->GetGUID();
@@ -229,6 +252,15 @@ struct MANGOS_DLL_DECL instance_ulduar : public ScriptedInstance
                 return m_auiAssemblyGUIDs[1];
             case DATA_BRUNDIR:
                 return m_auiAssemblyGUIDs[2];
+
+            case DATA_SANCTUM_SENTRY_1:
+                return m_lSanctumSentries[0];
+            case DATA_SANCTUM_SENTRY_2:
+                return m_lSanctumSentries[1];
+            case DATA_SANCTUM_SENTRY_3:
+                return m_lSanctumSentries[2];
+            case DATA_SANCTUM_SENTRY_4:
+                return m_lSanctumSentries[3];
         }
 
         return 0;

@@ -6215,6 +6215,14 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                         unitTarget->CastSpell(unitTarget, 42966, true);
                     return;
                 }
+                case 64456:                                 // Feral Essence Application Removal
+                    {
+                        if(!unitTarget)
+                            return;
+
+                        unitTarget->RemoveSingleSpellAurasFromStack(m_spellInfo->CalculateSimpleValue(effIndex));
+                        return;
+                    }
                 case 26678:
                 {
                     // need remove at 3.3.0

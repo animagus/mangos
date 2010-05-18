@@ -1894,6 +1894,10 @@
 						Name="ulduar"
 						>
 						<File
+							RelativePath="..\scripts\northrend\ulduar\ulduar\boss_auriaya.cpp"
+							>
+						</File>
+						<File
 							RelativePath="..\scripts\northrend\ulduar\ulduar\boss_ignis.cpp"
 							>
 						</File>
