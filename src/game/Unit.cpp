@@ -3904,6 +3904,7 @@ bool Unit::AddAura(Aura *Aur)
 
         switch (aurName)
         {
+        case SPELL_AURA_MOD_MECHANIC_DAMAGE_TAKEN_PERCENT:
         case SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE:
         case SPELL_AURA_MOD_POWER_REGEN:
         case SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE:
@@ -3983,6 +3984,7 @@ void Unit::ReapplyModifers(Aura *Aur)
 
         switch (aurName)
         {
+        case SPELL_AURA_MOD_MECHANIC_DAMAGE_TAKEN_PERCENT:
         case SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE:
         case SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE:
         case SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN:
