@@ -7452,6 +7452,27 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                 //case 48876: break;                        // Beast's Mark
                 //    trigger_spell_id = 48877; break;
                 //case 49059: break;                        // Horde, Hate Monster (Spar Buddy) (>30% Health)
+                case 49508:                                 // Scent of Blood - very hacky implementation
+                {                                           // 2nd rank must apply 2 stacks instantly
+                    if (triggeredByAura->GetEffIndex() == 0 && roll_chance_i(15))
+                    {
+                        CastSpell(target,trigger_spell_id,true,castItem,triggeredByAura);
+                        CastSpell(target,trigger_spell_id,true,castItem,triggeredByAura);
+                        return true;
+                    }
+                    return false;
+                }
+                case 49509:                                 // Scent of Blood - 3rd rank must apply 3 stacks instantly
+                {
+                    if (triggeredByAura->GetEffIndex() == 0 && roll_chance_i(15))
+                    {
+                        CastSpell(target,trigger_spell_id,true,castItem,triggeredByAura);
+                        CastSpell(target,trigger_spell_id,true,castItem,triggeredByAura);
+                        CastSpell(target,trigger_spell_id,true,castItem,triggeredByAura);
+                        return true;
+                    }
+                    return false;
+                }
                 //case 50051: break;                        // Ethereal Pet Aura
                 //case 50689: break;                        // Blood Presence (Rank 1)
                 //case 50844: break;                        // Blood Mirror
@@ -7553,7 +7574,10 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                 break;
             }
             if (auraSpellInfo->Id == 50421)             // Scent of Blood
+            {
                 trigger_spell_id = 50422;
+                RemoveSingleSpellAurasFromStack(50421);
+            }
             break;
         case SPELLFAMILY_WARLOCK:
         {
@@ -13587,6 +13611,10 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit *pVictim, Aura* aura, SpellEntry con
     // Continue if no trigger exist
     if (!EventProcFlag)
         return false;
+
+    // Scent of Blood can trigger from taking direct damage and also from dodging and parrying
+    if (spellProto->EffectTriggerSpell[aura->GetEffIndex()] == 50421 && procExtra & (PROC_EX_DODGE | PROC_EX_PARRY))
+        active = true;
 
     // Check spellProcEvent data requirements
     if(!SpellMgr::IsSpellProcEventCanTriggeredBy(spellProcEvent, EventProcFlag, procSpell, procFlag, procExtra, active))
