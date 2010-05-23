@@ -8042,9 +8042,16 @@ void Aura::PeriodicDummyTick()
                     caster->CastCustomSpell(m_target, 52212, &m_modifier.m_amount, NULL, NULL, true, NULL, this);
                 return;
             }
-            // Raise Dead
-//            if (spell->SpellFamilyFlags & UI64LIT(0x0000000000001000))
-//                return;
+
+            // Hysteria Health Decreasing
+            if (spell->Id == 49016 )
+            {
+                uint32 dam = m_target->GetMaxHealth()*0.01;
+                m_target->DealDamage(m_target, dam, NULL, NODAMAGE, SPELL_SCHOOL_MASK_NORMAL, spell, false);
+                m_target->SendSpellNonMeleeDamageLog(m_target, spell->Id, dam, SPELL_SCHOOL_MASK_NORMAL, 0, 0, false, 0, false);
+                return;
+            }
+
             // Chains of Ice
             if (spell->SpellFamilyFlags & UI64LIT(0x0000400000000000))
             {
