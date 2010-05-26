@@ -6904,21 +6904,58 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
                     // Power Word: Shield
                     if (m_spellProto->SpellFamilyFlags & UI64LIT(0x0000000000000001))
                     {
-                        //+80.68% from +spell bonus
-                        DoneActualBenefit = caster->SpellBaseHealingBonus(GetSpellSchoolMask(m_spellProto)) * 0.8068f;
-                        //Borrowed Time
+                        // +80.68% from +spell bonus
+                        DoneActualBenefit = 0.8068f;
+                        // Borrowed Time
                         Unit::AuraList const& borrowedTime = caster->GetAurasByType(SPELL_AURA_DUMMY);
                         for(Unit::AuraList::const_iterator itr = borrowedTime.begin(); itr != borrowedTime.end(); ++itr)
 					    {
                             SpellEntry const* i_spell = (*itr)->GetSpellProto();
                             if(i_spell->SpellFamilyName==SPELLFAMILY_PRIEST && i_spell->SpellIconID == 2899 && i_spell->EffectMiscValue[(*itr)->GetEffIndex()] == 24)
                             {
-                                DoneActualBenefit += DoneActualBenefit * (*itr)->GetModifier()->m_amount / 100;
+                                DoneActualBenefit += (*itr)->GetModifier()->m_amount / 100.0f;
+                                break;
+                            }
+                        }
+                        DoneActualBenefit *= caster->SpellBaseHealingBonus(GetSpellSchoolMask(m_spellProto));
+                        // Improved Power Word: Shield
+                        Unit::AuraList const& improvedPWShield = caster->GetAurasByType(SPELL_AURA_ADD_PCT_MODIFIER);
+                        for(Unit::AuraList::const_iterator itr = improvedPWShield.begin(); itr != improvedPWShield.end(); ++itr)
+                        {
+                            SpellEntry const* i_spell = (*itr)->GetSpellProto();
+                            if(i_spell->SpellFamilyName==SPELLFAMILY_PRIEST && i_spell->SpellIconID == 566)
+                            {
+                                DoneActualBenefit *= 1.0f + (*itr)->GetModifier()->m_amount / 100.0f;
+                                break;
+                            }
+                        }
+                        // Twin Disciplines
+                        Unit::AuraList const& twinDisciplines = caster->GetAurasByType(SPELL_AURA_ADD_PCT_MODIFIER);
+                        for(Unit::AuraList::const_iterator itr = twinDisciplines.begin(); itr != twinDisciplines.end(); ++itr)
+                        {
+                            SpellEntry const* i_spell = (*itr)->GetSpellProto();
+                            int32 i_amount = (*itr)->GetModifier()->m_amount;
+                            if(i_spell->SpellFamilyName==SPELLFAMILY_PRIEST && i_spell->SpellIconID == 2292)
+                            {
+                                DoneActualBenefit *= 1.0f + i_amount / 100.0f;
+                                m_modifier.m_amount *= 1.0f + i_amount / 100.0f;
+                                break;
+                            }
+                        }
+                        // Focused Power
+                        Unit::AuraList const& focusedPower = caster->GetAurasByType(SPELL_AURA_MOD_HEALING_DONE_PERCENT);
+                        for(Unit::AuraList::const_iterator itr = focusedPower.begin(); itr != focusedPower.end(); ++itr)
+                        {
+                            SpellEntry const* i_spell = (*itr)->GetSpellProto();
+                            int32 i_amount = (*itr)->GetModifier()->m_amount;
+                            if(i_spell->SpellFamilyName==SPELLFAMILY_PRIEST && i_spell->SpellIconID == 2210)
+                            {
+                                DoneActualBenefit *= 1.0f + i_amount / 100.0f;
+                                m_modifier.m_amount *= 1.0f + i_amount / 100.0f;
                                 break;
                             }
                         }
                     }
-
                     break;
                 case SPELLFAMILY_MAGE:
                     // Frost Ward, Fire Ward
