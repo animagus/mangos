@@ -2598,6 +2598,10 @@ uint32 Unit::CalculateDamage (WeaponAttackType attType, bool normalized)
 
 float Unit::CalculateLevelPenalty(SpellEntry const* spellProto) const
 {
+    // Hack for Prayer of Mending triggered spell (level = 1 for all ranks)
+    if (spellProto->Id == 33110)
+        return 1.0f;
+
     if(spellProto->spellLevel <= 0)
         return 1.0f;
 
