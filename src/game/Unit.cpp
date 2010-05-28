@@ -2600,7 +2600,8 @@ float Unit::CalculateLevelPenalty(SpellEntry const* spellProto) const
 {
     // Hack for some triggered spells (level = 1 for all ranks)
     if (spellProto->Id == 31117 ||                              // Unstable Affliction (dispel damage)
-        spellProto->Id == 33110)                                // Prayer of Mending
+        spellProto->Id == 33110 ||                              // Prayer of Mending
+        spellProto->Id == 64085)                                // Vampiric Touch (dispel damage)
         return 1.0f;
 
     if(spellProto->spellLevel <= 0)
@@ -4341,9 +4342,9 @@ void Unit::RemoveSingleAuraDueToSpellByDispel(uint32 spellId, uint64 casterGUID,
         {
             if(Unit* caster = dot->GetCaster())
             {
-                int32 bp0 = 8 * dot->GetModifier()->m_amount;
-                //SpellEntry const* spell = sSpellStore.LookupEntry(64085);
-                //bp0 *= caster->SpellDamageBonus(this, spell, bp0, SPELL_DIRECT_DAMAGE, 1);
+                // use clean value for initial damage
+                int32 bp0 = dot->GetSpellProto()->CalculateSimpleValue(EFFECT_INDEX_1);
+                bp0 *= 8;
 
                 // Remove spell auras from stack
                 RemoveSingleSpellAurasByCasterSpell(spellId, casterGUID, AURA_REMOVE_BY_DISPEL);
