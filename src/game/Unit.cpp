@@ -2598,8 +2598,9 @@ uint32 Unit::CalculateDamage (WeaponAttackType attType, bool normalized)
 
 float Unit::CalculateLevelPenalty(SpellEntry const* spellProto) const
 {
-    // Hack for Prayer of Mending triggered spell (level = 1 for all ranks)
-    if (spellProto->Id == 33110)
+    // Hack for some triggered spells (level = 1 for all ranks)
+    if (spellProto->Id == 31117 ||                              // Unstable Affliction (dispel damage)
+        spellProto->Id == 33110)                                // Prayer of Mending
         return 1.0f;
 
     if(spellProto->spellLevel <= 0)
@@ -4288,7 +4289,9 @@ void Unit::RemoveSingleAuraDueToSpellByDispel(uint32 spellId, uint64 casterGUID,
     {
         if (Aura* dotAura = GetAura(SPELL_AURA_PERIODIC_DAMAGE,SPELLFAMILY_WARLOCK,UI64LIT(0x010000000000),0x00000000,casterGUID))
         {
-            int32 damage = dotAura->GetModifier()->m_amount*9;
+            // use clean value for initial damage
+            int32 damage = dotAura->GetSpellProto()->CalculateSimpleValue(EFFECT_INDEX_0);
+            damage *= 9;
 
             // Remove spell auras from stack
             RemoveSingleSpellAurasByCasterSpell(spellId, casterGUID, AURA_REMOVE_BY_DISPEL);
