@@ -4694,21 +4694,24 @@ void Aura::HandleModMechanicImmunity(bool apply, bool /*Real*/)
         // The Beast Within cast on owner if talent present
         if (Unit* owner = m_target->GetOwner())
         {
-            // Search talent
-            Unit::AuraList const& dummyAuras = owner->GetAurasByType(SPELL_AURA_DUMMY);
-            for(Unit::AuraList::const_iterator i = dummyAuras.begin(); i != dummyAuras.end(); ++i)
+            // Search talent The Beast Within
+            Unit::AuraList const& dmgAuras = owner->GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
+            for(Unit::AuraList::const_iterator i = dmgAuras.begin(); i != dmgAuras.end(); ++i)
             {
                 if ((*i)->GetSpellProto()->SpellIconID == 2229)
                 {
-                    if (apply)
-                        owner->CastSpell(owner, 34471, true, 0, this);
-                    else
+                    if (apply && !(owner->HasAura(34471)))
+                        owner->CastSpell(owner, 34471, true, NULL, this);
+                    else if (!apply && owner->HasAura(34471))
                         owner->RemoveAurasDueToSpell(34471);
                     break;
                 }
             }
         }
     }
+    // Heroic Fury (Intercept cooldown remove)
+    else if (apply && GetSpellProto()->Id == 60970 && m_target->GetTypeId() == TYPEID_PLAYER)
+        ((Player*)m_target)->RemoveSpellCooldown(20252, true);
 }
 
 void Aura::HandleModMechanicImmunityMask(bool apply, bool /*Real*/)
@@ -5535,6 +5538,7 @@ void Aura::HandleAuraModIncreaseHealth(bool apply, bool Real)
         case 34511:                                         // Valor (Bulwark of Kings, Bulwark of the Ancient Kings)
         case 44055: case 55915: case 55917: case 67596:     // Tremendous Fortitude (Battlemaster's Alacrity)
         case 50322:                                         // Survival Instincts
+        case 53479:                                         // Hunter pet - Last Stand
         case 54443:                                         // Demonic Empowerment (Voidwalker)
         {
             if(Real)
@@ -6621,18 +6625,14 @@ void Aura::HandleSpellSpecificBoosts(bool apply)
         }
         case SPELLFAMILY_DEATHKNIGHT:
         {
-            if (GetSpellSpecific(m_spellProto->Id) != SPELL_PRESENCE)
-                return;
-
-            // Frost Presence health
-            if (GetId() == 48263)
-                spellId1 = 61261;
-            // Unholy Presence move speed
-            else if (GetId() == 48265)
-                spellId1 = 49772;
-            else
-                return;
-
+            // second part of spell apply
+            switch (GetId())
+            {
+                case 49039: spellId1 = 50397; break;        // Lichborne
+                case 48263: spellId1 = 61261; break;        // Frost Presence
+                case 48265: spellId1 = 49772; break;        // Unholy Presence move speed
+                default: return;
+            }
             break;
         }
         default:
@@ -6904,21 +6904,58 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
                     // Power Word: Shield
                     if (m_spellProto->SpellFamilyFlags & UI64LIT(0x0000000000000001))
                     {
-                        //+80.68% from +spell bonus
-                        DoneActualBenefit = caster->SpellBaseHealingBonus(GetSpellSchoolMask(m_spellProto)) * 0.8068f;
-                        //Borrowed Time
+                        // +80.68% from +spell bonus
+                        DoneActualBenefit = 0.8068f;
+                        // Borrowed Time
                         Unit::AuraList const& borrowedTime = caster->GetAurasByType(SPELL_AURA_DUMMY);
                         for(Unit::AuraList::const_iterator itr = borrowedTime.begin(); itr != borrowedTime.end(); ++itr)
 					    {
                             SpellEntry const* i_spell = (*itr)->GetSpellProto();
                             if(i_spell->SpellFamilyName==SPELLFAMILY_PRIEST && i_spell->SpellIconID == 2899 && i_spell->EffectMiscValue[(*itr)->GetEffIndex()] == 24)
                             {
-                                DoneActualBenefit += DoneActualBenefit * (*itr)->GetModifier()->m_amount / 100;
+                                DoneActualBenefit += (*itr)->GetModifier()->m_amount / 100.0f;
+                                break;
+                            }
+                        }
+                        DoneActualBenefit *= caster->SpellBaseHealingBonus(GetSpellSchoolMask(m_spellProto));
+                        // Improved Power Word: Shield
+                        Unit::AuraList const& improvedPWShield = caster->GetAurasByType(SPELL_AURA_ADD_PCT_MODIFIER);
+                        for(Unit::AuraList::const_iterator itr = improvedPWShield.begin(); itr != improvedPWShield.end(); ++itr)
+                        {
+                            SpellEntry const* i_spell = (*itr)->GetSpellProto();
+                            if(i_spell->SpellFamilyName==SPELLFAMILY_PRIEST && i_spell->SpellIconID == 566)
+                            {
+                                DoneActualBenefit *= 1.0f + (*itr)->GetModifier()->m_amount / 100.0f;
+                                break;
+                            }
+                        }
+                        // Twin Disciplines
+                        Unit::AuraList const& twinDisciplines = caster->GetAurasByType(SPELL_AURA_ADD_PCT_MODIFIER);
+                        for(Unit::AuraList::const_iterator itr = twinDisciplines.begin(); itr != twinDisciplines.end(); ++itr)
+                        {
+                            SpellEntry const* i_spell = (*itr)->GetSpellProto();
+                            int32 i_amount = (*itr)->GetModifier()->m_amount;
+                            if(i_spell->SpellFamilyName==SPELLFAMILY_PRIEST && i_spell->SpellIconID == 2292)
+                            {
+                                DoneActualBenefit *= 1.0f + i_amount / 100.0f;
+                                m_modifier.m_amount *= 1.0f + i_amount / 100.0f;
+                                break;
+                            }
+                        }
+                        // Focused Power
+                        Unit::AuraList const& focusedPower = caster->GetAurasByType(SPELL_AURA_MOD_HEALING_DONE_PERCENT);
+                        for(Unit::AuraList::const_iterator itr = focusedPower.begin(); itr != focusedPower.end(); ++itr)
+                        {
+                            SpellEntry const* i_spell = (*itr)->GetSpellProto();
+                            int32 i_amount = (*itr)->GetModifier()->m_amount;
+                            if(i_spell->SpellFamilyName==SPELLFAMILY_PRIEST && i_spell->SpellIconID == 2210)
+                            {
+                                DoneActualBenefit *= 1.0f + i_amount / 100.0f;
+                                m_modifier.m_amount *= 1.0f + i_amount / 100.0f;
                                 break;
                             }
                         }
                     }
-
                     break;
                 case SPELLFAMILY_MAGE:
                     // Frost Ward, Fire Ward

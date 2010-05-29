@@ -753,6 +753,11 @@ void Spell::EffectSchoolDMG(uint32 effect_idx)
                 {
                     damage += int32(m_caster->GetTotalAttackPowerValue(RANGED_ATTACK)*0.1f);
                 }
+                // Volley
+                else if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x2000))
+                {
+                    damage += int32(m_caster->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.0837f);
+                }
                 break;
             }
             case SPELLFAMILY_PALADIN:

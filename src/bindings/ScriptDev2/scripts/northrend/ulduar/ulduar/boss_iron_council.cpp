@@ -375,7 +375,7 @@ struct MANGOS_DLL_DECL boss_brundirAI : public ScriptedAI
                     m_creature->CastStop();
 
             DoCast(m_creature, m_bIsRegularMode ? SPELL_LIGHTNING_WHIRL : SPELL_LIGHTNING_WHIRL_H);
-            Whirl_Timer = 10000;
+            Whirl_Timer = m_bIsRegularMode ? 20000 : 12000;
         }else Whirl_Timer -= diff;
 
         if (Tendrils_start_Timer < diff && supercharge2)

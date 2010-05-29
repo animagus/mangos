@@ -2598,6 +2598,12 @@ uint32 Unit::CalculateDamage (WeaponAttackType attType, bool normalized)
 
 float Unit::CalculateLevelPenalty(SpellEntry const* spellProto) const
 {
+    // Hack for some triggered spells (level = 1 for all ranks)
+    if (spellProto->Id == 31117 ||                              // Unstable Affliction (dispel damage)
+        spellProto->Id == 33110 ||                              // Prayer of Mending
+        spellProto->Id == 64085)                                // Vampiric Touch (dispel damage)
+        return 1.0f;
+
     if(spellProto->spellLevel <= 0)
         return 1.0f;
 
@@ -4284,7 +4290,9 @@ void Unit::RemoveSingleAuraDueToSpellByDispel(uint32 spellId, uint64 casterGUID,
     {
         if (Aura* dotAura = GetAura(SPELL_AURA_PERIODIC_DAMAGE,SPELLFAMILY_WARLOCK,UI64LIT(0x010000000000),0x00000000,casterGUID))
         {
-            int32 damage = dotAura->GetModifier()->m_amount*9;
+            // use clean value for initial damage
+            int32 damage = dotAura->GetSpellProto()->CalculateSimpleValue(EFFECT_INDEX_0);
+            damage *= 9;
 
             // Remove spell auras from stack
             RemoveSingleSpellAurasByCasterSpell(spellId, casterGUID, AURA_REMOVE_BY_DISPEL);
@@ -4334,9 +4342,9 @@ void Unit::RemoveSingleAuraDueToSpellByDispel(uint32 spellId, uint64 casterGUID,
         {
             if(Unit* caster = dot->GetCaster())
             {
-                int32 bp0 = 8 * dot->GetModifier()->m_amount;
-                //SpellEntry const* spell = sSpellStore.LookupEntry(64085);
-                //bp0 *= caster->SpellDamageBonus(this, spell, bp0, SPELL_DIRECT_DAMAGE, 1);
+                // use clean value for initial damage
+                int32 bp0 = dot->GetSpellProto()->CalculateSimpleValue(EFFECT_INDEX_1);
+                bp0 *= 8;
 
                 // Remove spell auras from stack
                 RemoveSingleSpellAurasByCasterSpell(spellId, casterGUID, AURA_REMOVE_BY_DISPEL);
@@ -6410,6 +6418,12 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 }
                 break;
             }
+            // Glyph of Mend Pet
+            if(dummySpell->Id == 57870)
+            {
+                pVictim->CastSpell(pVictim, 57894, true, NULL, NULL, GetGUID());
+                return true;
+            }
             break;
         }
         case SPELLFAMILY_PALADIN:
@@ -6976,8 +6990,6 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     {
                         uint32 spell = (*itr)->GetSpellProto()->EffectTriggerSpell[(*itr)->GetEffIndex()];
                         CastSpell(this, spell, true, castItem, triggeredByAura);
-                        if ((*itr)->DropAuraCharge())
-                            RemoveSingleSpellAurasFromStack((*itr)->GetId());
                         return true;
                     }
                 }
@@ -7200,7 +7212,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         triggered_spell_id = 66960; break;
                     case 51419:                             // Rank 5
                         triggered_spell_id = 66961; break;
-                    case 51420:                             // Rank 6
+                    case 55268:                             // Rank 6
                         triggered_spell_id = 66962; break;
                     // Plague Strike
                     case 45462:                             // Rank 1
@@ -8164,6 +8176,14 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
             // Proc only from trap activation (from periodic proc another aura of this spell)
             if (!(procFlags & PROC_FLAG_ON_TRAP_ACTIVATION) || !roll_chance_i(triggerAmount))
                 return false;
+            break;
+        }
+        // Freezing Fog (Rime triggered)
+        case 59052:
+        {
+            // Howling Blast cooldown reset
+            if (GetTypeId() == TYPEID_PLAYER)
+                ((Player*)this)->RemoveSpellCategoryCooldown(1248, true);
             break;
         }
         // Druid - Savage Defense
