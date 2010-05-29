@@ -2598,13 +2598,10 @@ uint32 Unit::CalculateDamage (WeaponAttackType attType, bool normalized)
 
 float Unit::CalculateLevelPenalty(SpellEntry const* spellProto) const
 {
-    // Hack for some triggered spells (level = 1 for all ranks)
-    if (spellProto->Id == 31117 ||                              // Unstable Affliction (dispel damage)
-        spellProto->Id == 33110 ||                              // Prayer of Mending
-        spellProto->Id == 64085)                                // Vampiric Touch (dispel damage)
+    if(spellProto->spellLevel <= 0)
         return 1.0f;
 
-    if(spellProto->spellLevel <= 0)
+    if (sSpellMgr.IsHighestRankOfSpell(spellProto->Id))
         return 1.0f;
 
     float LvlPenalty = 0.0f;
