@@ -4458,6 +4458,8 @@ void Unit::RemoveSingleAuraByCasterSpell(uint32 spellId, uint32 effindex, uint64
         Aura *aur = iter->second;
         if (aur->GetId() == spellId && aur->GetCasterGUID() == casterGUID)
         {
+            if (mode == AURA_REMOVE_BY_DISPEL)
+                aur->SetRemoveMode(mode);
             RemoveSingleAuraFromStack(iter,mode);
             break;
         }
