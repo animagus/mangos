@@ -7490,6 +7490,11 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                     }
                     return false;
                 }
+                case 55381:
+                {
+                    if (procSpell->Id == 20267) return false;
+                        else trigger_spell_id = 55382;
+				}
                 //case 50051: break;                        // Ethereal Pet Aura
                 //case 50689: break;                        // Blood Presence (Rank 1)
                 //case 50844: break;                        // Blood Mirror
