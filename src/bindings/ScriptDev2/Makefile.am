@@ -383,6 +383,7 @@ scripts/northrend/ulduar/ulduar/boss_xt002.cpp \
 scripts/northrend/ulduar/ulduar/boss_iron_council.cpp \
 scripts/northrend/ulduar/ulduar/boss_kologarn.cpp \
 scripts/northrend/ulduar/ulduar/boss_auriaya.cpp \
+scripts/northrend/ulduar/ulduar/boss_freya.cpp \
 scripts/northrend/ulduar/ulduar/ulduar.cpp \
 scripts/northrend/utgarde_keep/utgarde_keep/boss_ingvar.cpp \
 scripts/northrend/utgarde_keep/utgarde_keep/boss_keleseth.cpp \

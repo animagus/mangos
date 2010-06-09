@@ -54,6 +54,9 @@ enum
     NPC_FREYA                   = 32906,
     NPC_VEZAX                   = 33271,
     NPC_YOGGSARON               = 33288,
+    NPC_ELDER_IRONBRANCH        = 32913,
+    NPC_ELDER_STONEBARK         = 32914,
+    NPC_ELDER_BRIGHTLEAF        = 32915,
     NPC_ALGALON                 = 32871
 };
 
