@@ -1518,6 +1518,10 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     if (spellId_1 == 29306 && spellId_2 == 552)
                         return false;
 
+                    // Berserk (NPC enrage ability) and Mind Trauma
+                    if (spellInfo_1->SpellIconID == 95 && spellId_2 == 48301)
+                        return false;
+
                     // Runescroll of Fortitude and Power Word: Fortitude / Prayer of Fortitude
                     if (spellId_1 == 69377 && (spellInfo_2->SpellIconID == 685 || spellInfo_2->SpellIconID == 1669))
                         return true;
@@ -1719,43 +1723,48 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                 return false;
             break;
         case SPELLFAMILY_PRIEST:
-            if( spellInfo_2->SpellFamilyName == SPELLFAMILY_PRIEST )
+            switch (spellInfo_2->SpellFamilyName)
             {
-                //Devouring Plague and Shadow Vulnerability
-                if ((spellInfo_1->SpellFamilyFlags & UI64LIT(0x2000000)) && (spellInfo_2->SpellFamilyFlags & UI64LIT(0x800000000)) ||
-                    (spellInfo_2->SpellFamilyFlags & UI64LIT(0x2000000)) && (spellInfo_1->SpellFamilyFlags & UI64LIT(0x800000000)))
-                    return false;
+                case SPELLFAMILY_GENERIC:
+                    // Abolish Disease and Infected Wound
+                    if (spellId_1 == 552 && spellId_2 == 29306)
+                        return false;
 
-                //StarShards and Shadow Word: Pain
-                if ((spellInfo_1->SpellFamilyFlags & UI64LIT(0x200000)) && (spellInfo_2->SpellFamilyFlags & UI64LIT(0x8000)) ||
-                    (spellInfo_2->SpellFamilyFlags & UI64LIT(0x200000)) && (spellInfo_1->SpellFamilyFlags & UI64LIT(0x8000)))
-                    return false;
+                    // Mind Trauma and Berserk (NPC enrage ability)
+                    if (spellId_1 == 48301 && spellInfo_2->SpellIconID == 95)
+                        return false;
 
-                // Dispersion
-                if ((spellInfo_1->Id == 47585 && spellInfo_2->Id == 60069) ||
-                    (spellInfo_2->Id == 47585 && spellInfo_1->Id == 60069))
-                    return false;
+                    // Power Word: Fortitude / Prayer of Fortitude and Runescroll of Fortitude
+                    if ((spellInfo_1->SpellIconID == 685 || spellInfo_1->SpellIconID == 1669) && spellId_2 == 69377)
+                        return true;
+                    break;
+                case SPELLFAMILY_PRIEST:
+                    //Devouring Plague and Shadow Vulnerability
+                    if ((spellInfo_1->SpellFamilyFlags & UI64LIT(0x2000000)) && (spellInfo_2->SpellFamilyFlags & UI64LIT(0x800000000)) ||
+                        (spellInfo_2->SpellFamilyFlags & UI64LIT(0x2000000)) && (spellInfo_1->SpellFamilyFlags & UI64LIT(0x800000000)))
+                        return false;
 
-                // Power Word: Shield and Divine Aegis
-                if ((spellInfo_1->SpellIconID == 566 && spellInfo_2->SpellIconID == 2820) ||
-                    (spellInfo_2->SpellIconID == 566 && spellInfo_1->SpellIconID == 2820))
-                    return false;
+                    //StarShards and Shadow Word: Pain
+                    if ((spellInfo_1->SpellFamilyFlags & UI64LIT(0x200000)) && (spellInfo_2->SpellFamilyFlags & UI64LIT(0x8000)) ||
+                        (spellInfo_2->SpellFamilyFlags & UI64LIT(0x200000)) && (spellInfo_1->SpellFamilyFlags & UI64LIT(0x8000)))
+                        return false;
+
+                    // Dispersion
+                    if ((spellInfo_1->Id == 47585 && spellInfo_2->Id == 60069) ||
+                        (spellInfo_2->Id == 47585 && spellInfo_1->Id == 60069))
+                        return false;
+
+                    // Power Word: Shield and Divine Aegis
+                    if ((spellInfo_1->SpellIconID == 566 && spellInfo_2->SpellIconID == 2820) ||
+                        (spellInfo_2->SpellIconID == 566 && spellInfo_1->SpellIconID == 2820))
+                        return false;
+                    break;
+                case SPELLFAMILY_PALADIN:
+                    // Inner Fire and Consecration
+                    if (spellInfo_1->SpellIconID == 51 && spellInfo_1->SpellVisual[0] == 211 && spellInfo_2->SpellIconID == 51 && spellInfo_2->SpellVisual[0] == 5600)
+                        return false;
+                    break;
             }
-            else if (spellInfo_2->SpellFamilyName == SPELLFAMILY_PALADIN)
-            {
-                // Inner Fire and Consecration
-                if (spellInfo_1->SpellIconID == 51 && spellInfo_1->SpellVisual[0] == 211 && spellInfo_2->SpellIconID == 51 && spellInfo_2->SpellVisual[0] == 5600)
-                    return false;
-            }
-
-            // Abolish Disease and Infected Wound
-            if (spellId_1 == 552 && spellId_2 == 29306)
-                return false;
-
-            // Power Word: Fortitude / Prayer of Fortitude and Runescroll of Fortitude
-            if ((spellInfo_1->SpellIconID == 685 || spellInfo_1->SpellIconID == 1669) && spellId_2 == 69377)
-                return true;
-
             break;
         case SPELLFAMILY_DRUID:
             if( spellInfo_2->SpellFamilyName == SPELLFAMILY_DRUID )
