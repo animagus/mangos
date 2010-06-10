@@ -235,8 +235,8 @@ struct MANGOS_DLL_DECL boss_auriaya_AI : public ScriptedAI
         {
             if (m_uiActivateDefenderTimer < uiDiff)
             {
-                if (DoCastSpellIfCan(m_creature, SPELL_FERAL_DEFENDER_TRIGGER) == CAST_OK)
-                    m_uiActivateDefenderTimer = 60000;
+                DoCast(m_creature, SPELL_FERAL_DEFENDER_TRIGGER,true);
+                m_uiActivateDefenderTimer = 60000;
             }
             else
                 m_uiActivateDefenderTimer -= uiDiff;
