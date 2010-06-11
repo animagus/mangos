@@ -895,6 +895,7 @@ struct MANGOS_DLL_DECL mob_eonars_gift_AI : public Scripted_NoMovementAI
         {
             if (DoCastSpellIfCan(m_creature, m_bIsRegularMode ? SPELL_LIFEBINDERS_GIFT : H_SPELL_LIFEBINDERS_GIFT) == CAST_OK)
                 m_uiHealTimer = 12000;
+            m_creature->ForcedDespawn();
         }
         else
             m_uiHealTimer -= uiDiff;
