@@ -214,6 +214,9 @@ struct MANGOS_DLL_DECL boss_freya_AI : public ScriptedAI
     uint32 m_uiNatureBombsTimer;
     uint32 m_uiBerserkTimer;
     uint32 m_uiPrepareTimer;
+    uint32 m_uiSummonType;
+    uint32 m_uiLastSummonType;
+    uint32 m_uiLastSummonType2;
 
     std::set<uint64> m_lAdds;
 
@@ -229,6 +232,9 @@ struct MANGOS_DLL_DECL boss_freya_AI : public ScriptedAI
         m_uiWaveCount = 0;
         m_uiSummonTimer = urand(10000, 15000);
         m_uiNatureBombsTimer = urand(25000, 30000);
+        m_uiSummonType = urand(0,2);
+        m_uiLastSummonType = urand(0,2);
+        m_uiLastSummonType2 = urand(0,2);
     }
 
     void Aggro(Unit*)
@@ -325,7 +331,10 @@ struct MANGOS_DLL_DECL boss_freya_AI : public ScriptedAI
         {
             if (Creature* pCreature = (Creature*)Unit::GetUnit(*m_creature, *itr))
             {
-                if (pCreature->isAlive())
+                if (pCreature->GetEntry() == NPC_ANCIENT_WATER_SPIRIT || pCreature->GetEntry() == NPC_SNAPLASHER ||
+                    pCreature->GetEntry() == NPC_STORM_LASHER)
+                    ((TemporarySummon *)pCreature)->UnSummon();
+                else if (pCreature->isAlive())
                     pCreature->ForcedDespawn();
             }
         }
@@ -366,6 +375,13 @@ struct MANGOS_DLL_DECL boss_freya_AI : public ScriptedAI
         }
     }
 
+    void JustDied(Unit* pKiller)
+    {
+        GameObject* pGo = GetClosestGameObjectWithEntry(m_creature,m_bIsRegularMode ? 194325 : 194329,200.0f);
+            if (pGo)
+                m_pInstance->DoRespawnGameObject(pGo->GetGUID(),604800);
+    }
+
     void JustSummoned(Creature* pSummoned)
     {
         switch(pSummoned->GetEntry())
@@ -395,7 +411,7 @@ struct MANGOS_DLL_DECL boss_freya_AI : public ScriptedAI
                 pSummoned->CastSpell(pSummoned, SPELL_LASHER_WATER_REVIVE_VISUAL, true);
                 break;
             case NPC_ANCIENT_CONSERVATOR:
-                pSummoned->CastSpell(pSummoned, SPELL_HEALTHY_SPORE_SUMMON_PERIODIC, true);
+                //pSummoned->CastSpell(pSummoned, SPELL_HEALTHY_SPORE_SUMMON_PERIODIC, true);
                 break;
         };
     }
@@ -415,6 +431,43 @@ struct MANGOS_DLL_DECL boss_freya_AI : public ScriptedAI
         }
     }
 
+    void CheckAliveMobs()
+    {
+        bool m1, m2, m3;
+        m1 = false;
+        m2 = false;
+        m3 = false;
+        for(std::set<uint64>::const_iterator itr = m_lAdds.begin(); itr != m_lAdds.end(); ++itr)
+        {
+            if (Creature* pCreature = (Creature*)Unit::GetUnit(*m_creature, *itr))
+            {
+                if (pCreature->GetEntry() == NPC_ANCIENT_WATER_SPIRIT && !pCreature->isAlive())
+                    m1 = true;
+                else if (pCreature->GetEntry() == NPC_SNAPLASHER  && !pCreature->isAlive())
+                    m2 = true;
+                else if (pCreature->GetEntry() == NPC_STORM_LASHER && !pCreature->isAlive())
+                    m3 = true;
+            }
+        }
+
+        if (m1 && m2 && m3)
+        {
+            RemoveAttunedToNatureStacks(30);
+            for(std::set<uint64>::const_iterator itr = m_lAdds.begin(); itr != m_lAdds.end(); ++itr)
+            {
+                if (Creature* pCreature = (Creature*)Unit::GetUnit(*m_creature, *itr))
+                {
+                    if (pCreature->GetEntry() == NPC_ANCIENT_WATER_SPIRIT && !pCreature->isAlive())
+                        ((TemporarySummon *)pCreature)->UnSummon();
+                    else if (pCreature->GetEntry() == NPC_SNAPLASHER  && !pCreature->isAlive())
+                        ((TemporarySummon *)pCreature)->UnSummon();
+                    else if (pCreature->GetEntry() == NPC_STORM_LASHER && !pCreature->isAlive())
+                        ((TemporarySummon *)pCreature)->UnSummon();
+                }
+            }
+        }
+    }
+
     void SummonedCreatureJustDied(Creature* pSummoned)
     {
         switch(pSummoned->GetEntry())
@@ -422,19 +475,23 @@ struct MANGOS_DLL_DECL boss_freya_AI : public ScriptedAI
             case NPC_ANCIENT_CONSERVATOR:
                 m_lAdds.erase(pSummoned->GetGUID());
                 RemoveAttunedToNatureStacks(25);
+                pSummoned->ForcedDespawn();
                 break;
             case NPC_ANCIENT_WATER_SPIRIT:
             case NPC_STORM_LASHER:
             case NPC_SNAPLASHER:
                 m_lAdds.erase(pSummoned->GetGUID());
                 RemoveAttunedToNatureStacks(10);
+                pSummoned->ForcedDespawn();
                 break;
             case NPC_DETONATING_LASHER:
                 m_lAdds.erase(pSummoned->GetGUID());
                 RemoveAttunedToNatureStacks(2);
+                pSummoned->ForcedDespawn();
                 break;
             case NPC_EONAR_GIFT:
                 m_lAdds.erase(pSummoned->GetGUID());
+                pSummoned->ForcedDespawn();
                 break;
         };
     }
@@ -456,6 +513,7 @@ struct MANGOS_DLL_DECL boss_freya_AI : public ScriptedAI
 
         if (m_uiSunbeamTimer < uiDiff)
         {
+            CheckAliveMobs();
             if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
             {
                 if (DoCastSpellIfCan(target, m_bIsRegularMode ? SPELL_SUNBEAM : H_SPELL_SUNBEAM) == CAST_OK)
@@ -478,11 +536,57 @@ struct MANGOS_DLL_DECL boss_freya_AI : public ScriptedAI
         {
             if (m_uiSummonTimer < uiDiff)
             {
-                if (DoCastSpellIfCan(m_creature, m_bIsRegularMode ? SPELL_SUMMON_ALLIES : H_SPELL_SUMMON_ALLIES) == CAST_OK)
+                do
                 {
-                    ++m_uiWaveCount;
-                    m_uiSummonTimer = 60000;
+                    m_uiSummonType = (rand()%3);
                 }
+                while ( (m_uiSummonType == m_uiLastSummonType) || (m_uiSummonType == m_uiLastSummonType2));
+                // small freeze
+                
+                switch (m_uiSummonType)
+                {
+                case 0:
+                    {
+                        for (uint8 i = 0; i < 12; i++)
+                        {
+                            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                            if (!target)
+                                continue;
+                            m_creature->SummonCreature(NPC_DETONATING_LASHER, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(),target->GetAngle(m_creature),TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 20000);
+                        }
+                        break;
+                    }
+                case  1:
+                    {
+                        Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                        if (!target)
+                            break;
+                        m_creature->SummonCreature(NPC_ANCIENT_WATER_SPIRIT,target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(), target->GetAngle(m_creature), TEMPSUMMON_MANUAL_DESPAWN, 20000);
+                        m_creature->SummonCreature(NPC_STORM_LASHER,target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(), target->GetAngle(m_creature), TEMPSUMMON_MANUAL_DESPAWN, 20000);
+                        m_creature->SummonCreature(NPC_SNAPLASHER,target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(), target->GetAngle(m_creature), TEMPSUMMON_MANUAL_DESPAWN, 20000);
+                        break;
+                    }
+                case  2:
+                    {
+                        Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                        if (!target)
+                            break;
+                        m_creature->SummonCreature(NPC_ANCIENT_CONSERVATOR,target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(), target->GetAngle(m_creature), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 20000);                    
+                        break;
+                    }
+                default:
+                    break;
+                }
+                
+                if (m_uiWaveCount == 0 || m_uiWaveCount == 3)
+                    m_uiLastSummonType = m_uiSummonType;
+                else if (m_uiWaveCount == 1 || m_uiWaveCount == 4)
+                    m_uiLastSummonType2 = m_uiSummonType;
+                else 
+                    m_uiSummonType = (rand()%3);
+
+                ++m_uiWaveCount;
+                m_uiSummonTimer = 60000;
             }
             else
                 m_uiSummonTimer -= uiDiff;
@@ -783,10 +887,12 @@ struct MANGOS_DLL_DECL mob_detonating_lasher_AI : public ScriptedAI
 {
     mob_detonating_lasher_AI(Creature *pCreature) : ScriptedAI(pCreature)
     {
+        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
 
+    ScriptedInstance* m_pInstance;
     bool m_bIsRegularMode;
     uint32 m_uiChangeTargetTimer;
     uint32 m_uiFlameLashTimer;
@@ -830,6 +936,14 @@ struct MANGOS_DLL_DECL mob_detonating_lasher_AI : public ScriptedAI
             m_uiChangeTargetTimer -= uiDiff;
 
         DoMeleeAttackIfReady();
+    }
+
+    void JustDied(Unit*)
+    {
+        if (Creature *pFreya = m_pInstance->instance->GetCreature(m_pInstance->GetData64(TYPE_FREYA)))
+            if (pFreya->isAlive())
+                ((boss_freya_AI*)pFreya->AI())->RemoveAttunedToNatureStacks(2);
+        m_creature->ForcedDespawn();        
     }
 };
 
@@ -895,7 +1009,7 @@ struct MANGOS_DLL_DECL mob_eonars_gift_AI : public Scripted_NoMovementAI
         {
             if (DoCastSpellIfCan(m_creature, m_bIsRegularMode ? SPELL_LIFEBINDERS_GIFT : H_SPELL_LIFEBINDERS_GIFT) == CAST_OK)
                 m_uiHealTimer = 12000;
-            m_creature->ForcedDespawn();
+            //m_creature->ForcedDespawn();
         }
         else
             m_uiHealTimer -= uiDiff;
@@ -983,6 +1097,12 @@ struct MANGOS_DLL_DECL mob_healthy_spore_AI : public ScriptedAI
         if (m_bNeedDespawn)
             return;
 
+        if (!m_creature->HasAura(62541))
+            DoCast(m_creature,62541,true);
+
+        if (!m_creature->HasAura(62538))
+            DoCast(m_creature,62538,true);
+
         if (m_fSize < 3.0f)
         {
             if (m_uiGrowTimer < uiDiff)
@@ -1066,6 +1186,391 @@ struct MANGOS_DLL_DECL mob_sun_beam_AI : public ScriptedAI
     void UpdateAI(const uint32) {}
 };
 
+struct MANGOS_DLL_DECL mob_ancient_conservator_AI : public ScriptedAI
+{
+    mob_ancient_conservator_AI(Creature *pCreature) : ScriptedAI(pCreature)
+    {
+        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
+        Reset();
+    }
+
+    ScriptedInstance* m_pInstance;
+    bool m_bIsRegularMode;
+    uint32 m_uiNatureFuryTimer;
+    uint32 m_uiGripTimer;
+    uint32 m_uiSporeTimer;
+    uint32 m_uiSporeCount;
+
+    void Reset()
+    {
+        m_uiNatureFuryTimer = urand(8000, 12000);
+        m_uiGripTimer = 3500;
+        m_uiSporeTimer = 600;
+        m_uiSporeCount = 0;
+    }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        if (m_uiGripTimer <= uiDiff)
+        {
+            DoCast(m_creature, 62532, true);
+            m_uiGripTimer = 80000;
+        } else m_uiGripTimer -= uiDiff;
+
+        if (m_uiSporeTimer <= uiDiff)
+        {
+            switch (rand()%4)
+            {
+            case 0:
+                DoCast(m_creature, 62591, true);
+                break;
+            case 1:
+                DoCast(m_creature, 62592, true);
+                break;
+            case 2:
+                DoCast(m_creature, 62593, true);
+                break;
+            case 3:
+                DoCast(m_creature, 62582, true);
+                break;
+            default:
+                break;
+            }
+            m_uiSporeCount++;
+            if (m_uiSporeCount < 11)
+                m_uiSporeTimer = 1000;
+            else
+                m_uiSporeTimer = 2000;
+        }
+
+        if (m_uiNatureFuryTimer <= uiDiff)
+        {
+            Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+            if (target)
+                DoCast(target, m_bIsRegularMode?62589:63571, true);
+            m_uiNatureFuryTimer = 10000;
+        } else m_uiNatureFuryTimer -= uiDiff;
+
+        DoMeleeAttackIfReady();
+    }
+
+    void JustDied(Unit*)
+    {
+        if (Creature *pFreya = m_pInstance->instance->GetCreature(m_pInstance->GetData64(TYPE_FREYA)))
+            if (pFreya->isAlive())
+                ((boss_freya_AI*)pFreya->AI())->RemoveAttunedToNatureStacks(25);
+        m_creature->ForcedDespawn();        
+    }
+};
+
+
+struct MANGOS_DLL_DECL mob_ancient_water_spirit_AI : public ScriptedAI
+{
+    mob_ancient_water_spirit_AI(Creature *pCreature) : ScriptedAI(pCreature)
+    {
+        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
+        Reset();
+    }
+
+    ScriptedInstance* m_pInstance;
+    bool m_bIsRegularMode;
+    uint32 m_uiChangeTargetTimer;
+    uint32 DeathCheck_Timer;
+    uint64 StormLasherGuid;
+    uint64 SnaplasherGuid;
+    bool m_bIsDeath;
+    bool m_bIsDeath2;
+
+    void Reset()
+    {
+        m_bIsDeath = false;
+        m_bIsDeath2 = false;
+        StormLasherGuid = 0;
+        SnaplasherGuid = 0;
+        DeathCheck_Timer = 1000;
+        m_uiChangeTargetTimer = urand(4000, 10000);
+    }
+
+    void Aggro(Unit *who)
+    {
+        if (Creature* Snaplasher = GetClosestCreatureWithEntry(m_creature,32916,250))
+            SnaplasherGuid = Snaplasher->GetGUID();
+        if (Creature* StormLasher = GetClosestCreatureWithEntry(m_creature,32919,250))
+            StormLasherGuid = StormLasher->GetGUID();
+    }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        if (m_uiChangeTargetTimer <= uiDiff)
+        {
+            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            {
+                DoCast(pTarget, m_bIsRegularMode ? 62653 : 62935);
+                m_uiChangeTargetTimer = urand(8000, 12000);
+            }
+        }
+        else
+            m_uiChangeTargetTimer -= uiDiff;
+
+        if (DeathCheck_Timer < uiDiff)
+        {
+            if (Creature* Snaplasher = m_pInstance->instance->GetCreature(SnaplasherGuid))
+            {
+                if (!Snaplasher->isAlive() && !m_bIsDeath)
+                {
+                    m_bIsDeath = true;
+                }
+                else if (!Snaplasher->isAlive() && m_bIsDeath)
+                {
+                    Snaplasher->Respawn();
+                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        Snaplasher->Attack(pTarget, true);
+                    m_bIsDeath = false;
+                }
+            }
+            if (Creature* StormLasher = m_pInstance->instance->GetCreature(StormLasherGuid))
+            {
+                if (!StormLasher->isAlive() && !m_bIsDeath2)
+                {
+                    m_bIsDeath2 = true;
+                }
+                else if (!StormLasher->isAlive() && m_bIsDeath2)
+                {
+                    StormLasher->Respawn();
+                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        StormLasher->Attack(pTarget, true);
+                    m_bIsDeath2 = false;
+                }
+            }
+
+            if (m_bIsDeath2 || m_bIsDeath)
+                DeathCheck_Timer = 5000;
+            else
+                DeathCheck_Timer = 1000;
+        }else DeathCheck_Timer -= uiDiff;
+
+        DoMeleeAttackIfReady();
+    }
+
+    void JustDied(Unit*)
+    {
+        /*if (Creature *pFreya = m_pInstance->instance->GetCreature(m_pInstance->GetData64(TYPE_FREYA)))
+            if (pFreya->isAlive())
+                ((boss_freya_AI*)pFreya->AI())->RemoveAttunedToNatureStacks(10);*/
+        //m_creature->ForcedDespawn();        
+    }
+};
+
+struct MANGOS_DLL_DECL mob_storm_lasher_AI : public ScriptedAI
+{
+    mob_storm_lasher_AI(Creature *pCreature) : ScriptedAI(pCreature)
+    {
+        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
+        Reset();
+    }
+
+    ScriptedInstance* m_pInstance;
+    bool m_bIsRegularMode;
+    uint32 m_uiStormboltTimer;
+    uint32 m_uiLightningLashTimer;
+    uint32 DeathCheck_Timer;
+    uint64 AncientWaterSpiritGuid;
+    uint64 SnaplasherGuid;
+    bool m_bIsDeath;
+    bool m_bIsDeath2;
+
+    void Reset()
+    {
+        m_bIsDeath = false;
+        m_bIsDeath2 = false;
+        AncientWaterSpiritGuid = 0;
+        SnaplasherGuid = 0;
+        DeathCheck_Timer = 1000;
+        m_uiStormboltTimer = urand(4000, 6000);
+        m_uiLightningLashTimer = urand(6000, 10000);
+    }
+
+    void Aggro(Unit *who)
+    {
+        if (Creature* Snaplasher = GetClosestCreatureWithEntry(m_creature,32916,250))
+            SnaplasherGuid = Snaplasher->GetGUID();
+        if (Creature* AncientWaterSpirit = GetClosestCreatureWithEntry(m_creature,33202,250))
+            AncientWaterSpiritGuid = AncientWaterSpirit->GetGUID();
+    }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        if (m_uiStormboltTimer <= uiDiff)
+        {
+            DoCast(m_creature->getVictim(), m_bIsRegularMode ? 62649 : 62938);
+            m_uiStormboltTimer = urand(4000, 7000);
+        }
+        else
+            m_uiStormboltTimer -= uiDiff;
+
+        if (m_uiLightningLashTimer <= uiDiff)
+        {
+            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            {
+                DoCast(pTarget, m_bIsRegularMode ? 62648 : 62939, true);
+                m_uiLightningLashTimer = urand(8000, 12000);
+            }
+        }
+        else
+            m_uiLightningLashTimer -= uiDiff;
+
+        if (DeathCheck_Timer < uiDiff)
+        {
+            if (Creature* Snaplasher = m_pInstance->instance->GetCreature(SnaplasherGuid))
+            {
+                if (!Snaplasher->isAlive() && !m_bIsDeath)
+                {
+                    m_bIsDeath = true;
+                }
+                else if (!Snaplasher->isAlive() && m_bIsDeath)
+                {
+                    Snaplasher->Respawn();
+                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        Snaplasher->Attack(pTarget, true);
+                    m_bIsDeath = false;
+                }
+            }
+            if (Creature* AncientWaterSpirit = m_pInstance->instance->GetCreature(AncientWaterSpiritGuid))
+            {
+                if (!AncientWaterSpirit->isAlive() && !m_bIsDeath2)
+                {
+                    m_bIsDeath2 = true;
+                }
+                else if (!AncientWaterSpirit->isAlive() && m_bIsDeath2)
+                {
+                    AncientWaterSpirit->Respawn();
+                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        AncientWaterSpirit->Attack(pTarget, true);
+                    m_bIsDeath2 = false;
+                }
+            }
+
+            if (m_bIsDeath2 || m_bIsDeath)
+                DeathCheck_Timer = 5000;
+            else
+                DeathCheck_Timer = 1000;
+        }else DeathCheck_Timer -= uiDiff;
+
+        DoMeleeAttackIfReady();
+    }
+
+    void JustDied(Unit*)
+    {
+        /*if (Creature *pFreya = m_pInstance->instance->GetCreature(m_pInstance->GetData64(TYPE_FREYA)))
+            if (pFreya->isAlive())
+                ((boss_freya_AI*)pFreya->AI())->RemoveAttunedToNatureStacks(10);*/
+        //m_creature->ForcedDespawn();        
+    }
+};
+
+struct MANGOS_DLL_DECL mob_snaplasher_AI : public ScriptedAI
+{
+    mob_snaplasher_AI(Creature *pCreature) : ScriptedAI(pCreature)
+    {
+        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
+        Reset();
+    }
+
+    ScriptedInstance* m_pInstance;
+    bool m_bIsRegularMode;
+    uint32 DeathCheck_Timer;
+    uint64 StormLasherGuid;
+    uint64 AncientWaterSpiritGuid;
+    bool m_bIsDeath;
+    bool m_bIsDeath2;
+
+    void Reset()
+    {
+        m_bIsDeath = false;
+        m_bIsDeath2 = false;
+        StormLasherGuid = 0;
+        AncientWaterSpiritGuid = 0;
+        DeathCheck_Timer = 1000;
+    }
+
+    void Aggro(Unit *who)
+    {
+        if (Creature* AncientWaterSpirit = GetClosestCreatureWithEntry(m_creature,33202,250))
+            AncientWaterSpiritGuid = AncientWaterSpirit->GetGUID();
+        if (Creature* StormLasher = GetClosestCreatureWithEntry(m_creature,32919,250))
+            StormLasherGuid = StormLasher->GetGUID();
+    }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        if (!m_creature->HasAura(m_bIsRegularMode?62664:64191))
+            DoCast(m_creature,m_bIsRegularMode?62664:64191, true );
+
+        if (DeathCheck_Timer < uiDiff)
+        {
+            if (Creature* AncientWaterSpirit = m_pInstance->instance->GetCreature(AncientWaterSpiritGuid))
+            {
+                if (!AncientWaterSpirit->isAlive() && !m_bIsDeath)
+                {
+                    m_bIsDeath = true;
+                }
+                else if (!AncientWaterSpirit->isAlive() && m_bIsDeath)
+                {
+                    AncientWaterSpirit->Respawn();
+                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        AncientWaterSpirit->Attack(pTarget, true);
+                    m_bIsDeath = false;
+                }
+            }
+            if (Creature* StormLasher = m_pInstance->instance->GetCreature(StormLasherGuid))
+            {
+                if (!StormLasher->isAlive() && !m_bIsDeath2)
+                {
+                    m_bIsDeath2 = true;
+                }
+                else if (!StormLasher->isAlive() && m_bIsDeath2)
+                {
+                    StormLasher->Respawn();
+                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        StormLasher->Attack(pTarget, true);
+                    m_bIsDeath2 = false;
+                }
+            }
+
+            if (m_bIsDeath2 || m_bIsDeath)
+                DeathCheck_Timer = 5000;
+            else
+                DeathCheck_Timer = 1000;
+        }else DeathCheck_Timer -= uiDiff;
+
+        DoMeleeAttackIfReady();
+    }
+
+    void JustDied(Unit*)
+    {
+        /*if (Creature *pFreya = m_pInstance->instance->GetCreature(m_pInstance->GetData64(TYPE_FREYA)))
+            if (pFreya->isAlive())
+                ((boss_freya_AI*)pFreya->AI())->RemoveAttunedToNatureStacks(10);*/
+        //m_creature->ForcedDespawn();        
+    }
+};
+
 CreatureAI* GetAI_boss_freya(Creature* pCreature)
 {
     return new boss_freya_AI(pCreature);
@@ -1119,6 +1624,24 @@ CreatureAI* GetAI_mob_nature_bomb(Creature* pCreature)
 CreatureAI* GetAI_mob_sun_beam(Creature* pCreature)
 {
     return new mob_sun_beam_AI(pCreature);
+}
+
+CreatureAI* GetAI_mob_ancient_conservator(Creature* pCreature)
+{
+    return new mob_ancient_conservator_AI(pCreature);
+}
+CreatureAI* GetAI_mob_ancient_water_spirit(Creature* pCreature)
+{
+    return new mob_ancient_water_spirit_AI(pCreature);
+}
+
+CreatureAI* GetAI_mob_storm_lasher(Creature* pCreature)
+{
+    return new mob_storm_lasher_AI(pCreature);
+}
+CreatureAI* GetAI_mob_snaplasher(Creature* pCreature)
+{
+    return new mob_snaplasher_AI(pCreature);
 }
 
 void AddSC_boss_freya()
@@ -1178,5 +1701,25 @@ void AddSC_boss_freya()
     newscript = new Script;
     newscript->Name = "mob_sun_beam";
     newscript->GetAI = &GetAI_mob_sun_beam;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_ancient_conservator";
+    newscript->GetAI = &GetAI_mob_ancient_conservator;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_ancient_water_spirit";
+    newscript->GetAI = &GetAI_mob_ancient_water_spirit;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_storm_lasher";
+    newscript->GetAI = &GetAI_mob_storm_lasher;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_snaplasher";
+    newscript->GetAI = &GetAI_mob_snaplasher;
     newscript->RegisterSelf();
 }

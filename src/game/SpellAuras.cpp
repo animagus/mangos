@@ -2327,7 +2327,10 @@ void Aura::TriggerSpellWithValue()
     uint32 trigger_spell_id = GetSpellProto()->EffectTriggerSpell[m_effIndex];
     int32  basepoints0 = this->GetModifier()->m_amount;
 
-    target->CastCustomSpell(target, trigger_spell_id, &basepoints0, NULL, NULL, true, NULL, this, casterGUID);
+    if (GetSpellProto()->Id == 62589 || GetSpellProto()->Id == 63571)
+        target->CastSpell(target, trigger_spell_id, true, NULL, this, target->GetGUID());
+    else
+        target->CastCustomSpell(target, trigger_spell_id, &basepoints0, NULL, NULL, true, NULL, this, casterGUID);
 }
 
 /*********************************************************/

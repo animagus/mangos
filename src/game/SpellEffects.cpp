@@ -1802,6 +1802,22 @@ void Spell::EffectDummy(uint32 i)
                     }
                     break;
                 }
+                case 62653: // Tidal Wave
+                    {
+                        if (!unitTarget)
+                            return;
+                        m_caster->SetOrientation(unitTarget->GetOrientation());
+                        m_caster->CastSpell(unitTarget, 62654, true, 0, 0, m_caster->GetGUID());
+                        break;
+                    }
+                case 62935: // Tidal Wave
+                    {
+                        if (!unitTarget)
+                            return;
+                        m_caster->SetOrientation(unitTarget->GetOrientation());
+                        m_caster->CastSpell(unitTarget, 62936, true, 0, 0, m_caster->GetGUID());
+                        break;
+                    }
                 case 54171: // Divine Storm
                 {
                     if (!unitTarget || !unitTarget->isAlive() || !m_originalCaster)
