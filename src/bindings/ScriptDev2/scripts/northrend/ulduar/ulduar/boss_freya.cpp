@@ -1223,7 +1223,8 @@ struct MANGOS_DLL_DECL mob_ancient_conservator_AI : public ScriptedAI
 
         if (m_uiSporeTimer <= uiDiff)
         {
-            switch (rand()%4)
+            // хз почему не работает
+            /*switch (rand()%4)
             {
             case 0:
                 DoCast(m_creature, 62591, true);
@@ -1239,12 +1240,22 @@ struct MANGOS_DLL_DECL mob_ancient_conservator_AI : public ScriptedAI
                 break;
             default:
                 break;
-            }
+            }*/
+
+            float radius = 20.0f;
+            radius *= sqrt(rand_norm());
+            float angle = 2.0 * M_PI * rand_norm();
+            float dest_x = m_creature->GetPositionX() + cos(angle) * radius;
+            float dest_y = m_creature->GetPositionY() + sin(angle) * radius;
+            float dest_z = m_creature->GetPositionZ();
+            m_creature->UpdateGroundPositionZ(dest_x, dest_y, dest_z);
+            m_creature->SummonCreature(33215, dest_x, dest_y, dest_z, angle, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 25000);
+
             m_uiSporeCount++;
             if (m_uiSporeCount < 11)
-                m_uiSporeTimer = 1000;
+                m_uiSporeTimer = 600;
             else
-                m_uiSporeTimer = 2000;
+                m_uiSporeTimer = 1000;
         }
 
         if (m_uiNatureFuryTimer <= uiDiff)
