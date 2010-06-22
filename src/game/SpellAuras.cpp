@@ -793,6 +793,9 @@ void AreaAura::Update(uint32 diff)
                 // flag for seelction is need apply aura to current iteration target
                 bool apply = true;
 
+                if ((*tIter)->IsImmunedToSpell(m_spellProto))
+                    apply = false;
+
                 // we need ignore present caster self applied are auras sometime
                 // in cases if this only auras applied for spell effect
                 Unit::spellEffectPair spair = Unit::spellEffectPair(GetId(), m_effIndex);
@@ -853,7 +856,8 @@ void AreaAura::Update(uint32 diff)
         if( !caster || caster->hasUnitState(UNIT_STAT_ISOLATED) ||
             !caster->IsWithinDistInMap(m_target, m_radius)      ||
             !caster->HasAura(GetId(), GetEffIndex())            ||
-            caster->IsFriendlyTo(m_target) != needFriendly
+            caster->IsFriendlyTo(m_target) != needFriendly      ||
+            m_target->IsImmunedToSpell(m_spellProto)
            )
         {
             m_target->RemoveAurasByCasterSpell(GetId(), GetEffIndex(),GetCasterGUID());

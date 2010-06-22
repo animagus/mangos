@@ -1217,7 +1217,7 @@ struct MANGOS_DLL_DECL mob_ancient_conservator_AI : public ScriptedAI
 
         if (m_uiGripTimer <= uiDiff)
         {
-            DoCast(m_creature, 62532, true);
+            DoCast(m_creature, 62532);
             m_uiGripTimer = 80000;
         } else m_uiGripTimer -= uiDiff;
 
@@ -1242,21 +1242,24 @@ struct MANGOS_DLL_DECL mob_ancient_conservator_AI : public ScriptedAI
                 break;
             }*/
 
-            float radius = 20.0f;
-            radius *= sqrt(rand_norm());
-            float angle = 2.0 * M_PI * rand_norm();
-            float dest_x = m_creature->GetPositionX() + cos(angle) * radius;
-            float dest_y = m_creature->GetPositionY() + sin(angle) * radius;
-            float dest_z = m_creature->GetPositionZ();
-            m_creature->UpdateGroundPositionZ(dest_x, dest_y, dest_z);
-            m_creature->SummonCreature(33215, dest_x, dest_y, dest_z, angle, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 25000);
+            for (int8 i = 0; i < (m_bIsRegularMode ? 3 : 4); i++)
+            {
+                float radius = 30.0f;
+                radius *= sqrt(rand_norm());
+                float angle = 2.0 * M_PI * rand_norm();
+                float dest_x = m_creature->GetPositionX() + cos(angle) * radius;
+                float dest_y = m_creature->GetPositionY() + sin(angle) * radius;
+                float dest_z = m_creature->GetPositionZ();
+                m_creature->UpdateGroundPositionZ(dest_x, dest_y, dest_z);
+                m_creature->SummonCreature(33215, dest_x, dest_y, dest_z, angle, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 25000);
+            }
 
             m_uiSporeCount++;
-            if (m_uiSporeCount < 11)
-                m_uiSporeTimer = 600;
+            if (m_uiSporeCount < (m_bIsRegularMode ? 10 : 15))
+                m_uiSporeTimer = 3000;
             else
-                m_uiSporeTimer = 1000;
-        }
+                m_uiSporeTimer = 6000;
+        } else m_uiSporeTimer -= uiDiff;
 
         if (m_uiNatureFuryTimer <= uiDiff)
         {
