@@ -378,8 +378,8 @@ struct MANGOS_DLL_DECL boss_freya_AI : public ScriptedAI
     void JustDied(Unit* pKiller)
     {
         GameObject* pGo = GetClosestGameObjectWithEntry(m_creature,m_bIsRegularMode ? 194325 : 194329,200.0f);
-            if (pGo)
-                m_pInstance->DoRespawnGameObject(pGo->GetGUID(),604800);
+        if (pGo)
+            m_pInstance->DoRespawnGameObject(pGo->GetGUID(),604800);
     }
 
     void JustSummoned(Creature* pSummoned)
@@ -1026,6 +1026,11 @@ struct MANGOS_DLL_DECL mob_eonars_gift_AI : public Scripted_NoMovementAI
                 m_uiGrowTimer -= uiDiff;
         }
     }
+
+    void JustDied(Unit*)
+    {
+        m_creature->ForcedDespawn();        
+    }
 };
 
 struct MANGOS_DLL_DECL mob_nature_bomb_AI : public ScriptedAI
@@ -1217,7 +1222,7 @@ struct MANGOS_DLL_DECL mob_ancient_conservator_AI : public ScriptedAI
 
         if (m_uiGripTimer <= uiDiff)
         {
-            DoCast(m_creature, 62532);
+            DoCast(m_creature, 62532,true);
             m_uiGripTimer = 80000;
         } else m_uiGripTimer -= uiDiff;
 
@@ -1242,7 +1247,7 @@ struct MANGOS_DLL_DECL mob_ancient_conservator_AI : public ScriptedAI
                 break;
             }*/
 
-            for (int8 i = 0; i < (m_bIsRegularMode ? 3 : 4); i++)
+            for (int8 i = 0; i < 3; i++)
             {
                 float radius = 30.0f;
                 radius *= sqrt(rand_norm());
@@ -1258,7 +1263,7 @@ struct MANGOS_DLL_DECL mob_ancient_conservator_AI : public ScriptedAI
             if (m_uiSporeCount < (m_bIsRegularMode ? 10 : 15))
                 m_uiSporeTimer = 3000;
             else
-                m_uiSporeTimer = 6000;
+                m_uiSporeTimer = 7000;
         } else m_uiSporeTimer -= uiDiff;
 
         if (m_uiNatureFuryTimer <= uiDiff)
@@ -1274,6 +1279,8 @@ struct MANGOS_DLL_DECL mob_ancient_conservator_AI : public ScriptedAI
 
     void JustDied(Unit*)
     {
+        if (!m_pInstance)
+            return;
         if (Creature *pFreya = m_pInstance->instance->GetCreature(m_pInstance->GetData64(TYPE_FREYA)))
             if (pFreya->isAlive())
                 ((boss_freya_AI*)pFreya->AI())->RemoveAttunedToNatureStacks(25);
@@ -1321,6 +1328,9 @@ struct MANGOS_DLL_DECL mob_ancient_water_spirit_AI : public ScriptedAI
     void UpdateAI(const uint32 uiDiff)
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        if (!m_pInstance)
             return;
 
         if (m_uiChangeTargetTimer <= uiDiff)
@@ -1424,6 +1434,9 @@ struct MANGOS_DLL_DECL mob_storm_lasher_AI : public ScriptedAI
     void UpdateAI(const uint32 uiDiff)
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        if (!m_pInstance)
             return;
 
         if (m_uiStormboltTimer <= uiDiff)
@@ -1531,6 +1544,9 @@ struct MANGOS_DLL_DECL mob_snaplasher_AI : public ScriptedAI
     void UpdateAI(const uint32 uiDiff)
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        if (!m_pInstance)
             return;
 
         if (!m_creature->HasAura(m_bIsRegularMode?62664:64191))
