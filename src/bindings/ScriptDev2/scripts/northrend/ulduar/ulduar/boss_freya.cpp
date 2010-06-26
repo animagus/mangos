@@ -1376,7 +1376,7 @@ struct MANGOS_DLL_DECL mob_ancient_water_spirit_AI : public ScriptedAI
             }
 
             if (m_bIsDeath2 || m_bIsDeath)
-                DeathCheck_Timer = 5000;
+                DeathCheck_Timer = 8000;
             else
                 DeathCheck_Timer = 1000;
         }else DeathCheck_Timer -= uiDiff;
@@ -1490,7 +1490,7 @@ struct MANGOS_DLL_DECL mob_storm_lasher_AI : public ScriptedAI
             }
 
             if (m_bIsDeath2 || m_bIsDeath)
-                DeathCheck_Timer = 5000;
+                DeathCheck_Timer = 8000;
             else
                 DeathCheck_Timer = 1000;
         }else DeathCheck_Timer -= uiDiff;
@@ -1584,7 +1584,7 @@ struct MANGOS_DLL_DECL mob_snaplasher_AI : public ScriptedAI
             }
 
             if (m_bIsDeath2 || m_bIsDeath)
-                DeathCheck_Timer = 5000;
+                DeathCheck_Timer = 8000;
             else
                 DeathCheck_Timer = 1000;
         }else DeathCheck_Timer -= uiDiff;

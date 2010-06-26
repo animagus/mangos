@@ -413,6 +413,9 @@ struct MANGOS_DLL_DECL mob_feral_defender_AI : public ScriptedAI
                 m_creature->SetStandState(UNIT_STAND_STATE_STAND);
                 DoResetThreat();
 
+                for(uint8 i = 0; i < 8; ++i)
+                    m_creature->CastSpell(m_creature, SPELL_FERAL_ESSENCE, true);
+
                 if (Unit* pTarget = m_creature->getVictim())
                 {
                     AttackStart(pTarget);

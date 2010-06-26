@@ -602,5 +602,7 @@ class World
 extern uint32 realmID;
 
 #define sWorld MaNGOS::Singleton<World>::Instance()
+MANGOS_DLL_SPEC void SendWorldText(int32 string_id, const char* args, const char* args2);
+MANGOS_DLL_SPEC time_t GetGameTime();
 #endif
 /// @}

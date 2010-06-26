@@ -2224,3 +2224,13 @@ void World::LoadDBVersion()
     if(m_CreatureEventAIVersion.empty())
         m_CreatureEventAIVersion = "Unknown creature EventAI.";
 }
+
+void MANGOS_DLL_SPEC SendWorldText(int32 string_id, const char* args, const char* args2)
+{
+    sWorld.SendWorldText(string_id, args, args2);
+}
+
+time_t MANGOS_DLL_SPEC GetGameTime()
+{
+    return sWorld.GetGameTime();
+}

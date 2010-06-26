@@ -8361,3 +8361,8 @@ Quest const* GetQuestTemplateStore(uint32 entry)
 {
     return sObjectMgr.GetQuestTemplate(entry);
 }
+
+uint32 MANGOS_DLL_SPEC CreateItemText(std::string text)
+{
+    return sObjectMgr.CreateItemText(text);
+}
