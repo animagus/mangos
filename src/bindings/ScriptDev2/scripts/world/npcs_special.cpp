@@ -27,6 +27,7 @@ EndScriptData
 #include "ObjectMgr.h"
 #include "GameEventMgr.h"
 #include "World.h"
+#include "Config/Config.h"
 
 /* ContentData
 npc_air_force_bots       80%    support for misc (invisible) guard bots in areas where player allowed to fly. Summon guards after a preset time if tagged by spell
@@ -2334,29 +2335,39 @@ CreatureAI* GetAI_npc_orphant(Creature* pCreature)
 std::string GenerateCode(int type)
 {
     // generate code
-    std::string  Code;
-    QueryResult* pResult = SD2Database.PQuery("SELECT substr(MD5(%u),27)", GetGameTime());
+    std::string Code;    
+    // check if db gone away
+    QueryResult *result = SD2Database.PQuery("SELECT 1 FROM sd2_db_version");
+    if (!result)
+    {
+        Config SD2Config;
+        SD2Config.SetSource("scriptdev2.conf");
+        std::string strSD2DBinfo = SD2Config.GetStringDefault("ScriptDev2DatabaseInfo", "");
+        SD2Database.Initialize(strSD2DBinfo.c_str());
+    }
+    delete result;
 
+    QueryResult* pResult = SD2Database.PQuery("SELECT substr(MD5(%u),27)", GetGameTime());
     if (pResult)
     {
         Field* pFields = pResult->Fetch();
         Code = pFields[0].GetCppString();
         SD2Database.PExecute("INSERT INTO raffle_code VALUES ('%s', %i)", Code.c_str(), type);
     }
+    delete pResult;
     return Code;
 }
 
 void NotifyPlayer(Player* pPlayer, Creature* pCreature, const char* item, std::string Code)
 {
-    const char* name = pPlayer->GetName();
-	const char* ItemName = item;
+	const char* name = pPlayer->GetName();
     // server announce
-    SendWorldText(11900, name, ItemName);
+    SendWorldText(11900, name, item);
     // send mail
     // msgSubject, msgText isn't NUL after prev. check
     std::string subject = "Поздравляем!";
     std::string text    = "Поздравляем, Вы выиграли в лотерее! Ваш приз - ";
-    text = text + ItemName;
+    text = text + item;
 	std::string tail = ". Ваш код для получения приза - ";
 	text = text + tail + Code;
 
@@ -2364,6 +2375,31 @@ void NotifyPlayer(Player* pPlayer, Creature* pCreature, const char* item, std::s
 
     MailDraft(subject, itemTextId)
         .SendMailTo(MailReceiver(pPlayer,GUID_LOPART(pPlayer->GetGUID())),MailSender(MAIL_CREATURE, pCreature->GetEntry()));
+}
+
+void DoDrawing(Player *pPlayer, Creature *pCreature, int32 Price, int Chance, const char* Item, int type, int b)
+{
+    if (pPlayer->GetMoney() < Price)
+    {
+        pPlayer->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, 0, 0, 0);
+        pPlayer->CLOSE_GOSSIP_MENU();
+    }
+    else
+    {
+        pPlayer->ModifyMoney(-Price);
+        if (roll_chance_f(Chance))
+        {
+            std::string Code;
+            Code = GenerateCode(type);
+            NotifyPlayer(pPlayer, pCreature, Item, Code);
+            pPlayer->SEND_GOSSIP_MENU(122992, pCreature->GetGUID());
+        }
+        else
+        {
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ещё раз?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF +b);
+            pPlayer->SEND_GOSSIP_MENU(122991, pCreature->GetGUID());
+        }
+    }
 }
 
 #define GOSSIP_GO_SWIFT_SPECTRAL         "Я хочу сыграть на Резвого Призрачного Тигра"
@@ -2391,59 +2427,11 @@ bool GossipSelect_npc_raffle(Player* pPlayer, Creature* pCreature, uint32 uiSend
         pPlayer->SEND_GOSSIP_MENU(122993, pCreature->GetGUID());
         break;
     case GOSSIP_ACTION_INFO_DEF+2:
-        if (pPlayer->GetMoney() < 10000000)
-        {
-            pPlayer->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, 0, 0, 0);
-            pPlayer->CLOSE_GOSSIP_MENU();
-            break;
-        }
-        else
-        {
-            pPlayer->ModifyMoney(-10000000);
-
-            if (roll_chance_f(1))
-            {
-                std::string Code;
-                Code = GenerateCode(1);
-                NotifyPlayer(pPlayer,pCreature,"Swift Spectral Tiger", Code);
-                pPlayer->SEND_GOSSIP_MENU(122992, pCreature->GetGUID());
-                break;
-            }
-            else
-            {
-                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ещё раз?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF +1);
-                pPlayer->SEND_GOSSIP_MENU(122991, pCreature->GetGUID());
-                break;
-            }
-            break;
-        }
+        DoDrawing(pPlayer, pCreature, 10000000, 1, "Swift Spectral Tiger", 1, 1);
         break;
     case GOSSIP_ACTION_INFO_DEF+4:
-        if (pPlayer->GetMoney() < 7000000)
-        {
-            pPlayer->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, 0, 0, 0);
-            pPlayer->CLOSE_GOSSIP_MENU();
-            break;
-        }
-        else
-        {
-            pPlayer->ModifyMoney(-7000000);
-            if (roll_chance_f(1))
-            {
-                std::string Code;
-                Code = GenerateCode(2);
-                NotifyPlayer(pPlayer, pCreature, "X-51 Nether-Rocket X-TREME", Code);
-                pPlayer->SEND_GOSSIP_MENU(122992, pCreature->GetGUID());
-                break;
-            }
-            else
-            {
-                pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ещё раз?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF +3);
-                pPlayer->SEND_GOSSIP_MENU(122991, pCreature->GetGUID());
-                break;
-            }
-            break;
-        }
+        DoDrawing(pPlayer, pCreature, 7000000, 1, "X-51 Nether-Rocket X-TREME", 2, 3);
+        break;
     }
     return true;
 }

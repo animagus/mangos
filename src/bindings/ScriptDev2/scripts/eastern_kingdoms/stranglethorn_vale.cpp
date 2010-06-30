@@ -26,6 +26,9 @@ mob_yenniku
 EndContentData */
 
 #include "precompiled.h"
+#include "escort_ai.h"
+#include "ObjectMgr.h"
+#include "Config/Config.h"
 
 /*######
 ## mob_yenniku
@@ -92,6 +95,114 @@ CreatureAI* GetAI_mob_yenniku(Creature *_Creature)
     return new mob_yennikuAI (_Creature);
 }
 
+#define GOSSIP_HAVE_CODE       "Я имею код для получения приза"
+bool GossipHello_npc_landro_longshot(Player* pPlayer, Creature* pCreature)
+{
+    if (pCreature->isVendor())
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
+    pPlayer->ADD_GOSSIP_ITEM_EXTENDED(0, GOSSIP_HAVE_CODE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1, "Введите код:", 0, true);
+    pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_landro_longshot(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+{
+    if (uiAction == GOSSIP_ACTION_TRADE)
+        pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
+
+    return true;
+}
+
+int CheckCode(const char* sCode)
+{
+    // check if db gone away
+    QueryResult *result = SD2Database.PQuery("SELECT 1 FROM sd2_db_version");
+    if (!result)
+    {
+        Config SD2Config;
+        SD2Config.SetSource("scriptdev2.conf");
+        std::string strSD2DBinfo = SD2Config.GetStringDefault("ScriptDev2DatabaseInfo", "");
+        SD2Database.Initialize(strSD2DBinfo.c_str());
+    }
+    delete result;
+
+    int type = 0;
+    std::string Code = sCode;
+    SD2Database.escape_string(Code);
+    QueryResult* pResult = SD2Database.PQuery("SELECT type FROM raffle_code where code = '%s'", Code.c_str());
+    if (pResult)
+    {
+        Field* pFields = pResult->Fetch();
+        type = pFields[0].GetUInt32();
+    }
+    delete pResult;
+    return type;
+}
+
+void CleanupCode(const char* sCode)
+{
+    // check if db gone away
+    QueryResult *result = SD2Database.PQuery("SELECT 1 FROM sd2_db_version");
+    if (!result)
+    {
+        Config SD2Config;
+        SD2Config.SetSource("scriptdev2.conf");
+        std::string strSD2DBinfo = SD2Config.GetStringDefault("ScriptDev2DatabaseInfo", "");
+        SD2Database.Initialize(strSD2DBinfo.c_str());
+    }
+    delete result;
+
+    std::string Code = sCode;
+    SD2Database.escape_string(Code);
+    SD2Database.PExecute("DELETE FROM raffle_code WHERE code = ('%s')", Code.c_str());
+}
+
+void RewardPlayer(Player *pPlayer, const char* sCode, uint32 item, uint32 spell)
+{
+    ItemPosCountVec dest;
+    uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item, 1, false);
+    if( msg == EQUIP_ERR_OK )
+    {
+        pPlayer->CastSpell(pPlayer,spell,true);
+        CleanupCode(sCode);
+    }
+    else
+    {
+        pPlayer->SendEquipError( msg, NULL, NULL );
+    }
+}
+
+bool GossipSelectWithCode_npc_landro_longshot(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction, const char* sCode)
+{
+    if (uiSender == GOSSIP_SENDER_MAIN)
+    {
+        switch (uiAction)
+        {
+        case GOSSIP_ACTION_INFO_DEF+1:
+            {
+                int prize = 0;
+                prize = CheckCode(sCode);
+                if (prize)
+                {
+                    switch (prize)
+                    {
+                    case 1:
+                        RewardPlayer(pPlayer, sCode, 49284, 66874);
+                        break;
+                    case 2:
+                        RewardPlayer(pPlayer, sCode, 49286, 66876);
+                        break;
+                    }
+                }
+                pPlayer->CLOSE_GOSSIP_MENU();
+                break;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
 /*######
 ##
 ######*/
@@ -103,5 +214,12 @@ void AddSC_stranglethorn_vale()
     newscript = new Script;
     newscript->Name = "mob_yenniku";
     newscript->GetAI = &GetAI_mob_yenniku;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_landro_longshot";
+    newscript->pGossipHello = &GossipHello_npc_landro_longshot;
+    newscript->pGossipSelect = &GossipSelect_npc_landro_longshot;
+    newscript->pGossipSelectWithCode = &GossipSelectWithCode_npc_landro_longshot;
     newscript->RegisterSelf();
 }
