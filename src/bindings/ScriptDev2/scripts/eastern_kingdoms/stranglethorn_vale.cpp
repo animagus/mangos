@@ -100,7 +100,7 @@ bool GossipHello_npc_landro_longshot(Player* pPlayer, Creature* pCreature)
 {
     if (pCreature->isVendor())
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
-    pPlayer->ADD_GOSSIP_ITEM_EXTENDED(0, GOSSIP_HAVE_CODE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1, "Введите код:", 0, true);
+    pPlayer->ADD_GOSSIP_ITEM_EXTENDED(0, GOSSIP_HAVE_CODE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1, "", 0, true);
     pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
     return true;
 }
@@ -163,7 +163,11 @@ void RewardPlayer(Player *pPlayer, const char* sCode, uint32 item, uint32 spell)
     uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, item, 1, false);
     if( msg == EQUIP_ERR_OK )
     {
-        pPlayer->CastSpell(pPlayer,spell,true);
+        if (spell)
+            pPlayer->CastSpell(pPlayer,spell,true);
+        else
+            pPlayer->StoreNewItem(dest, item, 1, true);
+
         CleanupCode(sCode);
     }
     else
@@ -191,6 +195,15 @@ bool GossipSelectWithCode_npc_landro_longshot(Player* pPlayer, Creature* pCreatu
                         break;
                     case 2:
                         RewardPlayer(pPlayer, sCode, 49286, 66876);
+                        break;
+                    case 3:
+                        RewardPlayer(pPlayer, sCode, 35227, 46752);
+                        break;
+                    case 4:
+                        RewardPlayer(pPlayer, sCode, 23713, 0);
+                        break;
+                    case 5:
+                        RewardPlayer(pPlayer, sCode, 32588, 40550);
                         break;
                     }
                 }

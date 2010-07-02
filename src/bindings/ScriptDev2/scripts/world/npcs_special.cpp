@@ -2402,14 +2402,23 @@ void DoDrawing(Player *pPlayer, Creature *pCreature, int32 Price, int Chance, co
     }
 }
 
-#define GOSSIP_GO_SWIFT_SPECTRAL         "Я хочу сыграть на Резвого Призрачного Тигра"
+#define GOSSIP_GO_SWIFT_SPECTRAL        "Я хочу сыграть на Резвого Призрачного Тигра"
 #define GOSSIP_GO_NETHER_ROCKET         "Я хочу сыграть на ИКС-ключительную ракету Пустоты X-51"
+#define GOSSIP_WEATHER_MACHINE          "Я хочу сыграть на Гоблинскую метеоустановку - прототип 01-B"
+#define GOSSIP_HIPPOGRYPH_HATCHLING     "Я хочу сыграть на Детеныша гиппогрифа"
+#define GOSSIP_BANANA_CHARM             "Я хочу сыграть на Банановый оберег"
 bool GossipHello_npc_raffle(Player* pPlayer, Creature* pCreature)
 {
     // Reins of the Swift Spectral Tiger
     pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_GO_SWIFT_SPECTRAL, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF +1);
     // X-51 Nether-Rocket X-TREME 
     pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_GO_NETHER_ROCKET, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF +3);
+    // Goblin Weather Machine
+    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_WEATHER_MACHINE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF +5);
+    // Hippogryph Hatchling
+    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HIPPOGRYPH_HATCHLING, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF +7);
+    // Banana Charm
+    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_BANANA_CHARM, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF +9);
     pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
     return true;
 }
@@ -2426,11 +2435,32 @@ bool GossipSelect_npc_raffle(Player* pPlayer, Creature* pCreature, uint32 uiSend
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Испытать удачу...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
         pPlayer->SEND_GOSSIP_MENU(122993, pCreature->GetGUID());
         break;
+    case GOSSIP_ACTION_INFO_DEF+5:
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Испытать удачу...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6);
+        pPlayer->SEND_GOSSIP_MENU(122994, pCreature->GetGUID());
+        break;
+    case GOSSIP_ACTION_INFO_DEF+7:
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Испытать удачу...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+8);
+        pPlayer->SEND_GOSSIP_MENU(122995, pCreature->GetGUID());
+        break;
+    case GOSSIP_ACTION_INFO_DEF+9:
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Испытать удачу...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+10);
+        pPlayer->SEND_GOSSIP_MENU(122996, pCreature->GetGUID());
+        break;
     case GOSSIP_ACTION_INFO_DEF+2:
         DoDrawing(pPlayer, pCreature, 10000000, 1, "Swift Spectral Tiger", 1, 1);
         break;
     case GOSSIP_ACTION_INFO_DEF+4:
         DoDrawing(pPlayer, pCreature, 7000000, 1, "X-51 Nether-Rocket X-TREME", 2, 3);
+        break;
+    case GOSSIP_ACTION_INFO_DEF+6:
+        DoDrawing(pPlayer, pCreature, 1500000, 1, "Goblin Weather Machine - Prototype 01-B", 3, 5);
+        break;
+    case GOSSIP_ACTION_INFO_DEF+8:
+        DoDrawing(pPlayer, pCreature, 3000000, 1, "Hippogryph Hatchling", 4, 7);
+        break;
+    case GOSSIP_ACTION_INFO_DEF+10:
+        DoDrawing(pPlayer, pCreature, 3000000, 1, "Banana Charm", 5, 9);
         break;
     }
     return true;
