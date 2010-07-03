@@ -1273,6 +1273,9 @@ void World::SetInitialWorldSettings()
     sLog.outString( "Loading Creature Respawn Data..." );   // must be after PackInstances()
     sObjectMgr.LoadCreatureRespawnTimes();
 
+    sLog.outString( "Loading Creature Link Data...");
+    sObjectMgr.LoadCreatureLink();
+
     sLog.outString( "Loading Gameobject Data..." );
     sObjectMgr.LoadGameobjects();
 

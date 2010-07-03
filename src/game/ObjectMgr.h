@@ -139,6 +139,7 @@ typedef UNORDERED_MAP<uint32/*cell_id*/,CellObjectGuids> CellObjectGuidsMap;
 typedef UNORDERED_MAP<uint32/*(mapid,spawnMode) pair*/,CellObjectGuidsMap> MapObjectGuids;
 
 typedef UNORDERED_MAP<uint64/*(instance,guid) pair*/,time_t> RespawnTimes;
+typedef UNORDERED_MAP<uint64,uint32> CreatureLink;
 
 
 // mangos string ranges
@@ -552,6 +553,7 @@ class ObjectMgr
         void LoadCreatures();
         void LoadCreatureRespawnTimes();
         void LoadCreatureAddons();
+        void LoadCreatureLink();
         void LoadCreatureModelInfo();
         void LoadEquipmentTemplates();
         void LoadGameObjectLocales();
@@ -818,6 +820,16 @@ class ObjectMgr
 
             return &iter->second;
         }
+
+        uint32 GetLinkedCreature(uint32 guid) const
+        {
+            CreatureLink::const_iterator iter = mCreatureLinkMap.find(guid);
+            if(iter == mCreatureLinkMap.end())
+                return 0;
+
+            return iter->second;
+        }
+
         void AddVendorItem(uint32 entry,uint32 item, uint32 maxcount, uint32 incrtime, uint32 ExtendedCost);
         bool RemoveVendorItem(uint32 entry,uint32 item);
         bool IsVendorItemValid( uint32 vendor_entry, uint32 item, uint32 maxcount, uint32 ptime, uint32 ExtendedCost, Player* pl = NULL, std::set<uint32>* skip_vendors = NULL ) const;
@@ -970,6 +982,8 @@ class ObjectMgr
         CacheNpcTextIdMap m_mCacheNpcTextIdMap;
         CacheVendorItemMap m_mCacheVendorItemMap;
         CacheTrainerSpellMap m_mCacheTrainerSpellMap;
+
+        CreatureLink mCreatureLinkMap;
 };
 
 #define sObjectMgr MaNGOS::Singleton<ObjectMgr>::Instance()

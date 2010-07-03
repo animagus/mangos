@@ -435,6 +435,14 @@ bool ChatHandler::HandleReloadNpcTrainerCommand(const char*)
     return true;
 }
 
+bool ChatHandler::HandleReloadNpcLinkCommand(const char*)
+{
+    sLog.outString( "Re-Loading `creature_link` Table!" );
+    sObjectMgr.LoadCreatureLink();
+    SendGlobalSysMessage("DB table `creature_link` reloaded.");
+    return true;
+}
+
 bool ChatHandler::HandleReloadNpcVendorCommand(const char*)
 {
     sLog.outString( "Re-Loading `npc_vendor` Table!" );

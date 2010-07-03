@@ -1454,6 +1454,57 @@ void ObjectMgr::LoadCreatureRespawnTimes()
     sLog.outString();
 }
 
+void ObjectMgr::LoadCreatureLink()
+{
+    mCreatureLinkMap.clear();                                            // need for reload case
+
+    uint32 count = 0;
+
+    QueryResult *result = WorldDatabase.PQuery("SELECT guid,link_guid FROM creature_link");
+
+    if(!result)
+    {
+        barGoLink bar(1);
+
+        bar.step();
+
+        sLog.outString();
+        sLog.outErrorDb(">> Loaded 0 creature links");
+        return;
+    }
+
+    barGoLink bar(result->GetRowCount());
+    uint32 guid,link_guid;
+
+    do
+    {
+        Field *fields = result->Fetch();
+        bar.step();
+
+        guid  = fields[0].GetUInt32();
+        link_guid = fields[1].GetUInt32();
+
+        if (!GetCreatureData(guid))
+        {
+            sLog.outErrorDb("Table `creature_link` have not existed creature (GUID: %u) entry, ignore. ",guid);
+            continue;
+        }
+        if (!GetCreatureData(link_guid))
+        {
+            sLog.outErrorDb("Table `creature_link` have not existed link creature guid %u, ignore. ",link_guid);
+            continue;
+        }
+
+        mCreatureLinkMap[guid] = link_guid;
+        ++count;
+    } while (result->NextRow());
+
+    delete result;
+
+    sLog.outString();
+    sLog.outString(">> Loaded %u creature link", count);
+}
+
 void ObjectMgr::LoadGameobjectRespawnTimes()
 {
     // remove outdated data

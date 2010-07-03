@@ -132,6 +132,8 @@ ChatCommand * ChatHandler::getCommandTable()
         { "rename",         SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterRenameCommand,     "", NULL },
         { "reputation",     SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterReputationCommand, "", NULL },
         { "titles",         SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterTitlesCommand,     "", NULL },
+        { "faction",        SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterFactionCommand,    "", NULL },
+        { "race",           SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterRaceCommand,       "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
@@ -366,6 +368,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "yell",           SEC_MODERATOR,      false, &ChatHandler::HandleNpcYellCommand,             "", NULL },
         { "tame",           SEC_GAMEMASTER,     false, &ChatHandler::HandleNpcTameCommand,             "", NULL },
         { "setdeathstate",  SEC_GAMEMASTER,     false, &ChatHandler::HandleNpcSetDeathStateCommand,    "", NULL },
+        { "link",           SEC_GAMEMASTER,     false, &ChatHandler::HandleNpcLinkCommand,             "", NULL },
 
         //{ TODO: fix or remove this commands
         { "addweapon",      SEC_ADMINISTRATOR,  false, &ChatHandler::HandleNpcAddWeaponCommand,        "", NULL },
@@ -419,6 +422,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "creature_battleground",       SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadBattleEventCommand,             "", NULL },
         { "creature_involvedrelation",   SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadCreatureQuestInvRelationsCommand,"",NULL },
         { "creature_loot_template",      SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadLootTemplatesCreatureCommand,   "", NULL },
+        { "creature_link",               SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadNpcLinkCommand,                 "", NULL },
         { "creature_questrelation",      SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadCreatureQuestRelationsCommand,  "", NULL },
         { "db_script_string",            SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadDbScriptStringCommand,          "", NULL },
         { "disenchant_loot_template",    SEC_ADMINISTRATOR, true,  &ChatHandler::HandleReloadLootTemplatesDisenchantCommand, "", NULL },

@@ -1895,6 +1895,41 @@ bool ChatHandler::HandleNpcSetDeathStateCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleNpcLinkCommand(const char* args)
+{
+    if (!*args)
+        return false;
+
+    uint32 LinkGuid = (uint32) atoi((char*)args);
+    if (!sObjectMgr.GetCreatureData(LinkGuid))
+    {
+        SendSysMessage(LANG_SELECT_CREATURE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if (!m_session->GetPlayer()->GetMap()->IsRaid())
+        return false;
+
+    Creature* pCreature = getSelectedCreature();
+    if(!pCreature)
+    {
+        SendSysMessage(LANG_SELECT_CREATURE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    uint32 guid = pCreature->GetDBTableGUIDLow();
+
+    if (guid == LinkGuid)
+        return false;
+
+    // and DB
+    WorldDatabase.PExecuteLog("REPLACE INTO creature_link VALUES ('%u','%u')", guid, LinkGuid);
+
+    return true;
+}
+
 //TODO: NpcCommands that need to be fixed :
 
 bool ChatHandler::HandleNpcNameCommand(const char* /*args*/)
@@ -3558,6 +3593,56 @@ bool ChatHandler::HandleCharacterCustomizeCommand(const char* args)
 
         PSendSysMessage(LANG_CUSTOMIZE_PLAYER_GUID, oldNameLink.c_str(), GUID_LOPART(target_guid));
         CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '8' WHERE guid = '%u'", GUID_LOPART(target_guid));
+    }
+
+    return true;
+}
+
+bool ChatHandler::HandleCharacterFactionCommand(const char* args)
+{
+    Player* target;
+    uint64 target_guid;
+    std::string target_name;
+    if(!extractPlayerTarget((char*)args,&target,&target_guid,&target_name))
+        return false;
+
+    if(target)
+    {
+        PSendSysMessage(LANG_CUSTOMIZE_PLAYER, GetNameLink(target).c_str());
+        target->SetAtLoginFlag(AT_LOGIN_FACTION_CHANGE);
+        CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '64' WHERE guid = '%u'", target->GetGUIDLow());
+    }
+    else
+    {
+        std::string oldNameLink = playerLink(target_name);
+
+        PSendSysMessage(LANG_CUSTOMIZE_PLAYER_GUID, oldNameLink.c_str(), GUID_LOPART(target_guid));
+        CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '64' WHERE guid = '%u'", GUID_LOPART(target_guid));
+    }
+
+    return true;
+}
+
+bool ChatHandler::HandleCharacterRaceCommand(const char* args)
+{
+    Player* target;
+    uint64 target_guid;
+    std::string target_name;
+    if(!extractPlayerTarget((char*)args,&target,&target_guid,&target_name))
+        return false;
+
+    if(target)
+    {
+        PSendSysMessage(LANG_CUSTOMIZE_PLAYER, GetNameLink(target).c_str());
+        target->SetAtLoginFlag(AT_LOGIN_RACE_CHANGE);
+        CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '128' WHERE guid = '%u'", target->GetGUIDLow());
+    }
+    else
+    {
+        std::string oldNameLink = playerLink(target_name);
+
+        PSendSysMessage(LANG_CUSTOMIZE_PLAYER_GUID, oldNameLink.c_str(), GUID_LOPART(target_guid));
+        CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '128' WHERE guid = '%u'", GUID_LOPART(target_guid));
     }
 
     return true;

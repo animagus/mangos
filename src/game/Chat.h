@@ -127,6 +127,8 @@ class ChatHandler
         bool HandleCharacterRenameCommand(const char * args);
         bool HandleCharacterReputationCommand(const char* args);
         bool HandleCharacterTitlesCommand(const char* args);
+        bool HandleCharacterFactionCommand(const char* args);
+        bool HandleCharacterRaceCommand(const char* args);
 
         bool HandleDebugAnimCommand(const char* args);
         bool HandleDebugArenaCommand(const char * args);
@@ -291,6 +293,7 @@ class ChatHandler
         bool HandleNpcUnFollowCommand(const char* args);
         bool HandleNpcWhisperCommand(const char* args);
         bool HandleNpcYellCommand(const char* args);
+        bool HandleNpcLinkCommand(const char* args);
 
         //TODO: NpcCommands that needs to be fixed :
         bool HandleNpcAddWeaponCommand(const char* args);
@@ -361,6 +364,7 @@ class ChatHandler
         bool HandleReloadLootTemplatesReferenceCommand(const char* args);
         bool HandleReloadLootTemplatesSkinningCommand(const char* args);
         bool HandleReloadLootTemplatesSpellCommand(const char* args);
+        bool HandleReloadNpcLinkCommand(const char*);
         bool HandleReloadMailLevelRewardCommand(const char* args);
         bool HandleReloadMangosStringCommand(const char* args);
         bool HandleReloadNpcGossipCommand(const char* args);
