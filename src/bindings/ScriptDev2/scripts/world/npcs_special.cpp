@@ -2341,7 +2341,7 @@ std::string GenerateCode(int type)
     if (!result)
     {
         Config SD2Config;
-        SD2Config.SetSource("scriptdev2.conf");
+        SD2Config.SetSource("/home/mangos/bin/wolk/etc/scriptdev2.conf");
         std::string strSD2DBinfo = SD2Config.GetStringDefault("ScriptDev2DatabaseInfo", "");
         SD2Database.Initialize(strSD2DBinfo.c_str());
     }
