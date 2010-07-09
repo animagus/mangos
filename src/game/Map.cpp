@@ -2523,7 +2523,8 @@ bool InstanceMap::Add(Player *player)
                 if(playerBind->save != mapSave)
                 {
                     sLog.outError("InstanceMap::Add: player %s(%d) is permanently bound to instance %d,%d,%d,%d,%d,%d but he is being put in instance %d,%d,%d,%d,%d,%d", player->GetName(), player->GetGUIDLow(), playerBind->save->GetMapId(), playerBind->save->GetInstanceId(), playerBind->save->GetDifficulty(), playerBind->save->GetPlayerCount(), playerBind->save->GetGroupCount(), playerBind->save->CanReset(), mapSave->GetMapId(), mapSave->GetInstanceId(), mapSave->GetDifficulty(), mapSave->GetPlayerCount(), mapSave->GetGroupCount(), mapSave->CanReset());
-                    assert(false);
+                    //assert(false);
+                    player->RepopAtGraveyard();
                 }
             }
             else
@@ -2556,7 +2557,8 @@ bool InstanceMap::Add(Player *player)
                                 sLog.outError("GroupBind save players: %d, group count: %d", groupBind->save->GetPlayerCount(), groupBind->save->GetGroupCount());
                             else
                                 sLog.outError("GroupBind save NULL");
-                            assert(false);
+                            //assert(false);
+                            player->RepopAtGraveyard();
                         }
                         // if the group/leader is permanently bound to the instance
                         // players also become permanently bound when they enter

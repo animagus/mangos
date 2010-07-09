@@ -5444,6 +5444,30 @@ bool Player::UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step)
                 break;
             }
         }
+
+        // Update depended enchants
+        for (int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
+        {
+            if(Item *pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i ))
+            {
+
+                for(int slot = 0; slot < MAX_ENCHANTMENT_SLOT; ++slot)
+                {
+                    uint32 enchant_id = pItem->GetEnchantmentId(EnchantmentSlot(slot));
+                    if (!enchant_id)
+                         continue;
+
+                     SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
+                     if (!pEnchant)
+                         continue;
+                     if (pEnchant->requiredSkill != SkillId)
+                         continue;
+                     if (SkillValue < pEnchant->requiredSkillValue && new_value >= pEnchant->requiredSkillValue)
+                         ApplyEnchantment(pItem, EnchantmentSlot(slot), true);
+                }
+            }
+        }
+
         GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_SKILL_LEVEL,SkillId);
         sLog.outDebug("Player::UpdateSkillPro Chance=%3.1f%% taken", Chance/10.0);
         return true;
@@ -5636,15 +5660,77 @@ void Player::SetSkill(uint32 id, uint16 currVal, uint16 maxVal)
     {
         if(currVal)
         {
+            for (int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
+            {
+                if(Item *pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i ))
+                {
+                    for(int slot = 0; slot < MAX_ENCHANTMENT_SLOT; ++slot)
+                    {
+                        uint32 enchant_id = pItem->GetEnchantmentId(EnchantmentSlot(slot));
+                        if (!enchant_id)
+                            continue;
+
+                        SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
+                        if (!pEnchant)
+                            continue;
+                        if (pEnchant->requiredSkill != id)
+                            continue;
+                        ApplyEnchantment(pItem, EnchantmentSlot(slot), false);
+                    }
+                }
+            }
+
             SetUInt32Value(PLAYER_SKILL_VALUE_INDEX(itr->second.pos),MAKE_SKILL_VALUE(currVal,maxVal));
             if(itr->second.uState != SKILL_NEW)
                 itr->second.uState = SKILL_CHANGED;
             learnSkillRewardedSpells(id, currVal);
             GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_SKILL_LEVEL,id);
             GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LEARN_SKILL_LEVEL,id);
+
+            uint32 new_value = currVal;
+            for (int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
+            {
+                if(Item *pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i ))
+                {
+                    for(int slot = 0; slot < MAX_ENCHANTMENT_SLOT; ++slot)
+                    {
+                        uint32 enchant_id = pItem->GetEnchantmentId(EnchantmentSlot(slot));
+                        if (!enchant_id)
+                            continue;
+
+                        SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
+                        if (!pEnchant)
+                            continue;
+                        if (pEnchant->requiredSkill != id)
+                            continue;
+                        ApplyEnchantment(pItem, EnchantmentSlot(slot), true);
+                    }
+                }
+            }
         }
         else                                                //remove
         {
+            // Remove depended enchants
+            for (int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; ++i)
+            {
+                if(Item *pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i ))
+                {
+                    for(int slot = 0; slot < MAX_ENCHANTMENT_SLOT; ++slot)
+                    {
+                        uint32 enchant_id = pItem->GetEnchantmentId(EnchantmentSlot(slot));
+                        if (!enchant_id)
+                            continue;
+                        
+                        SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
+                        if (!pEnchant)
+                            continue;
+                        if (pEnchant->requiredSkill != id)
+                            continue;
+                        ApplyEnchantment(pItem, EnchantmentSlot(slot), false);
+                    }
+                }
+            }
+
             // clear skill fields
             SetUInt32Value(PLAYER_SKILL_INDEX(itr->second.pos),0);
             SetUInt32Value(PLAYER_SKILL_VALUE_INDEX(itr->second.pos),0);
@@ -12339,12 +12425,12 @@ void Player::ApplyEnchantment(Item *item, EnchantmentSlot slot, bool apply, bool
     if (!ignore_condition && pEnchant->EnchantmentCondition && !((Player*)this)->EnchantmentFitsRequirements(pEnchant->EnchantmentCondition, -1))
         return;
 
-    if (pEnchant->requiredLevel > getLevel())
+    if ((pEnchant->requiredLevel) > ((Player*)this)->getLevel())
         return;
 
-    if (pEnchant->requiredSkill)
+    if ((pEnchant->requiredSkill) > 0)
     {
-        if (pEnchant->requiredSkillValue > GetSkillValue(pEnchant->requiredSkill))
+        if ((pEnchant->requiredSkillValue) > (((Player*)this)->GetSkillValue(pEnchant->requiredSkill)))
             return;
     }
 

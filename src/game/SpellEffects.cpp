@@ -3066,7 +3066,10 @@ void Spell::EffectApplyAura(uint32 i)
 
     if (sSpellMgr.GetSpellElixirSpecific(m_spellInfo->Id))                   // table spell_elixer have it all
         if (unitTarget->HasAura(53042) && unitTarget->HasSpell(m_spellInfo->EffectTriggerSpell[0]))
+        {
             duration *= 2;
+            Aur->GetModifier()->m_amount *= 1.3f;
+        }
 
     // if Aura removed and deleted, do not continue.
     if(duration== 0 && !(Aur->IsPermanent()))
