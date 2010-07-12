@@ -1448,6 +1448,8 @@ uint32 Group::CanJoinBattleGroundQueue(BattleGroundTypeId bgTypeId, BattleGround
     uint32 arenaTeamId = reference->GetArenaTeamId(arenaSlot);
     uint32 team = reference->GetTeam();
 
+    uint32 count = 0;
+
     // check every member of the group to be able to join
     for(GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())
     {
@@ -1473,7 +1475,13 @@ uint32 Group::CanJoinBattleGroundQueue(BattleGroundTypeId bgTypeId, BattleGround
         // check if member can join any more battleground queues
         if(!member->HasFreeBattleGroundQueueId())
             return BG_JOIN_ERR_ALL_QUEUES_USED;
+
+        ++count;
     }
+
+    if (isRated && count != MinPlayerCount)
+        return BG_JOIN_ERR_GROUP_NOT_ENOUGH;
+
     return BG_JOIN_ERR_OK;
 }
 
