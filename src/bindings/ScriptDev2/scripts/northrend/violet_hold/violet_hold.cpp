@@ -413,24 +413,6 @@ struct MANGOS_DLL_DECL npc_violet_portalAI : public ScriptedAI
         }
     }
 
-    std::list<Creature*> GetCreaturesByEntry(uint32 entry)
-    {
-        CellPair pair(MaNGOS::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
-        Cell cell(pair);
-        cell.data.Part.reserved = ALL_DISTRICT;
-        cell.SetNoCreate();
-
-        std::list<Creature*> creatureList;
-
-        AllCreaturesOfEntryInRange check(m_creature, entry, 150);
-        MaNGOS::CreatureListSearcher<AllCreaturesOfEntryInRange> searcher(m_creature, creatureList, check);
-        TypeContainerVisitor<MaNGOS::CreatureListSearcher<AllCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
-
-        cell.Visit(pair, visitor, *(m_creature->GetMap()));
-
-        return creatureList;
-    }
-
     bool IsThereNearElite(float range)
     {
         //Azure captain
@@ -462,16 +444,19 @@ struct MANGOS_DLL_DECL npc_violet_portalAI : public ScriptedAI
 
     bool IsNoThereNearDefender()
     {
-        std::list<Creature*> pTemp = GetCreaturesByEntry(NPC_GUARDIAN);
+        std::list<Creature*> pTemp;
+        GetCreatureListWithEntryInGrid(pTemp, m_creature, NPC_GUARDIAN, 200);
         if (!pTemp.empty())
-            for(std::list<Creature*>::iterator itr = pTemp.begin(); itr != pTemp.end(); ++itr)
-                if(((mob_vh_dragonsAI*)(*itr)->AI())->motherPortalID == portalID && !(*itr)->isAlive())
+            for(std::list<Creature*>::iterator iter = pTemp.begin(); iter != pTemp.end(); ++iter)
+                if(((mob_vh_dragonsAI*)(*iter)->AI())->motherPortalID == portalID && !(*iter)->isAlive())
                     return true;
 
-        std::list<Creature*> pTemp2 = GetCreaturesByEntry(NPC_KEEPER);
-        if (!pTemp2.empty())
-            for(std::list<Creature*>::iterator itr = pTemp2.begin(); itr != pTemp2.end(); ++itr)
-                if(((mob_vh_dragonsAI*)(*itr)->AI())->motherPortalID == portalID && !(*itr)->isAlive())
+        pTemp.clear();
+
+        GetCreatureListWithEntryInGrid(pTemp, m_creature, NPC_KEEPER, 200);
+        if (!pTemp.empty())
+            for(std::list<Creature*>::iterator iter = pTemp.begin(); iter != pTemp.end(); ++iter)
+                if(((mob_vh_dragonsAI*)(*iter)->AI())->motherPortalID == portalID && !(*iter)->isAlive())
                     return true;
 
         return false;
@@ -497,13 +482,13 @@ struct MANGOS_DLL_DECL npc_violet_portalAI : public ScriptedAI
                     TimeRiftWave_Timer = 15000;
                 }else TimeRiftWave_Timer -= diff;
 
-                if (!m_creature->IsNonMeleeSpellCasted(false))
+                /*if (!m_creature->IsNonMeleeSpellCasted(false))
                 {
                     m_uiNextPortal_Timer = 5000;
                     debug_log("SD2: npc_time_rift: not casting anylonger, i need to die.");
                     m_creature->setDeathState(JUST_DIED);
-                }
-                else if (IsNoThereNearDefender()) // alt check
+                }*/
+                if (IsNoThereNearDefender()) // alt check
                 {
                     m_uiNextPortal_Timer = 5000;
                     debug_log("SD2: npc_time_rift: not casting anylonger, i need to die.");
