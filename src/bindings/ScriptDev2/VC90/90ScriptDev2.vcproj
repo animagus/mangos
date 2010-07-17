@@ -1902,6 +1902,10 @@
 							>
 						</File>
 						<File
+							RelativePath="..\scripts\northrend\ulduar\ulduar\boss_hodir.cpp"
+							>
+						</File>
+						<File
 							RelativePath="..\scripts\northrend\ulduar\ulduar\boss_ignis.cpp"
 							>
 						</File>
@@ -1919,6 +1923,10 @@
 						</File>
 						<File
 							RelativePath="..\scripts\northrend\ulduar\ulduar\boss_razorscale.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\ulduar\ulduar\boss_thorim.cpp"
 							>
 						</File>
 						<File

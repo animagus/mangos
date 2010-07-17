@@ -63,6 +63,11 @@ struct MANGOS_DLL_DECL boss_flameleviatanAI : public ScriptedAI
             m_pInstance->SetData(TYPE_LEVIATHAN, DONE);
     }
 
+    void DamageTaken(Unit *pDoneBy, uint32 &dmg)
+    {
+        dmg *= 1.5;
+    }
+
     void Aggro(Unit* pWho)
     {
 //        DoScriptText(SAY_AGGRO, m_creature);
