@@ -62,7 +62,7 @@ enum
     SPELL_KILL                  = 5,
 
     //channelers spells
-    SPELL_PARALYZE              = 48278,
+    SPELL_PARALYZE              = 41083, //48278,
     SPELL_SHADOWS               = 59407,
 };
 
@@ -115,7 +115,7 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
         m_bIsSacrifice = false;
         m_uiSinisterStrikeTimer = urand(10000,20000);
         m_uiCallFlamesTimer = urand(15000,25000);
-        m_uiSacrificeTimer = 20000;
+        m_uiSacrificeTimer = 24000;
         m_uiSacrificeEndTimer = 120000;
 
         pArthas = NULL;
@@ -291,7 +291,6 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
                         if(pAdd && pAdd->isAlive())
                         {
                             pAdd->SetVisibility(VISIBILITY_OFF);
-                            pAdd->setFaction(35);
                         }
                         m_uiAddsGUID[k] = 0;
                     }
@@ -301,6 +300,7 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
             }
             m_uiPlayerGUID = 0;
             m_bIsSacrifice = false;
+            m_creature->setFaction(21);
         }else m_uiSacrificeEndTimer -= uiDiff;
 
         if(m_uiSinisterStrikeTimer < uiDiff)
@@ -329,7 +329,7 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
             {
                 m_uiPlayerGUID = pPlayer->GetGUID();
                 DoTeleportPlayer(pPlayer, fCoord[0][0], fCoord[0][1], fCoord[0][2], pPlayer->GetOrientation());
-                m_uiSacrificeEndTimer = 8000;
+                m_uiSacrificeEndTimer = 10000;
 
                 for(uint8 i=0; i<3; ++i)
                     if(Creature* pAdd = m_creature->SummonCreature(NPC_CHANNELER, fCoord[i][0], fCoord[i][1], fCoord[i][2], fCoord[i][3], TEMPSUMMON_TIMED_DESPAWN, 9000))
@@ -337,10 +337,11 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
                         m_uiAddsGUID[i] = pAdd->GetGUID();
                         pAdd->AI()->AttackStart(pPlayer);
                         pAdd->CastSpell(pPlayer, SPELL_PARALYZE, false);
+                        m_creature->CastSpell(m_creature, SPELL_PARALYZE, false);
                     }
             }
             m_bIsSacrifice = true;
-            m_uiSacrificeTimer = 20000;
+            m_uiSacrificeTimer = 24000;
         }else m_uiSacrificeTimer -= uiDiff;
 
         DoMeleeAttackIfReady();

@@ -113,6 +113,7 @@ struct MANGOS_DLL_DECL boss_skadiAI : public ScriptedAI
     {
         if (m_pInstance)
         {
+			m_creature->SetVisibility(VISIBILITY_ON);
             m_pInstance->SetData(TYPE_SKADI, NOT_STARTED);
             m_pInstance->SetData(TYPE_HARPOONLUNCHER, NOT_STARTED);
         }
@@ -144,7 +145,7 @@ struct MANGOS_DLL_DECL boss_skadiAI : public ScriptedAI
 
     void SendNextWeave()
     {
-        for(uint8 i=0; i<(urand(5,6)); ++i)
+        for(uint8 i=0; i<(urand(3,4)); ++i)
         {
             Creature* pAdd = m_creature->SummonCreature(m_uiSkadiAdds[urand(0,2)], m_creature->GetPositionX()+urand(5,10), m_creature->GetPositionY()+urand(5,10), m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
             if(pAdd)
@@ -161,7 +162,7 @@ struct MANGOS_DLL_DECL boss_skadiAI : public ScriptedAI
 
         if(!m_bIsLandPhase)
         {
-            if(m_uiNextWaveCount > 4)
+            if(m_uiNextWaveCount >= 4)
             {
                 if(m_pInstance && m_pInstance->GetData(TYPE_HARPOONLUNCHER) != (m_bIsRegularMode ? DONE : SPECIAL))
                 {
@@ -237,7 +238,7 @@ struct MANGOS_DLL_DECL boss_skadiAI : public ScriptedAI
             {
                 if(m_creature->getVictim())
                     m_creature->CastSpell(m_creature->getVictim(), m_bIsRegularMode ? SPELL_WHIRLWIND : SPELL_WHIRLWIND_H, false);
-                m_uiWirlwhindTimer = urand(10000,20000);
+                m_uiWirlwhindTimer = urand(15000,25000);
             }else m_uiWirlwhindTimer -= uiDiff;
 
             DoMeleeAttackIfReady();
