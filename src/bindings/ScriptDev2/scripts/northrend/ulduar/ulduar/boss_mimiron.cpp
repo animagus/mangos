@@ -232,6 +232,8 @@ struct MANGOS_DLL_DECL boss_leviathan_mkAI : public ScriptedAI
     uint32 napalm_timer;
     uint32 plasma_blast_timer;
     uint32 shock_blast_timer;
+    bool respawn_timer;
+    uint32 respawn_time;
 
 
     void Reset()
@@ -246,19 +248,52 @@ struct MANGOS_DLL_DECL boss_leviathan_mkAI : public ScriptedAI
         napalm_timer = urand(15000, 23000);
         plasma_blast_timer = urand(35000, 45000);
         shock_blast_timer = urand(45000, 55000);
+        respawn_timer = false;
+        respawn_time = 7000;
     }
 
     void JustDied(Unit *killer)
     {
         if (Creature *pMimiron = m_pInstance->instance->GetCreature(m_pInstance->GetData64(TYPE_MIMIRON)))
         {
-            ((boss_mimironAI*)pMimiron->AI())->m_phase = (last_phase ? 0 : 2);
-            ((boss_mimironAI*)pMimiron->AI())->ReloadTimer = 10000;
+            if (!last_phase)
+            {
+                ((boss_mimironAI*)pMimiron->AI())->m_phase = 2;
+                ((boss_mimironAI*)pMimiron->AI())->ReloadTimer = 10000;
+            }
+            else if (!GetClosestCreatureWithEntry(m_creature,33670,200) && !GetClosestCreatureWithEntry(m_creature,33651,200))
+            {
+                ((boss_mimironAI*)pMimiron->AI())->m_phase = 5;
+                ((TemporarySummon *)m_creature)->UnSummon();
+            }
+            else respawn_timer = true;  
         }
     }
 
     void UpdateAI(const uint32 diff)
     {
+        if (respawn_timer)
+        {
+            if (respawn_time <= diff)
+            {
+                if (!GetClosestCreatureWithEntry(m_creature,33670,200) && !GetClosestCreatureWithEntry(m_creature,33651,200))
+                {
+                    if (Creature *pMimiron = m_pInstance->instance->GetCreature(m_pInstance->GetData64(TYPE_MIMIRON)))
+                    {
+                        ((boss_mimironAI*)pMimiron->AI())->m_phase = 5;
+                    }
+                    ((TemporarySummon *)m_creature)->UnSummon();
+                }
+                else
+                {
+                    respawn_timer = false;
+                    respawn_time = 7000;
+                    m_creature->Respawn();
+                }
+
+            } else respawn_time -= diff;
+        }
+
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
@@ -404,6 +439,8 @@ struct MANGOS_DLL_DECL boss_vx_001AI : public Scripted_NoMovementAI
     uint32 rocket_timer;
     uint32 plasma_blast_timer;
     uint32 summon_plasma_timer;
+    bool respawn_timer;
+    uint32 respawn_time;
     
 
     void Reset()
@@ -423,6 +460,8 @@ struct MANGOS_DLL_DECL boss_vx_001AI : public Scripted_NoMovementAI
         rocket_timer = urand(11000, 15000);
         plasma_blast_timer = urand(25000, 35000);
         summon_plasma_timer = plasma_blast_timer - 4000;
+        respawn_timer = false;
+        respawn_time = 7000;
     }
 
     void Aggro(Unit *who) 
@@ -433,13 +472,44 @@ struct MANGOS_DLL_DECL boss_vx_001AI : public Scripted_NoMovementAI
     {
         if (Creature *pMimiron = m_pInstance->instance->GetCreature(m_pInstance->GetData64(TYPE_MIMIRON)))
         {
-            ((boss_mimironAI*)pMimiron->AI())->m_phase = (last_phase ? 0 : 3);
-            ((boss_mimironAI*)pMimiron->AI())->ReloadTimer = 10000;
+            if (!last_phase)
+            {
+                ((boss_mimironAI*)pMimiron->AI())->m_phase = 3;
+                ((boss_mimironAI*)pMimiron->AI())->ReloadTimer = 10000;
+            }
+            else if (!GetClosestCreatureWithEntry(m_creature,33670,200) && !GetClosestCreatureWithEntry(m_creature,33432,200))
+            {
+                ((boss_mimironAI*)pMimiron->AI())->m_phase = 5;
+                ((TemporarySummon *)m_creature)->UnSummon();
+            }
+            else respawn_timer = true;   
         }
     }
 
     void UpdateAI(const uint32 diff)
     {
+        if (respawn_timer)
+        {
+            if (respawn_time <= diff)
+            {
+                if (!GetClosestCreatureWithEntry(m_creature,33670,200) && !GetClosestCreatureWithEntry(m_creature,33432,200))
+                {
+                    if (Creature *pMimiron = m_pInstance->instance->GetCreature(m_pInstance->GetData64(TYPE_MIMIRON)))
+                    {
+                        ((boss_mimironAI*)pMimiron->AI())->m_phase = 5;
+                    }
+                    ((TemporarySummon *)m_creature)->UnSummon();
+                }
+                else
+                {
+                    respawn_timer = false;
+                    respawn_time = 7000;
+                    m_creature->Respawn();
+                }
+
+            } else respawn_time -= diff;
+        }
+
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
@@ -554,6 +624,8 @@ struct MANGOS_DLL_DECL boss_aerial_command_unitAI : public ScriptedAI
     uint32 summon_assault_timer;
     uint32 summon_bomb_timer;
     uint32 summon_junk_timer;
+    bool respawn_timer;
+    uint32 respawn_time;
 
 
     void Reset()
@@ -574,14 +646,25 @@ struct MANGOS_DLL_DECL boss_aerial_command_unitAI : public ScriptedAI
         summon_junk_timer = urand(10000, 13000);
         summon_bomb_timer = urand(10000, 12000);
         summon_assault_timer = urand(8000, 10000);
+        respawn_timer = false;
+        respawn_time = 7000;
     }
 
     void JustDied(Unit *killer)
     {
         if (Creature *pMimiron = m_pInstance->instance->GetCreature(m_pInstance->GetData64(TYPE_MIMIRON)))
         {
-            ((boss_mimironAI*)pMimiron->AI())->m_phase = (last_phase ? 0 : 4);
-            ((boss_mimironAI*)pMimiron->AI())->ReloadTimer = 10000;
+            if (!last_phase)
+            {
+                ((boss_mimironAI*)pMimiron->AI())->m_phase = 4;
+                ((boss_mimironAI*)pMimiron->AI())->ReloadTimer = 10000;
+            }
+            else if (!GetClosestCreatureWithEntry(m_creature,33651,200) && !GetClosestCreatureWithEntry(m_creature,33432,200))
+            {
+                ((boss_mimironAI*)pMimiron->AI())->m_phase = 5;
+                ((TemporarySummon *)m_creature)->UnSummon();
+            }
+            else respawn_timer = true;                
         }
     }
 
@@ -606,6 +689,30 @@ struct MANGOS_DLL_DECL boss_aerial_command_unitAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
+        if (respawn_timer)
+        {
+            if (respawn_time <= diff)
+            {
+                if (!GetClosestCreatureWithEntry(m_creature,33651,200) && !GetClosestCreatureWithEntry(m_creature,33432,200))
+                {
+                    if (Creature *pMimiron = m_pInstance->instance->GetCreature(m_pInstance->GetData64(TYPE_MIMIRON)))
+                    {
+                        ((boss_mimironAI*)pMimiron->AI())->m_phase = 5;
+                    }
+                    ((TemporarySummon *)m_creature)->UnSummon();
+                }
+                else
+                {
+                    respawn_timer = false;
+                    respawn_time = 7000;
+                    m_creature->Respawn();
+                }
+
+                respawn_timer = false;
+                respawn_time = 7000;
+            } else respawn_time -= diff;
+        }
+
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
