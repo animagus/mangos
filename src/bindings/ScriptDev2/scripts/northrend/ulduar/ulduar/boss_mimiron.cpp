@@ -67,6 +67,13 @@ struct MANGOS_DLL_DECL boss_mimironAI : public Scripted_NoMovementAI
     uint64 LeviGuid;
     uint64 CannonGuid;
     uint64 AirGuid;
+    bool last_phase;
+    uint32 LeviTimer;
+    uint32 CannonTimer;
+    uint32 AirTimer;
+    bool m_bIsDeath;
+    bool m_bIsDeath2;
+    bool m_bIsDeath3;
 
 
     void Reset()
@@ -93,7 +100,7 @@ struct MANGOS_DLL_DECL boss_mimironAI : public Scripted_NoMovementAI
 
         if (AirGuid)
         {
-            if (Creature *Air = m_creature->GetMap()->GetCreature(CannonGuid))
+            if (Creature *Air = m_creature->GetMap()->GetCreature(AirGuid))
             {
                 ((TemporarySummon *)Air)->UnSummon();
             }
@@ -104,6 +111,13 @@ struct MANGOS_DLL_DECL boss_mimironAI : public Scripted_NoMovementAI
 
         m_phase = 1;
         ReloadTimer = 10000;
+        last_phase = false;
+        LeviTimer = 1000;
+        AirTimer = 1000;
+        CannonTimer = 1000;
+        m_bIsDeath = false;
+        m_bIsDeath2 = false;
+        m_bIsDeath3 = false;
     }
 
     void Aggro(Unit *who) 
@@ -205,10 +219,76 @@ struct MANGOS_DLL_DECL boss_mimironAI : public Scripted_NoMovementAI
                     AirGuid = air->GetGUID();
                     air->AI()->AttackStart(m_creature->getVictim());
                 }
+
+                last_phase = true;
             } else ReloadTimer -= diff;
         }
         else if (m_phase == 5)
             m_creature->DealDamage(m_creature,m_creature->GetHealth(),NULL,DIRECT_DAMAGE,SPELL_SCHOOL_MASK_NORMAL,NULL,false);
+
+        if (last_phase)
+        {
+            if (LeviTimer <= diff)
+            {
+                if (LeviGuid)
+                {
+                    if (Creature *levi = m_creature->GetMap()->GetCreature(LeviGuid))
+                        if (!levi->isAlive() && !m_bIsDeath)
+                        {
+                            m_bIsDeath = true;
+                            LeviTimer = 7000;
+                        }
+                        else if (!levi->isAlive() && m_bIsDeath)
+                        {
+                            levi->Respawn();
+                            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                                levi->AI()->AttackStart(pTarget);
+                            m_bIsDeath = false;
+                            LeviTimer = 1000;
+                        }
+                }
+            } else LeviTimer -= diff;
+            if (AirTimer <= diff)
+            {
+                if (AirGuid)
+                {
+                    if (Creature *Air = m_creature->GetMap()->GetCreature(AirGuid))
+                        if (!Air->isAlive() && !m_bIsDeath2)
+                        {
+                            m_bIsDeath2 = true;
+                            AirTimer = 7000;
+                        }
+                        else if (!Air->isAlive() && m_bIsDeath2)
+                        {
+                            Air->Respawn();
+                            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                                Air->AI()->AttackStart(pTarget);
+                            m_bIsDeath2 = false;
+                            AirTimer = 1000;
+                        }
+                }
+            } else AirTimer -= diff;
+            if (CannonTimer <= diff)
+            {
+                if (CannonGuid)
+                {
+                    if (Creature *Cannon = m_creature->GetMap()->GetCreature(CannonGuid))
+                        if (!Cannon->isAlive() && !m_bIsDeath3)
+                        {
+                            m_bIsDeath3 = true;
+                            CannonTimer = 7000;
+                        }
+                        else if (!Cannon->isAlive() && m_bIsDeath3)
+                        {
+                            Cannon->Respawn();
+                            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                                Cannon->AI()->AttackStart(pTarget);
+                            m_bIsDeath3 = false;
+                            CannonTimer = 1000;
+                        }
+                }
+            } else CannonTimer -= diff;
+        }
 
         DoMeleeAttackIfReady();
     }
@@ -272,28 +352,6 @@ struct MANGOS_DLL_DECL boss_leviathan_mkAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (respawn_timer)
-        {
-            if (respawn_time <= diff)
-            {
-                if (!GetClosestCreatureWithEntry(m_creature,33670,200) && !GetClosestCreatureWithEntry(m_creature,33651,200))
-                {
-                    if (Creature *pMimiron = m_pInstance->instance->GetCreature(m_pInstance->GetData64(TYPE_MIMIRON)))
-                    {
-                        ((boss_mimironAI*)pMimiron->AI())->m_phase = 5;
-                    }
-                    ((TemporarySummon *)m_creature)->UnSummon();
-                }
-                else
-                {
-                    respawn_timer = false;
-                    respawn_time = 7000;
-                    m_creature->Respawn();
-                }
-
-            } else respawn_time -= diff;
-        }
-
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
@@ -488,28 +546,6 @@ struct MANGOS_DLL_DECL boss_vx_001AI : public Scripted_NoMovementAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (respawn_timer)
-        {
-            if (respawn_time <= diff)
-            {
-                if (!GetClosestCreatureWithEntry(m_creature,33670,200) && !GetClosestCreatureWithEntry(m_creature,33432,200))
-                {
-                    if (Creature *pMimiron = m_pInstance->instance->GetCreature(m_pInstance->GetData64(TYPE_MIMIRON)))
-                    {
-                        ((boss_mimironAI*)pMimiron->AI())->m_phase = 5;
-                    }
-                    ((TemporarySummon *)m_creature)->UnSummon();
-                }
-                else
-                {
-                    respawn_timer = false;
-                    respawn_time = 7000;
-                    m_creature->Respawn();
-                }
-
-            } else respawn_time -= diff;
-        }
-
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
@@ -689,30 +725,6 @@ struct MANGOS_DLL_DECL boss_aerial_command_unitAI : public ScriptedAI
 
     void UpdateAI(const uint32 diff)
     {
-        if (respawn_timer)
-        {
-            if (respawn_time <= diff)
-            {
-                if (!GetClosestCreatureWithEntry(m_creature,33651,200) && !GetClosestCreatureWithEntry(m_creature,33432,200))
-                {
-                    if (Creature *pMimiron = m_pInstance->instance->GetCreature(m_pInstance->GetData64(TYPE_MIMIRON)))
-                    {
-                        ((boss_mimironAI*)pMimiron->AI())->m_phase = 5;
-                    }
-                    ((TemporarySummon *)m_creature)->UnSummon();
-                }
-                else
-                {
-                    respawn_timer = false;
-                    respawn_time = 7000;
-                    m_creature->Respawn();
-                }
-
-                respawn_timer = false;
-                respawn_time = 7000;
-            } else respawn_time -= diff;
-        }
-
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
