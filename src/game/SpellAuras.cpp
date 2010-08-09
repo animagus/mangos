@@ -7922,6 +7922,22 @@ void Aura::PeriodicDummyTick()
                     m_target->CastSpell(m_target, 53521, true, NULL, this);
                     m_target->CastSpell(m_target, 53521, true, NULL, this);
                     return;
+                case 63382:
+                    {
+                        Unit *Caster = GetCaster();
+                        if (!Caster)
+                            return;
+
+                        bool isNormal = Caster->GetMap()->IsRegularDifficulty();                        
+                        if (m_effIndex == 0)
+                        {
+                            if (rand()%2)
+                                Caster->CastSpell(m_target, isNormal ? 64019 : 64532, true, NULL, this);
+                            else
+                                Caster->CastSpell(m_target, isNormal ? 63387 : 64531, true, NULL, this);
+                        }
+                    }
+                    return;
                 case 55592:                                 // Clean
                     switch(urand(0,2))
                     {

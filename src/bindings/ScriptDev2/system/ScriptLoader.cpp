@@ -315,6 +315,8 @@ extern void AddSC_boss_auriaya();
 extern void AddSC_boss_freya();
 extern void AddSC_boss_thorim();
 extern void AddSC_boss_hodir();
+extern void AddSC_boss_vezax();
+extern void AddSC_boss_mimiron();
 extern void AddSC_ulduar();
 extern void AddSC_instance_ulduar();                        //ulduar
 extern void AddSC_boss_ingvar();                            //utgarde_keep
@@ -744,6 +746,8 @@ void AddScripts()
     AddSC_boss_freya();
     AddSC_boss_thorim();
     AddSC_boss_hodir();
+    AddSC_boss_vezax();
+    AddSC_boss_mimiron();
     AddSC_ulduar();
     AddSC_instance_ulduar();                                //ulduar
     AddSC_boss_ingvar();                                    //utgarde_keep
