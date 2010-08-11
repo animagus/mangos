@@ -707,7 +707,6 @@ struct MANGOS_DLL_DECL npc_sinclariAI : public ScriptedAI
                     m_creature->SummonCreature(NPC_CYANIGOSA, PortalLoc[0].x, PortalLoc[0].y, PortalLoc[0].z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 180000);
                     m_pInstance->SetData(TYPE_RIFT, DONE);
                     m_pInstance->SetData(TYPE_DISRUPTIONS, 20);
-                    m_uiRiftPortalCount++;
                     m_uiNextPortal_Timer = 10000;
                 }
             }
