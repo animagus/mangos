@@ -23,8 +23,6 @@ EndScriptData */
 
 /* ContentData
 item_arcane_charges                 Prevent use if player is not flying (cannot cast while on ground)
-item_draenei_fishing_net(i23654)    Hacklike implements chance to spawn item or creature
-item_nether_wraith_beacon(i31742)   Summons creatures for quest Becoming a Spellfire Tailor (q10832)
 item_flying_machine(i34060,i34061)  Engineering crafted flying machines
 item_gor_dreks_ointment(i30175)     Protecting Our Own(q10488)
 EndContentData */
@@ -43,7 +41,7 @@ enum
 
 bool ItemUse_item_arcane_charges(Player* pPlayer, Item* pItem, const SpellCastTargets &pTargets)
 {
-    if (pPlayer->isInFlight())
+    if (pPlayer->IsTaxiFlying())
         return false;
 
     pPlayer->SendEquipError(EQUIP_ERR_NONE, pItem, NULL);
@@ -125,7 +123,7 @@ bool ItemUse_item_flying_machine(Player* pPlayer, Item* pItem, const SpellCastTa
             return false;
 
     debug_log("SD2: Player attempt to use item %u, but did not meet riding requirement",itemId);
-    pPlayer->SendEquipError(EQUIP_ERR_ERR_CANT_EQUIP_SKILL, pItem, NULL);
+    pPlayer->SendEquipError(EQUIP_ERR_CANT_EQUIP_SKILL, pItem, NULL);
     return true;
 }
 
@@ -153,6 +151,7 @@ bool ItemUse_item_gor_dreks_ointment(Player* pPlayer, Item* pItem, const SpellCa
 
     return false;
 }
+
 
 /*#####
 # item_blood_gem
@@ -193,6 +192,35 @@ bool ItemUse_item_unholy_gem(Player *player, Item* _Item, SpellCastTargets const
 	return true;
 }
 
+/*#####
+# item_petrov_cluster_bombs
+#####*/
+
+enum
+{
+    SPELL_PETROV_BOMB           = 42406,
+    AREA_ID_SHATTERED_STRAITS   = 4064,
+    ZONE_ID_HOWLING             = 495
+};
+
+bool ItemUse_item_petrov_cluster_bombs(Player* pPlayer, Item* pItem, const SpellCastTargets &pTargets)
+{
+    if (pPlayer->GetZoneId() != ZONE_ID_HOWLING)
+        return false;
+
+    if (!pPlayer->GetTransport() || pPlayer->GetAreaId() != AREA_ID_SHATTERED_STRAITS)
+    {
+        pPlayer->SendEquipError(EQUIP_ERR_NONE, pItem, NULL);
+
+        if (const SpellEntry* pSpellInfo = GetSpellStore()->LookupEntry(SPELL_PETROV_BOMB))
+            Spell::SendCastResult(pPlayer, pSpellInfo, 1, SPELL_FAILED_NOT_HERE);
+
+        return true;
+    }
+
+    return false;
+}
+
 void AddSC_item_scripts()
 {
     Script *newscript;
@@ -200,16 +228,6 @@ void AddSC_item_scripts()
     newscript = new Script;
     newscript->Name = "item_arcane_charges";
     newscript->pItemUse = &ItemUse_item_arcane_charges;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "item_draenei_fishing_net";
-    newscript->pItemUse = &ItemUse_item_draenei_fishing_net;
-    newscript->RegisterSelf();
-
-    newscript = new Script;
-    newscript->Name = "item_nether_wraith_beacon";
-    newscript->pItemUse = &ItemUse_item_nether_wraith_beacon;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -236,4 +254,9 @@ void AddSC_item_scripts()
 	newscript->Name = "item_unholy_gem";
 	newscript->pItemUse = &ItemUse_item_unholy_gem;
 	newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "item_petrov_cluster_bombs";
+    newscript->pItemUse = &ItemUse_item_petrov_cluster_bombs;
+    newscript->RegisterSelf();
 }

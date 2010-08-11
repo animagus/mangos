@@ -67,7 +67,7 @@ struct MANGOS_DLL_DECL boss_noxxionAI : public ScriptedAI
         Rand = 0;
         Summoned = DoSpawnCreature(13456, RandX, RandY, 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 90000);
         if (Summoned)
-            ((CreatureAI*)Summoned->AI())->AttackStart(victim);
+            Summoned->AI()->AttackStart(victim);
     }
 
     void UpdateAI(const uint32 diff)
@@ -95,14 +95,14 @@ struct MANGOS_DLL_DECL boss_noxxionAI : public ScriptedAI
         //ToxicVolley_Timer
         if (ToxicVolley_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_TOXICVOLLEY);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_TOXICVOLLEY);
             ToxicVolley_Timer = 9000;
         }else ToxicVolley_Timer -= diff;
 
         //Uppercut_Timer
         if (Uppercut_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_UPPERCUT);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_UPPERCUT);
             Uppercut_Timer = 12000;
         }else Uppercut_Timer -= diff;
 

@@ -97,7 +97,7 @@ struct MANGOS_DLL_DECL boss_vaelAI : public ScriptedAI
 
     void Aggro(Unit* pWho)
     {
-        DoCast(m_creature,SPELL_ESSENCEOFTHERED);
+        DoCastSpellIfCan(m_creature,SPELL_ESSENCEOFTHERED);
         m_creature->SetInCombatWithZone();
     }
 
@@ -125,10 +125,13 @@ struct MANGOS_DLL_DECL boss_vaelAI : public ScriptedAI
                     case 2:
                         m_creature->setFaction(103);
                         m_creature->SetHealth(int(m_creature->GetMaxHealth()*.3));
-                        if (PlayerGUID && Unit::GetUnit((*m_creature),PlayerGUID))
+
+                        if (PlayerGUID)
                         {
-                            AttackStart(Unit::GetUnit((*m_creature),PlayerGUID));
-                            DoCast(m_creature,SPELL_ESSENCEOFTHERED);
+                            if (Player* pPlayer = m_creature->GetMap()->GetPlayer(PlayerGUID))
+                                AttackStart(pPlayer);
+
+                            DoCastSpellIfCan(m_creature, SPELL_ESSENCEOFTHERED);
                         }
                         SpeachTimer = 0;
                         DoingSpeach = false;
@@ -142,7 +145,7 @@ struct MANGOS_DLL_DECL boss_vaelAI : public ScriptedAI
             return;
 
         // Yell if hp lower than 15%
-        if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 15 && !HasYelled)
+        if (m_creature->GetHealthPercent() < 15.0f && !HasYelled)
         {
             DoScriptText(SAY_HALFLIFE, m_creature);
             HasYelled = true;
@@ -151,14 +154,14 @@ struct MANGOS_DLL_DECL boss_vaelAI : public ScriptedAI
         //Cleave_Timer
         if (Cleave_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_CLEAVE);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_CLEAVE);
             Cleave_Timer = 15000;
         }else Cleave_Timer -= diff;
 
         //FlameBreath_Timer
         if (FlameBreath_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_FLAMEBREATH);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_FLAMEBREATH);
             FlameBreath_Timer = urand(4000, 8000);
         }else FlameBreath_Timer -= diff;
 
@@ -171,7 +174,7 @@ struct MANGOS_DLL_DECL boss_vaelAI : public ScriptedAI
             while (i < 3)                                   // max 3 tries to get a random target with power_mana
             {
                 ++i;
-                target = SelectUnit(SELECT_TARGET_RANDOM,1);//not aggro leader
+                target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,1);//not aggro leader
                 if (target)
                     if (target->getPowerType() == POWER_MANA)
                         i=3;
@@ -195,7 +198,7 @@ struct MANGOS_DLL_DECL boss_vaelAI : public ScriptedAI
         //FireNova_Timer
         if (FireNova_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_FIRENOVA);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_FIRENOVA);
             FireNova_Timer = 5000;
         }else FireNova_Timer -= diff;
 
@@ -205,7 +208,7 @@ struct MANGOS_DLL_DECL boss_vaelAI : public ScriptedAI
             //Only cast if we are behind
             /*if (!m_creature->HasInArc(M_PI, m_creature->getVictim()))
             {
-            DoCast(m_creature->getVictim(),SPELL_TAILSWIPE);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_TAILSWIPE);
             }*/
 
             TailSwipe_Timer = 20000;

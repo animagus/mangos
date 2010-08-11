@@ -73,11 +73,10 @@ struct MANGOS_DLL_DECL boss_azuregosAI : public ScriptedAI
             ThreatList const& tList = m_creature->getThreatManager().getThreatList();
             for (ThreatList::const_iterator i = tList.begin();i != tList.end(); ++i)
             {
-                Unit* pUnit = Unit::GetUnit((*m_creature), (*i)->getUnitGuid());
-                if (pUnit && (pUnit->GetTypeId() == TYPEID_PLAYER))
-                {
+                Unit* pUnit = m_creature->GetMap()->GetUnit((*i)->getUnitGuid());
+
+                if (pUnit && pUnit->GetTypeId() == TYPEID_PLAYER)
                     DoTeleportPlayer(pUnit, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ()+3, pUnit->GetOrientation());
-                }
             }
 
             DoResetThreat();
@@ -87,50 +86,50 @@ struct MANGOS_DLL_DECL boss_azuregosAI : public ScriptedAI
         //        //MarkOfFrost_Timer
         //        if (MarkOfFrost_Timer < diff)
         //        {
-        //            DoCast(m_creature->getVictim(),SPELL_MARKOFFROST);
+        //            DoCastSpellIfCan(m_creature->getVictim(),SPELL_MARKOFFROST);
         //            MarkOfFrost_Timer = 25000;
         //        }else MarkOfFrost_Timer -= diff;
 
         //Chill_Timer
         if (Chill_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_CHILL);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_CHILL);
             Chill_Timer = urand(13000, 25000);
         }else Chill_Timer -= diff;
 
         //Breath_Timer
         if (Breath_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_FROSTBREATH);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_FROSTBREATH);
             Breath_Timer = urand(10000, 15000);
         }else Breath_Timer -= diff;
 
         //ManaStorm_Timer
         if (ManaStorm_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(target,SPELL_MANASTORM);
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
+                DoCastSpellIfCan(target,SPELL_MANASTORM);
             ManaStorm_Timer = urand(7500, 12500);
         }else ManaStorm_Timer -= diff;
 
         //Reflect_Timer
         if (Reflect_Timer < diff)
         {
-            DoCast(m_creature,SPELL_REFLECT);
+            DoCastSpellIfCan(m_creature,SPELL_REFLECT);
             Reflect_Timer = urand(20000, 35000);
         }else Reflect_Timer -= diff;
 
         //Cleave_Timer
         if (Cleave_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_CLEAVE);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_CLEAVE);
             Cleave_Timer = 7000;
         }else Cleave_Timer -= diff;
 
         //Enrage_Timer
-        if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 26 && !Enraged)
+        if (m_creature->GetHealthPercent() < 26.0f && !Enraged)
         {
-            DoCast(m_creature, SPELL_ENRAGE);
+            DoCastSpellIfCan(m_creature, SPELL_ENRAGE);
             Enraged = true;
         }
 

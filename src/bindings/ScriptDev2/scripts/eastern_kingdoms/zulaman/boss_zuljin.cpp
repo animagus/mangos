@@ -29,7 +29,7 @@ enum
     SAY_INTRO                       = -1568056,
     SAY_AGGRO                       = -1568057,
     SAY_BEAR_TRANSFORM              = -1568058,
-    SAY_EAGLE_TRANSFORM             = -1568058,
+    SAY_EAGLE_TRANSFORM             = -1568059,
     SAY_LYNX_TRANSFORM              = -1568060,
     SAY_DRAGONHAWK_TRANSFORM        = -1568061,
     SAY_FIRE_BREATH                 = -1568062,
@@ -91,9 +91,9 @@ enum
 };
 
 //coords for going for changing form
-const float CENTER_X = 120.148811;
-const float CENTER_Y = 703.713684;
-const float CENTER_Z = 45.111477;
+const float CENTER_X = 120.148811f;
+const float CENTER_Y = 703.713684f;
+const float CENTER_Z = 45.111477f;
 
 struct MANGOS_DLL_DECL boss_zuljinAI : public ScriptedAI
 {

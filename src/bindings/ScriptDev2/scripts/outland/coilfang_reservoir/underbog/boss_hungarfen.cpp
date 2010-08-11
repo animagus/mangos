@@ -51,18 +51,18 @@ struct MANGOS_DLL_DECL boss_hungarfenAI : public ScriptedAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        if ((m_creature->GetHealth()*100) / m_creature->GetMaxHealth() <= 20)
+        if (m_creature->GetHealthPercent() <= 20.0f)
         {
             if (!Root)
             {
-                DoCast(m_creature,SPELL_FOUL_SPORES);
+                DoCastSpellIfCan(m_creature,SPELL_FOUL_SPORES);
                 Root = true;
             }
         }
 
         if (Mushroom_Timer < diff)
         {
-            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                 m_creature->SummonCreature(17990, target->GetPositionX()+(rand()%8), target->GetPositionY()+(rand()%8), target->GetPositionZ(), (rand()%5), TEMPSUMMON_TIMED_DESPAWN, 22000);
             else
                 m_creature->SummonCreature(17990, m_creature->GetPositionX()+(rand()%8), m_creature->GetPositionY()+(rand()%8), m_creature->GetPositionZ(), (rand()%5), TEMPSUMMON_TIMED_DESPAWN, 22000);
@@ -72,8 +72,8 @@ struct MANGOS_DLL_DECL boss_hungarfenAI : public ScriptedAI
 
         if (AcidGeyser_Timer < diff)
         {
-            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(target,SPELL_ACID_GEYSER);
+            if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
+                DoCastSpellIfCan(target,SPELL_ACID_GEYSER);
             AcidGeyser_Timer = urand(10000, 17500);
         }else AcidGeyser_Timer -= diff;
 
@@ -103,8 +103,8 @@ struct MANGOS_DLL_DECL mob_underbog_mushroomAI : public ScriptedAI
         Grow_Timer = 0;
         Shrink_Timer = 20000;
 
-        DoCast(m_creature,SPELL_PUTRID_MUSHROOM,true);
-        DoCast(m_creature,SPELL_SPORE_CLOUD,true);
+        DoCastSpellIfCan(m_creature, SPELL_PUTRID_MUSHROOM, CAST_TRIGGERED);
+        DoCastSpellIfCan(m_creature, SPELL_SPORE_CLOUD, CAST_TRIGGERED);
     }
 
     void MoveInLineOfSight(Unit *who) { return; }
@@ -118,7 +118,7 @@ struct MANGOS_DLL_DECL mob_underbog_mushroomAI : public ScriptedAI
 
         if (Grow_Timer <= diff)
         {
-            DoCast(m_creature,SPELL_GROW);
+            DoCastSpellIfCan(m_creature,SPELL_GROW);
             Grow_Timer = 3000;
         }else Grow_Timer -= diff;
 

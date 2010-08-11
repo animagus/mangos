@@ -69,7 +69,7 @@ struct MANGOS_DLL_DECL boss_jandicebarovAI : public ScriptedAI
         Rand = 0;
         Summoned = DoSpawnCreature(11439, RandX, RandY, 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 60000);
         if (Summoned)
-            ((CreatureAI*)Summoned->AI())->AttackStart(victim);
+            Summoned->AI()->AttackStart(victim);
     }
 
     void UpdateAI(const uint32 diff)
@@ -95,7 +95,7 @@ struct MANGOS_DLL_DECL boss_jandicebarovAI : public ScriptedAI
         //CurseOfBlood_Timer
         if (CurseOfBlood_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_CURSEOFBLOOD);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_CURSEOFBLOOD);
             CurseOfBlood_Timer = 30000;
         }else CurseOfBlood_Timer -= diff;
 
@@ -113,7 +113,7 @@ struct MANGOS_DLL_DECL boss_jandicebarovAI : public ScriptedAI
             Unit* target = NULL;
             for(int i = 0; i < 10; ++i)
             {
-                target = SelectUnit(SELECT_TARGET_RANDOM,0);
+                target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0);
                 SummonIllusions(target);
             }
             Invisible = true;
@@ -127,7 +127,7 @@ struct MANGOS_DLL_DECL boss_jandicebarovAI : public ScriptedAI
         //            if (Illusion_Timer < diff)
         //            {
         //                  //Cast
-        //                DoCast(m_creature->getVictim(),SPELL_ILLUSION);
+        //                DoCastSpellIfCan(m_creature->getVictim(),SPELL_ILLUSION);
         //                  //3 Illusion will be summoned
         //                  if (Illusioncounter < 3)
         //                  {
@@ -168,7 +168,7 @@ struct MANGOS_DLL_DECL mob_illusionofjandicebarovAI : public ScriptedAI
         //Cleave_Timer
         if (Cleave_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_CLEAVE);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_CLEAVE);
             Cleave_Timer = urand(5000, 8000);
         }else Cleave_Timer -= diff;
 

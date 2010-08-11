@@ -23,10 +23,10 @@
 #include "Player.h"
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
+#include "CreatureAI.h"
 
-Totem::Totem() : Creature()
+Totem::Totem() : Creature(CREATURE_SUBTYPE_TOTEM)
 {
-    m_isTotem = true;
     m_duration = 0;
     m_type = TOTEM_PASSIVE;
 }
@@ -55,18 +55,10 @@ void Totem::Summon(Unit* owner)
 {
     owner->GetMap()->Add((Creature*)this);
 
-    // select totem model in dependent from owner team
-    CreatureInfo const *cinfo = GetCreatureInfo();
-    if(owner->GetTypeId() == TYPEID_PLAYER && cinfo)
-    {
-        uint32 display_id = sObjectMgr.ChooseDisplayId(((Player*)owner)->GetTeam(), cinfo);
-        CreatureModelInfo const *minfo = sObjectMgr.GetCreatureModelRandomGender(display_id);
-        if (minfo)
-            display_id = minfo->modelid;
-        SetDisplayId(display_id);
-    }
-
     AIM_Initialize();
+
+    if (owner->GetTypeId() == TYPEID_UNIT && ((Creature*)owner)->AI())
+        ((Creature*)owner)->AI()->JustSummoned((Creature*)this);
 
     // there are some totems, which exist just for their visual appeareance
     if (!GetSpell())
@@ -94,16 +86,7 @@ void Totem::UnSummon()
 
     if (Unit *owner = GetOwner())
     {
-        // clear owner's totem slot
-        for(int i = 0; i < MAX_TOTEM; ++i)
-        {
-            if(owner->m_TotemSlot[i] == GetGUID())
-            {
-                owner->m_TotemSlot[i] = 0;
-                break;
-            }
-        }
-
+        owner->_RemoveTotem(this);
         owner->RemoveAurasDueToSpell(GetSpell());
 
         //remove aura all party members too
@@ -122,6 +105,9 @@ void Totem::UnSummon()
                 }
             }
         }
+
+        if (owner->GetTypeId() == TYPEID_UNIT && ((Creature*)owner)->AI())
+            ((Creature*)owner)->AI()->SummonedCreatureDespawn((Creature*)this);
     }
 
     AddObjectToRemoveList();
@@ -160,7 +146,7 @@ void Totem::SetTypeBySummonSpell(SpellEntry const * spellProto)
         m_type = TOTEM_STATUE;                              //Jewelery statue
 }
 
-bool Totem::IsImmunedToSpellEffect(SpellEntry const* spellInfo, uint32 index) const
+bool Totem::IsImmunedToSpellEffect(SpellEntry const* spellInfo, SpellEffectIndex index) const
 {
     // TODO: possibly all negative auras immune?
     switch(spellInfo->Effect[index])

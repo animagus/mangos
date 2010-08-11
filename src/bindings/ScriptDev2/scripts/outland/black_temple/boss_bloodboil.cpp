@@ -16,8 +16,8 @@
 
 /* ScriptData
 SDName: Boss_Bloodboil
-SD%Complete: 80
-SDComment: Bloodboil not working correctly, missing enrage
+SD%Complete: 85
+SDComment: Bloodboil not working correctly
 SDCategory: Black Temple
 EndScriptData */
 
@@ -50,6 +50,7 @@ EndScriptData */
 #define SPELL_TAUNT_GURTOGG      40603
 #define SPELL_INSIGNIFIGANCE     40618
 #define SPELL_BERSERK            45078
+#define SPELL_ENRAGE             27680
 
 struct MANGOS_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 {
@@ -75,6 +76,7 @@ struct MANGOS_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
     uint32 EjectTimer;
     uint32 BewilderingStrikeTimer;
     uint32 PhaseChangeTimer;
+    uint32 m_uiEnrageTimer;
 
     bool Phase1;
 
@@ -94,6 +96,7 @@ struct MANGOS_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
         EjectTimer = 10000;
         BewilderingStrikeTimer = 15000;
         PhaseChangeTimer = 60000;
+        m_uiEnrageTimer = 600000;
 
         Phase1 = true;
     }
@@ -142,7 +145,8 @@ struct MANGOS_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
         //store the threat list in a different container
         for (ThreatList::const_iterator itr = tList.begin();itr != tList.end(); ++itr)
         {
-            Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+            Unit *target = m_creature->GetMap()->GetUnit((*itr)->getUnitGuid());
+
             //only on alive players
             if (target && target->isAlive() && target->GetTypeId() == TYPEID_PLAYER)
                 targets.push_back(target);
@@ -176,16 +180,13 @@ struct MANGOS_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 
     void RevertThreatOnTarget(uint64 guid)
     {
-        Unit* pUnit = NULL;
-        pUnit = Unit::GetUnit((*m_creature), guid);
-
-        if (pUnit)
+        if (Player* pPlayer = m_creature->GetMap()->GetPlayer(guid))
         {
-            if (m_creature->getThreatManager().getThreat(pUnit))
-                m_creature->getThreatManager().modifyThreatPercent(pUnit, -100);
+            if (m_creature->getThreatManager().getThreat(pPlayer))
+                m_creature->getThreatManager().modifyThreatPercent(pPlayer, -100);
 
             if (TargetThreat)
-                m_creature->AddThreat(pUnit, TargetThreat);
+                m_creature->AddThreat(pPlayer, TargetThreat);
         }
     }
 
@@ -196,22 +197,22 @@ struct MANGOS_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 
         if (ArcingSmashTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_ARCING_SMASH);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_ARCING_SMASH);
             ArcingSmashTimer = 10000;
         }else ArcingSmashTimer -= diff;
 
         if (FelAcidTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_FEL_ACID);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_FEL_ACID);
             FelAcidTimer = 25000;
         }else FelAcidTimer -= diff;
 
-        if (!m_creature->HasAura(SPELL_BERSERK, 0))
+        if (!m_creature->HasAura(SPELL_BERSERK, EFFECT_INDEX_0))
         {
             if (EnrageTimer < diff)
             {
-                DoCast(m_creature, SPELL_BERSERK);
-                DoScriptText(urand(0, 1) ? SAY_ENRAGE1 : SAY_ENRAGE2, m_creature);
+                if (DoCastSpellIfCan(m_creature, SPELL_BERSERK) == CAST_OK)
+                    DoScriptText(urand(0, 1) ? SAY_ENRAGE1 : SAY_ENRAGE2, m_creature);
             }else EnrageTimer -= diff;
         }
 
@@ -219,10 +220,10 @@ struct MANGOS_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
         {
             if (BewilderingStrikeTimer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_BEWILDERING_STRIKE);
+                DoCastSpellIfCan(m_creature->getVictim(), SPELL_BEWILDERING_STRIKE);
                 float mt_threat = m_creature->getThreatManager().getThreat(m_creature->getVictim());
 
-                if (Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 1))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_TOPAGGRO, 1))
                     m_creature->AddThreat(target, mt_threat);
 
                 BewilderingStrikeTimer = 20000;
@@ -230,14 +231,14 @@ struct MANGOS_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
 
             if (EjectTimer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_EJECT1);
+                DoCastSpellIfCan(m_creature->getVictim(), SPELL_EJECT1);
                 m_creature->getThreatManager().modifyThreatPercent(m_creature->getVictim(), -40);
                 EjectTimer = 15000;
             }else EjectTimer -= diff;
 
             if (AcidicWoundTimer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_ACIDIC_WOUND);
+                DoCastSpellIfCan(m_creature->getVictim(), SPELL_ACIDIC_WOUND);
                 AcidicWoundTimer = 10000;
             }else AcidicWoundTimer -= diff;
 
@@ -246,7 +247,7 @@ struct MANGOS_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
                 if (BloodboilCount < 5)                     // Only cast it five times.
                 {
                     //CastBloodboil(); // Causes issues on windows, so is commented out.
-                    DoCast(m_creature->getVictim(), SPELL_BLOODBOIL);
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_BLOODBOIL);
                     ++BloodboilCount;
                     BloodboilTimer = 10000*BloodboilCount;
                 }
@@ -257,13 +258,13 @@ struct MANGOS_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
         {
             if (AcidGeyserTimer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_ACID_GEYSER);
+                DoCastSpellIfCan(m_creature->getVictim(), SPELL_ACID_GEYSER);
                 AcidGeyserTimer = 30000;
             }else AcidGeyserTimer -= diff;
 
             if (EjectTimer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_EJECT2);
+                DoCastSpellIfCan(m_creature->getVictim(), SPELL_EJECT2);
                 EjectTimer = 15000;
             }else EjectTimer -= diff;
         }
@@ -272,7 +273,7 @@ struct MANGOS_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
         {
             if (Phase1)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
                 if (target && target->isAlive())
                 {
                     Phase1 = false;
@@ -287,16 +288,16 @@ struct MANGOS_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
                     m_creature->AddThreat(target, 50000000.0f);
 
                     // If VMaps are disabled, this spell can call the whole instance
-                    DoCast(m_creature, SPELL_INSIGNIFIGANCE, true);
-                    DoCast(target, SPELL_FEL_RAGE_TARGET, true);
-                    DoCast(target, SPELL_FEL_RAGE_2, true);
+                    DoCastSpellIfCan(m_creature, SPELL_INSIGNIFIGANCE, CAST_TRIGGERED);
+                    DoCastSpellIfCan(target, SPELL_FEL_RAGE_TARGET, CAST_TRIGGERED);
+                    DoCastSpellIfCan(target, SPELL_FEL_RAGE_2, CAST_TRIGGERED);
 
                     /* These spells do not work, comment them out for now.
-                    DoCast(target, SPELL_FEL_RAGE_2, true);
-                    DoCast(target, SPELL_FEL_RAGE_3, true);*/
+                    DoCastSpellIfCan(target, SPELL_FEL_RAGE_2, CAST_TRIGGERED);
+                    DoCastSpellIfCan(target, SPELL_FEL_RAGE_3, CAST_TRIGGERED);*/
 
                     //Cast this without triggered so that it appears in combat logs and shows visual.
-                    DoCast(m_creature, SPELL_FEL_RAGE_SELF);
+                    DoCastSpellIfCan(m_creature, SPELL_FEL_RAGE_SELF);
 
                     DoScriptText(urand(0, 1) ? SAY_SPECIAL1 : SAY_SPECIAL2, m_creature);
 
@@ -319,6 +320,13 @@ struct MANGOS_DLL_DECL boss_gurtogg_bloodboilAI : public ScriptedAI
                 PhaseChangeTimer = 60000;
             }
         }else PhaseChangeTimer -= diff;
+        
+        //Enrage
+        if (m_uiEnrageTimer < diff)
+        {
+            DoCast(m_creature, SPELL_ENRAGE);
+            m_uiEnrageTimer = 60000;
+        }else m_uiEnrageTimer -= diff;
 
         DoMeleeAttackIfReady();
     }

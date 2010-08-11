@@ -129,19 +129,23 @@ struct MANGOS_DLL_DECL boss_arlokkAI : public ScriptedAI
 
     void DoSummonPhanters()
     {
-        if (Unit* pUnit = Unit::GetUnit(*m_creature, m_uiMarkedGUID))
-            if (pUnit->isAlive())
-                DoScriptText(SAY_FEAST_PANTHER, m_creature, pUnit);
+        if (Player* pPlayer = m_creature->GetMap()->GetPlayer(m_uiMarkedGUID))
+        {
+            if (pPlayer->isAlive())
+                DoScriptText(SAY_FEAST_PANTHER, m_creature, pPlayer);
+        }
 
-        m_creature->SummonCreature(NPC_ZULIAN_PROWLER, -11532.7998, -1649.6734, 41.4800, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
-        m_creature->SummonCreature(NPC_ZULIAN_PROWLER, -11532.9970, -1606.4840, 41.2979, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
+        m_creature->SummonCreature(NPC_ZULIAN_PROWLER, -11532.7998f, -1649.6734f, 41.4800f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
+        m_creature->SummonCreature(NPC_ZULIAN_PROWLER, -11532.9970f, -1606.4840f, 41.2979f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 15000);
     }
 
     void JustSummoned(Creature* pSummoned)
     {
-        if (Unit* pUnit = Unit::GetUnit(*m_creature, m_uiMarkedGUID))
-            if (pUnit->isAlive())
-                pSummoned->AI()->AttackStart(pUnit);
+        if (Player* pPlayer = m_creature->GetMap()->GetPlayer(m_uiMarkedGUID))
+        {
+            if (pPlayer->isAlive())
+                pSummoned->AI()->AttackStart(pPlayer);
+        }
 
         ++m_uiSummonCount;
     }
@@ -155,7 +159,7 @@ struct MANGOS_DLL_DECL boss_arlokkAI : public ScriptedAI
         {
             if (m_uiShadowWordPain_Timer < uiDiff)
             {
-                DoCast(m_creature->getVictim(),SPELL_SHADOWWORDPAIN);
+                DoCastSpellIfCan(m_creature->getVictim(),SPELL_SHADOWWORDPAIN);
                 m_uiShadowWordPain_Timer = 15000;
             }
             else
@@ -163,11 +167,11 @@ struct MANGOS_DLL_DECL boss_arlokkAI : public ScriptedAI
 
             if (m_uiMark_Timer < uiDiff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 {
                     if (Player* pMark = pTarget->GetCharmerOrOwnerPlayerOrPlayerItself())
                     {
-                        DoCast(pMark, SPELL_MARK);
+                        DoCastSpellIfCan(pMark, SPELL_MARK);
                         m_uiMarkedGUID = pMark->GetGUID();
                     }
                     else
@@ -189,7 +193,7 @@ struct MANGOS_DLL_DECL boss_arlokkAI : public ScriptedAI
             //Cleave_Timer
             if (m_uiCleave_Timer < uiDiff)
             {
-                DoCast(m_creature->getVictim(), SPELL_CLEAVE);
+                DoCastSpellIfCan(m_creature->getVictim(), SPELL_CLEAVE);
                 m_uiCleave_Timer = 16000;
             }
             else
@@ -198,7 +202,7 @@ struct MANGOS_DLL_DECL boss_arlokkAI : public ScriptedAI
             //Gouge_Timer
             if (m_uiGouge_Timer < uiDiff)
             {
-                DoCast(m_creature->getVictim(), SPELL_GOUGE);
+                DoCastSpellIfCan(m_creature->getVictim(), SPELL_GOUGE);
 
                 if (m_creature->getThreatManager().getThreat(m_creature->getVictim()))
                     m_creature->getThreatManager().modifyThreatPercent(m_creature->getVictim(),-80);
@@ -250,7 +254,7 @@ struct MANGOS_DLL_DECL boss_arlokkAI : public ScriptedAI
                 m_creature->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, (cinfo->maxdmg +((cinfo->maxdmg/100) * 35)));
                 m_creature->UpdateDamagePhysical(BASE_ATTACK);
 
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                     AttackStart(pTarget);
 
                 m_bIsPhaseTwo = true;

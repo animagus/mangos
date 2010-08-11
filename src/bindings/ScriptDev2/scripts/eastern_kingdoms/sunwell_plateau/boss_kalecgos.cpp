@@ -152,7 +152,7 @@ struct MANGOS_DLL_DECL boss_kalecgosAI : public ScriptedAI
             {
                 damage = 0;
                 m_bBanished = true;
-                DoCast(m_creature, SPELL_BANISH, true);
+                DoCastSpellIfCan(m_creature, SPELL_BANISH, true);
                 m_creature->GetMotionMaster()->MoveIdle();
             }
             else
@@ -193,7 +193,7 @@ struct MANGOS_DLL_DECL boss_kalecgosAI : public ScriptedAI
             if (pTarget->GetTypeId() != TYPEID_PLAYER)
                 return;
 
-            if (pTarget->HasAura(SPELL_SPECTRAL_EXHAUSTION,0) || pTarget->HasAura(SPELL_SPECTRAL_REALM))
+            if (pTarget->HasAura(SPELL_SPECTRAL_EXHAUSTION, EFFECT_INDEX_0) || pTarget->HasAura(SPELL_SPECTRAL_REALM))
                 return;
 
             if (pTarget == m_creature->getVictim())
@@ -215,10 +215,11 @@ struct MANGOS_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
         if (Creature* pSathrovarr = m_pInstance->instance->GetCreature(m_pInstance->GetData64(DATA_SATHROVARR)))
         {
-            pSathrovarr->DealDamage(pSathrovarr, pSathrovarr->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-
-            pSathrovarr->GetMap()->CreatureRelocation(pSathrovarr, KALECGOS_ARENA[0], KALECGOS_ARENA[1], KALECGOS_ARENA[2], 0.0f);
-            pSathrovarr->SendMonsterMove(KALECGOS_ARENA[0], KALECGOS_ARENA[1], KALECGOS_ARENA[2], 0, MONSTER_MOVE_NONE, 0);
+            if (pSathrovarr->isAlive())
+            {
+                pSathrovarr->NearTeleportTo(KALECGOS_ARENA[0], KALECGOS_ARENA[1], KALECGOS_ARENA[2], 0.0f);
+                pSathrovarr->DealDamage(pSathrovarr, pSathrovarr->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            }
         }
 
         if (Creature* pKalec = m_pInstance->instance->GetCreature(m_pInstance->GetData64(DATA_KALECGOS_HUMAN)))
@@ -253,9 +254,9 @@ struct MANGOS_DLL_DECL boss_kalecgosAI : public ScriptedAI
         if (!m_creature->getVictim() || !m_creature->SelectHostileTarget() || m_bBanished)
             return;
 
-        if (!m_bEnraged && ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 10))
+        if (!m_bEnraged && m_creature->GetHealthPercent() < 10.0f)
         {
-            if (Unit* pSathrovarr = Unit::GetUnit(*m_creature, m_pInstance->GetData64(DATA_SATHROVARR)))
+            if (Creature* pSathrovarr = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(DATA_SATHROVARR)))
             {
                 if (pSathrovarr->isAlive())
                     pSathrovarr->CastSpell(pSathrovarr, SPELL_CRAZED_RAGE, true);
@@ -265,14 +266,14 @@ struct MANGOS_DLL_DECL boss_kalecgosAI : public ScriptedAI
             m_bEnraged = true;
         }
 
-        if (!m_bChecked && ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 1))
+        if (!m_bChecked && m_creature->GetHealthPercent() < 1.0f)
         {
             m_bChecked = true;
 
             if (!m_bUncorrupted)
             {
                 m_bBanished = true;
-                DoCast(m_creature, SPELL_BANISH, true);
+                DoCastSpellIfCan(m_creature, SPELL_BANISH, true);
                 m_creature->GetMotionMaster()->MoveIdle();
             }
             else
@@ -297,30 +298,34 @@ struct MANGOS_DLL_DECL boss_kalecgosAI : public ScriptedAI
 
         if (m_uiArcaneBuffetTimer < diff)
         {
-            if (rand()%3 == 0)
-                DoScriptText(SAY_EVIL_SPELL1, m_creature);
+            if (DoCastSpellIfCan(m_creature->getVictim(), SPELL_ARCANE_BUFFET) == CAST_OK)
+            {
+                if (!urand(0, 2))
+                    DoScriptText(SAY_EVIL_SPELL1, m_creature);
 
-            DoCast(m_creature->getVictim(), SPELL_ARCANE_BUFFET);
-            m_uiArcaneBuffetTimer = 20000;
+                m_uiArcaneBuffetTimer = 20000;
+            }
         }
         else
             m_uiArcaneBuffetTimer -= diff;
 
         if (m_uiFrostBreathTimer < diff)
         {
-            if (!(rand()%2))
-                DoScriptText(SAY_EVIL_SPELL2, m_creature);
+            if (DoCastSpellIfCan(m_creature->getVictim(), SPELL_FROST_BREATH) == CAST_OK)
+            {
+                if (!urand(0, 1))
+                    DoScriptText(SAY_EVIL_SPELL2, m_creature);
 
-            DoCast(m_creature->getVictim(), SPELL_FROST_BREATH);
-            m_uiFrostBreathTimer = 25000;
+                m_uiFrostBreathTimer = 25000;
+            }
         }
         else
             m_uiFrostBreathTimer -= diff;
 
         if (m_uiWildMagicTimer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                DoCast(target, WildMagic[rand()%6]);
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                DoCastSpellIfCan(target, WildMagic[rand()%6]);
 
             m_uiWildMagicTimer = 19000;
         }
@@ -377,7 +382,7 @@ struct MANGOS_DLL_DECL boss_sathrovarrAI : public ScriptedAI
         if (!m_pInstance)
             return;
 
-        if (Unit* pKalec = Unit::GetUnit(*m_creature, m_pInstance->GetData64(DATA_KALECGOS_HUMAN)))
+        if (Creature* pKalec = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(DATA_KALECGOS_HUMAN)))
         {
             m_creature->AddThreat(pKalec, 10000000.0f);
             pKalec->AddThreat(m_creature, 10000000.0f);
@@ -389,7 +394,7 @@ struct MANGOS_DLL_DECL boss_sathrovarrAI : public ScriptedAI
         if (damage > m_creature->GetHealth())
         {
             damage = 0;
-            DoCast(m_creature, SPELL_BANISH, true);
+            DoCastSpellIfCan(m_creature, SPELL_BANISH, CAST_TRIGGERED);
             m_bBanished = true;
 
             DoScriptText(SAY_SATH_DEATH, m_creature);
@@ -401,8 +406,11 @@ struct MANGOS_DLL_DECL boss_sathrovarrAI : public ScriptedAI
 
             if (Creature* pKalecgos = m_pInstance->instance->GetCreature(m_pInstance->GetData64(DATA_KALECGOS_DRAGON)))
             {
-                ((boss_kalecgosAI*)pKalecgos->AI())->m_bChecked = false;
-                ((boss_kalecgosAI*)pKalecgos->AI())->m_bUncorrupted = true;
+                if (boss_kalecgosAI* pKalecgosAI = dynamic_cast<boss_kalecgosAI*>(pKalecgos->AI()))
+                {
+                    pKalecgosAI->m_bChecked = false;
+                    pKalecgosAI->m_bUncorrupted = true;
+                }
             }
         }
     }
@@ -421,9 +429,9 @@ struct MANGOS_DLL_DECL boss_sathrovarrAI : public ScriptedAI
         if (!m_creature->getVictim() || !m_creature->SelectHostileTarget() || m_bBanished)
             return;
 
-        if (!m_bEnraged && ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) <= 10))
+        if (!m_bEnraged && m_creature->GetHealthPercent() < 10.0f)
         {
-            if (Unit* pKalecgos = Unit::GetUnit(*m_creature, m_pInstance->GetData64(DATA_KALECGOS_DRAGON)))
+            if (Creature* pKalecgos = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(DATA_KALECGOS_DRAGON)))
             {
                 if (pKalecgos->isAlive())
                     pKalecgos->CastSpell(pKalecgos, SPELL_CRAZED_RAGE, true);
@@ -438,14 +446,14 @@ struct MANGOS_DLL_DECL boss_sathrovarrAI : public ScriptedAI
             if (!(rand()%2))
                 DoScriptText(SAY_SATH_SPELL2, m_creature);
 
-            DoCast(m_creature->getVictim(), SPELL_CORRUPTING_STRIKE);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_CORRUPTING_STRIKE);
             CorruptingStrikeTimer = 13000;
         }else CorruptingStrikeTimer -= diff;
 
         if (CurseOfBoundlessAgonyTimer < diff)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                DoCast(pTarget, SPELL_CURSE_OF_BOUNDLESS_AGONY);
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                DoCastSpellIfCan(pTarget, SPELL_CURSE_OF_BOUNDLESS_AGONY);
 
             CurseOfBoundlessAgonyTimer = 35000;
         }else CurseOfBoundlessAgonyTimer -= diff;
@@ -455,7 +463,7 @@ struct MANGOS_DLL_DECL boss_sathrovarrAI : public ScriptedAI
             if (!(rand()%2))
                 DoScriptText(SAY_SATH_SPELL1, m_creature);
 
-            DoCast(m_creature->getVictim(), SPELL_SHADOW_BOLT_VOLLEY);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_SHADOW_BOLT_VOLLEY);
             ShadowBoltVolleyTimer = 15000;
         }else ShadowBoltVolleyTimer -= diff;
 
@@ -510,26 +518,26 @@ struct MANGOS_DLL_DECL boss_kalecgos_humanoidAI : public ScriptedAI
         {
             if (m_pInstance)
             {
-                /*Unit* pUnit = Unit::GetUnit(*m_creature, m_pInstance->GetData64(DATA_RANDOM_SPECTRAL_PLAYER));
-                if (pUnit)
-                    DoCast(pUnit, SPELL_REVITALIZE);*/
+                /*Player* pPlayer = m_creature->GetMap()->GetPlayer(m_pInstance->GetData64(DATA_RANDOM_SPECTRAL_PLAYER));
+                if (pPlayer)
+                    DoCastSpellIfCan(pPlayer, SPELL_REVITALIZE);*/
                 RevitalizeTimer = 30000;
             }
         }else RevitalizeTimer -= diff;
 
         if (HeroicStrikeTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_HEROIC_STRIKE);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_HEROIC_STRIKE);
             HeroicStrikeTimer = 30000;
         }else HeroicStrikeTimer -= diff;
 
-        if (((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 20) && !HasYelled20Percent)
+        if (m_creature->GetHealthPercent() < 20.0f && !HasYelled20Percent)
         {
             DoScriptText(SAY_GOOD_NEAR_DEATH, m_creature);
             HasYelled20Percent = true;
         }
 
-        if (((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 10) && !HasYelled10Percent)
+        if (m_creature->GetHealthPercent() < 10.0f && !HasYelled10Percent)
         {
             DoScriptText(SAY_GOOD_NEAR_DEATH2, m_creature);
             HasYelled10Percent = true;
@@ -544,7 +552,7 @@ bool GOHello_go_spectral_rift(Player* pPlayer, GameObject* pGo)
 
     if (ScriptedInstance* pInstance = (ScriptedInstance*)pPlayer->GetInstanceData())
     {
-        if (pPlayer->HasAura(SPELL_SPECTRAL_EXHAUSTION, 0))
+        if (pPlayer->HasAura(SPELL_SPECTRAL_EXHAUSTION, EFFECT_INDEX_0))
             return true;
 
         // Make them able to see Sathrovarr (he's invisible for some reason). Also, when this buff wears off, they get teleported back to Normal Realm (this is handled by Instance Script)

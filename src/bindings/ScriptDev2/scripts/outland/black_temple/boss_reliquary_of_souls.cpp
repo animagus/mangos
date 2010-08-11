@@ -79,19 +79,19 @@ EndScriptData */
 
 #define CREATURE_ENSLAVED_SOUL          23469
 
-struct Position
+struct ReliquaryPosition
 {
     float x,y;
 };
 
-static Position Coords[]=
+static ReliquaryPosition Coords[]=
 {
-    {450.4, 212.3},
-    {542.1, 212.3},
-    {542.1, 168.3},
-    {542.1, 137.4},
-    {450.4, 137.4},
-    {450.4, 168.3}
+    {450.4f, 212.3f},
+    {542.1f, 212.3f},
+    {542.1f, 168.3f},
+    {542.1f, 137.4f},
+    {450.4f, 137.4f},
+    {450.4f, 168.3f}
 };
 
 struct MANGOS_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
@@ -121,7 +121,7 @@ struct MANGOS_DLL_DECL npc_enslaved_soulAI : public ScriptedAI
                     }else done_by->SetPower(POWER_MANA, done_by->GetMaxPower(POWER_MANA));
                 }
             }
-            DoCast(done_by, SPELL_SOUL_RELEASE);
+            DoCastSpellIfCan(done_by, SPELL_SOUL_RELEASE);
         }
     }
 
@@ -189,11 +189,11 @@ struct MANGOS_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
         Creature* pEssence = NULL;
 
         if (SufferingGUID)
-            pEssence = (Creature*)Unit::GetUnit((*m_creature), SufferingGUID);
+            pEssence = m_creature->GetMap()->GetCreature(SufferingGUID);
         else if (DesireGUID)
-            pEssence = (Creature*)Unit::GetUnit((*m_creature), DesireGUID);
+            pEssence = m_creature->GetMap()->GetCreature(DesireGUID);
         else if (AngerGUID)
-            pEssence = (Creature*)Unit::GetUnit((*m_creature), AngerGUID);
+            pEssence = m_creature->GetMap()->GetCreature(AngerGUID);
 
         if (pEssence && pEssence->isAlive())
             pEssence->ForcedDespawn();
@@ -210,7 +210,7 @@ struct MANGOS_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
             {
                 who->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
 
-                if (!m_creature->getVictim())
+                if (m_creature->getThreatManager().getThreatList().empty())
                 {
                     if (m_pInstance)
                         m_pInstance->SetData(TYPE_RELIQUIARY, IN_PROGRESS);
@@ -222,6 +222,10 @@ struct MANGOS_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
                     SummonEssenceTimer = 8000;
                     AnimationTimer = 5100;
                     m_creature->AddThreat(who);
+                    //m_creature->SetInCombatWith(who);     // Don't know what is like retail
+                    //who->SetInCombatWith(m_creature);
+                    m_creature->SetInCombatWithZone();      // Same goes here, but setting to zone will prevent bug if the only player of threatList dies
+
                 }
             }
         }
@@ -234,10 +238,12 @@ struct MANGOS_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
         float y = Coords[random].y;
 
         Creature* Soul = m_creature->SummonCreature(CREATURE_ENSLAVED_SOUL, x, y, m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 45000);
-        Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+        Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
         if (target && Soul)
         {
-            ((npc_enslaved_soulAI*)Soul->AI())->ReliquaryGUID = m_creature->GetGUID();
+            if (npc_enslaved_soulAI* pSoulAI = dynamic_cast<npc_enslaved_soulAI*>(Soul->AI()))
+                pSoulAI->ReliquaryGUID = m_creature->GetGUID();
+
             Soul->CastSpell(Soul, ENSLAVED_SOUL_PASSIVE, true);
             Soul->AddThreat(target);
             ++SoulCount;
@@ -252,8 +258,7 @@ struct MANGOS_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
         ThreatList const& tList = m_creature->getThreatManager().getThreatList();
         for (ThreatList::const_iterator itr = tList.begin();itr != tList.end(); ++itr)
         {
-            Unit* pUnit = Unit::GetUnit((*m_creature), (*itr)->getUnitGuid());
-            if (pUnit)
+            if (Unit* pUnit = m_creature->GetMap()->GetUnit((*itr)->getUnitGuid()))
             {
                 m_creature->AddThreat(pUnit);                // This is so that we make sure the unit is in Reliquary's threat list before we reset the unit's threat.
                 m_creature->getThreatManager().modifyThreatPercent(pUnit, -100);
@@ -291,14 +296,14 @@ struct MANGOS_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
             {
                 // Ribs: open
                 m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE,373);
-                Creature* EssenceSuffering = NULL;
-                EssenceSuffering = m_creature->SummonCreature(23418, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 1.57, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 10000);
+
+                Creature* EssenceSuffering = m_creature->SummonCreature(23418, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 1.57f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 10000);
 
                 if (EssenceSuffering)
                 {
                     DoScriptText(SUFF_SAY_FREED, EssenceSuffering);
 
-                    if (Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0))
+                    if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_TOPAGGRO, 0))
                     {
                         EssenceSuffering->AddThreat(target);
                         EssenceSuffering->AI()->AttackStart(target);
@@ -316,8 +321,7 @@ struct MANGOS_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
         {
             if (SufferingGUID)
             {
-                Creature* EssenceSuffering = NULL;
-                EssenceSuffering = ((Creature*)Unit::GetUnit((*m_creature), SufferingGUID));
+                Creature* EssenceSuffering = m_creature->GetMap()->GetCreature(SufferingGUID);
 
                 if (!EssenceSuffering || (!EssenceSuffering->isAlive()))
                     EnterEvadeMode();
@@ -326,7 +330,7 @@ struct MANGOS_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
                 {
                     if (EssenceSuffering)
                     {
-                        if (EssenceSuffering->GetHealth() < (EssenceSuffering->GetMaxHealth()*0.1))
+                        if (EssenceSuffering->GetHealthPercent() < 10.0f)
                         {
                             DoScriptText(SUFF_SAY_RECAP, EssenceSuffering);
                             MergeThreatList(EssenceSuffering);
@@ -395,14 +399,14 @@ struct MANGOS_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
                 {
                     // Ribs: open
                     m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE,373);
-                    Creature* EssenceDesire = NULL;
-                    EssenceDesire = m_creature->SummonCreature(23419, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 1.57, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 10000);
+
+                    Creature* EssenceDesire = m_creature->SummonCreature(23419, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 1.57f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 10000);
 
                     if (EssenceDesire)
                     {
                         DoScriptText(DESI_SAY_FREED, EssenceDesire);
 
-                        if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         {
                             EssenceDesire->AddThreat(target);
                             EssenceDesire->AI()->AttackStart(target);
@@ -421,15 +425,14 @@ struct MANGOS_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
         {
             if (DesireGUID)
             {
-                Creature* EssenceDesire = NULL;
-                EssenceDesire = ((Creature*)Unit::GetUnit((*m_creature), DesireGUID));
+                Creature* EssenceDesire = m_creature->GetMap()->GetCreature(DesireGUID);
 
                 if (!EssenceDesire || !EssenceDesire->isAlive())
                     EnterEvadeMode();
 
                 if (!EndingPhase && EssenceDesire)
                 {
-                    if (EssenceDesire->GetHealth() < (EssenceDesire->GetMaxHealth()*0.1))
+                    if (EssenceDesire->GetHealthPercent() < 10.0f)
                     {
                         MergeThreatList(EssenceDesire);
                         EssenceDesire->GetMotionMaster()->MoveFollow(m_creature,0.0f,0.0f);
@@ -503,12 +506,12 @@ struct MANGOS_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
                 {
                     // Ribs: open
                     m_creature->SetUInt32Value(UNIT_NPC_EMOTESTATE,373);
-                    Creature* EssenceAnger = NULL;
-                    EssenceAnger = m_creature->SummonCreature(23420, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 1.57, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 45000);
+
+                    Creature* EssenceAnger = m_creature->SummonCreature(23420, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 1.57f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 45000);
 
                     if (EssenceAnger)
                     {
-                        if (Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0))
+                        if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_TOPAGGRO, 0))
                         {
                             EssenceAnger->AddThreat(target);
                             EssenceAnger->AI()->AttackStart(target);
@@ -528,8 +531,7 @@ struct MANGOS_DLL_DECL boss_reliquary_of_soulsAI : public ScriptedAI
         {
             if (AngerGUID)
             {
-                Creature* EssenceAnger = NULL;
-                EssenceAnger = ((Creature*)Unit::GetUnit((*m_creature), AngerGUID));
+                Creature* EssenceAnger = m_creature->GetMap()->GetCreature(AngerGUID);
 
                 if (!EssenceAnger)
                     EnterEvadeMode();
@@ -577,9 +579,8 @@ struct MANGOS_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
             m_creature->SetHealth(m_creature->GetMaxHealth()/10);
             if (StatAuraGUID)
             {
-                Unit* pUnit = Unit::GetUnit((*m_creature), StatAuraGUID);
-                if (pUnit)
-                    pUnit->RemoveAurasDueToSpell(AURA_OF_SUFFERING_ARMOR);
+                if (Player* pPlayer = m_creature->GetMap()->GetPlayer(StatAuraGUID))
+                    pPlayer->RemoveAurasDueToSpell(AURA_OF_SUFFERING_ARMOR);
             }
         }
     }
@@ -587,8 +588,8 @@ struct MANGOS_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
     void Aggro(Unit* pWho)
     {
         m_creature->SetInCombatWithZone();
-        DoCast(pWho, AURA_OF_SUFFERING, true);
-        DoCast(m_creature, ESSENCE_OF_SUFFERING_PASSIVE, true);
+        DoCastSpellIfCan(pWho, AURA_OF_SUFFERING, CAST_TRIGGERED);
+        DoCastSpellIfCan(m_creature, ESSENCE_OF_SUFFERING_PASSIVE, CAST_TRIGGERED);
     }
 
     void KilledUnit(Unit *victim)
@@ -615,9 +616,10 @@ struct MANGOS_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 
         for (ThreatList::const_iterator itr = tList.begin();itr != tList.end(); ++itr)
         {
-            Unit* pUnit = Unit::GetUnit((*m_creature), (*itr)->getUnitGuid());
-                                                            // Only alive players
-            if (pUnit && pUnit->isAlive() && (pUnit->GetTypeId() == TYPEID_PLAYER))
+            Unit* pUnit = m_creature->GetMap()->GetUnit((*itr)->getUnitGuid());
+
+            // Only alive players
+            if (pUnit && pUnit->isAlive() && pUnit->GetTypeId() == TYPEID_PLAYER)
                 targets.push_back(pUnit);
         }
 
@@ -630,7 +632,7 @@ struct MANGOS_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 
         // Add threat equivalent to threat on victim.
         m_creature->AddThreat(target, m_creature->getThreatManager().getThreat(m_creature->getVictim()));
-        DoCast(target, SPELL_FIXATE);
+        DoCastSpellIfCan(target, SPELL_FIXATE);
     }
 
     void UpdateAI(const uint32 diff)
@@ -638,18 +640,16 @@ struct MANGOS_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        if (m_creature->GetHealth() <= (m_creature->GetMaxHealth()*0.1))
+        if (m_creature->GetHealthPercent() <= 10.0f)
         {
             if (StatAuraGUID)
             {
-                Unit* pUnit = NULL;
-                pUnit = Unit::GetUnit((*m_creature), StatAuraGUID);
-                if (pUnit)
-                    pUnit->RemoveAurasDueToSpell(AURA_OF_SUFFERING_ARMOR);
+                if (Player* pPlayer = m_creature->GetMap()->GetPlayer(StatAuraGUID))
+                    pPlayer->RemoveAurasDueToSpell(AURA_OF_SUFFERING_ARMOR);
             }
         }
 
-        if (m_creature->GetHealth() <= (m_creature->GetMaxHealth()*0.1))
+        if (m_creature->GetHealthPercent() <= 10.0f)
         {
             if (m_creature->getVictim())
                 m_creature->DeleteThreatList();             // Delete our threatlist if below 10% as we should no longer attack.
@@ -675,15 +675,15 @@ struct MANGOS_DLL_DECL boss_essence_of_sufferingAI : public ScriptedAI
 
         if (EnrageTimer < diff)
         {
-            DoCast(m_creature, SPELL_ENRAGE);
+            DoCastSpellIfCan(m_creature, SPELL_ENRAGE);
             DoScriptText(SUFF_EMOTE_ENRAGE, m_creature);
             EnrageTimer = 60000;
         }else EnrageTimer -= diff;
 
         if (SoulDrainTimer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                DoCast(target, SPELL_SOUL_DRAIN);
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                DoCastSpellIfCan(target, SPELL_SOUL_DRAIN);
             SoulDrainTimer = 60000;
         }else SoulDrainTimer -= diff;
 
@@ -749,7 +749,7 @@ struct MANGOS_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
             {
                 if (!m_creature->isInCombat())
                 {
-                    DoCast(who, AURA_OF_DESIRE);
+                    DoCastSpellIfCan(who, AURA_OF_DESIRE);
                 }
 
                 who->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
@@ -764,7 +764,7 @@ struct MANGOS_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        if (m_creature->GetHealth() <= (m_creature->GetMaxHealth()*0.1))
+        if (m_creature->GetHealthPercent() <= 10.0f)
         {
             if (m_creature->getVictim())
                 m_creature->DeleteThreatList();             // Delete our threatlist if below 10% as we should no longer attack.
@@ -773,19 +773,19 @@ struct MANGOS_DLL_DECL boss_essence_of_desireAI : public ScriptedAI
 
         if (RuneShieldTimer < diff)
         {
-            DoCast(m_creature, SPELL_RUNE_SHIELD);
+            DoCastSpellIfCan(m_creature, SPELL_RUNE_SHIELD);
             RuneShieldTimer = 60000;
         }else RuneShieldTimer -= diff;
 
         if (DeadenTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_DEADEN);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_DEADEN);
             DeadenTimer = urand(30000, 60000);
         }else DeadenTimer -= diff;
 
         if (SoulShockTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_SOUL_SHOCK);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_SOUL_SHOCK);
             SoulShockTimer = 40000;
 
             if (urand(0, 1))
@@ -825,7 +825,7 @@ struct MANGOS_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
     void Aggro(Unit* pWho)
     {
         m_creature->SetInCombatWithZone();
-        DoCast(m_creature->getVictim(), AURA_OF_ANGER, true);
+        DoCastSpellIfCan(m_creature->getVictim(), AURA_OF_ANGER, CAST_TRIGGERED);
     }
 
     void MoveInLineOfSight(Unit *who)
@@ -840,7 +840,7 @@ struct MANGOS_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
             {
                 if (!m_creature->isInCombat())
                 {
-                    DoCast(who, AURA_OF_ANGER);
+                    DoCastSpellIfCan(who, AURA_OF_ANGER);
                 }
 
                 who->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
@@ -884,8 +884,8 @@ struct MANGOS_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
             if (m_creature->getVictim()->GetGUID() != AggroTargetGUID)
             {
                 DoScriptText(ANGER_SAY_BEFORE, m_creature);
-                DoCast(m_creature, SPELL_SELF_SEETHE);
-                DoCast(m_creature->getVictim(), SPELL_ENEMY_SEETHE, true);
+                DoCastSpellIfCan(m_creature, SPELL_SELF_SEETHE);
+                DoCastSpellIfCan(m_creature->getVictim(), SPELL_ENEMY_SEETHE, CAST_TRIGGERED);
                 AggroTargetGUID = m_creature->getVictim()->GetGUID();
             }
             CheckTankTimer = 2000;
@@ -893,7 +893,7 @@ struct MANGOS_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
 
         if (SoulScreamTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_SOUL_SCREAM);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_SOUL_SCREAM);
             SoulScreamTimer = 10000;
         }else SoulScreamTimer -= diff;
 
@@ -901,8 +901,8 @@ struct MANGOS_DLL_DECL boss_essence_of_angerAI : public ScriptedAI
         {
             for(uint8 i = 0; i < 4; ++i)
             {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                    DoCast(target, SPELL_SPITE);
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    DoCastSpellIfCan(target, SPELL_SPITE);
             }
 
             SpiteTimer = 30000;
@@ -917,9 +917,11 @@ void npc_enslaved_soulAI::JustDied(Unit *killer)
 {
     if (ReliquaryGUID)
     {
-        Creature* Reliquary = ((Creature*)Unit::GetUnit((*m_creature), ReliquaryGUID));
-        if (Reliquary)
-            ((boss_reliquary_of_soulsAI*)Reliquary->AI())->SoulDeathCount++;
+        if (Creature* pReliquary = m_creature->GetMap()->GetCreature(ReliquaryGUID))
+        {
+            if (boss_reliquary_of_soulsAI* pReliqAI = dynamic_cast<boss_reliquary_of_soulsAI*>(pReliquary->AI()))
+                pReliqAI->SoulDeathCount++;
+        }
     }
 }
 

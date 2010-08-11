@@ -166,13 +166,13 @@ struct MANGOS_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
 
     void Reset()
     {
-        if (Unit* pLeftHead  = Unit::GetUnit(*m_creature,m_uiLeftHeadGUID))
+        if (Creature* pLeftHead = m_creature->GetMap()->GetCreature(m_uiLeftHeadGUID))
         {
             pLeftHead->setDeathState(JUST_DIED);
             m_uiLeftHeadGUID = 0;
         }
 
-        if (Unit* pRightHead  = Unit::GetUnit(*m_creature,m_uiRightHeadGUID))
+        if (Creature* pRightHead = m_creature->GetMap()->GetCreature(m_uiRightHeadGUID))
         {
             pRightHead->setDeathState(JUST_DIED);
             m_uiRightHeadGUID = 0;
@@ -197,8 +197,8 @@ struct MANGOS_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
 
     void DoYellForThreat()
     {
-        Unit* pLeftHead  = Unit::GetUnit(*m_creature,m_uiLeftHeadGUID);
-        Unit* pRightHead = Unit::GetUnit(*m_creature,m_uiRightHeadGUID);
+        Creature* pLeftHead  = m_creature->GetMap()->GetCreature(m_uiLeftHeadGUID);
+        Creature* pRightHead = m_creature->GetMap()->GetCreature(m_uiRightHeadGUID);
 
         if (!pLeftHead || !pRightHead)
             return;
@@ -218,7 +218,7 @@ struct MANGOS_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
         m_creature->SummonCreature(NPC_LEFT_HEAD, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_DEAD_DESPAWN, 0);
         m_creature->SummonCreature(NPC_RIGHT_HEAD, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_DEAD_DESPAWN, 0);
 
-        if (Unit* pLeftHead = Unit::GetUnit(*m_creature,m_uiLeftHeadGUID))
+        if (Creature* pLeftHead = m_creature->GetMap()->GetCreature(m_uiLeftHeadGUID))
         {
             m_iAggro = irand(0, 2);
 
@@ -247,15 +247,15 @@ struct MANGOS_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
 
     void KilledUnit(Unit* pVictim)
     {
-        Unit* pLeftHead  = Unit::GetUnit(*m_creature,m_uiLeftHeadGUID);
-        Unit* pRightHead = Unit::GetUnit(*m_creature,m_uiRightHeadGUID);
+        Creature* pLeftHead  = m_creature->GetMap()->GetCreature(m_uiLeftHeadGUID);
+        Creature* pRightHead = m_creature->GetMap()->GetCreature(m_uiRightHeadGUID);
 
         if (!pLeftHead || !pRightHead)
             return;
 
         m_iKilling = irand(0, 1);
 
-        Unit* pSource = (pLeftHead->GetEntry() == Killing[m_iKilling].creature ? pLeftHead : pRightHead);
+        Creature* pSource = (pLeftHead->GetEntry() == Killing[m_iKilling].creature ? pLeftHead : pRightHead);
 
         switch(m_iKilling)
         {
@@ -273,8 +273,8 @@ struct MANGOS_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
 
     void JustDied(Unit* pKiller)
     {
-        Unit* pLeftHead  = Unit::GetUnit(*m_creature,m_uiLeftHeadGUID);
-        Unit* pRightHead = Unit::GetUnit(*m_creature,m_uiRightHeadGUID);
+        Creature* pLeftHead  = m_creature->GetMap()->GetCreature(m_uiLeftHeadGUID);
+        Creature* pRightHead = m_creature->GetMap()->GetCreature(m_uiRightHeadGUID);
 
         if (!pLeftHead || !pRightHead)
             return;
@@ -282,7 +282,8 @@ struct MANGOS_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
         DoScriptText(YELL_DIE_L, pLeftHead);
         pLeftHead->setDeathState(JUST_DIED);
 
-        ((mob_omrogg_headsAI*)((Creature*)pRightHead)->AI())->DoDeathYell();
+        if (mob_omrogg_headsAI* pHeadAI = dynamic_cast<mob_omrogg_headsAI*>(pRightHead->AI()))
+            pHeadAI->DoDeathYell();
 
         if (m_pInstance)
             m_pInstance->SetData(TYPE_OMROGG, DONE);
@@ -294,8 +295,8 @@ struct MANGOS_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
         {
             m_uiDelay_Timer = 3500;
 
-            Unit* pLeftHead  = Unit::GetUnit(*m_creature,m_uiLeftHeadGUID);
-            Unit* pRightHead = Unit::GetUnit(*m_creature,m_uiRightHeadGUID);
+            Creature* pLeftHead  = m_creature->GetMap()->GetCreature(m_uiLeftHeadGUID);
+            Creature* pRightHead = m_creature->GetMap()->GetCreature(m_uiRightHeadGUID);
 
             if (!pLeftHead || !pRightHead)
                 return;
@@ -308,7 +309,7 @@ struct MANGOS_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
 
             if (m_bThreatYell2)
             {
-                Unit* pSource = (pLeftHead->GetEntry() == ThreatDelay2[m_iThreat].creature ? pLeftHead : pRightHead);
+                Creature* pSource = (pLeftHead->GetEntry() == ThreatDelay2[m_iThreat].creature ? pLeftHead : pRightHead);
 
                 DoScriptText(ThreatDelay2[m_iThreat].id, pSource);
                 m_bThreatYell2 = false;
@@ -316,7 +317,7 @@ struct MANGOS_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
 
             if (m_bThreatYell)
             {
-                Unit* pSource = (pLeftHead->GetEntry() == ThreatDelay1[m_iThreat].creature ? pLeftHead : pRightHead);
+                Creature* pSource = (pLeftHead->GetEntry() == ThreatDelay1[m_iThreat].creature ? pLeftHead : pRightHead);
 
                 DoScriptText(ThreatDelay1[m_iThreat].id, pSource);
                 m_bThreatYell = false;
@@ -325,7 +326,7 @@ struct MANGOS_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
 
             if (m_bKillingYell)
             {
-                Unit* pSource = (pLeftHead->GetEntry() == KillingDelay[m_iKilling].creature ? pLeftHead : pRightHead);
+                Creature* pSource = (pLeftHead->GetEntry() == KillingDelay[m_iKilling].creature ? pLeftHead : pRightHead);
 
                 DoScriptText(KillingDelay[m_iKilling].id, pSource);
                 m_bKillingYell = false;
@@ -337,7 +338,7 @@ struct MANGOS_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
 
         if (m_uiBlastCount && m_uiBlastWave_Timer <= uiDiff)
         {
-            DoCast(m_creature,SPELL_BLAST_WAVE);
+            DoCastSpellIfCan(m_creature,SPELL_BLAST_WAVE);
             m_uiBlastWave_Timer = 5000;
             ++m_uiBlastCount;
 
@@ -348,7 +349,7 @@ struct MANGOS_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
         if (m_uiBurningMaul_Timer < uiDiff)
         {
             DoScriptText(EMOTE_ENRAGE, m_creature);
-            DoCast(m_creature, m_bIsRegularMode ? SPELL_BURNING_MAUL : H_SPELL_BURNING_MAUL);
+            DoCastSpellIfCan(m_creature, m_bIsRegularMode ? SPELL_BURNING_MAUL : H_SPELL_BURNING_MAUL);
             m_uiBurningMaul_Timer = 40000;
             m_uiBlastWave_Timer = 16000;
             m_uiBlastCount = 1;
@@ -356,7 +357,7 @@ struct MANGOS_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
 
         if (m_uiResetThreat_Timer < uiDiff)
         {
-            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
             {
                 DoYellForThreat();
                 DoResetThreat();
@@ -367,13 +368,13 @@ struct MANGOS_DLL_DECL boss_warbringer_omroggAI : public ScriptedAI
 
         if (m_uiFear_Timer < uiDiff)
         {
-            DoCast(m_creature,SPELL_FEAR);
+            DoCastSpellIfCan(m_creature,SPELL_FEAR);
             m_uiFear_Timer = urand(15000, 35000);
         }else m_uiFear_Timer -= uiDiff;
 
         if (m_uiThunderClap_Timer < uiDiff)
         {
-            DoCast(m_creature,SPELL_THUNDERCLAP);
+            DoCastSpellIfCan(m_creature,SPELL_THUNDERCLAP);
             m_uiThunderClap_Timer = urand(15000, 30000);
         }else m_uiThunderClap_Timer -= uiDiff;
 

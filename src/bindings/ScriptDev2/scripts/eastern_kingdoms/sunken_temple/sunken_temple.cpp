@@ -35,7 +35,7 @@ enum
     QUEST_ERANIKUS_TYRANT_OF_DREAMS   = 8733
 };
 
-bool AreaTrigger_at_shade_of_eranikus(Player* pPlayer, AreaTriggerEntry *pAt)
+bool AreaTrigger_at_shade_of_eranikus(Player* pPlayer, AreaTriggerEntry const* pAt)
 {
     if (ScriptedInstance* pInstance = (ScriptedInstance*)pPlayer->GetInstanceData())
     {
@@ -46,7 +46,7 @@ bool AreaTrigger_at_shade_of_eranikus(Player* pPlayer, AreaTriggerEntry *pAt)
         {
             if (pInstance->GetData(TYPE_MALFURION) != DONE)
             {
-                pPlayer->SummonCreature(NPC_MALFURION, -639.378723, -4.238533, -90.835098, 2.724664, TEMPSUMMON_DEAD_DESPAWN, 0);
+                pPlayer->SummonCreature(NPC_MALFURION, -639.378723f, -4.238533f, -90.835098f, 2.724664f, TEMPSUMMON_DEAD_DESPAWN, 0);
                 pInstance->SetData(TYPE_MALFURION, DONE);
             }
         }
@@ -97,7 +97,7 @@ struct MANGOS_DLL_DECL npc_malfurionAI : public ScriptedAI
                             m_uiSayTimer = 1500;
                             break;
                         case 1:
-                            m_creature->HandleEmoteCommand(EMOTE_ONESHOT_BOW);
+                            m_creature->HandleEmote(EMOTE_ONESHOT_BOW);
                             m_uiSayTimer = 2000;
                             break;
                         case 2:

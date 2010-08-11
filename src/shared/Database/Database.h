@@ -121,17 +121,20 @@ class MANGOS_DLL_SPEC Database
         virtual unsigned long escape_string(char *to, const char *from, unsigned long length) { strncpy(to,from,length); return length; }
         void escape_string(std::string& str);
 
-        // must be called before first query in thread (one time for thread using one from existed Database objects)
+        // must be called before first query in thread (one time for thread using one from existing Database objects)
         virtual void ThreadStart();
-        // must be called before finish thread run (one time for thread using one from existed Database objects)
+        // must be called before finish thread run (one time for thread using one from existing Database objects)
         virtual void ThreadEnd();
 
         // sets the result queue of the current thread, be careful what thread you call this from
         void SetResultQueue(SqlResultQueue * queue);
 
         bool CheckRequiredField(char const* table_name, char const* required_name);
+        uint32 GetPingIntervall() { return m_pingIntervallms;}
+
     private:
         bool m_logSQL;
         std::string m_logsDir;
+        uint32 m_pingIntervallms;
 };
 #endif

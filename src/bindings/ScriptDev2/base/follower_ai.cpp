@@ -4,7 +4,7 @@
 
 /* ScriptData
 SDName: FollowerAI
-SD%Complete: 50
+SD%Complete: 60
 SDComment: This AI is under development
 SDCategory: Npc
 EndScriptData */
@@ -37,9 +37,6 @@ void FollowerAI::AttackStart(Unit* pWho)
         m_creature->SetInCombatWith(pWho);
         pWho->SetInCombatWith(m_creature);
 
-        if (m_creature->hasUnitState(UNIT_STAT_FOLLOW))
-            m_creature->clearUnitState(UNIT_STAT_FOLLOW);
-
         if (IsCombatMovement())
             m_creature->GetMotionMaster()->MoveChase(pWho);
     }
@@ -47,28 +44,31 @@ void FollowerAI::AttackStart(Unit* pWho)
 
 //This part provides assistance to a player that are attacked by pWho, even if out of normal aggro range
 //It will cause m_creature to attack pWho that are attacking _any_ player (which has been confirmed may happen also on offi)
-//The flag (type_flag) is unconfirmed, but used here for further research and is a good candidate.
 bool FollowerAI::AssistPlayerInCombat(Unit* pWho)
 {
-    if (!pWho || !pWho->getVictim())
+    if (!pWho->getVictim())
         return false;
 
-    //experimental (unknown) flag not present
-    if (!(m_creature->GetCreatureInfo()->type_flags & CREATURE_TYPEFLAGS_UNK13))
+    // experimental (unknown) flag not present
+    if (!(m_creature->GetCreatureInfo()->type_flags & CREATURE_TYPEFLAGS_CAN_ASSIST))
         return false;
 
-    //not a player
+    // unit state prevents (similar check is done in CanInitiateAttack which also include checking unit_flags. We skip those here)
+    if (m_creature->hasUnitState(UNIT_STAT_STUNNED | UNIT_STAT_DIED))
+        return false;
+
+    // victim of pWho is not a player
     if (!pWho->getVictim()->GetCharmerOrOwnerPlayerOrPlayerItself())
         return false;
 
-    //never attack friendly
+    // never attack friendly
     if (m_creature->IsFriendlyTo(pWho))
         return false;
 
-    //too far away and no free sight?
+    // too far away and no free sight?
     if (m_creature->IsWithinDistInMap(pWho, MAX_PLAYER_DISTANCE) && m_creature->IsWithinLOSInMap(pWho))
     {
-        //already fighting someone?
+        // already fighting someone?
         if (!m_creature->getVictim())
         {
             AttackStart(pWho);
@@ -87,9 +87,13 @@ bool FollowerAI::AssistPlayerInCombat(Unit* pWho)
 
 void FollowerAI::MoveInLineOfSight(Unit* pWho)
 {
-    if (!m_creature->hasUnitState(UNIT_STAT_STUNNED) && pWho->isTargetableForAttack() && pWho->isInAccessablePlaceFor(m_creature))
+    if (pWho->isTargetableForAttack() && pWho->isInAccessablePlaceFor(m_creature))
     {
+        // AssistPlayerInCombat can start attack, so return if true
         if (HasFollowState(STATE_FOLLOW_INPROGRESS) && AssistPlayerInCombat(pWho))
+            return;
+
+        if (!m_creature->CanInitiateAttack())
             return;
 
         if (!m_creature->canFly() && m_creature->GetDistanceZ(pWho) > CREATURE_Z_ATTACK_RANGE)
@@ -129,8 +133,8 @@ void FollowerAI::JustDied(Unit* pKiller)
             {
                 if (Player* pMember = pRef->getSource())
                 {
-                    if (pPlayer->GetQuestStatus(m_pQuestForFollow->GetQuestId()) == QUEST_STATUS_INCOMPLETE)
-                        pPlayer->FailQuest(m_pQuestForFollow->GetQuestId());
+                    if (pMember->GetQuestStatus(m_pQuestForFollow->GetQuestId()) == QUEST_STATUS_INCOMPLETE)
+                        pMember->FailQuest(m_pQuestForFollow->GetQuestId());
                 }
             }
         }
@@ -166,7 +170,7 @@ void FollowerAI::EnterEvadeMode()
     {
         debug_log("SD2: FollowerAI left combat, returning to CombatStartPosition.");
 
-        if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE)
+        if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
         {
             float fPosX, fPosY, fPosZ;
             m_creature->GetCombatStartPosition(fPosX, fPosY, fPosZ);
@@ -175,7 +179,7 @@ void FollowerAI::EnterEvadeMode()
     }
     else
     {
-        if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE)
+        if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
             m_creature->GetMotionMaster()->MoveTargetedHome();
     }
 
@@ -309,7 +313,7 @@ void FollowerAI::StartFollow(Player* pLeader, uint32 uiFactionForFollower, const
 
 Player* FollowerAI::GetLeaderForFollower()
 {
-    if (Player* pLeader = (Player*)Unit::GetUnit(*m_creature, m_uiLeaderGUID))
+    if (Player* pLeader = m_creature->GetMap()->GetPlayer(m_uiLeaderGUID))
     {
         if (pLeader->isAlive())
             return pLeader;
@@ -339,10 +343,8 @@ Player* FollowerAI::GetLeaderForFollower()
 
 void FollowerAI::SetFollowComplete(bool bWithEndEvent)
 {
-    if (m_creature->hasUnitState(UNIT_STAT_FOLLOW))
+    if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == FOLLOW_MOTION_TYPE)
     {
-        m_creature->clearUnitState(UNIT_STAT_FOLLOW);
-
         m_creature->StopMoving();
         m_creature->GetMotionMaster()->Clear();
         m_creature->GetMotionMaster()->MoveIdle();
@@ -368,10 +370,8 @@ void FollowerAI::SetFollowPaused(bool bPaused)
     {
         AddFollowState(STATE_FOLLOW_PAUSED);
 
-        if (m_creature->hasUnitState(UNIT_STAT_FOLLOW))
+        if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == FOLLOW_MOTION_TYPE)
         {
-            m_creature->clearUnitState(UNIT_STAT_FOLLOW);
-
             m_creature->StopMoving();
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MoveIdle();

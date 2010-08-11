@@ -179,7 +179,7 @@ struct MANGOS_DLL_DECL mob_abyssalAI : public ScriptedAI
 
         if (m_uiFireBlast_Timer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), SPELL_FIRE_BLAST);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_FIRE_BLAST);
             m_uiFireBlast_Timer = urand(5000, 15000);
         }
         else
@@ -248,14 +248,14 @@ struct MANGOS_DLL_DECL boss_magtheridonAI : public ScriptedAI
     {
         // to avoid multiclicks from 1 cube
         if (uint64 guid = Cube[uiCubeGUID])
-            DebuffClicker(Unit::GetUnit(*m_creature, guid));
+            DebuffClicker(m_creature->GetMap()->GetPlayer(guid));
 
         Cube[uiCubeGUID] = uiClickerGUID;
         m_bNeedCheckCube = true;
     }
 
     //function to interrupt channeling and debuff clicker with mind exhaused if second person clicks with same cube or after dispeling/ending shadow grasp DoT)
-    void DebuffClicker(Unit* pClicker)
+    void DebuffClicker(Player* pClicker)
     {
         if (!pClicker || !pClicker->isAlive())
             return;
@@ -281,25 +281,26 @@ struct MANGOS_DLL_DECL boss_magtheridonAI : public ScriptedAI
         // if not - apply mind exhaustion and delete from clicker's list
         for(CubeMap::iterator i = Cube.begin(); i != Cube.end(); ++i)
         {
-            Unit *clicker = Unit::GetUnit(*m_creature, (*i).second);
-            if (!clicker || !clicker->HasAura(SPELL_SHADOW_GRASP, 1))
+            Player* pClicker = m_creature->GetMap()->GetPlayer(i->second);
+
+            if (!pClicker || !pClicker->HasAura(SPELL_SHADOW_GRASP, EFFECT_INDEX_1))
             {
-                DebuffClicker(clicker);
-                (*i).second = 0;
+                DebuffClicker(pClicker);
+                i->second = 0;
             }
             else
                 ++ClickerNum;
         }
 
         // if 5 clickers from other cubes apply shadow cage
-        if (ClickerNum >= MAX_CLICK && !m_creature->HasAura(SPELL_SHADOW_CAGE, 0) && m_creature->HasAura(SPELL_BLASTNOVA, 0))
+        if (ClickerNum >= MAX_CLICK && !m_creature->HasAura(SPELL_SHADOW_CAGE, EFFECT_INDEX_0) && m_creature->HasAura(SPELL_BLASTNOVA, EFFECT_INDEX_0))
         {
             DoScriptText(SAY_BANISH, m_creature);
             m_creature->CastSpell(m_creature, SPELL_SHADOW_CAGE, true);
         }
         else
         {
-            if (ClickerNum < MAX_CLICK && m_creature->HasAura(SPELL_SHADOW_CAGE, 0))
+            if (ClickerNum < MAX_CLICK && m_creature->HasAura(SPELL_SHADOW_CAGE, EFFECT_INDEX_0))
                 m_creature->RemoveAurasDueToSpell(SPELL_SHADOW_CAGE);
         }
 
@@ -392,7 +393,7 @@ struct MANGOS_DLL_DECL boss_magtheridonAI : public ScriptedAI
         //Cleave_Timer
         if (m_uiCleave_Timer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), SPELL_CLEAVE);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_CLEAVE);
             m_uiCleave_Timer = 10000;
         }
         else
@@ -417,7 +418,7 @@ struct MANGOS_DLL_DECL boss_magtheridonAI : public ScriptedAI
             if (!m_creature->hasUnitState(UNIT_STAT_STUNNED))
             {
                 DoScriptText(EMOTE_BLASTNOVA, m_creature);
-                DoCast(m_creature, SPELL_BLASTNOVA);
+                DoCastSpellIfCan(m_creature, SPELL_BLASTNOVA);
                 m_uiBlastNova_Timer = 60000;
             }
         }
@@ -426,16 +427,18 @@ struct MANGOS_DLL_DECL boss_magtheridonAI : public ScriptedAI
 
         if (m_uiBlaze_Timer < uiDiff)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
             {
                 float x, y, z;
                 pTarget->GetPosition(x, y, z);
-                Creature *summon = m_creature->SummonCreature(NPC_BURNING_ABYSS, x, y, z, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
-                if (summon)
+
+                if (Creature* pSummon = m_creature->SummonCreature(NPC_BURNING_ABYSS, x, y, z, 0.0f, TEMPSUMMON_CORPSE_DESPAWN, 0))
                 {
-                    ((mob_abyssalAI*)summon->AI())->SetTrigger(2);
-                    m_creature->CastSpell(summon, SPELL_BLAZE_TARGET, true);
-                    summon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                    if (mob_abyssalAI* pAbyssAI = dynamic_cast<mob_abyssalAI*>(pSummon->AI()))
+                        pAbyssAI->SetTrigger(2);
+
+                    m_creature->CastSpell(pSummon, SPELL_BLAZE_TARGET, true);
+                    pSummon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 }
             }
 
@@ -444,7 +447,7 @@ struct MANGOS_DLL_DECL boss_magtheridonAI : public ScriptedAI
         else
             m_uiBlaze_Timer -= uiDiff;
 
-        if (!m_bIsPhase3 && m_creature->GetHealth()*10 < m_creature->GetMaxHealth()*3
+        if (!m_bIsPhase3 && m_creature->GetHealthPercent() < 30.0f
             && !m_creature->IsNonMeleeSpellCasted(false)    // blast nova
             && !m_creature->hasUnitState(UNIT_STAT_STUNNED))// shadow cage and earthquake
         {
@@ -475,13 +478,17 @@ struct MANGOS_DLL_DECL boss_magtheridonAI : public ScriptedAI
                         m_uiPhase3_Timer = 15000;
                         break;
                     case 3:
-                        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                         {
                             float x, y, z;
                             pTarget->GetPosition(x, y, z);
-                            Creature *summon = m_creature->SummonCreature(NPC_BURNING_ABYSS, x, y, z, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
-                            if (summon)
-                                ((mob_abyssalAI*)summon->AI())->SetTrigger(1);
+
+                            if (Creature* pSummon = m_creature->SummonCreature(NPC_BURNING_ABYSS, x, y, z, 0.0f, TEMPSUMMON_CORPSE_DESPAWN, 0))
+                            {
+                                if (mob_abyssalAI* pAbyssAI = dynamic_cast<mob_abyssalAI*>(pSummon->AI()))
+                                    pAbyssAI->SetTrigger(1);
+                            }
+
                             m_uiPhase3_Timer = 15000;
                         }
                         break;
@@ -572,7 +579,7 @@ struct MANGOS_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
         {
             if (!m_creature->IsNonMeleeSpellCasted(false) && !m_creature->IsInEvadeMode())
-                DoCast(m_creature, SPELL_SHADOW_GRASP_DUMMY);
+                DoCastSpellIfCan(m_creature, SPELL_SHADOW_GRASP_DUMMY);
 
             return;
         }
@@ -580,7 +587,7 @@ struct MANGOS_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
         //Shadow bolt volley
         if (m_uiShadowBoltVolley_Timer < uiDiff)
         {
-            DoCast(m_creature, SPELL_SHADOW_BOLT_VOLLEY);
+            DoCastSpellIfCan(m_creature, SPELL_SHADOW_BOLT_VOLLEY);
             m_uiShadowBoltVolley_Timer = urand(10000, 20000);
         }
         else
@@ -589,13 +596,13 @@ struct MANGOS_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
         //Dark Mending
         if (m_uiDarkMending_Timer < uiDiff)
         {
-            if ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 50)
+            if (m_creature->GetHealthPercent() < 50.0f)
             {
                 //Cast on ourselves if we are lower then lowest hp friendly unit
                 /*if (pLowestHPTarget && LowestHP < m_creature->GetHealth())
-                    DoCast(pLowestHPTarget, SPELL_DARK_MENDING);
+                    DoCastSpellIfCan(pLowestHPTarget, SPELL_DARK_MENDING);
                 else*/
-                DoCast(m_creature, SPELL_DARK_MENDING);
+                DoCastSpellIfCan(m_creature, SPELL_DARK_MENDING);
             }
 
             m_uiDarkMending_Timer = urand(10000, 20000);
@@ -606,8 +613,8 @@ struct MANGOS_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
         //Fear
         if (m_uiFear_Timer < uiDiff)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1))
-                DoCast(pTarget, SPELL_FEAR);
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 1))
+                DoCastSpellIfCan(pTarget, SPELL_FEAR);
 
             m_uiFear_Timer = urand(25000, 40000);
         }
@@ -617,7 +624,7 @@ struct MANGOS_DLL_DECL mob_hellfire_channelerAI : public ScriptedAI
         //Infernal spawning
         if (!m_bIsInfernalSpawned && m_uiInfernal_Timer < uiDiff)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 m_creature->CastSpell(pTarget, SPELL_BURNING_ABYSSAL, true);
 
             m_bIsInfernalSpawned = true;
@@ -643,7 +650,7 @@ bool GOHello_go_manticron_cube(Player* pPlayer, GameObject* pGo)
                 return true;
 
             // if exhausted or already channeling return
-            if (pPlayer->HasAura(SPELL_MIND_EXHAUSTION, 0) || pPlayer->HasAura(SPELL_SHADOW_GRASP, 1))
+            if (pPlayer->HasAura(SPELL_MIND_EXHAUSTION, EFFECT_INDEX_0) || pPlayer->HasAura(SPELL_SHADOW_GRASP, EFFECT_INDEX_1))
                 return true;
 
             pPlayer->InterruptNonMeleeSpells(false);

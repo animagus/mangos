@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Hinterlands
 SD%Complete: 100
-SDComment: Quest support: 863, 2742
+SDComment: Quest support: 836, 2742
 SDCategory: The Hinterlands
 EndScriptData */
 
@@ -101,10 +101,7 @@ struct MANGOS_DLL_DECL npc_00x09hlAI : public npc_escortAI
         if (pWho->GetEntry() == NPC_MARAUDING_OWL || pWho->GetEntry() == NPC_VILE_AMBUSHER)
             return;
 
-        if (urand(0, 1))
-            DoScriptText(SAY_OOX_AGGRO1, m_creature);
-        else
-            DoScriptText(SAY_OOX_AGGRO2, m_creature);
+        DoScriptText(urand(0, 1) ? SAY_OOX_AGGRO1 : SAY_OOX_AGGRO2, m_creature);
     }
 
     void JustSummoned(Creature* pSummoned)
@@ -118,16 +115,12 @@ bool QuestAccept_npc_00x09hl(Player* pPlayer, Creature* pCreature, const Quest* 
     if (pQuest->GetQuestId() == QUEST_RESQUE_OOX_09)
     {
         pCreature->SetStandState(UNIT_STAND_STATE_STAND);
-
-        if (pPlayer->GetTeam() == ALLIANCE)
-            pCreature->setFaction(FACTION_ESCORT_A_PASSIVE);
-        else if (pPlayer->GetTeam() == HORDE)
-            pCreature->setFaction(FACTION_ESCORT_H_PASSIVE);
+        pCreature->setFaction((pPlayer->GetTeam() == ALLIANCE) ? FACTION_ESCORT_A_PASSIVE : FACTION_ESCORT_H_PASSIVE);
 
         DoScriptText(SAY_OOX_START, pCreature, pPlayer);
 
         if (npc_00x09hlAI* pEscortAI = dynamic_cast<npc_00x09hlAI*>(pCreature->AI()))
-            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest);
+            pEscortAI->Start(false, pPlayer->GetGUID(), pQuest);
     }
     return true;
 }
@@ -164,14 +157,14 @@ struct Location
 
 Location m_afAmbushSpawn[] =
 {
-    {191.296204, -2839.329346, 107.388},
-    {70.972466,  -2848.674805, 109.459}
+    {191.29620f, -2839.329346f, 107.388f},
+    {70.972466f, -2848.674805f, 109.459f}
 };
 
 Location m_afAmbushMoveTo[] =
 {
-    {166.630386, -2824.780273, 108.153},
-    {70.886589,  -2874.335449, 116.675}
+    {166.63038f, -2824.780273f, 108.153f},
+    {70.886589f, -2874.335449f, 116.675f}
 };
 
 struct MANGOS_DLL_DECL npc_rinjiAI : public npc_escortAI
@@ -239,7 +232,7 @@ struct MANGOS_DLL_DECL npc_rinjiAI : public npc_escortAI
 
     void JustSummoned(Creature* pSummoned)
     {
-        pSummoned->RemoveMonsterMoveFlag(MONSTER_MOVE_WALK);
+        pSummoned->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
         pSummoned->GetMotionMaster()->MovePoint(0, m_afAmbushMoveTo[m_iSpawnId].m_fX, m_afAmbushMoveTo[m_iSpawnId].m_fY, m_afAmbushMoveTo[m_iSpawnId].m_fZ);
     }
 
@@ -320,7 +313,7 @@ bool QuestAccept_npc_rinji(Player* pPlayer, Creature* pCreature, const Quest* pQ
             pGo->UseDoorOrButton();
 
         if (npc_rinjiAI* pEscortAI = dynamic_cast<npc_rinjiAI*>(pCreature->AI()))
-            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest);
+            pEscortAI->Start(false, pPlayer->GetGUID(), pQuest);
     }
     return true;
 }
@@ -332,17 +325,17 @@ CreatureAI* GetAI_npc_rinji(Creature* pCreature)
 
 void AddSC_hinterlands()
 {
-    Script* newscript;
+    Script* pNewScript;
 
-    newscript = new Script;
-    newscript->Name = "npc_00x09hl";
-    newscript->GetAI = &GetAI_npc_00x09hl;
-    newscript->pQuestAccept = &QuestAccept_npc_00x09hl;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_00x09hl";
+    pNewScript->GetAI = &GetAI_npc_00x09hl;
+    pNewScript->pQuestAccept = &QuestAccept_npc_00x09hl;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_rinji";
-    newscript->GetAI = &GetAI_npc_rinji;
-    newscript->pQuestAccept = &QuestAccept_npc_rinji;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_rinji";
+    pNewScript->GetAI = &GetAI_npc_rinji;
+    pNewScript->pQuestAccept = &QuestAccept_npc_rinji;
+    pNewScript->RegisterSelf();
 }

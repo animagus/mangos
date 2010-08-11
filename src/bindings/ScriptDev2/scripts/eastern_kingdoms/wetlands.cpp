@@ -101,7 +101,7 @@ struct MANGOS_DLL_DECL npc_tapoke_slim_jahnAI : public npc_escortAI
 
     void DamageTaken(Unit* pDoneBy, uint32& uiDamage)
     {
-        if (m_creature->GetHealth()*100 < m_creature->GetMaxHealth()*20)
+        if (m_creature->GetHealthPercent() < 20.0f)
         {
             if (Player* pPlayer = GetPlayerForEscort())
             {
@@ -142,7 +142,7 @@ bool QuestAccept_npc_mikhail(Player* pPlayer, Creature* pCreature, const Quest* 
             pSlim->CastSpell(pSlim, SPELL_STEALTH, true);
 
         if (npc_tapoke_slim_jahnAI* pEscortAI = dynamic_cast<npc_tapoke_slim_jahnAI*>(pSlim->AI()))
-            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest);
+            pEscortAI->Start(false, pPlayer->GetGUID(), pQuest);
     }
     return false;
 }

@@ -51,7 +51,7 @@ EndScriptData */
 
 #define LOCX                            -253.06f
 #define LOCY                            -264.02f
-#define LOCZ                            17.08
+#define LOCZ                            17.08f
 
 struct MANGOS_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
 {
@@ -108,11 +108,11 @@ struct MANGOS_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
             case 2: DoScriptText(SAY_AGGRO3, m_creature); break;
         }
 
-        DoCast(m_creature, SPELL_VOID_PORTAL_A,true);
-        m_creature->SummonCreature(ENTRY_VOID_PORTAL,-262.40,-229.57,17.08,0,TEMPSUMMON_CORPSE_DESPAWN,0);
-        m_creature->SummonCreature(ENTRY_VOID_PORTAL,-260.35,-297.56,17.08,0,TEMPSUMMON_CORPSE_DESPAWN,0);
-        m_creature->SummonCreature(ENTRY_VOID_PORTAL,-292.05,-270.37,12.68,0,TEMPSUMMON_CORPSE_DESPAWN,0);
-        m_creature->SummonCreature(ENTRY_VOID_PORTAL,-301.64,-255.97,12.68,0,TEMPSUMMON_CORPSE_DESPAWN,0);
+        DoCastSpellIfCan(m_creature, SPELL_VOID_PORTAL_A,true);
+        m_creature->SummonCreature(ENTRY_VOID_PORTAL, -262.40f, -229.57f, 17.08f, 0.0f, TEMPSUMMON_CORPSE_DESPAWN,0);
+        m_creature->SummonCreature(ENTRY_VOID_PORTAL, -260.35f, -297.56f, 17.08f, 0.0f, TEMPSUMMON_CORPSE_DESPAWN,0);
+        m_creature->SummonCreature(ENTRY_VOID_PORTAL, -292.05f, -270.37f, 12.68f, 0.0f, TEMPSUMMON_CORPSE_DESPAWN,0);
+        m_creature->SummonCreature(ENTRY_VOID_PORTAL, -301.64f, -255.97f, 12.68f, 0.0f, TEMPSUMMON_CORPSE_DESPAWN,0);
 
         if (m_pInstance)
             m_pInstance->SetData(TYPE_VORPIL, IN_PROGRESS);
@@ -126,10 +126,7 @@ struct MANGOS_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
     void JustSummoned(Creature *summoned)
     {
         if (summoned->GetEntry() == ENTRY_VOID_TRAVELER)
-        {
-            summoned->GetMotionMaster()->MoveChase(m_creature);
-            summoned->SetSpeed(MOVE_WALK,0.8,true);
-        }
+            summoned->GetMotionMaster()->MoveFollow(m_creature, 1.0f, 0.0f);
 
         if (summoned->GetEntry() == ENTRY_VOID_PORTAL)
             summoned->CastSpell(summoned,SPELL_VOID_PORTAL_VISUAL,true);
@@ -153,8 +150,7 @@ struct MANGOS_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
         {
             if (Teleport_Timer <= diff)
             {
-                m_creature->GetMap()->CreatureRelocation(m_creature, LOCX, LOCY, LOCZ, 0.0f);
-                m_creature->SendMonsterMove(LOCX, LOCY, LOCZ, 0, MONSTER_MOVE_WALK, 0);
+                m_creature->NearTeleportTo(LOCX, LOCY, LOCZ, 0.0f);
 
                 float ranX = LOCX;
                 float ranY = LOCY;
@@ -163,16 +159,17 @@ struct MANGOS_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
                 ThreatList const& tList = m_creature->getThreatManager().getThreatList();
                 for (ThreatList::const_iterator itr = tList.begin();itr != tList.end(); ++itr)
                 {
-                    Unit* target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+                    Unit* target = m_creature->GetMap()->GetUnit((*itr)->getUnitGuid());
+
                     if (target && target->GetTypeId() == TYPEID_PLAYER)
                     {
-                        target->GetRandomPoint(LOCX,LOCY,LOCZ,3.0,ranX,ranY,ranZ);
+                        target->GetRandomPoint(LOCX,LOCY,LOCZ,3.0f,ranX,ranY,ranZ);
                         DoTeleportPlayer(target,ranX,ranY,ranZ,m_creature->GetAngle(m_creature->GetPositionX(),m_creature->GetPositionY()));
                     }
                 }
                 Teleport = false;
 
-                DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_RAIN_OF_FIRE : H_SPELL_RAIN_OF_FIRE);
+                DoCastSpellIfCan(m_creature->getVictim(), m_bIsRegularMode ? SPELL_RAIN_OF_FIRE : H_SPELL_RAIN_OF_FIRE);
 
                 Teleport_Timer = 1000;
             }else Teleport_Timer -= diff;
@@ -180,13 +177,13 @@ struct MANGOS_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
 
         if (ShadowBoltVolley_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_SHADOW_BOLT_VOLLEY);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_SHADOW_BOLT_VOLLEY);
             ShadowBoltVolley_Timer = urand(15000, 30000);
         }else ShadowBoltVolley_Timer -= diff;
 
         if (DrawShadows_Timer < diff)
         {
-            DoCast(m_creature,SPELL_DRAW_SHADOWS);
+            DoCastSpellIfCan(m_creature,SPELL_DRAW_SHADOWS);
             DrawShadows_Timer = 30000;
             Teleport = true;
         }else DrawShadows_Timer -= diff;
@@ -197,11 +194,11 @@ struct MANGOS_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
 
             switch(urand(0, 4))
             {
-                case 0: DoCast(m_creature,SPELL_SUMMON_VOIDWALKER_A,true); break;
-                case 1: DoCast(m_creature,SPELL_SUMMON_VOIDWALKER_B,true); break;
-                case 2: DoCast(m_creature,SPELL_SUMMON_VOIDWALKER_C,true); break;
-                case 3: DoCast(m_creature,SPELL_SUMMON_VOIDWALKER_D,true); break;
-                case 4: DoCast(m_creature,SPELL_SUMMON_VOIDWALKER_E,true); break;
+                case 0: DoCastSpellIfCan(m_creature, SPELL_SUMMON_VOIDWALKER_A, CAST_TRIGGERED); break;
+                case 1: DoCastSpellIfCan(m_creature, SPELL_SUMMON_VOIDWALKER_B, CAST_TRIGGERED); break;
+                case 2: DoCastSpellIfCan(m_creature, SPELL_SUMMON_VOIDWALKER_C, CAST_TRIGGERED); break;
+                case 3: DoCastSpellIfCan(m_creature, SPELL_SUMMON_VOIDWALKER_D, CAST_TRIGGERED); break;
+                case 4: DoCastSpellIfCan(m_creature, SPELL_SUMMON_VOIDWALKER_E, CAST_TRIGGERED); break;
             }
             //faster rate when below (X) health?
             VoidTraveler_Timer = 35000;
@@ -211,8 +208,8 @@ struct MANGOS_DLL_DECL boss_grandmaster_vorpilAI : public ScriptedAI
         {
             if (Banish_Timer < diff)
             {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 1))
-                    DoCast(target,H_SPELL_BANISH);
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 1))
+                    DoCastSpellIfCan(target,H_SPELL_BANISH);
                 Banish_Timer = 35000;
             }else Banish_Timer -= diff;
         }

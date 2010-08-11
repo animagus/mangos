@@ -160,7 +160,7 @@ struct MANGOS_DLL_DECL boss_volkhanAI : public ScriptedAI
 
         for(std::list<uint64>::iterator itr = m_lGolemGUIDList.begin(); itr != m_lGolemGUIDList.end(); ++itr)
         {
-            if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
+            if (Creature* pTemp = m_creature->GetMap()->GetCreature(*itr))
             {
                 if (pTemp->isAlive())
                     pTemp->ForcedDespawn();
@@ -177,7 +177,7 @@ struct MANGOS_DLL_DECL boss_volkhanAI : public ScriptedAI
 
         for(std::list<uint64>::iterator itr = m_lGolemGUIDList.begin(); itr != m_lGolemGUIDList.end(); ++itr)
         {
-            if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
+            if (Creature* pTemp = m_creature->GetMap()->GetCreature(*itr))
             {
                  // only shatter brittle golems
                 if (pTemp->isAlive() && pTemp->GetEntry() == NPC_BRITTLE_GOLEM)
@@ -198,7 +198,7 @@ struct MANGOS_DLL_DECL boss_volkhanAI : public ScriptedAI
         {
             m_lGolemGUIDList.push_back(pSummoned->GetGUID());
 
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 pSummoned->AI()->AttackStart(pTarget);
 
             //why healing when just summoned?
@@ -216,7 +216,7 @@ struct MANGOS_DLL_DECL boss_volkhanAI : public ScriptedAI
         {
             if (m_uiPause_Timer < uiDiff)
             {
-                if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() != TARGETED_MOTION_TYPE)
+                if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() != CHASE_MOTION_TYPE)
                 {
                     if (m_creature->getVictim())
                         m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
@@ -241,7 +241,7 @@ struct MANGOS_DLL_DECL boss_volkhanAI : public ScriptedAI
 
                 DoScriptText(urand(0, 1) ? SAY_STOMP_1 : SAY_STOMP_2, m_creature);
 
-                DoCast(m_creature, m_bIsRegularMode ? SPELL_SHATTERING_STOMP_N : SPELL_SHATTERING_STOMP_H);
+                DoCastSpellIfCan(m_creature, m_bIsRegularMode ? SPELL_SHATTERING_STOMP_N : SPELL_SHATTERING_STOMP_H);
 
                 DoScriptText(EMOTE_SHATTER, m_creature);
 
@@ -266,7 +266,7 @@ struct MANGOS_DLL_DECL boss_volkhanAI : public ScriptedAI
         }
 
         // Health check
-        if (!m_bCanShatterGolem && (m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < (100-(20*m_uiHealthAmountModifier)))
+        if (!m_bCanShatterGolem && m_creature->GetHealthPercent() < float(100 - 20*m_uiHealthAmountModifier))
         {
             ++m_uiHealthAmountModifier;
 
@@ -289,10 +289,10 @@ CreatureAI* GetAI_boss_volkhan(Creature* pCreature)
     return new boss_volkhanAI(pCreature);
 }
 
-bool EffectDummyCreature_boss_volkhan(Unit* pCaster, uint32 uiSpellId, uint32 uiEffIndex, Creature* pCreatureTarget)
+bool EffectDummyCreature_boss_volkhan(Unit* pCaster, uint32 uiSpellId, SpellEffectIndex uiEffIndex, Creature* pCreatureTarget)
 {
     //always check spellid and effectindex
-    if (uiSpellId == SPELL_TEMPER_DUMMY && uiEffIndex == 0)
+    if (uiSpellId == SPELL_TEMPER_DUMMY && uiEffIndex == EFFECT_INDEX_0)
     {
         if (pCaster->GetEntry() != NPC_VOLKHAN_ANVIL || pCreatureTarget->GetEntry() != NPC_VOLKHAN)
             return true;
@@ -318,10 +318,10 @@ bool EffectDummyCreature_boss_volkhan(Unit* pCaster, uint32 uiSpellId, uint32 ui
 ## npc_volkhan_anvil
 ######*/
 
-bool EffectDummyCreature_npc_volkhan_anvil(Unit* pCaster, uint32 uiSpellId, uint32 uiEffIndex, Creature* pCreatureTarget)
+bool EffectDummyCreature_npc_volkhan_anvil(Unit* pCaster, uint32 uiSpellId, SpellEffectIndex uiEffIndex, Creature* pCreatureTarget)
 {
     //always check spellid and effectindex
-    if (uiSpellId == SPELL_TEMPER && uiEffIndex == 0)
+    if (uiSpellId == SPELL_TEMPER && uiEffIndex == EFFECT_INDEX_0)
     {
         if (pCaster->GetEntry() != NPC_VOLKHAN || pCreatureTarget->GetEntry() != NPC_VOLKHAN_ANVIL)
             return true;
@@ -333,11 +333,11 @@ bool EffectDummyCreature_npc_volkhan_anvil(Unit* pCaster, uint32 uiSpellId, uint
 
         pCaster->AttackStop();
 
-        if (pCaster->GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE)
+        if (pCaster->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
             pCaster->GetMotionMaster()->MovementExpired();
 
         ((Creature*)pCaster)->GetMap()->CreatureRelocation((Creature*)pCaster, fX, fY, fZ, pCreatureTarget->GetOrientation());
-        ((Creature*)pCaster)->SendMonsterMove(fX, fY, fZ, 0, ((Creature*)pCaster)->GetMonsterMoveFlags(), 1);
+        ((Creature*)pCaster)->SendMonsterMove(fX, fY, fZ, SPLINETYPE_NORMAL, ((Creature*)pCaster)->GetSplineFlags(), 1);
 
         pCreatureTarget->CastSpell(pCaster, SPELL_TEMPER_DUMMY, false);
 
@@ -411,7 +411,7 @@ struct MANGOS_DLL_DECL mob_molten_golemAI : public ScriptedAI
             m_creature->RemoveAllAuras();
             m_creature->AttackStop();
 
-            if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE)
+            if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
                 m_creature->GetMotionMaster()->MovementExpired();
 
             uiDamage = m_creature->GetHealth()-1;
@@ -439,7 +439,7 @@ struct MANGOS_DLL_DECL mob_molten_golemAI : public ScriptedAI
 
         if (m_uiBlast_Timer < uiDiff)
         {
-            DoCast(m_creature, SPELL_BLAST_WAVE);
+            DoCastSpellIfCan(m_creature, SPELL_BLAST_WAVE);
             m_uiBlast_Timer = 20000;
         }
         else
@@ -447,7 +447,7 @@ struct MANGOS_DLL_DECL mob_molten_golemAI : public ScriptedAI
 
         if (m_uiImmolation_Timer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_IMMOLATION_STRIKE_N : SPELL_IMMOLATION_STRIKE_H);
+            DoCastSpellIfCan(m_creature->getVictim(), m_bIsRegularMode ? SPELL_IMMOLATION_STRIKE_N : SPELL_IMMOLATION_STRIKE_H);
             m_uiImmolation_Timer = 5000;
         }
         else

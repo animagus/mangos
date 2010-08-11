@@ -102,7 +102,7 @@ struct MANGOS_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
 
         for(uint8 i = 0; i < MAX_ADVISORS; ++i)
         {
-            if (Creature* pAdvisor = (Creature*)Unit::GetUnit(*m_creature, m_auiAdvisorsGUID[i]))
+            if (Creature* pAdvisor = m_creature->GetMap()->GetCreature(m_auiAdvisorsGUID[i]))
             {
                 if (pAdvisor->getVictim())
                     pAdvisor->AI()->EnterEvadeMode();
@@ -118,7 +118,7 @@ struct MANGOS_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
     // select the spell and the text based on the advisor which died
     void EventAdvisorDeath(uint8 uiAdvisor)
     {
-        if(!m_creature->isAlive())
+        if (!m_creature->isAlive())
             return;
 
         int32  iSayGainAbility = 0;
@@ -144,7 +144,7 @@ struct MANGOS_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         }
 
         DoScriptText(iSayGainAbility, m_creature);
-        DoCast(m_creature, uiSpell);
+        DoCastSpellIfCan(m_creature, uiSpell);
     }
 
     void GetAdvisors()
@@ -166,8 +166,11 @@ struct MANGOS_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
 
         DoScriptText(SAY_AGGRO, m_creature);
 
-        m_pInstance->SetData64(DATA_KARATHRESS_STARTER, pWho->GetGUID());
-        m_pInstance->SetData(TYPE_KARATHRESS_EVENT, IN_PROGRESS);
+        if (Player* pPlayer = pWho->GetCharmerOrOwnerPlayerOrPlayerItself())
+        {
+            m_pInstance->SetData64(DATA_KARATHRESS_STARTER, pPlayer->GetGUID());
+            m_pInstance->SetData(TYPE_KARATHRESS_EVENT, IN_PROGRESS);
+        }
     }
 
     void KilledUnit(Unit* pVictim)
@@ -199,7 +202,7 @@ struct MANGOS_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
             //check if the event is started
             if (m_pInstance && m_pInstance->GetData(TYPE_KARATHRESS_EVENT) == IN_PROGRESS)
             {
-                if (Unit* pTarget = Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_KARATHRESS_STARTER)))
+                if (Player* pTarget = m_creature->GetMap()->GetPlayer(m_pInstance->GetData64(DATA_KARATHRESS_STARTER)))
                 {
                     AttackStart(pTarget);
                     GetAdvisors();
@@ -219,7 +222,7 @@ struct MANGOS_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         if (m_uiCataclysmicBolt_Timer < uiDiff)
         {
             //select a random unit other than the main tank
-            Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1);
+            Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 1);
 
             //if there aren't other units, cast on the tank
             if (!pTarget)
@@ -231,11 +234,11 @@ struct MANGOS_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         }else m_uiCataclysmicBolt_Timer -= uiDiff;
 
         //hp under 75%
-        if (!m_bBlessingOfTides_MobsChecked && ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth())  <= 75))
+        if (!m_bBlessingOfTides_MobsChecked && m_creature->GetHealthPercent() < 75.0f)
         {
             for(uint8 i = 0; i < MAX_ADVISORS; ++i)
             {
-                if (Unit* pAdvisor = Unit::GetUnit(*m_creature, m_auiAdvisorsGUID[i]))
+                if (Creature* pAdvisor = m_creature->GetMap()->GetCreature(m_auiAdvisorsGUID[i]))
                 {
                     //stack max three times (one for each alive)
                     if (pAdvisor->isAlive())
@@ -256,7 +259,7 @@ struct MANGOS_DLL_DECL boss_fathomlord_karathressAI : public ScriptedAI
         //m_uiEnrage_Timer
         if (m_uiEnrage_Timer < uiDiff)
         {
-            DoCast(m_creature, SPELL_ENRAGE);
+            DoCastSpellIfCan(m_creature, SPELL_ENRAGE);
             m_uiEnrage_Timer = 90000;
         }else m_uiEnrage_Timer -= uiDiff;
 
@@ -291,7 +294,8 @@ struct MANGOS_DLL_DECL Advisor_Base_AI : public ScriptedAI
         if (m_pInstance->GetData(TYPE_KARATHRESS_EVENT) == NOT_STARTED)
             m_pInstance->SetData(TYPE_KARATHRESS_EVENT, IN_PROGRESS);
 
-        m_pInstance->SetData64(DATA_KARATHRESS_STARTER, pWho->GetGUID());
+        if (Player* pPlayer = pWho->GetCharmerOrOwnerPlayerOrPlayerItself())
+            m_pInstance->SetData64(DATA_KARATHRESS_STARTER, pPlayer->GetGUID());
     }
 
     void JustDied(Unit* pVictim)
@@ -299,8 +303,11 @@ struct MANGOS_DLL_DECL Advisor_Base_AI : public ScriptedAI
         if (!m_pInstance)
             return;
 
-        if (Creature* pKarathress = (Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_KARATHRESS)))
-            ((boss_fathomlord_karathressAI*)pKarathress->AI())->EventAdvisorDeath(m_uiAdvisor);
+        if (Creature* pKarathress = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(DATA_KARATHRESS)))
+        {
+            if (boss_fathomlord_karathressAI* pKaraAI = dynamic_cast<boss_fathomlord_karathressAI*>(pKarathress->AI()))
+                pKaraAI->EventAdvisorDeath(m_uiAdvisor);
+        }
     }
 };
 
@@ -370,7 +377,7 @@ struct MANGOS_DLL_DECL boss_fathomguard_sharkkisAI : public Advisor_Base_AI
             //check if the event is started
             if (m_pInstance && m_pInstance->GetData(TYPE_KARATHRESS_EVENT) == IN_PROGRESS)
             {
-                if (Unit* pTarget = Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_KARATHRESS_STARTER)))
+                if (Player* pTarget = m_creature->GetMap()->GetPlayer(m_pInstance->GetData64(DATA_KARATHRESS_STARTER)))
                     AttackStart(pTarget);
             }
             return;
@@ -389,7 +396,7 @@ struct MANGOS_DLL_DECL boss_fathomguard_sharkkisAI : public Advisor_Base_AI
             if (m_uiPet_Timer < uiDiff)
             {
                 if (!m_creature->GetPet())
-                    DoCast(m_creature, urand(0,1) ? SPELL_SUMMON_FATHOM_LURKER : SPELL_SUMMON_FATHOM_SPOREBAT);
+                    DoCastSpellIfCan(m_creature, urand(0,1) ? SPELL_SUMMON_FATHOM_LURKER : SPELL_SUMMON_FATHOM_SPOREBAT);
             }
             else
                 m_uiPet_Timer -= uiDiff;
@@ -398,10 +405,10 @@ struct MANGOS_DLL_DECL boss_fathomguard_sharkkisAI : public Advisor_Base_AI
         //m_uiHurlTrident_Timer
         if (m_uiHurlTrident_Timer < uiDiff)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
             {
                 if (!m_creature->IsWithinDist(pTarget,ATTACK_DISTANCE))
-                    DoCast(pTarget, SPELL_HURL_TRIDENT);
+                    DoCastSpellIfCan(pTarget, SPELL_HURL_TRIDENT);
             }
 
             m_uiHurlTrident_Timer = 5000;
@@ -410,14 +417,14 @@ struct MANGOS_DLL_DECL boss_fathomguard_sharkkisAI : public Advisor_Base_AI
         //m_uiLeechingThrow_Timer
         if (m_uiLeechingThrow_Timer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), SPELL_LEECHING_THROW);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_LEECHING_THROW);
             m_uiLeechingThrow_Timer = 20000;
         }else m_uiLeechingThrow_Timer -= uiDiff;
 
         //m_uiTheBeastWithin_Timer
         if (m_uiTheBeastWithin_Timer < uiDiff)
         {
-            DoCast(m_creature, SPELL_THE_BEAST_WITHIN);
+            DoCastSpellIfCan(m_creature, SPELL_THE_BEAST_WITHIN);
             m_uiTheBeastWithin_Timer = 30000;
         }else m_uiTheBeastWithin_Timer -= uiDiff;
 
@@ -450,7 +457,7 @@ struct MANGOS_DLL_DECL boss_fathomguard_tidalvessAI : public Advisor_Base_AI
             //check if the event is started
             if (m_pInstance && m_pInstance->GetData(TYPE_KARATHRESS_EVENT) == IN_PROGRESS)
             {
-                if (Unit* pTarget = Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_KARATHRESS_STARTER)))
+                if (Player* pTarget = m_creature->GetMap()->GetPlayer(m_pInstance->GetData64(DATA_KARATHRESS_STARTER)))
                     AttackStart(pTarget);
             }
             return;
@@ -466,7 +473,7 @@ struct MANGOS_DLL_DECL boss_fathomguard_tidalvessAI : public Advisor_Base_AI
         //m_uiFrostShock_Timer
         if (m_uiFrostShock_Timer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), SPELL_FROST_SHOCK);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_FROST_SHOCK);
             m_uiFrostShock_Timer = urand(25000, 30000);
         }else m_uiFrostShock_Timer -= uiDiff;
 
@@ -503,7 +510,7 @@ struct MANGOS_DLL_DECL boss_fathomguard_caribdisAI : public Advisor_Base_AI
             //check if the event is started
             if (m_pInstance && m_pInstance->GetData(TYPE_KARATHRESS_EVENT) == IN_PROGRESS)
             {
-                if (Unit* pTarget = Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_KARATHRESS_STARTER)))
+                if (Player* pTarget = m_creature->GetMap()->GetPlayer(m_pInstance->GetData64(DATA_KARATHRESS_STARTER)))
                     AttackStart(pTarget);
             }
             return;
@@ -519,7 +526,7 @@ struct MANGOS_DLL_DECL boss_fathomguard_caribdisAI : public Advisor_Base_AI
         //m_uiWaterBoltVolley_Timer
         if (m_uiWaterBoltVolley_Timer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), SPELL_WATER_BOLT_VOLLEY);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_WATER_BOLT_VOLLEY);
             m_uiWaterBoltVolley_Timer = 30000;
         }else m_uiWaterBoltVolley_Timer -= uiDiff;
 
@@ -541,9 +548,9 @@ struct MANGOS_DLL_DECL boss_fathomguard_caribdisAI : public Advisor_Base_AI
             {
                 switch(urand(0, 3))
                 {
-                    case 0: pUnit = Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_KARATHRESS)); break;
-                    case 1: pUnit = Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_SHARKKIS)); break;
-                    case 2: pUnit = Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_TIDALVESS)); break;
+                    case 0: pUnit = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(DATA_KARATHRESS)); break;
+                    case 1: pUnit = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(DATA_SHARKKIS)); break;
+                    case 2: pUnit = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(DATA_TIDALVESS)); break;
                     case 3: pUnit = m_creature; break;
                 }
             }
@@ -551,7 +558,7 @@ struct MANGOS_DLL_DECL boss_fathomguard_caribdisAI : public Advisor_Base_AI
                 pUnit = m_creature;
 
             if (pUnit && pUnit->isAlive())
-                DoCast(pUnit, SPELL_HEAL);
+                DoCastSpellIfCan(pUnit, SPELL_HEAL);
 
             m_uiHeal_Timer = 60000;
         }else m_uiHeal_Timer -= uiDiff;

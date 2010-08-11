@@ -124,12 +124,13 @@ struct MANGOS_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
 
         if (InciteChaos_Timer < diff)
         {
-            DoCast(m_creature, SPELL_INCITE_CHAOS);
+            DoCastSpellIfCan(m_creature, SPELL_INCITE_CHAOS);
 
             ThreatList const& tList = m_creature->getThreatManager().getThreatList();
             for (ThreatList::const_iterator itr = tList.begin();itr != tList.end(); ++itr)
             {
-                Unit* target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+                Unit* target = m_creature->GetMap()->GetUnit((*itr)->getUnitGuid());
+
                 if (target && target->GetTypeId() == TYPEID_PLAYER)
                     target->CastSpell(target,SPELL_INCITE_CHAOS_B,true);
             }
@@ -143,15 +144,15 @@ struct MANGOS_DLL_DECL boss_blackheart_the_inciterAI : public ScriptedAI
         //Charge_Timer
         if (Charge_Timer < diff)
         {
-            if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                DoCast(target, SPELL_CHARGE);
+            if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                DoCastSpellIfCan(target, SPELL_CHARGE);
             Charge_Timer = urand(15000, 25000);
         }else Charge_Timer -= diff;
 
         //Knockback_Timer
         if (Knockback_Timer < diff)
         {
-            DoCast(m_creature, SPELL_WAR_STOMP);
+            DoCastSpellIfCan(m_creature, SPELL_WAR_STOMP);
             Knockback_Timer = urand(18000, 24000);
         }else Knockback_Timer -= diff;
 

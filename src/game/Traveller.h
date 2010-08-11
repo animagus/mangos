@@ -48,13 +48,14 @@ struct MANGOS_DLL_DECL Traveller
     float GetPositionZ() const { return i_traveller.GetPositionZ(); }
     T& GetTraveller(void) { return i_traveller; }
 
-    float Speed(void) { assert(false); return 0.0f; }
+    float Speed(void) { ASSERT(false); return 0.0f; }
     float GetMoveDestinationTo(float x, float y, float z);
     uint32 GetTotalTrevelTimeTo(float x, float y, float z);
 
     void Relocation(float x, float y, float z, float orientation) {}
     void Relocation(float x, float y, float z) { Relocation(x, y, z, i_traveller.GetOrientation()); }
     void MoveTo(float x, float y, float z, uint32 t) {}
+    void Stop() {}
 };
 
 template<class T>
@@ -71,9 +72,9 @@ inline uint32 Traveller<T>::GetTotalTrevelTimeTo(float x, float y, float z)
 template<>
 inline float Traveller<Creature>::Speed()
 {
-    if(i_traveller.HasMonsterMoveFlag(MONSTER_MOVE_WALK))
+    if(i_traveller.HasSplineFlag(SPLINEFLAG_WALKMODE))
         return i_traveller.GetSpeed(MOVE_WALK);
-    else if(i_traveller.HasMonsterMoveFlag(MONSTER_MOVE_FLY))
+    else if(i_traveller.HasSplineFlag(SPLINEFLAG_UNKNOWN7))
         return i_traveller.GetSpeed(MOVE_FLIGHT);
     else
         return i_traveller.GetSpeed(MOVE_RUN);
@@ -90,10 +91,12 @@ inline float Traveller<Creature>::GetMoveDestinationTo(float x, float y, float z
 {
     float dx = x - GetPositionX();
     float dy = y - GetPositionY();
-    float dz = z - GetPositionZ();
 
-    if(i_traveller.hasUnitState(UNIT_STAT_IN_FLIGHT))
+    if(i_traveller.hasUnitState(UNIT_STAT_TAXI_FLIGHT))
+    {
+        float dz = z - GetPositionZ();
         return sqrt((dx*dx) + (dy*dy) + (dz*dz));
+    }
     else                                                    //Walking on the ground
         return sqrt((dx*dx) + (dy*dy));
 }
@@ -102,17 +105,23 @@ inline float Traveller<Creature>::GetMoveDestinationTo(float x, float y, float z
 template<>
 inline void Traveller<Creature>::MoveTo(float x, float y, float z, uint32 t)
 {
-    i_traveller.AI_SendMoveToPacket(x, y, z, t, i_traveller.GetMonsterMoveFlags(), 0);
+    i_traveller.SendMonsterMove(x, y, z, SPLINETYPE_NORMAL, i_traveller.GetSplineFlags(), t);
+}
+
+template<>
+inline void Traveller<Creature>::Stop()
+{
+    i_traveller.SendMonsterMove(i_traveller.GetPositionX(), i_traveller.GetPositionY(), i_traveller.GetPositionZ(), SPLINETYPE_STOP, i_traveller.GetSplineFlags(), 0);
 }
 
 // specialization for players
 template<>
 inline float Traveller<Player>::Speed()
 {
-    if (i_traveller.isInFlight())
+    if (i_traveller.IsTaxiFlying())
         return PLAYER_FLIGHT_SPEED;
     else
-        return i_traveller.GetSpeed(i_traveller.m_movementInfo.HasMovementFlag(MOVEMENTFLAG_WALK_MODE) ? MOVE_WALK : MOVE_RUN);
+        return i_traveller.GetSpeed(i_traveller.m_movementInfo.HasMovementFlag(MOVEFLAG_WALK_MODE) ? MOVE_WALK : MOVE_RUN);
 }
 
 template<>
@@ -122,7 +131,7 @@ inline float Traveller<Player>::GetMoveDestinationTo(float x, float y, float z)
     float dy = y - GetPositionY();
     float dz = z - GetPositionZ();
 
-    if (i_traveller.isInFlight())
+    if (i_traveller.IsTaxiFlying())
         return sqrt((dx*dx) + (dy*dy) + (dz*dz));
     else                                                    //Walking on the ground
         return sqrt((dx*dx) + (dy*dy));
@@ -137,8 +146,15 @@ inline void Traveller<Player>::Relocation(float x, float y, float z, float orien
 template<>
 inline void Traveller<Player>::MoveTo(float x, float y, float z, uint32 t)
 {
-    //Only send MOVEMENTFLAG_WALK_MODE, client has strange issues with other move flags
-    i_traveller.SendMonsterMove(x, y, z, 0, MONSTER_MOVE_WALK, t);
+    //Only send SPLINEFLAG_WALKMODE, client has strange issues with other move flags
+    i_traveller.SendMonsterMove(x, y, z, SPLINETYPE_NORMAL, SPLINEFLAG_WALKMODE, t);
+}
+
+template<>
+inline void Traveller<Player>::Stop()
+{
+    //Only send SPLINEFLAG_WALKMODE, client has strange issues with other move flags
+    i_traveller.SendMonsterMove(i_traveller.GetPositionX(), i_traveller.GetPositionY(), i_traveller.GetPositionZ(), SPLINETYPE_STOP, SPLINEFLAG_WALKMODE, 0);
 }
 
 typedef Traveller<Creature> CreatureTraveller;

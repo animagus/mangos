@@ -46,24 +46,24 @@ struct InfernalPoint
 
 static InfernalPoint InfernalPoints[] =
 {
-    {-10922.8, -1985.2},
-    {-10916.2, -1996.2},
-    {-10932.2, -2008.1},
-    {-10948.8, -2022.1},
-    {-10958.7, -1997.7},
-    {-10971.5, -1997.5},
-    {-10990.8, -1995.1},
-    {-10989.8, -1976.5},
-    {-10971.6, -1973.0},
-    {-10955.5, -1974.0},
-    {-10939.6, -1969.8},
-    {-10958.0, -1952.2},
-    {-10941.7, -1954.8},
-    {-10943.1, -1988.5},
-    {-10948.8, -2005.1},
-    {-10984.0, -2019.3},
-    {-10932.8, -1979.6},
-    {-10935.7, -1996.0}
+    {-10922.8f, -1985.2f},
+    {-10916.2f, -1996.2f},
+    {-10932.2f, -2008.1f},
+    {-10948.8f, -2022.1f},
+    {-10958.7f, -1997.7f},
+    {-10971.5f, -1997.5f},
+    {-10990.8f, -1995.1f},
+    {-10989.8f, -1976.5f},
+    {-10971.6f, -1973.0f},
+    {-10955.5f, -1974.0f},
+    {-10939.6f, -1969.8f},
+    {-10958.0f, -1952.2f},
+    {-10941.7f, -1954.8f},
+    {-10943.1f, -1988.5f},
+    {-10948.8f, -2005.1f},
+    {-10984.0f, -2019.3f},
+    {-10932.8f, -1979.6f},
+    {-10935.7f, -1996.0f}
 };
 
 #define TOTAL_INFERNAL_POINTS 18
@@ -112,7 +112,7 @@ struct MANGOS_DLL_DECL netherspite_infernalAI : public ScriptedAI
         {
             if (HellfireTimer <= diff)
             {
-                DoCast(m_creature, SPELL_HELLFIRE);
+                DoCastSpellIfCan(m_creature, SPELL_HELLFIRE);
                 HellfireTimer = 0;
             } else HellfireTimer -= diff;
         }
@@ -129,9 +129,8 @@ struct MANGOS_DLL_DECL netherspite_infernalAI : public ScriptedAI
 
     void KilledUnit(Unit *who)
     {
-        Unit *pMalchezaar = Unit::GetUnit(*m_creature, malchezaar);
-        if (pMalchezaar)
-            ((Creature*)pMalchezaar)->AI()->KilledUnit(who);
+        if (Creature *pMalchezaar = m_creature->GetMap()->GetCreature(malchezaar))
+            pMalchezaar->AI()->KilledUnit(who);
     }
 
     void SpellHit(Unit *who, const SpellEntry *spell)
@@ -246,7 +245,7 @@ struct MANGOS_DLL_DECL boss_malchezaarAI : public ScriptedAI
         //Infernal Cleanup
         for(std::vector<uint64>::iterator itr = infernals.begin(); itr!= infernals.end(); ++itr)
         {
-            Unit *pInfernal = Unit::GetUnit(*m_creature, *itr);
+            Creature *pInfernal = m_creature->GetMap()->GetCreature(*itr);
             if (pInfernal && pInfernal->isAlive())
             {
                 pInfernal->SetVisibility(VISIBILITY_OFF);
@@ -260,7 +259,7 @@ struct MANGOS_DLL_DECL boss_malchezaarAI : public ScriptedAI
     {
         for(int i=0; i<2;++i)
         {
-            Unit *axe = Unit::GetUnit(*m_creature, axes[i]);
+            Creature *axe = m_creature->GetMap()->GetCreature(axes[i]);
             if (axe && axe->isAlive())
                 axe->DealDamage(axe, axe->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             axes[i] = 0;
@@ -295,7 +294,7 @@ struct MANGOS_DLL_DECL boss_malchezaarAI : public ScriptedAI
         std::advance(itr, 1);
         for(; itr!= tList.end(); ++itr)                    //store the threat list in a different container
         {
-            Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+            Unit *target = m_creature->GetMap()->GetUnit((*itr)->getUnitGuid());
                                                             //only on alive players
             if (target && target->isAlive() && target->GetTypeId() == TYPEID_PLAYER)
                 targets.push_back(target);
@@ -325,9 +324,11 @@ struct MANGOS_DLL_DECL boss_malchezaarAI : public ScriptedAI
     {
         for(int i = 0; i < 5; ++i)
         {
-            Unit *target = Unit::GetUnit(*m_creature, enfeeble_targets[i]);
-            if (target && target->isAlive())
-                target->SetHealth(enfeeble_health[i]);
+            Player* pTarget = m_creature->GetMap()->GetPlayer(enfeeble_targets[i]);
+
+            if (pTarget && pTarget->isAlive())
+                pTarget->SetHealth(enfeeble_health[i]);
+
             enfeeble_targets[i] = 0;
             enfeeble_health[i] = 0;
         }
@@ -358,12 +359,19 @@ struct MANGOS_DLL_DECL boss_malchezaarAI : public ScriptedAI
         {
             Infernal->SetDisplayId(INFERNAL_MODEL_INVISIBLE);
             Infernal->setFaction(m_creature->getFaction());
-            if (point)
-                ((netherspite_infernalAI*)Infernal->AI())->point=point;
-            ((netherspite_infernalAI*)Infernal->AI())->malchezaar=m_creature->GetGUID();
+
+            netherspite_infernalAI* pInfernalAI = dynamic_cast<netherspite_infernalAI*>(Infernal->AI());
+
+            if (pInfernalAI)
+            {
+                if (point)
+                    pInfernalAI->point = point;
+
+                pInfernalAI->malchezaar = m_creature->GetGUID();
+            }
 
             infernals.push_back(Infernal->GetGUID());
-            DoCast(Infernal, SPELL_INFERNAL_RELAY);
+            DoCastSpellIfCan(Infernal, SPELL_INFERNAL_RELAY);
         }
 
         DoScriptText(urand(0, 1) ? SAY_SUMMON1 : SAY_SUMMON2, m_creature);
@@ -391,14 +399,14 @@ struct MANGOS_DLL_DECL boss_malchezaarAI : public ScriptedAI
 
         if (phase == 1)
         {
-            if ((m_creature->GetHealth()*100) / m_creature->GetMaxHealth() < 60)
+            if (m_creature->GetHealthPercent() < 60.0f)
             {
                 m_creature->InterruptNonMeleeSpells(false);
 
                 phase = 2;
 
                 //animation
-                DoCast(m_creature, SPELL_EQUIP_AXES);
+                DoCastSpellIfCan(m_creature, SPELL_EQUIP_AXES);
 
                 //text
                 DoScriptText(SAY_AXE_TOSS1, m_creature);
@@ -426,7 +434,7 @@ struct MANGOS_DLL_DECL boss_malchezaarAI : public ScriptedAI
         }
         else if (phase == 2)
         {
-            if ((m_creature->GetHealth()*100) / m_creature->GetMaxHealth() < 30)
+            if (m_creature->GetHealthPercent() < 30.0f)
             {
                 InfernalTimer = 15000;
 
@@ -439,7 +447,7 @@ struct MANGOS_DLL_DECL boss_malchezaarAI : public ScriptedAI
 
                 DoScriptText(SAY_AXE_TOSS2, m_creature);
 
-                Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
                 for(uint32 i=0; i<2; ++i)
                 {
                     Creature *axe = m_creature->SummonCreature(MALCHEZARS_AXE, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1000);
@@ -467,14 +475,14 @@ struct MANGOS_DLL_DECL boss_malchezaarAI : public ScriptedAI
 
             if (SunderArmorTimer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_SUNDER_ARMOR);
+                DoCastSpellIfCan(m_creature->getVictim(), SPELL_SUNDER_ARMOR);
                 SunderArmorTimer = urand(10000, 18000);
 
             }else SunderArmorTimer -= diff;
 
             if (Cleave_Timer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_CLEAVE);
+                DoCastSpellIfCan(m_creature->getVictim(), SPELL_CLEAVE);
                 Cleave_Timer = urand(6000, 12000);
 
             }else Cleave_Timer -= diff;
@@ -485,12 +493,12 @@ struct MANGOS_DLL_DECL boss_malchezaarAI : public ScriptedAI
             {
                 AxesTargetSwitchTimer = urand(7500, 20000);
 
-                Unit *target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
                 if (target)
                 {
                     for(int i = 0; i < 2; ++i)
                     {
-                        Unit *axe = Unit::GetUnit(*m_creature, axes[i]);
+                        Creature *axe = m_creature->GetMap()->GetCreature(axes[i]);
                         if (axe)
                         {
                             float threat = 1000000.0f;
@@ -510,7 +518,9 @@ struct MANGOS_DLL_DECL boss_malchezaarAI : public ScriptedAI
 
             if (AmplifyDamageTimer < diff)
             {
-                DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_AMPLIFY_DAMAGE);
+                if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    DoCastSpellIfCan(pTarget, SPELL_AMPLIFY_DAMAGE);
+
                 AmplifyDamageTimer = urand(20000, 30000);
             }else AmplifyDamageTimer -= diff;
         }
@@ -524,7 +534,7 @@ struct MANGOS_DLL_DECL boss_malchezaarAI : public ScriptedAI
 
         if (ShadowNovaTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_SHADOWNOVA);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_SHADOWNOVA);
             ShadowNovaTimer = phase == 3 ? 31000 : -1;
         } else ShadowNovaTimer -= diff;
 
@@ -536,10 +546,10 @@ struct MANGOS_DLL_DECL boss_malchezaarAI : public ScriptedAI
                 if (phase == 1)
                     target = m_creature->getVictim();       // the tank
                 else                                        //anyone but the tank
-                    target = SelectUnit(SELECT_TARGET_RANDOM, 1);
+                    target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 1);
 
                 if (target)
-                    DoCast(target, SPELL_SW_PAIN);
+                    DoCastSpellIfCan(target, SPELL_SW_PAIN);
 
                 SWPainTimer = 20000;
             }else SWPainTimer -= diff;
@@ -596,10 +606,13 @@ struct MANGOS_DLL_DECL boss_malchezaarAI : public ScriptedAI
 
 void netherspite_infernalAI::Cleanup()
 {
-    Unit *pMalchezaar = Unit::GetUnit(*m_creature, malchezaar);
+    Creature* pMalchezaar = m_creature->GetMap()->GetCreature(malchezaar);
 
     if (pMalchezaar && pMalchezaar->isAlive())
-        ((boss_malchezaarAI*)((Creature*)pMalchezaar)->AI())->Cleanup(m_creature, point);
+    {
+        if (boss_malchezaarAI* pMalAI = dynamic_cast<boss_malchezaarAI*>(pMalchezaar->AI()))
+            pMalAI->Cleanup(m_creature, point);
+    }
 }
 
 CreatureAI* GetAI_netherspite_infernal(Creature* pCreature)

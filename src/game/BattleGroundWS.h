@@ -22,9 +22,9 @@
 #include "BattleGround.h"
 
 #define BG_WS_MAX_TEAM_SCORE      3
-#define BG_WS_FLAG_RESPAWN_TIME   (23*IN_MILISECONDS)
-#define BG_WS_FLAG_DROP_TIME      (10*IN_MILISECONDS)
-#define BG_WS_TIME_LIMIT          (25*MINUTE*IN_MILISECONDS)
+#define BG_WS_FLAG_RESPAWN_TIME   (23*IN_MILLISECONDS)
+#define BG_WS_FLAG_DROP_TIME      (10*IN_MILLISECONDS)
+#define BG_WS_TIME_LIMIT          (25*MINUTE*IN_MILLISECONDS)
 
 enum BG_WS_Sound
 {
@@ -55,6 +55,7 @@ enum BG_WS_WorldStates
     BG_WS_FLAG_CAPTURES_MAX       = 1601,
     BG_WS_FLAG_STATE_HORDE        = 2338,
     BG_WS_FLAG_STATE_ALLIANCE     = 2339,
+    BG_WS_TIME_ENABLED            = 4247,
     BG_WS_TIME_REMAINING          = 4248
 };
 
@@ -130,13 +131,14 @@ class BattleGroundWS : public BattleGround
         virtual void Reset();
         void EndBattleGround(uint32 winner);
         virtual WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);
+        uint32 GetRemainingTimeInMinutes() { return m_EndTimer ? (m_EndTimer-1) / (MINUTE * IN_MILLISECONDS) + 1 : 0; }
 
         void UpdateFlagState(uint32 team, uint32 value);
         void UpdateTeamScore(uint32 team);
         void UpdatePlayerScore(Player *Source, uint32 type, uint32 value);
         void SetDroppedFlagGUID(uint64 guid, uint32 TeamID)  { m_DroppedFlagGUID[GetTeamIndexByTeamId(TeamID)] = guid;}
         uint64 GetDroppedFlagGUID(uint32 TeamID)             { return m_DroppedFlagGUID[GetTeamIndexByTeamId(TeamID)];}
-        virtual void FillInitialWorldStates(WorldPacket& data);
+        virtual void FillInitialWorldStates(WorldPacket& data, uint32& count);
 
         /* Scorekeeping */
         uint32 GetTeamScore(uint32 TeamID) const            { return m_TeamScores[GetTeamIndexByTeamId(TeamID)]; }
@@ -144,7 +146,7 @@ class BattleGroundWS : public BattleGround
         void SetTeamPoint(uint32 TeamID, uint32 Points = 0) { m_TeamScores[GetTeamIndexByTeamId(TeamID)] = Points; }
         void RemovePoint(uint32 TeamID, uint32 Points = 1)  { m_TeamScores[GetTeamIndexByTeamId(TeamID)] -= Points; }
 		
-		uint32 GetEndTimeMinutes() { return ceil(float(m_EndTimer / MINUTE / IN_MILISECONDS)); }
+		uint32 GetEndTimeMinutes() { return ceil(float(m_EndTimer / MINUTE / IN_MILLISECONDS)); }
     private:
         uint64 m_FlagKeepers[BG_TEAMS_COUNT];
 
@@ -152,12 +154,11 @@ class BattleGroundWS : public BattleGround
         uint8 m_FlagState[BG_TEAMS_COUNT];
         int32 m_FlagsTimer[BG_TEAMS_COUNT];
         int32 m_FlagsDropTimer[BG_TEAMS_COUNT];
-		int32 m_EndTimer;
-
+        
         uint32 m_ReputationCapture;
         uint32 m_HonorWinKills;
         uint32 m_HonorEndKills;
+        uint32 m_EndTimer;
         uint32 m_LastCapturedFlagTeam;
-        uint32 m_LastEndTimeMinutes;
 };
 #endif

@@ -40,20 +40,20 @@ EndScriptData */
 #define CREATURE_CHROMATIC_DRAKANOID    14302
 #define CREATURE_NEFARIAN               11583
 
-#define ADD_X1 -7591.151855
-#define ADD_X2 -7514.598633
-#define ADD_Y1 -1204.051880
-#define ADD_Y2 -1150.448853
-#define ADD_Z1 476.800476
-#define ADD_Z2 476.796570
+#define ADD_X1 -7591.151855f
+#define ADD_X2 -7514.598633f
+#define ADD_Y1 -1204.051880f
+#define ADD_Y2 -1150.448853f
+#define ADD_Z1 476.800476f
+#define ADD_Z2 476.796570f
 
-#define NEF_X   -7445
-#define NEF_Y   -1332
-#define NEF_Z   536
+#define NEF_X   -7445.0f
+#define NEF_Y   -1332.0f
+#define NEF_Z   536.0f
 
-#define HIDE_X  -7592
-#define HIDE_Y  -1264
-#define HIDE_Z  481
+#define HIDE_X  -7592.0f
+#define HIDE_Y  -1264.0f
+#define HIDE_Z  481.0f
 
 #define SPELL_SHADOWBOLT        21077
 #define SPELL_FEAR              26070
@@ -227,9 +227,9 @@ struct MANGOS_DLL_DECL boss_victor_nefariusAI : public ScriptedAI
             if (ShadowBoltTimer < diff)
             {
                 Unit* target = NULL;
-                target = SelectUnit(SELECT_TARGET_RANDOM,0);
+                target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0);
                 if (target)
-                    DoCast(target,SPELL_SHADOWBOLT);
+                    DoCastSpellIfCan(target,SPELL_SHADOWBOLT);
 
                 ShadowBoltTimer = urand(3000, 10000);
             }else ShadowBoltTimer -= diff;
@@ -238,9 +238,9 @@ struct MANGOS_DLL_DECL boss_victor_nefariusAI : public ScriptedAI
             if (FearTimer < diff)
             {
                 Unit* target = NULL;
-                target = SelectUnit(SELECT_TARGET_RANDOM,0);
+                target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0);
                 if (target)
-                    DoCast(target,SPELL_FEAR);
+                    DoCastSpellIfCan(target,SPELL_FEAR);
 
                 FearTimer = urand(10000, 20000);
             }else FearTimer -= diff;
@@ -261,8 +261,8 @@ struct MANGOS_DLL_DECL boss_victor_nefariusAI : public ScriptedAI
                 ++SpawnedAdds;
 
                 //Spawn creature and force it to start attacking a random target
-                Spawned = m_creature->SummonCreature(CreatureID,ADD_X1,ADD_Y1,ADD_Z1,5.000,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,5000);
-                target = SelectUnit(SELECT_TARGET_RANDOM,0);
+                Spawned = m_creature->SummonCreature(CreatureID,ADD_X1,ADD_Y1,ADD_Z1,5.000f,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,5000);
+                target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0);
                 if (target && Spawned)
                 {
                     Spawned->AI()->AttackStart(target);
@@ -279,7 +279,7 @@ struct MANGOS_DLL_DECL boss_victor_nefariusAI : public ScriptedAI
                 target = NULL;
                 Spawned = NULL;
                 Spawned = m_creature->SummonCreature(CreatureID,ADD_X2,ADD_Y2,ADD_Z2,5.000,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,5000);
-                target = SelectUnit(SELECT_TARGET_RANDOM,0);
+                target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0);
                 if (target && Spawned)
                 {
                     Spawned->AI()->AttackStart(target);
@@ -296,18 +296,17 @@ struct MANGOS_DLL_DECL boss_victor_nefariusAI : public ScriptedAI
                     m_creature->InterruptNonMeleeSpells(false);
 
                     //Root self
-                    DoCast(m_creature,33356);
+                    DoCastSpellIfCan(m_creature,33356);
 
                     //Make super invis
-                    DoCast(m_creature,8149);
+                    DoCastSpellIfCan(m_creature,8149);
 
-                    //Teleport self to a hiding spot (this causes errors in the mangos log but no real issues)
-                    m_creature->GetMap()->CreatureRelocation(m_creature, HIDE_X, HIDE_Y, HIDE_Z, 0.0f);
-                    m_creature->SendMonsterMove(HIDE_X, HIDE_Y, HIDE_Z, 0, MONSTER_MOVE_NONE, 0);
+                    //Teleport self to a hiding spot
+                    m_creature->NearTeleportTo(HIDE_X, HIDE_Y, HIDE_Z, 0.0f);
 
                     //Spawn nef and have him attack a random target
                     Creature* Nefarian = m_creature->SummonCreature(CREATURE_NEFARIAN,NEF_X,NEF_Y,NEF_Z,0,TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT,120000);
-                    target = SelectUnit(SELECT_TARGET_RANDOM,0);
+                    target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0);
 
                     if (target && Nefarian)
                     {
@@ -325,7 +324,7 @@ struct MANGOS_DLL_DECL boss_victor_nefariusAI : public ScriptedAI
         {
             if (NefCheckTime < diff)
             {
-                Creature* pNefarian = (Creature*)Unit::GetUnit((*m_creature),NefarianGUID);
+                Creature* pNefarian = m_creature->GetMap()->GetCreature(NefarianGUID);
 
                 //If nef is dead then we die to so the players get out of combat
                 //and cannot repeat the event
@@ -368,7 +367,8 @@ bool GossipSelect_boss_victor_nefarius(Player* pPlayer, Creature* pCreature, uin
         case GOSSIP_ACTION_INFO_DEF+3:
             pPlayer->CLOSE_GOSSIP_MENU();
             DoScriptText(SAY_GAMESBEGIN_1, pCreature);
-            ((boss_victor_nefariusAI*)pCreature->AI())->BeginEvent(pPlayer);
+            if (boss_victor_nefariusAI* pNefAI = dynamic_cast<boss_victor_nefariusAI*>(pCreature->AI()))
+                pNefAI->BeginEvent(pPlayer);
             break;
     }
     return true;

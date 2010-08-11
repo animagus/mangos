@@ -158,7 +158,7 @@ bool QuestAccept_npc_gilthares(Player* pPlayer, Creature* pCreature, const Quest
         DoScriptText(SAY_GIL_START, pCreature, pPlayer);
 
         if (npc_giltharesAI* pEscortAI = dynamic_cast<npc_giltharesAI*>(pCreature->AI()))
-            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest);
+            pEscortAI->Start(false, pPlayer->GetGUID(), pQuest);
     }
     return true;
 }
@@ -231,7 +231,7 @@ struct MANGOS_DLL_DECL npc_taskmaster_fizzuleAI : public ScriptedAI
         m_creature->GetMotionMaster()->MoveIdle();
 
         m_creature->setFaction(FACTION_FRIENDLY_F);
-        m_creature->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
+        m_creature->HandleEmote(EMOTE_ONESHOT_SALUTE);
     }
 
     void SpellHit(Unit *caster, const SpellEntry *spell)
@@ -298,12 +298,12 @@ CreatureAI* GetAI_npc_taskmaster_fizzule(Creature* pCreature)
 
 float AffrayChallengerLoc[6][4]=
 {
-    {-1683, -4326, 2.79, 0},
-    {-1682, -4329, 2.79, 0},
-    {-1683, -4330, 2.79, 0},
-    {-1680, -4334, 2.79, 1.49},
-    {-1674, -4326, 2.79, 3.49},
-    {-1677, -4334, 2.79, 1.66}
+    {-1683.0f, -4326.0f, 2.79f, 0.00f},
+    {-1682.0f, -4329.0f, 2.79f, 0.00f},
+    {-1683.0f, -4330.0f, 2.79f, 0.00f},
+    {-1680.0f, -4334.0f, 2.79f, 1.49f},
+    {-1674.0f, -4326.0f, 2.79f, 3.49f},
+    {-1677.0f, -4334.0f, 2.79f, 1.66f}
 };
 
 struct MANGOS_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
@@ -364,7 +364,7 @@ struct MANGOS_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
 
             pCreature->setFaction(35);
             pCreature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            pCreature->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
+            pCreature->HandleEmote(EMOTE_ONESHOT_ROAR);
             AffrayChallenger[i] = pCreature->GetGUID();
         }
     }
@@ -373,7 +373,7 @@ struct MANGOS_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
     {
         pUnit->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         pUnit->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        pUnit->HandleEmoteCommand(EMOTE_ONESHOT_ROAR);
+        pUnit->HandleEmote(EMOTE_ONESHOT_ROAR);
         pUnit->setFaction(14);
     }
 
@@ -388,7 +388,7 @@ struct MANGOS_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
             {
                 for(uint8 i = 0; i < 6; ++i)
                 {
-                    Creature *challenger = (Creature*)Unit::GetUnit(*m_creature,AffrayChallenger[i]);
+                    Creature *challenger = m_creature->GetMap()->GetCreature(AffrayChallenger[i]);
                     if (challenger && !challenger->isAlive() && challenger->isDead())
                     {
                         DoScriptText(SAY_TWIGGY_DOWN, m_creature);
@@ -403,7 +403,7 @@ struct MANGOS_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
 
         if (Event_Timer < diff)
         {
-            Player* pPlayer = (Player*)Unit::GetUnit(*m_creature,PlayerGUID);
+            Player* pPlayer = m_creature->GetMap()->GetPlayer(PlayerGUID);
 
             if (!pPlayer || pPlayer->isDead())
                 Reset();
@@ -418,7 +418,7 @@ struct MANGOS_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
                     break;
                 case 1:
                     DoScriptText(SAY_TWIGGY_FRAY, m_creature);
-                    if (Unit *challenger = Unit::GetUnit(*m_creature,AffrayChallenger[Challenger_Count]))
+                    if (Creature *challenger = m_creature->GetMap()->GetCreature(AffrayChallenger[Challenger_Count]))
                         SetChallengerReady(challenger);
                     else Reset();
                     ++Challenger_Count;
@@ -427,17 +427,17 @@ struct MANGOS_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
                         ++Step;
                     break;
                 case 2:
-                    if (Unit *temp = m_creature->SummonCreature(NPC_BIG_WILL,-1713.79,-4342.09,6.05,6.15,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,300000))
+                    if (Unit *temp = m_creature->SummonCreature(NPC_BIG_WILL, -1713.79f, -4342.09f, 6.05f, 6.15f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,300000))
                     {
                         BigWillGUID = temp->GetGUID();
                         temp->setFaction(35);
-                        temp->GetMotionMaster()->MovePoint(0,-1682.31,-4329.68,2.78);
+                        temp->GetMotionMaster()->MovePoint(0, -1682.31f, -4329.68f, 2.78f);
                     }
                     Event_Timer = 15000;
                     ++Step;
                     break;
                 case 3:
-                    if (Unit *will = Unit::GetUnit(*m_creature,BigWillGUID))
+                    if (Creature *will = m_creature->GetMap()->GetCreature(BigWillGUID))
                     {
                         will->setFaction(32);
                         DoScriptText(SAY_BIG_WILL_READY, will, pPlayer);
@@ -446,7 +446,7 @@ struct MANGOS_DLL_DECL npc_twiggy_flatheadAI : public ScriptedAI
                     ++Step;
                     break;
                 case 4:
-                    Unit *will = Unit::GetUnit(*m_creature,BigWillGUID);
+                    Creature *will = m_creature->GetMap()->GetCreature(BigWillGUID);
                     if (will && will->isDead())
                     {
                         DoScriptText(SAY_TWIGGY_OVER, m_creature);
@@ -465,7 +465,7 @@ CreatureAI* GetAI_npc_twiggy_flathead(Creature* pCreature)
     return new npc_twiggy_flatheadAI(pCreature);
 }
 
-bool AreaTrigger_at_twiggy_flathead(Player* pPlayer, AreaTriggerEntry* pAt)
+bool AreaTrigger_at_twiggy_flathead(Player* pPlayer, AreaTriggerEntry const* pAt)
 {
     if (!pPlayer->isDead() && pPlayer->GetQuestStatus(QUEST_AFFRAY) == QUEST_STATUS_INCOMPLETE)
     {
@@ -481,10 +481,13 @@ bool AreaTrigger_at_twiggy_flathead(Player* pPlayer, AreaTriggerEntry* pAt)
         if (!pCreature)
             return true;
 
-        if (((npc_twiggy_flatheadAI*)pCreature->AI())->CanStartEvent(pPlayer))
-            return false;                                   //ok to let mangos process further
-        else
-            return true;
+        if (npc_twiggy_flatheadAI* pTwiggyAI = dynamic_cast<npc_twiggy_flatheadAI*>(pCreature->AI()))
+        {
+            if (pTwiggyAI->CanStartEvent(pPlayer))
+                return false;                               //ok to let mangos process further
+        }
+
+        return true;
     }
     return true;
 }
@@ -636,7 +639,7 @@ bool QuestAccept_npc_wizzlecranks_shredder(Player* pPlayer, Creature* pCreature,
         pCreature->setFaction(FACTION_RATCHET);
 
         if (npc_wizzlecranks_shredderAI* pEscortAI = dynamic_cast<npc_wizzlecranks_shredderAI*>(pCreature->AI()))
-            pEscortAI->Start(false, true, pPlayer->GetGUID(), pQuest);
+            pEscortAI->Start(true, pPlayer->GetGUID(), pQuest);
     }
     return true;
 }

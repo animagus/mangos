@@ -145,7 +145,7 @@ struct MANGOS_DLL_DECL boss_doomrelAI : public ScriptedAI
 
     void JustSummoned(Creature* pSummoned)
     {
-        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+        if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
             pSummoned->AI()->AttackStart(pTarget);
     }
 
@@ -227,7 +227,7 @@ struct MANGOS_DLL_DECL boss_doomrelAI : public ScriptedAI
         //ShadowVolley_Timer
         if (m_uiShadowVolley_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_SHADOWBOLTVOLLEY);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_SHADOWBOLTVOLLEY);
             m_uiShadowVolley_Timer = 12000;
         }
         else
@@ -236,8 +236,8 @@ struct MANGOS_DLL_DECL boss_doomrelAI : public ScriptedAI
         //Immolate_Timer
         if (m_uiImmolate_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(target,SPELL_IMMOLATE);
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
+                DoCastSpellIfCan(target,SPELL_IMMOLATE);
 
             m_uiImmolate_Timer = 25000;
         }
@@ -247,7 +247,7 @@ struct MANGOS_DLL_DECL boss_doomrelAI : public ScriptedAI
         //CurseOfWeakness_Timer
         if (m_uiCurseOfWeakness_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_CURSEOFWEAKNESS);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_CURSEOFWEAKNESS);
             m_uiCurseOfWeakness_Timer = 45000;
         }
         else
@@ -256,14 +256,14 @@ struct MANGOS_DLL_DECL boss_doomrelAI : public ScriptedAI
         //DemonArmor_Timer
         if (m_uiDemonArmor_Timer < diff)
         {
-            DoCast(m_creature,SPELL_DEMONARMOR);
+            DoCastSpellIfCan(m_creature,SPELL_DEMONARMOR);
             m_uiDemonArmor_Timer = 300000;
         }
         else
             m_uiDemonArmor_Timer -= diff;
 
         //Summon Voidwalkers
-        if (!m_bHasSummoned && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() <= 50)
+        if (!m_bHasSummoned && m_creature->GetHealthPercent() <= 50.0f)
         {
             m_creature->CastSpell(m_creature, SPELL_SUMMON_VOIDWALKERS, true);
             m_bHasSummoned = true;

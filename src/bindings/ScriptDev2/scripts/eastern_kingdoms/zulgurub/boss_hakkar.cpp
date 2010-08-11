@@ -108,22 +108,22 @@ struct MANGOS_DLL_DECL boss_hakkarAI : public ScriptedAI
         //BloodSiphon_Timer
         if (BloodSiphon_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_BLOODSIPHON);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_BLOODSIPHON);
             BloodSiphon_Timer = 90000;
         }else BloodSiphon_Timer -= diff;
 
         //CorruptedBlood_Timer
         if (CorruptedBlood_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_CORRUPTEDBLOOD);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_CORRUPTEDBLOOD);
             CorruptedBlood_Timer = urand(30000, 45000);
         }else CorruptedBlood_Timer -= diff;
 
         //CauseInsanity_Timer
         /*if (CauseInsanity_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(target,SPELL_CAUSEINSANITY);
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
+                DoCastSpellIfCan(target,SPELL_CAUSEINSANITY);
 
             CauseInsanity_Timer = urand(35000, 43000);
         }else CauseInsanity_Timer -= diff;*/
@@ -132,15 +132,15 @@ struct MANGOS_DLL_DECL boss_hakkarAI : public ScriptedAI
         if (WillOfHakkar_Timer < diff)
         {
 
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(target,SPELL_WILLOFHAKKAR);
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
+                DoCastSpellIfCan(target,SPELL_WILLOFHAKKAR);
 
             WillOfHakkar_Timer = urand(25000, 35000);
         }else WillOfHakkar_Timer -= diff;
 
         if (!Enraged && Enrage_Timer < diff)
         {
-            DoCast(m_creature, SPELL_ENRAGE);
+            DoCastSpellIfCan(m_creature, SPELL_ENRAGE);
             Enraged = true;
         }else Enrage_Timer -= diff;
 
@@ -153,7 +153,7 @@ struct MANGOS_DLL_DECL boss_hakkarAI : public ScriptedAI
                 {
                     if (AspectOfJeklik_Timer < diff)
                     {
-                        DoCast(m_creature->getVictim(),SPELL_ASPECT_OF_JEKLIK);
+                        DoCastSpellIfCan(m_creature->getVictim(),SPELL_ASPECT_OF_JEKLIK);
                         AspectOfJeklik_Timer = urand(10000, 14000);
                     }else AspectOfJeklik_Timer -= diff;
                 }
@@ -170,7 +170,7 @@ struct MANGOS_DLL_DECL boss_hakkarAI : public ScriptedAI
                 {
                     if (AspectOfVenoxis_Timer < diff)
                     {
-                        DoCast(m_creature->getVictim(),SPELL_ASPECT_OF_VENOXIS);
+                        DoCastSpellIfCan(m_creature->getVictim(),SPELL_ASPECT_OF_VENOXIS);
                         AspectOfVenoxis_Timer = 8000;
                     }else AspectOfVenoxis_Timer -= diff;
                 }
@@ -187,7 +187,7 @@ struct MANGOS_DLL_DECL boss_hakkarAI : public ScriptedAI
                 {
                     if (AspectOfMarli_Timer < diff)
                     {
-                        DoCast(m_creature->getVictim(),SPELL_ASPECT_OF_MARLI);
+                        DoCastSpellIfCan(m_creature->getVictim(),SPELL_ASPECT_OF_MARLI);
                         AspectOfMarli_Timer = 10000;
                     }else AspectOfMarli_Timer -= diff;
 
@@ -205,7 +205,7 @@ struct MANGOS_DLL_DECL boss_hakkarAI : public ScriptedAI
                 {
                     if (AspectOfThekal_Timer < diff)
                     {
-                        DoCast(m_creature,SPELL_ASPECT_OF_THEKAL);
+                        DoCastSpellIfCan(m_creature,SPELL_ASPECT_OF_THEKAL);
                         AspectOfThekal_Timer = 15000;
                     }else AspectOfThekal_Timer -= diff;
                 }
@@ -222,7 +222,7 @@ struct MANGOS_DLL_DECL boss_hakkarAI : public ScriptedAI
                 {
                     if (AspectOfArlokk_Timer < diff)
                     {
-                        DoCast(m_creature,SPELL_ASPECT_OF_ARLOKK);
+                        DoCastSpellIfCan(m_creature,SPELL_ASPECT_OF_ARLOKK);
                         DoResetThreat();
 
                         AspectOfArlokk_Timer = urand(10000, 15000);

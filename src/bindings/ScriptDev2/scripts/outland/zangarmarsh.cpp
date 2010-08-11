@@ -28,6 +28,7 @@ npc_elder_kuruti
 npc_kayra_longmane
 npc_mortog_steamhead
 npc_timothy_daniels
+event_stormcrow
 EndContentData */
 
 #include "precompiled.h"
@@ -150,7 +151,7 @@ struct MANGOS_DLL_DECL npc_cooshcooshAI : public ScriptedAI
 
         if (m_uiLightningBolt_Timer < uiDiff)
         {
-            DoCast(m_creature->getVictim(),SPELL_LIGHTNING_BOLT);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_LIGHTNING_BOLT);
             m_uiLightningBolt_Timer = 5000;
         }else m_uiLightningBolt_Timer -= uiDiff;
 
@@ -178,7 +179,7 @@ bool GossipSelect_npc_cooshcoosh(Player* pPlayer, Creature* pCreature, uint32 ui
     {
         pPlayer->CLOSE_GOSSIP_MENU();
         pCreature->setFaction(FACTION_HOSTILE_CO);
-        ((npc_cooshcooshAI*)pCreature->AI())->AttackStart(pPlayer);
+        pCreature->AI()->AttackStart(pPlayer);
     }
     return true;
 }
@@ -217,15 +218,10 @@ bool GossipSelect_npc_elder_kuruti(Player* pPlayer, Creature* pCreature, uint32 
         {
             if (!pPlayer->HasItemCount(24573,1))
             {
-                ItemPosCountVec dest;
-                uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 24573, 1, false);
-                if (msg == EQUIP_ERR_OK)
-                {
-                    pPlayer->StoreNewItem(dest, 24573, true);
-                }
-                else
-                    pPlayer->SendEquipError(msg,NULL,NULL);
+                if (Item* pItem = pPlayer->StoreNewItemInInventorySlot(24573, 1))
+                    pPlayer->SendNewItem(pItem, 1, true, false);
             }
+
             pPlayer->SEND_GOSSIP_MENU(9231, pCreature->GetGUID());
             break;
         }
@@ -295,7 +291,7 @@ bool QuestAccept_npc_kayra_longmane(Player* pPlayer, Creature* pCreature, const 
         DoScriptText(SAY_START, pCreature, pPlayer);
 
         if (npc_kayra_longmaneAI* pEscortAI = dynamic_cast<npc_kayra_longmaneAI*>(pCreature->AI()))
-            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest);
+            pEscortAI->Start(false, pPlayer->GetGUID(), pQuest);
     }
     return true;
 }
@@ -369,8 +365,23 @@ bool GossipSelect_npc_timothy_daniels(Player* pPlayer, Creature* pCreature, uint
 }
 
 /*######
-## AddSC
+## event_stormcrow
 ######*/
+
+enum
+{
+    EVENT_ID_STORMCROW  = 11225,
+};
+
+bool ProcessEventId_event_taxi_stormcrow(uint32 uiEventId, Object* pSource, Object* pTarget, bool bIsStart)
+{
+    if (uiEventId == EVENT_ID_STORMCROW && !bIsStart && pSource->GetTypeId() == TYPEID_PLAYER)
+    {
+        ((Player*)pSource)->SetDisplayId(((Player*)pSource)->GetNativeDisplayId());
+        return true;
+    }
+    return false;
+}
 
 void AddSC_zangarmarsh()
 {
@@ -411,5 +422,10 @@ void AddSC_zangarmarsh()
     newscript->Name = "npc_timothy_daniels";
     newscript->pGossipHello =  &GossipHello_npc_timothy_daniels;
     newscript->pGossipSelect = &GossipSelect_npc_timothy_daniels;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "event_taxi_stormcrow";
+    newscript->pProcessEventId = &ProcessEventId_event_taxi_stormcrow;
     newscript->RegisterSelf();
 }

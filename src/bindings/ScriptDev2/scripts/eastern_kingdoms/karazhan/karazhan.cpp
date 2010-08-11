@@ -155,7 +155,7 @@ struct MANGOS_DLL_DECL npc_barnesAI : public npc_escortAI
         if (m_uiEventId == EVENT_OZ)
             m_pInstance->SetData(DATA_OPERA_OZ_DEATHCOUNT, IN_PROGRESS);
 
-        Start(false, false, 0, NULL, true);
+        Start(false, 0, NULL, true);
     }
 
     void WaypointReached(uint32 uiPointId)
@@ -233,13 +233,13 @@ struct MANGOS_DLL_DECL npc_barnesAI : public npc_escortAI
         {
             case EVENT_OZ:
                 for(int i=0; i < 4; ++i)
-                    m_creature->SummonCreature(aSpawns_OZ[i].uiEntry, aSpawns_OZ[i].fPosX, SPAWN_Y, SPAWN_Z, SPAWN_O, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, HOUR*2*IN_MILISECONDS);
+                    m_creature->SummonCreature(aSpawns_OZ[i].uiEntry, aSpawns_OZ[i].fPosX, SPAWN_Y, SPAWN_Z, SPAWN_O, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, HOUR*2*IN_MILLISECONDS);
                 break;
             case EVENT_HOOD:
-                m_creature->SummonCreature(Spawn_HOOD.uiEntry, Spawn_HOOD.fPosX, SPAWN_Y, SPAWN_Z, SPAWN_O, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, HOUR*2*IN_MILISECONDS);
+                m_creature->SummonCreature(Spawn_HOOD.uiEntry, Spawn_HOOD.fPosX, SPAWN_Y, SPAWN_Z, SPAWN_O, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, HOUR*2*IN_MILLISECONDS);
                 break;
             case EVENT_RAJ:
-                m_creature->SummonCreature(Spawn_RAJ.uiEntry, Spawn_RAJ.fPosX, SPAWN_Y, SPAWN_Z, SPAWN_O, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, HOUR*2*IN_MILISECONDS);
+                m_creature->SummonCreature(Spawn_RAJ.uiEntry, Spawn_RAJ.fPosX, SPAWN_Y, SPAWN_Z, SPAWN_O, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, HOUR*2*IN_MILLISECONDS);
                 break;
             default:
                 error_log("SD2: Barnes Opera Event - Wrong EventId set: %d", m_uiEventId);
@@ -257,7 +257,7 @@ struct MANGOS_DLL_DECL npc_barnesAI : public npc_escortAI
             {
                 if (m_uiTalkCount > 3)
                 {
-                    if (Creature* pSpotlight = (Creature*)Unit::GetUnit(*m_creature, m_uiSpotlightGUID))
+                    if (Creature* pSpotlight = m_creature->GetMap()->GetCreature(m_uiSpotlightGUID))
                         pSpotlight->ForcedDespawn();
 
                     SetEscortPaused(false);
@@ -360,19 +360,19 @@ bool GossipSelect_npc_barnes(Player* pPlayer, Creature* pCreature, uint32 uiSend
             break;
         case GOSSIP_ACTION_INFO_DEF+3:
             pPlayer->CLOSE_GOSSIP_MENU();
-            if (pBarnesAI)
+            if (pBarnesAI && pPlayer->isGameMaster())
                 pBarnesAI->m_uiEventId = EVENT_OZ;
             outstring_log("SD2: pPlayer (GUID " UI64FMTD ") manually set Opera event to EVENT_OZ", pPlayer->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+4:
             pPlayer->CLOSE_GOSSIP_MENU();
-            if (pBarnesAI)
+            if (pBarnesAI && pPlayer->isGameMaster())
                 pBarnesAI->m_uiEventId = EVENT_HOOD;
             outstring_log("SD2: pPlayer (GUID " UI64FMTD ") manually set Opera event to EVENT_HOOD", pPlayer->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+5:
             pPlayer->CLOSE_GOSSIP_MENU();
-            if (pBarnesAI)
+            if (pBarnesAI && pPlayer->isGameMaster())
                 pBarnesAI->m_uiEventId = EVENT_RAJ;
             outstring_log("SD2: pPlayer (GUID " UI64FMTD ") manually set Opera event to EVENT_RAJ", pPlayer->GetGUID());
             break;

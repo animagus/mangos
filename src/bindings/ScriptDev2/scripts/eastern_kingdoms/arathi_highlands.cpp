@@ -68,8 +68,8 @@ struct MANGOS_DLL_DECL npc_professor_phizzlethorpeAI : public npc_escortAI
             case 5: DoScriptText(SAY_PROGRESS_3, m_creature, pPlayer); break;
             case 8: DoScriptText(EMOTE_PROGRESS_4, m_creature); break;
             case 9:
-                m_creature->SummonCreature(ENTRY_VENGEFUL_SURGE, -2056.41, -2144.01, 20.59, 5.70, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 600000);
-                m_creature->SummonCreature(ENTRY_VENGEFUL_SURGE, -2050.17, -2140.02, 19.54, 5.17, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 600000);
+                m_creature->SummonCreature(ENTRY_VENGEFUL_SURGE, -2056.41f, -2144.01f, 20.59f, 5.70f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 600000);
+                m_creature->SummonCreature(ENTRY_VENGEFUL_SURGE, -2050.17f, -2140.02f, 19.54f, 5.17f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 600000);
                 break;
             case 10: DoScriptText(SAY_PROGRESS_5, m_creature, pPlayer); break;
             case 11:
@@ -104,7 +104,7 @@ bool QuestAccept_npc_professor_phizzlethorpe(Player* pPlayer, Creature* pCreatur
         DoScriptText(SAY_PROGRESS_1, pCreature, pPlayer);
 
         if (npc_professor_phizzlethorpeAI* pEscortAI = dynamic_cast<npc_professor_phizzlethorpeAI*>(pCreature->AI()))
-            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest, true);
+            pEscortAI->Start(false, pPlayer->GetGUID(), pQuest, true);
     }
     return true;
 }

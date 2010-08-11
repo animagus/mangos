@@ -27,14 +27,45 @@
 struct PoolTemplateData
 {
     uint32  MaxLimit;
+    bool AutoSpawn;                                         // spawn at pool system start (not part of another pool and not part of event spawn)
 };
 
 struct PoolObject
 {
     uint32  guid;
     float   chance;
-    bool    spawned;
-    PoolObject(uint32 _guid, float _chance): guid(_guid), chance(fabs(_chance)), spawned(false) {}
+    bool exclude;
+
+    PoolObject(uint32 _guid, float _chance): guid(_guid), chance(fabs(_chance)), exclude(false) {}
+
+    template<typename T>
+    void CheckEventLinkAndReport(uint32 poolId, int16 event_id, std::map<uint32, int16> const& creature2event, std::map<uint32, int16> const& go2event) const;
+};
+
+class Pool                                                  // for Pool of Pool case
+{
+};
+
+typedef std::set<uint32> SpawnedPoolObjects;
+typedef std::map<uint32,uint32> SpawnedPoolPools;
+
+class SpawnedPoolData
+{
+    public:
+        template<typename T>
+        bool IsSpawnedObject(uint32 db_guid_or_pool_id) const;
+
+        uint32 GetSpawnedObjects(uint32 pool_id) const;
+
+        template<typename T>
+        void AddSpawn(uint32 db_guid_or_pool_id, uint32 pool_id);
+
+        template<typename T>
+        void RemoveSpawn(uint32 db_guid_or_pool_id, uint32 pool_id);
+    private:
+        SpawnedPoolObjects mSpawnedCreatures;
+        SpawnedPoolObjects mSpawnedGameobjects;
+        SpawnedPoolPools   mSpawnedPools;
 };
 
 template <class T>
@@ -42,27 +73,26 @@ class PoolGroup
 {
     typedef std::vector<PoolObject> PoolObjectList;
     public:
-        PoolGroup() : m_SpawnedPoolAmount(0) { }
+        explicit PoolGroup() : poolId(0) { }
+        void SetPoolId(uint32 pool_id) { poolId = pool_id; }
         ~PoolGroup() {};
-        bool isEmpty() { return ExplicitlyChanced.empty() && EqualChanced.empty(); }
+        bool isEmpty() const { return ExplicitlyChanced.empty() && EqualChanced.empty(); }
         void AddEntry(PoolObject& poolitem, uint32 maxentries);
-        bool CheckPool(void);
-        void RollOne(int32& index, PoolObjectList** store, uint32 triggerFrom);
-        bool IsSpawnedObject(uint32 guid);
-        void DespawnObject(uint32 guid=0);
+        bool CheckPool() const;
+        void CheckEventLinkAndReport(int16 event_id, std::map<uint32, int16> const& creature2event, std::map<uint32, int16> const& go2event) const;
+        PoolObject* RollOne(SpawnedPoolData& spawns, uint32 triggerFrom);
+        void DespawnObject(SpawnedPoolData& spawns, uint32 guid=0);
         void Despawn1Object(uint32 guid);
-        void SpawnObject(uint32 limit, uint32 triggerFrom);
-        bool Spawn1Object(uint32 guid);
-        bool ReSpawn1Object(uint32 guid);
+        void SpawnObject(SpawnedPoolData& spawns, uint32 limit, uint32 triggerFrom, bool instantly);
+        void SetExcludeObject(uint32 guid, bool state);
+
+        void Spawn1Object(PoolObject* obj, bool instantly);
+        void ReSpawn1Object(PoolObject* obj);
         void RemoveOneRelation(uint16 child_pool_id);
     private:
+        uint32 poolId;
         PoolObjectList ExplicitlyChanced;
         PoolObjectList EqualChanced;
-        uint32 m_SpawnedPoolAmount;                         // Used to know the number of spawned objects
-};
-
-class Pool                                                  // for Pool of Pool case
-{
 };
 
 class PoolManager
@@ -70,19 +100,51 @@ class PoolManager
     public:
         PoolManager();
         ~PoolManager() {};
+
         void LoadFromDB();
-        uint16 IsPartOfAPool(uint32 guid, uint32 type);
-        bool IsSpawnedObject(uint16 pool_id, uint32 guid, uint32 type);
-        bool CheckPool(uint16 pool_id);
-        void SpawnPool(uint16 pool_id, uint32 guid, uint32 type);
-        void DespawnPool(uint16 pool_id);
-        void UpdatePool(uint16 pool_id, uint32 guid, uint32 type);
         void Initialize();
 
+        template<typename T>
+        uint16 IsPartOfAPool(uint32 db_guid_or_pool_id) const;
+
+        // Method that tell if the creature/gameobject/pool is part of top level pool and return the pool id if yes
+        template<typename T>
+        uint16 IsPartOfTopPool(uint32 db_guid_or_pool_id) const
+        {
+            if (uint16 pool_id = IsPartOfAPool<T>(db_guid_or_pool_id))
+            {
+                if (uint16 top_pool_id = IsPartOfTopPool<Pool>(pool_id))
+                    return top_pool_id;
+
+                return pool_id;
+            }
+
+            return 0;
+        }
+
+        template<typename T>
+        bool IsSpawnedObject(uint32 db_guid_or_pool_id) const { return mSpawnedData.IsSpawnedObject<T>(db_guid_or_pool_id); }
+
+        template<typename T>
+        void SetExcludeObject(uint16 pool_id, uint32 db_guid_or_pool_id, bool state);
+
+        bool CheckPool(uint16 pool_id) const;
+        void CheckEventLinkAndReport(uint16 pool_id, int16 event_id, std::map<uint32, int16> const& creature2event, std::map<uint32, int16> const& go2event) const;
+
+        void SpawnPool(uint16 pool_id, bool instantly);
+        void DespawnPool(uint16 pool_id);
+
+        template<typename T>
+        void UpdatePool(uint16 pool_id, uint32 db_guid_or_pool_id = 0);
+
+        void RemoveAutoSpawnForPool(uint16 pool_id) { mPoolTemplate[pool_id].AutoSpawn = false; }
     protected:
-        bool m_IsPoolSystemStarted;
+        template<typename T>
+        void SpawnPoolGroup(uint16 pool_id, uint32 db_guid_or_pool_id, bool instantly);
+
         uint16 max_pool_id;
         typedef std::vector<PoolTemplateData> PoolTemplateDataMap;
+
         typedef std::vector<PoolGroup<Creature> >   PoolGroupCreatureMap;
         typedef std::vector<PoolGroup<GameObject> > PoolGroupGameObjectMap;
         typedef std::vector<PoolGroup<Pool> >       PoolGroupPoolMap;
@@ -93,11 +155,49 @@ class PoolManager
         PoolGroupCreatureMap mPoolCreatureGroups;
         PoolGroupGameObjectMap mPoolGameobjectGroups;
         PoolGroupPoolMap mPoolPoolGroups;
+
+        // static maps DB low guid -> pool id
         SearchMap mCreatureSearchMap;
         SearchMap mGameobjectSearchMap;
         SearchMap mPoolSearchMap;
 
+        // dynamic data
+        SpawnedPoolData mSpawnedData;
 };
 
 #define sPoolMgr MaNGOS::Singleton<PoolManager>::Instance()
+
+// Method that tell if the creature is part of a pool and return the pool id if yes
+template<>
+inline uint16 PoolManager::IsPartOfAPool<Creature>(uint32 db_guid) const
+{
+    SearchMap::const_iterator itr = mCreatureSearchMap.find(db_guid);
+    if (itr != mCreatureSearchMap.end())
+        return itr->second;
+
+    return 0;
+}
+
+// Method that tell if the gameobject is part of a pool and return the pool id if yes
+template<>
+inline uint16 PoolManager::IsPartOfAPool<GameObject>(uint32 db_guid) const
+{
+    SearchMap::const_iterator itr = mGameobjectSearchMap.find(db_guid);
+    if (itr != mGameobjectSearchMap.end())
+        return itr->second;
+
+    return 0;
+}
+
+// Method that tell if the pool is part of another pool and return the pool id if yes
+template<>
+inline uint16 PoolManager::IsPartOfAPool<Pool>(uint32 pool_id) const
+{
+    SearchMap::const_iterator itr = mPoolSearchMap.find(pool_id);
+    if (itr != mPoolSearchMap.end())
+        return itr->second;
+
+    return 0;
+}
+
 #endif

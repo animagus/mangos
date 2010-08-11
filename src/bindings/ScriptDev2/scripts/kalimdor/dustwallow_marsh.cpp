@@ -97,7 +97,7 @@ struct MANGOS_DLL_DECL mobs_risen_husk_spiritAI : public ScriptedAI
         if (m_uiConsumeFlesh_Timer < uiDiff)
         {
             if (m_creature->GetEntry() == NPC_RISEN_HUSK)
-                DoCast(m_creature->getVictim(),SPELL_CONSUME_FLESH);
+                DoCastSpellIfCan(m_creature->getVictim(),SPELL_CONSUME_FLESH);
 
             m_uiConsumeFlesh_Timer = 15000;
         }
@@ -107,7 +107,7 @@ struct MANGOS_DLL_DECL mobs_risen_husk_spiritAI : public ScriptedAI
         if (m_uiIntangiblePresence_Timer < uiDiff)
         {
             if (m_creature->GetEntry() == NPC_RISEN_SPIRIT)
-                DoCast(m_creature->getVictim(),SPELL_INTANGIBLE_PRESENCE);
+                DoCastSpellIfCan(m_creature->getVictim(),SPELL_INTANGIBLE_PRESENCE);
 
             m_uiIntangiblePresence_Timer = 20000;
         }
@@ -317,7 +317,7 @@ struct MANGOS_DLL_DECL npc_morokkAI : public npc_escortAI
     {
         if (HasEscortState(STATE_ESCORT_ESCORTING))
         {
-            if (m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 30)
+            if (m_creature->GetHealthPercent() < 30.0f)
             {
                 if (Player* pPlayer = GetPlayerForEscort())
                     pPlayer->GroupEventHappens(QUEST_CHALLENGE_MOROKK, m_creature);
@@ -366,7 +366,7 @@ bool QuestAccept_npc_morokk(Player* pPlayer, Creature* pCreature, const Quest* p
     if (pQuest->GetQuestId() == QUEST_CHALLENGE_MOROKK)
     {
         if (npc_morokkAI* pEscortAI = dynamic_cast<npc_morokkAI*>(pCreature->AI()))
-            pEscortAI->Start(true, true, pPlayer->GetGUID(), pQuest);
+            pEscortAI->Start(true, pPlayer->GetGUID(), pQuest);
 
         return true;
     }
@@ -451,8 +451,8 @@ enum
     PHASE_COMPLETE                      = 3
 };
 
-static float m_afSpawn[]= {-3383.501953, -3203.383301, 36.149};
-static float m_afMoveTo[]= {-3371.414795, -3212.179932, 34.210};
+static float m_afSpawn[] = {-3383.501953f, -3203.383301f, 36.149f};
+static float m_afMoveTo[] = {-3371.414795f, -3212.179932f, 34.210f};
 
 struct MANGOS_DLL_DECL npc_ogronAI : public npc_escortAI
 {
@@ -696,7 +696,7 @@ bool QuestAccept_npc_ogron(Player* pPlayer, Creature* pCreature, const Quest* pQ
     {
         if (npc_ogronAI* pEscortAI = dynamic_cast<npc_ogronAI*>(pCreature->AI()))
         {
-            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest, true);
+            pEscortAI->Start(false, pPlayer->GetGUID(), pQuest, true);
             pCreature->setFaction(FACTION_ESCORT_N_FRIEND_PASSIVE);
             DoScriptText(SAY_OGR_START, pCreature, pPlayer);
         }
@@ -754,7 +754,7 @@ struct MANGOS_DLL_DECL npc_private_hendelAI : public ScriptedAI
 
     void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
     {
-        if (uiDamage > m_creature->GetHealth() || ((m_creature->GetHealth() - uiDamage)*100 / m_creature->GetMaxHealth() < 20))
+        if (uiDamage > m_creature->GetHealth() || m_creature->GetHealthPercent() < 20.0f)
         {
             uiDamage = 0;
 
@@ -817,57 +817,57 @@ bool GossipSelect_npc_cassa_crimsonwing(Player* pPlayer, Creature* pCreature, ui
 
 void AddSC_dustwallow_marsh()
 {
-    Script *newscript;
+    Script* pNewScript;
 
-    newscript = new Script;
-    newscript->Name = "mobs_risen_husk_spirit";
-    newscript->GetAI = &GetAI_mobs_risen_husk_spirit;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "mobs_risen_husk_spirit";
+    pNewScript->GetAI = &GetAI_mobs_risen_husk_spirit;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_restless_apparition";
-    newscript->GetAI = &GetAI_npc_restless_apparition;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_restless_apparition";
+    pNewScript->GetAI = &GetAI_npc_restless_apparition;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_deserter_agitator";
-    newscript->GetAI = &GetAI_npc_deserter_agitator;
-    newscript->pGossipHello = &GossipHello_npc_deserter_agitator;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_deserter_agitator";
+    pNewScript->GetAI = &GetAI_npc_deserter_agitator;
+    pNewScript->pGossipHello = &GossipHello_npc_deserter_agitator;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_lady_jaina_proudmoore";
-    newscript->pGossipHello = &GossipHello_npc_lady_jaina_proudmoore;
-    newscript->pGossipSelect = &GossipSelect_npc_lady_jaina_proudmoore;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_lady_jaina_proudmoore";
+    pNewScript->pGossipHello = &GossipHello_npc_lady_jaina_proudmoore;
+    pNewScript->pGossipSelect = &GossipSelect_npc_lady_jaina_proudmoore;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_morokk";
-    newscript->GetAI = &GetAI_npc_morokk;
-    newscript->pQuestAccept = &QuestAccept_npc_morokk;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_morokk";
+    pNewScript->GetAI = &GetAI_npc_morokk;
+    pNewScript->pQuestAccept = &QuestAccept_npc_morokk;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_nat_pagle";
-    newscript->pGossipHello = &GossipHello_npc_nat_pagle;
-    newscript->pGossipSelect = &GossipSelect_npc_nat_pagle;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_nat_pagle";
+    pNewScript->pGossipHello = &GossipHello_npc_nat_pagle;
+    pNewScript->pGossipSelect = &GossipSelect_npc_nat_pagle;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_ogron";
-    newscript->GetAI = &GetAI_npc_ogron;
-    newscript->pQuestAccept = &QuestAccept_npc_ogron;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_ogron";
+    pNewScript->GetAI = &GetAI_npc_ogron;
+    pNewScript->pQuestAccept = &QuestAccept_npc_ogron;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_private_hendel";
-    newscript->GetAI = &GetAI_npc_private_hendel;
-    newscript->pQuestAccept = &QuestAccept_npc_private_hendel;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_private_hendel";
+    pNewScript->GetAI = &GetAI_npc_private_hendel;
+    pNewScript->pQuestAccept = &QuestAccept_npc_private_hendel;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_cassa_crimsonwing";
-    newscript->pGossipHello = &GossipHello_npc_cassa_crimsonwing;
-    newscript->pGossipSelect = &GossipSelect_npc_cassa_crimsonwing;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_cassa_crimsonwing";
+    pNewScript->pGossipHello = &GossipHello_npc_cassa_crimsonwing;
+    pNewScript->pGossipSelect = &GossipSelect_npc_cassa_crimsonwing;
+    pNewScript->RegisterSelf();
 }

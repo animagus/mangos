@@ -177,7 +177,7 @@ struct MANGOS_DLL_DECL boss_lady_vashjAI : public ScriptedAI
     {
         for(uint8 i = 0; i < MAX_SHIELD_GEN; ++i)
         {
-            if (Unit* pTemp = Unit::GetUnit(*m_creature,m_auiShieldGeneratorChannel[i]))
+            if (Creature* pTemp = m_creature->GetMap()->GetCreature(m_auiShieldGeneratorChannel[i]))
             {
                 if (pTemp->isAlive())
                     pTemp->setDeathState(JUST_DIED);
@@ -224,7 +224,7 @@ struct MANGOS_DLL_DECL boss_lady_vashjAI : public ScriptedAI
 
         if (uiEntry == NPC_COILFANG_STRIDER || uiEntry == NPC_COILFANG_ELITE || uiEntry == NPC_TOXIC_SPOREBAT)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 pSummoned->AI()->AttackStart(pTarget);
         }
 
@@ -273,7 +273,7 @@ struct MANGOS_DLL_DECL boss_lady_vashjAI : public ScriptedAI
     {
         //Shoot: Used in m_uiPhases 1 and 3 after Entangle or while having nobody in melee range. A shot that hits her target for 4097-5543 Physical damage.
         //Multishot: Used in m_uiPhases 1 and 3 after Entangle or while having nobody in melee range. A shot that hits 1 person and 4 people around him for 6475-7525 physical damage.
-        DoCast(m_creature->getVictim(), urand(0,1) ? SPELL_SHOOT : SPELL_MULTI_SHOT);
+        DoCastSpellIfCan(m_creature->getVictim(), urand(0,1) ? SPELL_SHOOT : SPELL_MULTI_SHOT);
 
         if (urand(0, 2))
             DoScriptText(urand(0,1) ? SAY_BOWSHOT1 : SAY_BOWSHOT2, m_creature);
@@ -291,7 +291,7 @@ struct MANGOS_DLL_DECL boss_lady_vashjAI : public ScriptedAI
             if (m_uiShockBlast_Timer < uiDiff)
             {
                 //Randomly used in m_uiPhases 1 and 3 on Vashj's target, it's a Shock spell doing 8325-9675 nature damage and stunning the target for 5 seconds, during which she will not attack her target but switch to the next person on the aggro list.
-                DoCast(m_creature->getVictim(), SPELL_SHOCK_BLAST);
+                DoCastSpellIfCan(m_creature->getVictim(), SPELL_SHOCK_BLAST);
 
                 m_uiShockBlast_Timer = urand(1000, 15000);  //random cooldown
             }else m_uiShockBlast_Timer -= uiDiff;
@@ -300,11 +300,11 @@ struct MANGOS_DLL_DECL boss_lady_vashjAI : public ScriptedAI
             if (m_uiStaticCharge_Timer < uiDiff)
             {
                 //Used on random people (only 1 person at any given time) in m_uiPhases 1 and 3, it's a debuff doing 2775 to 3225 Nature damage to the target and everybody in about 5 yards around it, every 1 seconds for 30 seconds. It can be removed by Cloak of Shadows, Iceblock, Divine Shield, etc, but not by Cleanse or Dispel Magic.
-                Unit *pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                Unit *pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
 
                 //cast Static Charge every 2 seconds for 20 seconds
                 if (pTarget && !pTarget->HasAura(SPELL_STATIC_CHARGE_TRIGGER))
-                    DoCast(pTarget, SPELL_STATIC_CHARGE_TRIGGER);
+                    DoCastSpellIfCan(pTarget, SPELL_STATIC_CHARGE_TRIGGER);
 
                 m_uiStaticCharge_Timer = urand(10000, 30000);
             }else m_uiStaticCharge_Timer -= uiDiff;
@@ -315,7 +315,7 @@ struct MANGOS_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 if (!m_bEntangle)
                 {
                     //Used in m_uiPhases 1 and 3, it casts Entangling Roots on everybody in a 15 yard radius of Vashj, immobilzing them for 10 seconds and dealing 500 damage every 2 seconds. It's not a magic effect so it cannot be dispelled, but is removed by various buffs such as Cloak of Shadows or Blessing of Freedom.
-                    DoCast(m_creature->getVictim(), SPELL_ENTANGLE);
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_ENTANGLE);
                     m_bEntangle = true;
                     m_uiEntangle_Timer = 10000;
                 }
@@ -331,11 +331,11 @@ struct MANGOS_DLL_DECL boss_lady_vashjAI : public ScriptedAI
             if (m_uiPhase == PHASE_1)
             {
                 //m_uiPhase 2 begins when Vashj hits 70%. She will run to the middle of her platform and surround herself in a shield making her invulerable.
-                if ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) <= 70)
+                if (m_creature->GetHealthPercent() <= 70.0f)
                 {
                     DoScriptText(SAY_PHASE2, m_creature);
 
-                    if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE)
+                    if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
                     {
                         //set false, so MoveChase is not triggered in AttackStart
                         SetCombatMovement(false);
@@ -376,7 +376,7 @@ struct MANGOS_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                 ThreatList const& tList = m_creature->getThreatManager().getThreatList();
                 for (ThreatList::const_iterator itr = tList.begin();itr != tList.end(); ++itr)
                 {
-                    Unit* pTarget = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+                    Unit* pTarget = m_creature->GetMap()->GetUnit((*itr)->getUnitGuid());
 
                     //if in melee range
                     if (pTarget && pTarget->IsWithinDistInMap(m_creature, ATTACK_DISTANCE))
@@ -400,12 +400,12 @@ struct MANGOS_DLL_DECL boss_lady_vashjAI : public ScriptedAI
             if (m_uiForkedLightning_Timer < uiDiff)
             {
                 //Used constantly in m_uiPhase 2, it shoots out completely randomly targeted bolts of lightning which hit everybody in a roughtly 60 degree cone in front of Vashj for 2313-2687 nature damage.
-                Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
 
                 if (!pTarget)
                     pTarget = m_creature->getVictim();
 
-                DoCast(pTarget, SPELL_FORKED_LIGHTNING);
+                DoCastSpellIfCan(pTarget, SPELL_FORKED_LIGHTNING);
 
                 m_uiForkedLightning_Timer = urand(3000, 9000);
             }else m_uiForkedLightning_Timer -= uiDiff;
@@ -478,7 +478,7 @@ struct MANGOS_DLL_DECL boss_lady_vashjAI : public ScriptedAI
                     SetCombatMovement(true);
 
                     //return to chase top aggro
-                    if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() != TARGETED_MOTION_TYPE)
+                    if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() != CHASE_MOTION_TYPE)
                         m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
 
                     m_uiPhase = PHASE_3;
@@ -508,7 +508,7 @@ struct MANGOS_DLL_DECL mob_enchanted_elementalAI : public ScriptedAI
     {
         if (m_pInstance)
         {
-            if (Unit* pVashj = Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_LADYVASHJ)))
+            if (Creature* pVashj = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(DATA_LADYVASHJ)))
             {
                 if (pVashj->IsWithinDistInMap(m_creature, ATTACK_DISTANCE))
                 {
@@ -554,10 +554,10 @@ struct MANGOS_DLL_DECL mob_tainted_elementalAI : public ScriptedAI
         //m_uiPoisonBolt_Timer
         if (m_uiPoisonBolt_Timer < uiDiff)
         {
-            Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0);
+            Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
 
             if (pTarget && pTarget->IsWithinDistInMap(m_creature, 30.0f))
-                DoCast(pTarget, SPELL_POISON_BOLT);
+                DoCastSpellIfCan(pTarget, SPELL_POISON_BOLT);
 
             m_uiPoisonBolt_Timer = urand(5000, 10000);
         }else m_uiPoisonBolt_Timer -= uiDiff;
@@ -596,8 +596,8 @@ struct MANGOS_DLL_DECL mob_toxic_sporebatAI : public ScriptedAI
         if (m_uiToxicSpore_Timer < uiDiff)
         {
             //The Spores will hit you anywhere in the instance: underwater, at the elevator, at the entrance, wherever.
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                DoCast(pTarget, SPELL_TOXIC_SPORES);
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                DoCastSpellIfCan(pTarget, SPELL_TOXIC_SPORES);
 
             m_uiToxicSpore_Timer = urand(20000, 25000);
         }else m_uiToxicSpore_Timer -= uiDiff;
@@ -608,7 +608,7 @@ struct MANGOS_DLL_DECL mob_toxic_sporebatAI : public ScriptedAI
             if (m_pInstance)
             {
                 //check if vashj is death
-                Unit* pVashj = Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_LADYVASHJ));
+                Creature* pVashj = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(DATA_LADYVASHJ));
                 if (!pVashj || !pVashj->isAlive())
                 {
                     //remove
@@ -682,7 +682,7 @@ struct MANGOS_DLL_DECL mob_shield_generator_channelAI : public ScriptedAI
 //this is wrong, alternative script needed
 bool ItemUse_item_tainted_core(Player* pPlayer, Item* pItem, SpellCastTargets const& sctTargets)
 {
-    ScriptedInstance* pInstance = ((ScriptedInstance*)pPlayer->GetInstanceData());
+    ScriptedInstance* pInstance = (ScriptedInstance*)pPlayer->GetInstanceData();
 
     if (!pInstance)
     {
@@ -690,8 +690,14 @@ bool ItemUse_item_tainted_core(Player* pPlayer, Item* pItem, SpellCastTargets co
         return true;
     }
 
-    Creature* pVashj = (Creature*)(Unit::GetUnit((*pPlayer), pInstance->GetData64(DATA_LADYVASHJ)));
-    if (pVashj && ((boss_lady_vashjAI*)pVashj->AI())->m_uiPhase == 2)
+    Creature* pVashj = pPlayer->GetMap()->GetCreature(pInstance->GetData64(DATA_LADYVASHJ));
+
+    if (!pVashj)
+        return true;
+
+    boss_lady_vashjAI* pVashjAI = dynamic_cast<boss_lady_vashjAI*>(pVashj->AI());
+
+    if (pVashjAI && pVashjAI->m_uiPhase == 2)
     {
         if (sctTargets.getGOTarget() && sctTargets.getGOTarget()->GetTypeId()==TYPEID_GAMEOBJECT)
         {
@@ -724,7 +730,7 @@ bool ItemUse_item_tainted_core(Player* pPlayer, Item* pItem, SpellCastTargets co
                 return true;
 
             //get and remove channel
-            if (Unit* pChannel = Unit::GetUnit((*pVashj), ((boss_lady_vashjAI*)pVashj->AI())->m_auiShieldGeneratorChannel[uiChannelIdentifier]))
+            if (Creature* pChannel = pVashj->GetMap()->GetCreature(pVashjAI->m_auiShieldGeneratorChannel[uiChannelIdentifier]))
                 pChannel->setDeathState(JUST_DIED);         //calls Unsummon()
 
             pInstance->SetData(uiIdentifier, DONE);

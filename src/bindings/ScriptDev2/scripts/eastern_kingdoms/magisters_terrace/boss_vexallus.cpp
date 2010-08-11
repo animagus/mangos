@@ -108,7 +108,7 @@ struct MANGOS_DLL_DECL boss_vexallusAI : public ScriptedAI
 
     void JustSummoned(Creature *summoned)
     {
-        if (Unit *temp = SelectUnit(SELECT_TARGET_RANDOM, 0))
+        if (Unit *temp = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
             summoned->GetMotionMaster()->MoveFollow(temp,0,0);
 
         //spells are SUMMON_TYPE_GUARDIAN, so using setOwner should be ok
@@ -124,7 +124,7 @@ struct MANGOS_DLL_DECL boss_vexallusAI : public ScriptedAI
         if (!Enraged)
         {
             //used for check, when Vexallus cast adds 85%, 70%, 55%, 40%, 25%
-            if ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) <= (100-(INTERVAL_MODIFIER*IntervalHealthAmount)))
+            if (m_creature->GetHealthPercent() <= float(100 - INTERVAL_MODIFIER*IntervalHealthAmount))
             {
                 //increase amount, unless we're at 10%, then we switch and return
                 if (IntervalHealthAmount == INTERVAL_SWITCH)
@@ -155,16 +155,16 @@ struct MANGOS_DLL_DECL boss_vexallusAI : public ScriptedAI
 
             if (ChainLightningTimer < diff)
             {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                    DoCast(target, m_bIsRegularMode ? SPELL_CHAIN_LIGHTNING : SPELL_H_CHAIN_LIGHTNING);
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    DoCastSpellIfCan(target, m_bIsRegularMode ? SPELL_CHAIN_LIGHTNING : SPELL_H_CHAIN_LIGHTNING);
 
                 ChainLightningTimer = 8000;
             }else ChainLightningTimer -= diff;
 
             if (ArcaneShockTimer < diff)
             {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                    DoCast(target, m_bIsRegularMode ? SPELL_ARCANE_SHOCK : SPELL_H_ARCANE_SHOCK);
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    DoCastSpellIfCan(target, m_bIsRegularMode ? SPELL_ARCANE_SHOCK : SPELL_H_ARCANE_SHOCK);
 
                 ArcaneShockTimer = 8000;
             }else ArcaneShockTimer -= diff;
@@ -173,7 +173,7 @@ struct MANGOS_DLL_DECL boss_vexallusAI : public ScriptedAI
         {
             if (OverloadTimer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_OVERLOAD);
+                DoCastSpellIfCan(m_creature->getVictim(), SPELL_OVERLOAD);
 
                 OverloadTimer = 2000;
             }else OverloadTimer -= diff;

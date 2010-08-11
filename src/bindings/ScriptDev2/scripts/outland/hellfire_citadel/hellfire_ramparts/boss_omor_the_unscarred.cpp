@@ -99,7 +99,7 @@ struct MANGOS_DLL_DECL boss_omor_the_unscarredAI : public ScriptedAI
     {
         DoScriptText(SAY_SUMMON, m_creature);
 
-        if (Unit* random = SelectUnit(SELECT_TARGET_RANDOM,0))
+        if (Unit* random = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
             summoned->AI()->AttackStart(random);
 
         ++SummonedCount;
@@ -121,7 +121,7 @@ struct MANGOS_DLL_DECL boss_omor_the_unscarredAI : public ScriptedAI
             if (Summon_Timer < diff)
             {
                 m_creature->InterruptNonMeleeSpells(false);
-                DoCast(m_creature,SPELL_SUMMON_FIENDISH_HOUND);
+                DoCastSpellIfCan(m_creature,SPELL_SUMMON_FIENDISH_HOUND);
                 Summon_Timer = urand(15000, 30000);
             }else Summon_Timer -= diff;
         }
@@ -130,13 +130,13 @@ struct MANGOS_DLL_DECL boss_omor_the_unscarredAI : public ScriptedAI
         {
             if (ShadowWhip_Timer < diff)
             {
-                if (Player* pPlayer = (Player*)Unit::GetUnit(*m_creature,playerGUID))
+                if (Player* pPlayer = m_creature->GetMap()->GetPlayer(playerGUID))
                 {
                     //if unit dosen't have this flag, then no pulling back (script will attempt cast, even if orbital strike was resisted)
-                    if (pPlayer->HasMovementFlag(MOVEMENTFLAG_FALLING))
+                    if (pPlayer->HasMovementFlag(MOVEFLAG_FALLING))
                     {
                         m_creature->InterruptNonMeleeSpells(false);
-                        DoCast(pPlayer,SPELL_SHADOW_WHIP);
+                        DoCastSpellIfCan(pPlayer,SPELL_SHADOW_WHIP);
                     }
                 }
                 playerGUID = 0;
@@ -149,11 +149,11 @@ struct MANGOS_DLL_DECL boss_omor_the_unscarredAI : public ScriptedAI
             Unit* temp = NULL;
             if (m_creature->IsWithinDistInMap(m_creature->getVictim(), ATTACK_DISTANCE))
                 temp = m_creature->getVictim();
-            else temp = SelectUnit(SELECT_TARGET_RANDOM,0);
+            else temp = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0);
 
             if (temp && temp->GetTypeId() == TYPEID_PLAYER)
             {
-                DoCast(temp,SPELL_ORBITAL_STRIKE);
+                DoCastSpellIfCan(temp,SPELL_ORBITAL_STRIKE);
                 OrbitalStrike_Timer = urand(14000, 16000);
                 playerGUID = temp->GetGUID();
 
@@ -162,11 +162,11 @@ struct MANGOS_DLL_DECL boss_omor_the_unscarredAI : public ScriptedAI
             }
         }else OrbitalStrike_Timer -= diff;
 
-        if ((m_creature->GetHealth()*100) / m_creature->GetMaxHealth() < 20)
+        if (m_creature->GetHealthPercent() < 20.0f)
         {
             if (DemonicShield_Timer < diff)
             {
-                DoCast(m_creature,SPELL_DEMONIC_SHIELD);
+                DoCastSpellIfCan(m_creature,SPELL_DEMONIC_SHIELD);
                 DemonicShield_Timer = 15000;
             }else DemonicShield_Timer -= diff;
         }
@@ -175,21 +175,21 @@ struct MANGOS_DLL_DECL boss_omor_the_unscarredAI : public ScriptedAI
         {
             DoScriptText(SAY_CURSE, m_creature);
 
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
             {
-                DoCast(target, m_bIsRegularMode ? SPELL_TREACHEROUS_AURA : H_SPELL_BANE_OF_TREACHERY);
+                DoCastSpellIfCan(target, m_bIsRegularMode ? SPELL_TREACHEROUS_AURA : H_SPELL_BANE_OF_TREACHERY);
                 Aura_Timer = urand(8000, 16000);
             }
         }else Aura_Timer -= diff;
 
         if (Shadowbolt_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
             {
                 if (target)
                     target = m_creature->getVictim();
 
-                DoCast(target, m_bIsRegularMode ? SPELL_SHADOW_BOLT : H_SPELL_SHADOW_BOLT);
+                DoCastSpellIfCan(target, m_bIsRegularMode ? SPELL_SHADOW_BOLT : H_SPELL_SHADOW_BOLT);
                 Shadowbolt_Timer = urand(4000, 6500);
             }
         }else Shadowbolt_Timer -= diff;

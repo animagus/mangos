@@ -132,13 +132,13 @@ void SimpleAI::KilledUnit(Unit *victim)
         target = m_creature->getVictim();
         break;
     case CAST_HOSTILE_SECOND_AGGRO:
-        target = SelectUnit(SELECT_TARGET_TOPAGGRO,1);
+        target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_TOPAGGRO,1);
         break;
     case CAST_HOSTILE_LAST_AGGRO:
-        target = SelectUnit(SELECT_TARGET_BOTTOMAGGRO,0);
+        target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_BOTTOMAGGRO,0);
         break;
     case CAST_HOSTILE_RANDOM:
-        target = SelectUnit(SELECT_TARGET_RANDOM,0);
+        target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0);
         break;
     case CAST_KILLEDUNIT_VICTIM:
         target = victim;
@@ -147,7 +147,7 @@ void SimpleAI::KilledUnit(Unit *victim)
 
     //Target is ok, cast a spell on it
     if (target)
-        DoCast(target, Kill_Spell);
+        DoCastSpellIfCan(target, Kill_Spell);
 }
 
 void SimpleAI::DamageTaken(Unit *killer, uint32 &damage)
@@ -180,13 +180,13 @@ void SimpleAI::DamageTaken(Unit *killer, uint32 &damage)
         target = m_creature->getVictim();
         break;
     case CAST_HOSTILE_SECOND_AGGRO:
-        target = SelectUnit(SELECT_TARGET_TOPAGGRO,1);
+        target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_TOPAGGRO,1);
         break;
     case CAST_HOSTILE_LAST_AGGRO:
-        target = SelectUnit(SELECT_TARGET_BOTTOMAGGRO,0);
+        target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_BOTTOMAGGRO,0);
         break;
     case CAST_HOSTILE_RANDOM:
-        target = SelectUnit(SELECT_TARGET_RANDOM,0);
+        target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0);
         break;
     case CAST_JUSTDIED_KILLER:
         target = killer;
@@ -195,7 +195,7 @@ void SimpleAI::DamageTaken(Unit *killer, uint32 &damage)
 
     //Target is ok, cast a spell on it
     if (target)
-        DoCast(target, Death_Spell);
+        DoCastSpellIfCan(target, Death_Spell);
 }
 
 void SimpleAI::UpdateAI(const uint32 diff)
@@ -214,7 +214,7 @@ void SimpleAI::UpdateAI(const uint32 diff)
         if (Spell_Timer[i] < diff)
         {
             //Check if this is a percentage based
-            if (Spell[i].First_Cast < 0 && Spell[i].First_Cast > -100 && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() > -Spell[i].First_Cast)
+            if (Spell[i].First_Cast < 0 && Spell[i].First_Cast > -100 && m_creature->GetHealthPercent() > -Spell[i].First_Cast)
                 continue;
 
             //Check Current spell
@@ -231,13 +231,13 @@ void SimpleAI::UpdateAI(const uint32 diff)
                     target = m_creature->getVictim();
                     break;
                 case CAST_HOSTILE_SECOND_AGGRO:
-                    target = SelectUnit(SELECT_TARGET_TOPAGGRO,1);
+                    target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_TOPAGGRO,1);
                     break;
                 case CAST_HOSTILE_LAST_AGGRO:
-                    target = SelectUnit(SELECT_TARGET_BOTTOMAGGRO,0);
+                    target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_BOTTOMAGGRO,0);
                     break;
                 case CAST_HOSTILE_RANDOM:
-                    target = SelectUnit(SELECT_TARGET_RANDOM,0);
+                    target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0);
                     break;
                 }
 
@@ -247,7 +247,7 @@ void SimpleAI::UpdateAI(const uint32 diff)
                     if (m_creature->IsNonMeleeSpellCasted(false))
                         m_creature->InterruptNonMeleeSpells(false);
 
-                    DoCast(target, Spell[i].Spell_Id);
+                    DoCastSpellIfCan(target, Spell[i].Spell_Id);
 
                     //Yell and sound use the same number so that you can make
                     //the creature yell with the correct sound effect attached

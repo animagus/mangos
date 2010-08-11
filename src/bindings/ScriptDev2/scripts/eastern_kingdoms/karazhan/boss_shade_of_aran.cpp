@@ -145,13 +145,7 @@ struct MANGOS_DLL_DECL boss_aranAI : public ScriptedAI
         m_bDrinkInturrupted = false;
 
         if (m_pInstance)
-        {
-            // Not in progress
             m_pInstance->SetData(TYPE_ARAN, NOT_STARTED);
-
-            if (GameObject* pDoor = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(DATA_GO_LIBRARY_DOOR)))
-                pDoor->SetGoState(GO_STATE_ACTIVE);
-        }
     }
 
     void KilledUnit(Unit* pVictim)
@@ -164,12 +158,7 @@ struct MANGOS_DLL_DECL boss_aranAI : public ScriptedAI
         DoScriptText(SAY_DEATH, m_creature);
 
         if (m_pInstance)
-        {
             m_pInstance->SetData(TYPE_ARAN, DONE);
-
-            if (GameObject* pDoor = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(DATA_GO_LIBRARY_DOOR)))
-                pDoor->SetGoState(GO_STATE_ACTIVE);
-        }
     }
 
     void Aggro(Unit* pWho)
@@ -196,7 +185,8 @@ struct MANGOS_DLL_DECL boss_aranAI : public ScriptedAI
         //store the threat list in a different container
         for (ThreatList::const_iterator itr = tList.begin();itr != tList.end(); ++itr)
         {
-            Unit* pTarget = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+            Unit* pTarget = m_creature->GetMap()->GetUnit((*itr)->getUnitGuid());
+
             //only on alive players
             if (pTarget && pTarget->isAlive() && pTarget->GetTypeId() == TYPEID_PLAYER)
                 targets.push_back(pTarget);
@@ -317,7 +307,7 @@ struct MANGOS_DLL_DECL boss_aranAI : public ScriptedAI
         {
             if (!m_creature->IsNonMeleeSpellCasted(false))
             {
-                Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
                 if (!pTarget)
                     return;
 
@@ -336,7 +326,7 @@ struct MANGOS_DLL_DECL boss_aranAI : public ScriptedAI
                 if (uiAvailableSpells)
                 {
                     m_uiCurrentNormalSpell = auiSpells[rand() % uiAvailableSpells];
-                    DoCast(pTarget, m_uiCurrentNormalSpell);
+                    DoCastSpellIfCan(pTarget, m_uiCurrentNormalSpell);
                 }
             }
             m_uiNormalCast_Timer = 1000;
@@ -349,11 +339,11 @@ struct MANGOS_DLL_DECL boss_aranAI : public ScriptedAI
             switch(urand(0, 1))
             {
                 case 0:
-                    DoCast(m_creature, SPELL_AOE_CS);
+                    DoCastSpellIfCan(m_creature, SPELL_AOE_CS);
                     break;
                 case 1:
-                    if (Unit* pUnit = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                        DoCast(pUnit, SPELL_CHAINSOFICE);
+                    if (Unit* pUnit = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                        DoCastSpellIfCan(pUnit, SPELL_CHAINSOFICE);
                     break;
             }
             m_uiSecondarySpell_Timer = urand(5000, 20000);
@@ -421,16 +411,16 @@ struct MANGOS_DLL_DECL boss_aranAI : public ScriptedAI
         else
             m_uiSuperCast_Timer -= uiDiff;
 
-        if (!m_bElementalsSpawned && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 40)
+        if (!m_bElementalsSpawned && m_creature->GetHealthPercent() < 40.0f)
         {
             m_bElementalsSpawned = true;
 
             for (uint32 i = 0; i < 4; ++i)
             {
-                if (Creature* pUnit = m_creature->SummonCreature(NPC_WATER_ELEMENTAL, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 90000))
+                if (Creature* pElemental = m_creature->SummonCreature(NPC_WATER_ELEMENTAL, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 90000))
                 {
-                    pUnit->Attack(m_creature->getVictim(), true);
-                    pUnit->setFaction(m_creature->getFaction());
+                    pElemental->Attack(m_creature->getVictim(), true);
+                    pElemental->setFaction(m_creature->getFaction());
                 }
             }
 
@@ -441,10 +431,10 @@ struct MANGOS_DLL_DECL boss_aranAI : public ScriptedAI
         {
             for (uint32 i = 0; i < 5; ++i)
             {
-                if (Creature* pUnit = m_creature->SummonCreature(NPC_SHADOW_OF_ARAN, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000))
+                if (Creature* pShadow = m_creature->SummonCreature(NPC_SHADOW_OF_ARAN, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000))
                 {
-                    pUnit->Attack(m_creature->getVictim(), true);
-                    pUnit->setFaction(m_creature->getFaction());
+                    pShadow->Attack(m_creature->getVictim(), true);
+                    pShadow->setFaction(m_creature->getFaction());
                 }
             }
 
@@ -470,11 +460,12 @@ struct MANGOS_DLL_DECL boss_aranAI : public ScriptedAI
                     if (!m_uiFlameWreathTarget[i])
                         continue;
 
-                    Unit* pUnit = Unit::GetUnit(*m_creature, m_uiFlameWreathTarget[i]);
-                    if (pUnit && !pUnit->IsWithinDist2d(m_fFWTargPosX[i], m_fFWTargPosY[i], 3.0f))
+                    Player* pPlayer = m_creature->GetMap()->GetPlayer(m_uiFlameWreathTarget[i]);
+
+                    if (pPlayer && !pPlayer->IsWithinDist2d(m_fFWTargPosX[i], m_fFWTargPosY[i], 3.0f))
                     {
-                        pUnit->CastSpell(pUnit, SPELL_EXPLOSION, true, 0, 0, m_creature->GetGUID());
-                        pUnit->CastSpell(pUnit, SPELL_KNOCKBACK_500, true);
+                        pPlayer->CastSpell(pPlayer, SPELL_EXPLOSION, true, 0, 0, m_creature->GetGUID());
+                        pPlayer->CastSpell(pPlayer, SPELL_KNOCKBACK_500, true);
                         m_uiFlameWreathTarget[i] = 0;
                     }
                 }
@@ -535,7 +526,7 @@ struct MANGOS_DLL_DECL water_elementalAI : public ScriptedAI
 
         if (m_uiCast_Timer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), SPELL_WATERBOLT);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_WATERBOLT);
             m_uiCast_Timer = urand(2000, 5000);
         }
         else

@@ -103,11 +103,11 @@ enum
 };
 
 //Adds X positions
-static float m_afAddPosX[4] = {128.279, 123.261, 112.084, 106.473};
+static float m_afAddPosX[4] = {128.279f, 123.261f, 112.084f, 106.473f};
 
-const float ADD_POS_Y       = 921.279;
-const float ADD_POS_Z       = 33.889;
-const float ADD_ORIENT      = 1.527;
+const float ADD_POS_Y       = 921.279f;
+const float ADD_POS_Z       = 33.889f;
+const float ADD_ORIENT      = 1.527f;
 
 struct SpawnGroup
 {
@@ -155,7 +155,7 @@ struct MANGOS_DLL_DECL boss_malacrassAI : public ScriptedAI
 
         for(uint8 i = 0; i < MAX_ACTIVE_ADDS; ++i)
         {
-            if (Creature* pAdd = (Creature*)Unit::GetUnit(*m_creature, m_auiAddGUIDs[i]))
+            if (Creature* pAdd = m_creature->GetMap()->GetCreature(m_auiAddGUIDs[i]))
                 pAdd->AI()->EnterEvadeMode();
         }
     }
@@ -188,12 +188,12 @@ struct MANGOS_DLL_DECL boss_malacrassAI : public ScriptedAI
         {
             for(std::list<uint32>::iterator itr = m_lAddsEntryList.begin(); itr != m_lAddsEntryList.end(); ++itr)
             {
-                Unit* pAdd = Unit::GetUnit(*m_creature, m_auiAddGUIDs[j]);
+                Creature* pAdd = m_creature->GetMap()->GetCreature(m_auiAddGUIDs[j]);
 
                 //object already removed, not exist
                 if (!pAdd)
                 {
-                    if (Creature* pAdd = m_creature->SummonCreature((*itr), m_afAddPosX[j], ADD_POS_Y, ADD_POS_Z, ADD_ORIENT, TEMPSUMMON_CORPSE_DESPAWN, 0))
+                    if (pAdd = m_creature->SummonCreature((*itr), m_afAddPosX[j], ADD_POS_Y, ADD_POS_Z, ADD_ORIENT, TEMPSUMMON_CORPSE_DESPAWN, 0))
                         m_auiAddGUIDs[j] = pAdd->GetGUID();
                 }
                 ++j;
@@ -218,7 +218,7 @@ struct MANGOS_DLL_DECL boss_malacrassAI : public ScriptedAI
     {
         for(uint8 i = 0; i < MAX_ACTIVE_ADDS; ++i)
         {
-            if (Creature* pAdd = (Creature*)Unit::GetUnit(*m_creature, m_auiAddGUIDs[i]))
+            if (Creature* pAdd = m_creature->GetMap()->GetCreature(m_auiAddGUIDs[i]))
             {
                 if (!pAdd->getVictim())
                     pAdd->AI()->AttackStart(pWho);
@@ -249,7 +249,7 @@ struct MANGOS_DLL_DECL boss_malacrassAI : public ScriptedAI
     {
         for(uint8 i = 0; i < MAX_ACTIVE_ADDS; ++i)
         {
-            if (Creature* pAdd = (Creature*)Unit::GetUnit(*m_creature, m_auiAddGUIDs[i]))
+            if (Creature* pAdd = m_creature->GetMap()->GetCreature(m_auiAddGUIDs[i]))
             {
                 pAdd->AI()->EnterEvadeMode();
                 pAdd->setDeathState(JUST_DIED);
@@ -301,8 +301,8 @@ struct MANGOS_DLL_DECL boss_malacrass_addAI : public ScriptedAI
         if (!m_pInstance)
             return;
 
-        if (Creature* pMalacrass = (Creature*)Unit::GetUnit(*m_creature, m_pInstance->GetData64(DATA_MALACRASS)))
-            ((boss_malacrassAI*)pMalacrass->AI())->KilledUnit(pVictim);
+        if (Creature* pMalacrass = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(DATA_MALACRASS)))
+            pMalacrass->AI()->KilledUnit(pVictim);
     }
 
     void JustDied(Unit* pKiller)
@@ -310,7 +310,7 @@ struct MANGOS_DLL_DECL boss_malacrass_addAI : public ScriptedAI
         if (!m_pInstance)
             return;
 
-        if (Unit* pMalacrass = Unit::GetUnit(*m_creature, m_pInstance->GetData64(DATA_MALACRASS)))
+        if (Creature* pMalacrass = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(DATA_MALACRASS)))
         {
             switch(urand(0, 2))
             {
@@ -339,7 +339,7 @@ struct MANGOS_DLL_DECL boss_malacrass_addAI : public ScriptedAI
         ThreatList const& tList = m_creature->getThreatManager().getThreatList();
         for (ThreatList::const_iterator iter = tList.begin();iter != tList.end(); ++iter)
         {
-            Unit* pTarget = Unit::GetUnit((*m_creature), (*iter)->getUnitGuid());
+            Unit* pTarget = m_creature->GetMap()->GetUnit((*iter)->getUnitGuid());
 
             if (pTarget && pTarget->GetTypeId() == TYPEID_PLAYER)
             {
@@ -384,7 +384,7 @@ struct MANGOS_DLL_DECL mob_thurgAI : public boss_malacrass_addAI
             if (!lTempList.empty())
             {
                 Unit* pTarget = *(lTempList.begin());
-                DoCast(pTarget, SPELL_BLOODLUST);
+                DoCastSpellIfCan(pTarget, SPELL_BLOODLUST);
             }
 
             m_uiBloodlustTimer = 12000;
@@ -394,7 +394,7 @@ struct MANGOS_DLL_DECL mob_thurgAI : public boss_malacrass_addAI
 
         if (m_uiCleaveTimer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), SPELL_CLEAVE);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_CLEAVE);
             m_uiCleaveTimer = 12000;
         }
         else
@@ -457,7 +457,7 @@ struct MANGOS_DLL_DECL mob_alyson_antilleAI : public boss_malacrass_addAI
         {
             if (IsEnemyPlayerInRangeForSpell(SPELL_ARCANE_TORRENT))
             {
-                DoCast(m_creature, SPELL_ARCANE_TORRENT);
+                DoCastSpellIfCan(m_creature, SPELL_ARCANE_TORRENT);
                 m_uiArcaneTorrentTimer = 60000;
             }
             else
@@ -473,16 +473,16 @@ struct MANGOS_DLL_DECL mob_alyson_antilleAI : public boss_malacrass_addAI
             {
                 if (pTarget->IsWithinDistInMap(m_creature, RANGE_FRIENDLY_TARGET))
                 {
-                    DoCast(pTarget, SPELL_FLASH_HEAL);
+                    DoCastSpellIfCan(pTarget, SPELL_FLASH_HEAL);
 
                     //if not already chasing, start chase
-                    if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() != TARGETED_MOTION_TYPE)
+                    if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() != CHASE_MOTION_TYPE)
                         m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim(), 20.0f);
                 }
                 else
                 {
                     //if chasing, start follow target instead
-                    if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE)
+                    if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
                     {
                         m_creature->GetMotionMaster()->MovementExpired();
                         m_creature->GetMotionMaster()->MoveFollow(pTarget, 20.0f, 0.0f);
@@ -503,10 +503,10 @@ struct MANGOS_DLL_DECL mob_alyson_antilleAI : public boss_malacrass_addAI
             if (!lTempList.empty())
                 pTarget = *(lTempList.begin());
             else
-                pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
 
             if (pTarget)
-                DoCast(pTarget, SPELL_DISPEL_MAGIC, false);
+                DoCastSpellIfCan(pTarget, SPELL_DISPEL_MAGIC);
 
             m_uiDispelMagicTimer = 12000;
         }
@@ -560,7 +560,7 @@ struct MANGOS_DLL_DECL mob_gazakrothAI : public boss_malacrass_addAI
 
         if (m_uiFireboltTimer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), SPELL_FIREBOLT);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_FIREBOLT);
             m_uiFireboltTimer = 1000;
         }
         else
@@ -603,7 +603,7 @@ struct MANGOS_DLL_DECL mob_lord_raadanAI : public boss_malacrass_addAI
         {
             if (IsEnemyPlayerInRangeForSpell(SPELL_THUNDERCLAP))
             {
-                DoCast(m_creature->getVictim(), SPELL_THUNDERCLAP);
+                DoCastSpellIfCan(m_creature->getVictim(), SPELL_THUNDERCLAP);
                 m_uiThunderclapTimer = 12000;
             }
             else
@@ -614,7 +614,7 @@ struct MANGOS_DLL_DECL mob_lord_raadanAI : public boss_malacrass_addAI
 
         if (m_uiFlameBreathTimer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), SPELL_FLAME_BREATH);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_FLAME_BREATH);
             m_uiFlameBreathTimer = 12000;
         }
         else
@@ -654,7 +654,7 @@ struct MANGOS_DLL_DECL mob_darkheartAI : public boss_malacrass_addAI
         {
             if (IsEnemyPlayerInRangeForSpell(SPELL_PSYCHIC_WAIL))
             {
-                DoCast(m_creature->getVictim(), SPELL_PSYCHIC_WAIL);
+                DoCastSpellIfCan(m_creature->getVictim(), SPELL_PSYCHIC_WAIL);
                 m_uiPsychicWailTimer = 12000;
             }
             else
@@ -710,8 +710,8 @@ struct MANGOS_DLL_DECL mob_slitherAI : public boss_malacrass_addAI
 
         if (m_uiVenomSpitTimer < uiDiff)
         {
-            if (Unit* pVictim = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                DoCast(pVictim, SPELL_VENOM_SPIT);
+            if (Unit* pVictim = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                DoCastSpellIfCan(pVictim, SPELL_VENOM_SPIT);
 
             m_uiVenomSpitTimer = 2500;
         }
@@ -750,7 +750,7 @@ struct MANGOS_DLL_DECL mob_fenstalkerAI : public boss_malacrass_addAI
 
         if (m_uiVolatileInfectionTimer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), SPELL_VOLATILE_INFECTION);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_VOLATILE_INFECTION);
             m_uiVolatileInfectionTimer = 12000;
         }
         else
@@ -791,7 +791,7 @@ struct MANGOS_DLL_DECL mob_koraggAI : public boss_malacrass_addAI
 
         if (m_uiMightyBlowTimer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), SPELL_MIGHTY_BLOW);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_MIGHTY_BLOW);
             m_uiMightyBlowTimer = 12000;
         }
         else
@@ -799,8 +799,8 @@ struct MANGOS_DLL_DECL mob_koraggAI : public boss_malacrass_addAI
 
         if (m_uiColdStareTimer < uiDiff)
         {
-            if (Unit* pVictim = SelectUnit(SELECT_TARGET_RANDOM, 0))
-                DoCast(pVictim, SPELL_COLD_STARE);
+            if (Unit* pVictim = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                DoCastSpellIfCan(pVictim, SPELL_COLD_STARE);
 
             m_uiColdStareTimer = 12000;
         }

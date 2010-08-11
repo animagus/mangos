@@ -102,19 +102,19 @@ struct MANGOS_DLL_DECL boss_thespiaAI : public ScriptedAI
         if (LightningCloud_Timer < diff)
         {
             //cast twice in Heroic mode
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(target, SPELL_LIGHTNING_CLOUD);
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
+                DoCastSpellIfCan(target, SPELL_LIGHTNING_CLOUD);
             if (!m_bIsRegularMode)
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                    DoCast(target, SPELL_LIGHTNING_CLOUD);
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
+                    DoCastSpellIfCan(target, SPELL_LIGHTNING_CLOUD);
             LightningCloud_Timer = urand(15000, 25000);
         }else LightningCloud_Timer -=diff;
 
         //LungBurst_Timer
         if (LungBurst_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(target, SPELL_LUNG_BURST);
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
+                DoCastSpellIfCan(target, SPELL_LUNG_BURST);
             LungBurst_Timer = urand(7000, 12000);
         }else LungBurst_Timer -=diff;
 
@@ -122,11 +122,11 @@ struct MANGOS_DLL_DECL boss_thespiaAI : public ScriptedAI
         if (EnvelopingWinds_Timer < diff)
         {
             //cast twice in Heroic mode
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                DoCast(target, SPELL_ENVELOPING_WINDS);
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
+                DoCastSpellIfCan(target, SPELL_ENVELOPING_WINDS);
             if (!m_bIsRegularMode)
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                    DoCast(target, SPELL_ENVELOPING_WINDS);
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
+                    DoCastSpellIfCan(target, SPELL_ENVELOPING_WINDS);
             EnvelopingWinds_Timer = urand(10000, 15000);
         }else EnvelopingWinds_Timer -=diff;
 
@@ -160,7 +160,7 @@ struct MANGOS_DLL_DECL mob_coilfang_waterelementalAI : public ScriptedAI
 
         if (WaterBoltVolley_Timer < diff)
         {
-            DoCast(m_creature, m_bIsRegularMode ? SPELL_WATER_BOLT_VOLLEY : H_SPELL_WATER_BOLT_VOLLEY);
+            DoCastSpellIfCan(m_creature, m_bIsRegularMode ? SPELL_WATER_BOLT_VOLLEY : H_SPELL_WATER_BOLT_VOLLEY);
             WaterBoltVolley_Timer = urand(7000, 12000);
         }else WaterBoltVolley_Timer -= diff;
 

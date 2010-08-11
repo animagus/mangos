@@ -157,7 +157,7 @@ struct MANGOS_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
         Creature* Summoned = m_creature->SummonCreature(entry, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
         if (Summoned)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 Summoned->AI()->AttackStart(target);
         }
     }
@@ -212,11 +212,14 @@ struct MANGOS_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
             if (ArcaneMissiles_Timer < diff)
             {
                 //Solarian casts Arcane Missiles on on random targets in the raid.
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
-                if (!m_creature->HasInArc(2.5f, target))
-                    target = m_creature->getVictim();
-                if (target)
-                    DoCast(target, SPELL_ARCANE_MISSILES);
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                {
+                    if (!m_creature->HasInArc(2.5f, target))
+                        target = m_creature->getVictim();
+
+                    if (target)
+                        DoCastSpellIfCan(target, SPELL_ARCANE_MISSILES);
+                }
 
                 ArcaneMissiles_Timer = 3000;
             }else ArcaneMissiles_Timer -= diff;
@@ -227,11 +230,11 @@ struct MANGOS_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
                 m_creature->InterruptNonMeleeSpells(false);
 
                 //Target the tank ?
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1))
+                if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 1))
                 {
                     if (pTarget->GetTypeId() == TYPEID_PLAYER)
                     {
-                        DoCast(pTarget, SPELL_WRATH_OF_THE_ASTROMANCER);
+                        DoCastSpellIfCan(pTarget, SPELL_WRATH_OF_THE_ASTROMANCER);
                         m_uiWrathOfTheAstromancer_Timer = 25000;
                     }
                     else
@@ -243,7 +246,7 @@ struct MANGOS_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
             if (BlindingLight_Timer < diff)
             {
                 //She casts this spell every 45 seconds. It is a kind of Moonfire spell, which she strikes down on the whole raid simultaneously. It hits everyone in the raid for 2280 to 2520 arcane damage.
-                DoCast(m_creature->getVictim(), SPELL_BLINDING_LIGHT);
+                DoCastSpellIfCan(m_creature->getVictim(), SPELL_BLINDING_LIGHT);
                 BlindingLight_Timer = 45000;
             }else BlindingLight_Timer -= diff;
 
@@ -349,20 +352,20 @@ struct MANGOS_DLL_DECL boss_high_astromancer_solarianAI : public ScriptedAI
             //Fear_Timer
             if (Fear_Timer < diff)
             {
-                DoCast(m_creature, SPELL_FEAR);
+                DoCastSpellIfCan(m_creature, SPELL_FEAR);
                 Fear_Timer = 20000;
             }else Fear_Timer -= diff;
 
             //VoidBolt_Timer
             if (VoidBolt_Timer < diff)
             {
-                DoCast(m_creature->getVictim(), SPELL_VOID_BOLT);
+                DoCastSpellIfCan(m_creature->getVictim(), SPELL_VOID_BOLT);
                 VoidBolt_Timer = 10000;
             }else VoidBolt_Timer -= diff;
         }
 
         //When Solarian reaches 20% she will transform into a huge void walker.
-        if (Phase != 4 && ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth())<20))
+        if (Phase != 4 && m_creature->GetHealthPercent() < 20.0f)
         {
             Phase = 4;
 
@@ -410,13 +413,13 @@ struct MANGOS_DLL_DECL mob_solarium_priestAI : public ScriptedAI
 
         if (healTimer < diff)
         {
-            Unit* target = NULL;
+            Creature* target = NULL;
 
             switch(urand(0, 1))
             {
                 case 0:
                     if (m_pInstance)
-                        target = Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_ASTROMANCER));
+                        target = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(DATA_ASTROMANCER));
                     break;
                 case 1:
                     target = m_creature;
@@ -425,20 +428,20 @@ struct MANGOS_DLL_DECL mob_solarium_priestAI : public ScriptedAI
 
             if (target)
             {
-                DoCast(target,SPELL_SOLARIUM_GREAT_HEAL);
+                DoCastSpellIfCan(target,SPELL_SOLARIUM_GREAT_HEAL);
                 healTimer = 9000;
             }
         } else healTimer -= diff;
 
         if (holysmiteTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_SOLARIUM_HOLY_SMITE);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_SOLARIUM_HOLY_SMITE);
             holysmiteTimer = 4000;
         } else holysmiteTimer -= diff;
 
         if (aoesilenceTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_SOLARIUM_ARCANE_TORRENT);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_SOLARIUM_ARCANE_TORRENT);
             aoesilenceTimer = 13000;
         } else aoesilenceTimer -= diff;
 

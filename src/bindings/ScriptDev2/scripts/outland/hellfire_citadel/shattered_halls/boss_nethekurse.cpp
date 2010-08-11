@@ -269,13 +269,13 @@ struct MANGOS_DLL_DECL boss_grand_warlock_nethekurseAI : public ScriptedAI
         {
             if (!SpinOnce)
             {
-                DoCast(m_creature->getVictim(),SPELL_DARK_SPIN);
+                DoCastSpellIfCan(m_creature->getVictim(),SPELL_DARK_SPIN);
                 SpinOnce = true;
             }
 
             if (Cleave_Timer < diff)
             {
-                DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_SHADOW_CLEAVE : H_SPELL_SHADOW_SLAM);
+                DoCastSpellIfCan(m_creature->getVictim(), m_bIsRegularMode ? SPELL_SHADOW_CLEAVE : H_SPELL_SHADOW_SLAM);
                 Cleave_Timer = urand(6000, 8500);
             }else Cleave_Timer -= diff;
         }
@@ -283,19 +283,19 @@ struct MANGOS_DLL_DECL boss_grand_warlock_nethekurseAI : public ScriptedAI
         {
             if (ShadowFissure_Timer < diff)
             {
-                if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                    DoCast(target,SPELL_SHADOW_FISSURE);
+                if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
+                    DoCastSpellIfCan(target,SPELL_SHADOW_FISSURE);
                 ShadowFissure_Timer = urand(7500, 15000);
             }else ShadowFissure_Timer -= diff;
 
             if (DeathCoil_Timer < diff)
             {
-                if (Unit *target = SelectUnit(SELECT_TARGET_RANDOM,0))
-                    DoCast(target,SPELL_DEATH_COIL);
+                if (Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
+                    DoCastSpellIfCan(target,SPELL_DEATH_COIL);
                 DeathCoil_Timer = urand(15000, 20000);
             }else DeathCoil_Timer -= diff;
 
-            if ((m_creature->GetHealth()*100) / m_creature->GetMaxHealth() <= 20)
+            if (m_creature->GetHealthPercent() <= 20.0f)
                 Phase = true;
 
             DoMeleeAttackIfReady();
@@ -331,14 +331,17 @@ struct MANGOS_DLL_DECL mob_fel_orc_convertAI : public ScriptedAI
         {
             if (m_pInstance->GetData64(DATA_NETHEKURSE))
             {
-                Creature *pKurse = (Creature*)Unit::GetUnit(*m_creature, m_pInstance->GetData64(DATA_NETHEKURSE));
+                Creature* pKurse = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(DATA_NETHEKURSE));
+
                 if (pKurse && m_creature->IsWithinDist(pKurse, 45.0f))
                 {
-                    ((boss_grand_warlock_nethekurseAI*)pKurse->AI())->DoYellForPeonAggro();
+                    if (boss_grand_warlock_nethekurseAI* pKurseAI = dynamic_cast<boss_grand_warlock_nethekurseAI*>(pKurse->AI()))
+                        pKurseAI->DoYellForPeonAggro();
 
                     if (m_pInstance->GetData(TYPE_NETHEKURSE) == IN_PROGRESS)
                         return;
-                    else m_pInstance->SetData(TYPE_NETHEKURSE,IN_PROGRESS);
+                    else
+                        m_pInstance->SetData(TYPE_NETHEKURSE,IN_PROGRESS);
                 }
             }
         }
@@ -353,9 +356,11 @@ struct MANGOS_DLL_DECL mob_fel_orc_convertAI : public ScriptedAI
 
             if (m_pInstance->GetData64(DATA_NETHEKURSE))
             {
-                Creature *pKurse = (Creature*)Unit::GetUnit(*m_creature, m_pInstance->GetData64(DATA_NETHEKURSE));
-                if (pKurse)
-                    ((boss_grand_warlock_nethekurseAI*)pKurse->AI())->DoYellForPeonDeath();
+                if (Creature* pKurse = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(DATA_NETHEKURSE)))
+                {
+                    if (boss_grand_warlock_nethekurseAI* pKurseAI = dynamic_cast<boss_grand_warlock_nethekurseAI*>(pKurse->AI()))
+                        pKurseAI->DoYellForPeonAggro();
+                }
             }
         }
     }
@@ -367,7 +372,7 @@ struct MANGOS_DLL_DECL mob_fel_orc_convertAI : public ScriptedAI
 
         if (Hemorrhage_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_HEMORRHAGE);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_HEMORRHAGE);
             Hemorrhage_Timer = 15000;
         }else Hemorrhage_Timer -= diff;
 

@@ -70,7 +70,8 @@ struct MANGOS_DLL_DECL boss_kormokAI : public ScriptedAI
         }
         Rand1 = 0;
         SummonedMinions = DoSpawnCreature(16119, Rand1X, Rand1Y, 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 120000);
-        ((CreatureAI*)SummonedMinions->AI())->AttackStart(victim);
+        if (SummonedMinions)
+            SummonedMinions->AI()->AttackStart(victim);
     }
 
     void SummonMages(Unit* victim)
@@ -90,7 +91,8 @@ struct MANGOS_DLL_DECL boss_kormokAI : public ScriptedAI
         }
         Rand2 = 0;
         SummonedMages = DoSpawnCreature(16120, Rand2X, Rand2Y, 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 120000);
-        ((CreatureAI*)SummonedMages->AI())->AttackStart(victim);
+        if (SummonedMages)
+            SummonedMages->AI()->AttackStart(victim);
     }
 
     void UpdateAI(const uint32 diff)
@@ -101,14 +103,14 @@ struct MANGOS_DLL_DECL boss_kormokAI : public ScriptedAI
         //ShadowVolley_Timer
         if (ShadowVolley_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_SHADOWBOLTVOLLEY);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_SHADOWBOLTVOLLEY);
             ShadowVolley_Timer = 15000;
         }else ShadowVolley_Timer -= diff;
 
         //BoneShield_Timer
         if (BoneShield_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_BONESHIELD);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_BONESHIELD);
             BoneShield_Timer = 45000;
         }else BoneShield_Timer -= diff;
 
@@ -125,7 +127,7 @@ struct MANGOS_DLL_DECL boss_kormokAI : public ScriptedAI
         }else Minion_Timer -= diff;
 
         //Summon 2 Bone Mages
-        if (!Mages && m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 26)
+        if (!Mages && m_creature->GetHealthPercent() < 26.0f)
         {
             //Cast
             SummonMages(m_creature->getVictim());

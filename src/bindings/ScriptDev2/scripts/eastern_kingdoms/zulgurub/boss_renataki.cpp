@@ -77,11 +77,10 @@ struct MANGOS_DLL_DECL boss_renatakiAI : public ScriptedAI
         {
             if (Ambush_Timer < diff)
             {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                 {
-                    m_creature->GetMap()->CreatureRelocation(m_creature, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0.0f);
-                    m_creature->SendMonsterMove(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, MONSTER_MOVE_WALK, 1);
-                    DoCast(target,SPELL_AMBUSH);
+                    m_creature->NearTeleportTo(pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0.0f);
+                    DoCastSpellIfCan(pTarget, SPELL_AMBUSH);
                 }
 
                 Ambushed = true;
@@ -110,7 +109,7 @@ struct MANGOS_DLL_DECL boss_renatakiAI : public ScriptedAI
             if (Aggro_Timer < diff)
         {
             Unit* target = NULL;
-            target = SelectUnit(SELECT_TARGET_RANDOM,1);
+            target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,1);
 
             if (m_creature->getThreatManager().getThreat(m_creature->getVictim()))
                 m_creature->getThreatManager().modifyThreatPercent(m_creature->getVictim(),-50);
@@ -124,7 +123,7 @@ struct MANGOS_DLL_DECL boss_renatakiAI : public ScriptedAI
         if (!Invisible)
             if (ThousandBlades_Timer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_THOUSANDBLADES);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_THOUSANDBLADES);
             ThousandBlades_Timer = urand(7000, 12000);
         }else ThousandBlades_Timer -= diff;
 

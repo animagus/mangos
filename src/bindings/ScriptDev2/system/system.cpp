@@ -34,6 +34,8 @@ void SystemMgr::LoadVersion()
 
         outstring_log("Loading %s", strSD2Version.c_str());
         outstring_log("");
+
+        delete pResult;
     }
     else
     {
@@ -45,9 +47,9 @@ void SystemMgr::LoadVersion()
 void SystemMgr::LoadScriptTexts()
 {
     outstring_log("SD2: Loading Script Texts...");
-    LoadMangosStrings(SD2Database,"script_texts",TEXT_SOURCE_RANGE,1+(TEXT_SOURCE_RANGE*2));
+    LoadMangosStrings(SD2Database, "script_texts", TEXT_SOURCE_TEXT_START, TEXT_SOURCE_TEXT_END);
 
-    QueryResult* pResult = SD2Database.PQuery("SELECT entry, sound, type, language, emote FROM script_texts");
+    QueryResult* pResult = SD2Database.PQuery("SELECT entry, sound, type, language, emote FROM script_texts WHERE entry BETWEEN %i AND %i", TEXT_SOURCE_GOSSIP_END, TEXT_SOURCE_TEXT_START);
 
     outstring_log("SD2: Loading Script Texts additional data...");
 
@@ -74,12 +76,6 @@ void SystemMgr::LoadScriptTexts()
                 continue;
             }
 
-            if (iId > TEXT_SOURCE_RANGE || iId <= TEXT_SOURCE_RANGE*2)
-            {
-                error_db_log("SD2: Entry %i in table `script_texts` is out of accepted entry range for table.", iId);
-                continue;
-            }
-
             if (pTemp.uiSoundId)
             {
                 if (!GetSoundEntriesStore()->LookupEntry(pTemp.uiSoundId))
@@ -96,6 +92,8 @@ void SystemMgr::LoadScriptTexts()
             ++uiCount;
         } while (pResult->NextRow());
 
+        delete pResult;
+
         outstring_log("");
         outstring_log(">> Loaded %u additional Script Texts data.", uiCount);
     }
@@ -111,9 +109,9 @@ void SystemMgr::LoadScriptTexts()
 void SystemMgr::LoadScriptTextsCustom()
 {
     outstring_log("SD2: Loading Custom Texts...");
-    LoadMangosStrings(SD2Database,"custom_texts",TEXT_SOURCE_RANGE*2,1+(TEXT_SOURCE_RANGE*3));
+    LoadMangosStrings(SD2Database, "custom_texts", TEXT_SOURCE_CUSTOM_START, TEXT_SOURCE_CUSTOM_END);
 
-    QueryResult* pResult = SD2Database.PQuery("SELECT entry, sound, type, language, emote FROM custom_texts");
+    QueryResult* pResult = SD2Database.PQuery("SELECT entry, sound, type, language, emote FROM custom_texts WHERE entry BETWEEN %i AND %i", TEXT_SOURCE_CUSTOM_END, TEXT_SOURCE_CUSTOM_START);
 
     outstring_log("SD2: Loading Custom Texts additional data...");
 
@@ -140,12 +138,6 @@ void SystemMgr::LoadScriptTextsCustom()
                 continue;
             }
 
-            if (iId > TEXT_SOURCE_RANGE*2 || iId <= TEXT_SOURCE_RANGE*3)
-            {
-                error_db_log("SD2: Entry %i in table `custom_texts` is out of accepted entry range for table.", iId);
-                continue;
-            }
-
             if (pTemp.uiSoundId)
             {
                 if (!GetSoundEntriesStore()->LookupEntry(pTemp.uiSoundId))
@@ -162,6 +154,8 @@ void SystemMgr::LoadScriptTextsCustom()
             ++uiCount;
         } while (pResult->NextRow());
 
+        delete pResult;
+
         outstring_log("");
         outstring_log(">> Loaded %u additional Custom Texts data.", uiCount);
     }
@@ -172,6 +166,12 @@ void SystemMgr::LoadScriptTextsCustom()
         outstring_log("");
         outstring_log(">> Loaded 0 additional Custom Texts data. DB table `custom_texts` is empty.");
     }
+}
+
+void SystemMgr::LoadScriptGossipTexts()
+{
+    outstring_log("SD2: Loading Gossip Texts...");
+    LoadMangosStrings(SD2Database, "gossip_texts", TEXT_SOURCE_GOSSIP_START, TEXT_SOURCE_GOSSIP_END);
 }
 
 void SystemMgr::LoadScriptWaypoints()
@@ -216,7 +216,7 @@ void SystemMgr::LoadScriptWaypoints()
 
             if (!pCInfo)
             {
-                error_db_log("SD2: DB table script_waypoint has waypoint for non-existant creature entry %u", pTemp.uiCreatureEntry);
+                error_db_log("SD2: DB table script_waypoint has waypoint for nonexistent creature entry %u", pTemp.uiCreatureEntry);
                 continue;
             }
 

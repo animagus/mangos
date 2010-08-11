@@ -59,7 +59,7 @@ struct MANGOS_DLL_DECL boss_ambassador_flamelashAI : public ScriptedAI
         }
         Summoned = DoSpawnCreature(9178, RandX, RandY, 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 60000);
         if (Summoned)
-            ((CreatureAI*)Summoned->AI())->AttackStart(victim);
+            Summoned->AI()->AttackStart(victim);
     }
 
     void UpdateAI(const uint32 diff)
@@ -71,7 +71,7 @@ struct MANGOS_DLL_DECL boss_ambassador_flamelashAI : public ScriptedAI
         //FireBlast_Timer
         if (FireBlast_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),SPELL_FIREBLAST);
+            DoCastSpellIfCan(m_creature->getVictim(),SPELL_FIREBLAST);
             FireBlast_Timer = 7000;
         }else FireBlast_Timer -= diff;
 

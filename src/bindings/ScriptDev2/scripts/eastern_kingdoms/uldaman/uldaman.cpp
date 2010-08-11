@@ -27,6 +27,7 @@ npc_lore_keeper_of_norgannon
 EndContentData */
 
 #include "precompiled.h"
+#include "uldaman.h"
 
 /*######
 ## mob_jadespine_basilisk
@@ -55,16 +56,16 @@ struct MANGOS_DLL_DECL mob_jadespine_basiliskAI : public ScriptedAI
         if (Cslumber_Timer < diff)
         {
             //Cast
-            // DoCast(m_creature->getVictim(),SPELL_CSLUMBER);
+            // DoCastSpellIfCan(m_creature->getVictim(),SPELL_CSLUMBER);
             m_creature->CastSpell(m_creature->getVictim(),SPELL_CSLUMBER, true);
 
             //Stop attacking target thast asleep and pick new target
             Cslumber_Timer = 28000;
 
-            Unit* Target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0);
+            Unit* Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_TOPAGGRO, 0);
 
             if (!Target || Target == m_creature->getVictim())
-                Target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                Target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
 
             if (Target)
                 m_creature->TauntApply(Target);
@@ -168,16 +169,16 @@ bool GossipSelect_npc_lore_keeper_of_norgannon(Player* pPlayer, Creature* pCreat
 
 void AddSC_uldaman()
 {
-    Script *newscript;
+    Script* pNewScript;
 
-    newscript = new Script;
-    newscript->Name = "mob_jadespine_basilisk";
-    newscript->GetAI = &GetAI_mob_jadespine_basilisk;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "mob_jadespine_basilisk";
+    pNewScript->GetAI = &GetAI_mob_jadespine_basilisk;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_lore_keeper_of_norgannon";
-    newscript->pGossipHello = &GossipHello_npc_lore_keeper_of_norgannon;
-    newscript->pGossipSelect = &GossipSelect_npc_lore_keeper_of_norgannon;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_lore_keeper_of_norgannon";
+    pNewScript->pGossipHello = &GossipHello_npc_lore_keeper_of_norgannon;
+    pNewScript->pGossipSelect = &GossipSelect_npc_lore_keeper_of_norgannon;
+    pNewScript->RegisterSelf();
 }

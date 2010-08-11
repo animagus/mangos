@@ -58,6 +58,8 @@ enum EventAI_Type
     EVENT_T_RECEIVE_EMOTE           = 22,                   // EmoteId, Condition, CondValue1, CondValue2
     EVENT_T_BUFFED                  = 23,                   // Param1 = SpellID, Param2 = Number of Time STacked, Param3/4 Repeat Min/Max
     EVENT_T_TARGET_BUFFED           = 24,                   // Param1 = SpellID, Param2 = Number of Time STacked, Param3/4 Repeat Min/Max
+    EVENT_T_SUMMONED_JUST_DIED      = 25,                   // CreatureId, RepeatMin, RepeatMax
+    EVENT_T_SUMMONED_JUST_DESPAWN   = 26,                   // CreatureId, RepeatMin, RepeatMax
 
     EVENT_T_END,
 };
@@ -486,12 +488,14 @@ struct CreatureEventAI_Event
             uint32 repeatMax;
         } friendly_buff;
         // EVENT_T_SUMMONED_UNIT                            = 17
+        //EVENT_T_SUMMONED_JUST_DIED                        = 25
+        //EVENT_T_SUMMONED_JUST_DESPAWN                     = 26
         struct
         {
             uint32 creatureId;
             uint32 repeatMin;
             uint32 repeatMax;
-        } summon_unit;
+        } summoned;
         // EVENT_T_QUEST_ACCEPT                             = 19
         // EVENT_T_QUEST_COMPLETE                           = 20
         struct
@@ -565,7 +569,7 @@ class MANGOS_DLL_SPEC CreatureEventAI : public CreatureAI
         explicit CreatureEventAI(Creature *c);
         ~CreatureEventAI()
         {
-            CreatureEventAIList.clear();
+            m_CreatureEventAIList.clear();
         }
         void JustRespawned();
         void Reset();
@@ -582,6 +586,9 @@ class MANGOS_DLL_SPEC CreatureEventAI : public CreatureAI
         void UpdateAI(const uint32 diff);
         bool IsVisible(Unit *) const;
         void ReceiveEmote(Player* pPlayer, uint32 text_emote);
+        void SummonedCreatureJustDied(Creature* unit);
+        void SummonedCreatureDespawn(Creature* unit);
+
         static int Permissible(const Creature *);
 
         bool ProcessEvent(CreatureEventAIHolder& pHolder, Unit* pActionInvoker = NULL);
@@ -589,7 +596,6 @@ class MANGOS_DLL_SPEC CreatureEventAI : public CreatureAI
         inline uint32 GetRandActionParam(uint32 rnd, uint32 param1, uint32 param2, uint32 param3);
         inline int32 GetRandActionParam(uint32 rnd, int32 param1, int32 param2, int32 param3);
         inline Unit* GetTargetByType(uint32 Target, Unit* pActionInvoker);
-        inline Unit* SelectUnit(AttackingTarget target, uint32 position) const;
 
         void DoScriptText(int32 textEntry, WorldObject* pSource, Unit* target);
         void DoMeleeAttackIfReady();
@@ -601,18 +607,21 @@ class MANGOS_DLL_SPEC CreatureEventAI : public CreatureAI
         void DoFindFriendlyMissingBuff(std::list<Creature*>& _list, float range, uint32 spellid);
         void DoFindFriendlyCC(std::list<Creature*>& _list, float range);
 
-                                                            //Holder for events (stores enabled, time, and eventid)
-        std::list<CreatureEventAIHolder> CreatureEventAIList;
-        uint32 EventUpdateTime;                             //Time between event updates
-        uint32 EventDiff;                                   //Time between the last event call
-        bool bEmptyList;
+    protected:
+        uint32 m_EventUpdateTime;                           //Time between event updates
+        uint32 m_EventDiff;                                 //Time between the last event call
+        bool   m_bEmptyList;
 
         //Variables used by Events themselves
-        uint8 Phase;                                        // Current phase, max 32 phases
-        bool CombatMovementEnabled;                         // If we allow targeted movment gen (movement twoards top threat)
-        bool MeleeEnabled;                                  // If we allow melee auto attack
-        float AttackDistance;                               // Distance to attack from
-        float AttackAngle;                                  // Angle of attack
-        uint32 InvinceabilityHpLevel;                       // Minimal health level allowed at damage apply
+        typedef std::vector<CreatureEventAIHolder> CreatureEventAIList;
+        CreatureEventAIList m_CreatureEventAIList;          //Holder for events (stores enabled, time, and eventid)
+
+        uint8  m_Phase;                                     // Current phase, max 32 phases
+        bool   m_CombatMovementEnabled;                     // If we allow targeted movment gen (movement twoards top threat)
+        bool   m_MeleeEnabled;                              // If we allow melee auto attack
+        float  m_AttackDistance;                            // Distance to attack from
+        float  m_AttackAngle;                               // Angle of attack
+        uint32 m_InvinceabilityHpLevel;                     // Minimal health level allowed at damage apply
 };
+
 #endif

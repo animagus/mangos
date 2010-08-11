@@ -27,6 +27,7 @@
 #include "GridStates.h"
 
 class Transport;
+class BattleGround;
 
 class MANGOS_DLL_DECL MapManager : public MaNGOS::Singleton<MapManager, MaNGOS::ClassLevelLockable<MapManager, ACE_Thread_Mutex> >
 {
@@ -38,8 +39,11 @@ class MANGOS_DLL_DECL MapManager : public MaNGOS::Singleton<MapManager, MaNGOS::
     public:
 
         Map* CreateMap(uint32, const WorldObject* obj);
+        Map* CreateBgMap(uint32 mapid, BattleGround* bg);
         Map const* CreateBaseMap(uint32 id) const { return const_cast<MapManager*>(this)->_createBaseMap(id); }
         Map* FindMap(uint32 mapid, uint32 instanceId = 0) const;
+
+        void UpdateGridState(grid_state_t state, Map& map, NGridType& ngrid, GridInfo& ginfo, const uint32 &x, const uint32 &y, const uint32 &t_diff);
 
         // only const version for outer users
         void DeleteInstance(uint32 mapid, uint32 instanceId);
@@ -108,7 +112,22 @@ class MANGOS_DLL_DECL MapManager : public MaNGOS::Singleton<MapManager, MaNGOS::
             return IsValidMapCoord(loc.mapid,loc.coord_x,loc.coord_y,loc.coord_z,loc.orientation);
         }
 
-        void DoDelayedMovesAndRemoves();
+        // modulos a radian orientation to the range of 0..2PI
+        static float NormalizeOrientation(float o)
+        {
+            // fmod only supports positive numbers. Thus we have
+            // to emulate negative numbers
+            if(o < 0)
+            {
+                float mod = o *-1;
+                mod = fmod(mod, 2.0f*M_PI_F);
+                mod = -mod+2.0f*M_PI_F;
+                return mod;
+            }
+            return fmod(o, 2.0f*M_PI_F);
+        }
+
+        void RemoveAllObjectsInRemoveList();
 
         void LoadTransports();
 
@@ -119,7 +138,6 @@ class MANGOS_DLL_DECL MapManager : public MaNGOS::Singleton<MapManager, MaNGOS::
         TransportMap m_TransportsByMap;
 
         bool CanPlayerEnter(uint32 mapid, Player* player);
-        void RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y);
         uint32 GenerateInstanceId() { return ++i_MaxInstanceId; }
         void InitMaxInstanceId();
         void InitializeVisibilityDistanceInfo();
@@ -129,16 +147,21 @@ class MANGOS_DLL_DECL MapManager : public MaNGOS::Singleton<MapManager, MaNGOS::
         uint32 GetNumPlayersInInstances();
 
     private:
+
         // debugging code, should be deleted some day
-        void checkAndCorrectGridStatesArray();              // just for debugging to find some memory overwrites
-        GridState* i_GridStates[MAX_GRID_STATE];            // shadow entries to the global array in Map.cpp
+        GridState* si_GridStates[MAX_GRID_STATE];
         int i_GridStateErrorCount;
+
     private:
+
         MapManager();
         ~MapManager();
 
         MapManager(const MapManager &);
         MapManager& operator=(const MapManager &);
+
+        void InitStateMachine();
+        void DeleteStateMachine();
 
         Map* _createBaseMap(uint32 id);
         Map* _findMap(uint32 id) const

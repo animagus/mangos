@@ -30,7 +30,7 @@ bool ScriptedAI::IsVisible(Unit* pWho) const
 
 void ScriptedAI::MoveInLineOfSight(Unit* pWho)
 {
-    if (!m_creature->hasUnitState(UNIT_STAT_STUNNED) && pWho->isTargetableForAttack() &&
+    if (m_creature->CanInitiateAttack() && pWho->isTargetableForAttack() &&
         m_creature->IsHostileTo(pWho) && pWho->isInAccessablePlaceFor(m_creature))
     {
         if (!m_creature->canFly() && m_creature->GetDistanceZ(pWho) > CREATURE_Z_ATTACK_RANGE)
@@ -154,19 +154,17 @@ void ScriptedAI::DoStopAttack()
 
 void ScriptedAI::DoCast(Unit* pTarget, uint32 uiSpellId, bool bTriggered)
 {
-    if (!pTarget || m_creature->IsNonMeleeSpellCasted(false))
+    if (m_creature->IsNonMeleeSpellCasted(false) && !bTriggered)
         return;
 
-    m_creature->StopMoving();
     m_creature->CastSpell(pTarget, uiSpellId, bTriggered);
 }
 
 void ScriptedAI::DoCastSpell(Unit* pTarget, SpellEntry const* pSpellInfo, bool bTriggered)
 {
-    if (!pTarget || m_creature->IsNonMeleeSpellCasted(false))
+    if (m_creature->IsNonMeleeSpellCasted(false) && !bTriggered)
         return;
 
-    m_creature->StopMoving();
     m_creature->CastSpell(pTarget, pSpellInfo, bTriggered);
 }
 
@@ -187,37 +185,6 @@ void ScriptedAI::DoPlaySoundToSet(WorldObject* pSource, uint32 uiSoundId)
 Creature* ScriptedAI::DoSpawnCreature(uint32 uiId, float fX, float fY, float fZ, float fAngle, uint32 uiType, uint32 uiDespawntime)
 {
     return m_creature->SummonCreature(uiId,m_creature->GetPositionX()+fX, m_creature->GetPositionY()+fY, m_creature->GetPositionZ()+fZ, fAngle, (TempSummonType)uiType, uiDespawntime);
-}
-
-Unit* ScriptedAI::SelectUnit(SelectAggroTarget target, uint32 uiPosition)
-{
-    //ThreatList m_threatlist;
-    ThreatList const& threatlist = m_creature->getThreatManager().getThreatList();
-    ThreatList::const_iterator itr = threatlist.begin();
-    ThreatList::const_reverse_iterator ritr = threatlist.rbegin();
-
-    if (uiPosition >= threatlist.size() || threatlist.empty())
-        return NULL;
-
-    switch (target)
-    {
-        case SELECT_TARGET_RANDOM:
-            advance(itr, uiPosition +  (rand() % (threatlist.size() - uiPosition)));
-            return Unit::GetUnit((*m_creature),(*itr)->getUnitGuid());
-            break;
-
-        case SELECT_TARGET_TOPAGGRO:
-            advance(itr, uiPosition);
-            return Unit::GetUnit((*m_creature),(*itr)->getUnitGuid());
-            break;
-
-        case SELECT_TARGET_BOTTOMAGGRO:
-            advance(ritr, uiPosition);
-            return Unit::GetUnit((*m_creature),(*ritr)->getUnitGuid());
-            break;
-    }
-
-    return NULL;
 }
 
 SpellEntry const* ScriptedAI::SelectSpell(Unit* pTarget, int32 uiSchool, int32 uiMechanic, SelectTarget selectTargets, uint32 uiPowerCostMin, uint32 uiPowerCostMax, float fRangeMin, float fRangeMax, SelectEffect selectEffects)
@@ -339,7 +306,7 @@ void FillSpellSummary()
 
     SpellEntry const* pTempSpell;
 
-    for (int i=0; i < GetSpellStore()->GetNumRows(); ++i)
+    for (uint32 i=0; i < GetSpellStore()->GetNumRows(); ++i)
     {
         SpellSummary[i].Effects = 0;
         SpellSummary[i].Targets = 0;
@@ -429,7 +396,7 @@ void ScriptedAI::DoResetThreat()
     ThreatList const& tList = m_creature->getThreatManager().getThreatList();
     for (ThreatList::const_iterator itr = tList.begin();itr != tList.end(); ++itr)
     {
-        Unit* pUnit = Unit::GetUnit((*m_creature), (*itr)->getUnitGuid());
+        Unit* pUnit = m_creature->GetMap()->GetUnit((*itr)->getUnitGuid());
 
         if (pUnit && m_creature->getThreatManager().getThreat(pUnit))
             m_creature->getThreatManager().modifyThreatPercent(pUnit, -100);
@@ -451,61 +418,36 @@ void ScriptedAI::DoTeleportPlayer(Unit* pUnit, float fX, float fY, float fZ, flo
 
 Unit* ScriptedAI::DoSelectLowestHpFriendly(float fRange, uint32 uiMinHPDiff)
 {
-    CellPair p(MaNGOS::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
     Unit* pUnit = NULL;
 
     MaNGOS::MostHPMissingInRange u_check(m_creature, fRange, uiMinHPDiff);
     MaNGOS::UnitLastSearcher<MaNGOS::MostHPMissingInRange> searcher(m_creature, pUnit, u_check);
 
-    /*
-    typedef TYPELIST_4(GameObject, Creature*except pets*, DynamicObject, Corpse*Bones*) AllGridObjectTypes;
-    This means that if we only search grid then we cannot possibly return pets or players so this is safe
-    */
-    TypeContainerVisitor<MaNGOS::UnitLastSearcher<MaNGOS::MostHPMissingInRange>, GridTypeMapContainer >  grid_unit_searcher(searcher);
-
-    cell.Visit(p,grid_unit_searcher, *(m_creature->GetMap()), *m_creature, fRange);
+    Cell::VisitGridObjects(m_creature, searcher, fRange);
 
     return pUnit;
 }
 
 std::list<Creature*> ScriptedAI::DoFindFriendlyCC(float fRange)
 {
-    CellPair p(MaNGOS::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
     std::list<Creature*> pList;
 
     MaNGOS::FriendlyCCedInRange u_check(m_creature, fRange);
     MaNGOS::CreatureListSearcher<MaNGOS::FriendlyCCedInRange> searcher(m_creature, pList, u_check);
 
-    TypeContainerVisitor<MaNGOS::CreatureListSearcher<MaNGOS::FriendlyCCedInRange>, GridTypeMapContainer >  grid_creature_searcher(searcher);
-
-    cell.Visit(p, grid_creature_searcher, *(m_creature->GetMap()), *m_creature, fRange);
+    Cell::VisitGridObjects(m_creature, searcher, fRange);
 
     return pList;
 }
 
 std::list<Creature*> ScriptedAI::DoFindFriendlyMissingBuff(float fRange, uint32 uiSpellId)
 {
-    CellPair p(MaNGOS::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
     std::list<Creature*> pList;
 
     MaNGOS::FriendlyMissingBuffInRange u_check(m_creature, fRange, uiSpellId);
     MaNGOS::CreatureListSearcher<MaNGOS::FriendlyMissingBuffInRange> searcher(m_creature, pList, u_check);
 
-    TypeContainerVisitor<MaNGOS::CreatureListSearcher<MaNGOS::FriendlyMissingBuffInRange>, GridTypeMapContainer >  grid_creature_searcher(searcher);
-
-    cell.Visit(p, grid_creature_searcher, *(m_creature->GetMap()), *m_creature, fRange);
+    Cell::VisitGridObjects(m_creature, searcher, fRange);
 
     return pList;
 }
@@ -514,19 +456,10 @@ Player* ScriptedAI::GetPlayerAtMinimumRange(float fMinimumRange)
 {
     Player* pPlayer = NULL;
 
-    CellPair pair(MaNGOS::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
-    Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
+    MaNGOS::AnyPlayerInObjectRangeCheck check(m_creature, fMinimumRange);
+    MaNGOS::PlayerSearcher<MaNGOS::AnyPlayerInObjectRangeCheck> searcher(m_creature, pPlayer, check);
 
-    PlayerAtMinimumRangeAway check(m_creature, fMinimumRange);
-    MaNGOS::PlayerSearcher<PlayerAtMinimumRangeAway> searcher(m_creature, pPlayer, check);
-    TypeContainerVisitor<MaNGOS::PlayerSearcher<PlayerAtMinimumRangeAway>, GridTypeMapContainer> visitor(searcher);
-
-    Map * map = m_creature->GetMap();
-    //lets limit the maximum player search distance to speed up calculations...
-    const float fMaxSearchDst = map->GetVisibilityDistance() > MAX_PLAYER_STEALTH_DETECT_RANGE ? MAX_PLAYER_STEALTH_DETECT_RANGE : map->GetVisibilityDistance();
-    cell.Visit(pair, visitor, *map, *m_creature, fMaxSearchDst);
+    Cell::VisitWorldObjects(m_creature, searcher, fMinimumRange);
 
     return pPlayer;
 }

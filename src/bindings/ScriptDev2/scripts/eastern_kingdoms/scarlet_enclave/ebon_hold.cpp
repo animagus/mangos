@@ -190,7 +190,7 @@ struct MANGOS_DLL_DECL npc_a_special_surpriseAI : public ScriptedAI
         {
             if (m_uiExecuteSpeech_Timer < uiDiff)
             {
-                Player* pPlayer = (Player*)Unit::GetUnit(*m_creature, m_uiPlayerGUID);
+                Player* pPlayer = m_creature->GetMap()->GetPlayer(m_uiPlayerGUID);
 
                 if (!pPlayer)
                 {
@@ -567,7 +567,7 @@ struct MANGOS_DLL_DECL npc_death_knight_initiateAI : public ScriptedAI
 
     void SpellHit(Unit* pCaster, const SpellEntry* pSpell)
     {
-        if (!m_bIsDuelInProgress && pSpell->Id == SPELL_DUEL_TRIGGERED)
+        if (!m_bIsDuelInProgress && pSpell->Id == SPELL_DUEL_TRIGGERED && pCaster->GetTypeId() == TYPEID_PLAYER)
         {
             m_uiDuelerGUID = pCaster->GetGUID();
             m_bIsDuelInProgress = true;
@@ -580,8 +580,8 @@ struct MANGOS_DLL_DECL npc_death_knight_initiateAI : public ScriptedAI
         {
             uiDamage = 0;
 
-            if (Unit* pUnit = Unit::GetUnit(*m_creature, m_uiDuelerGUID))
-                m_creature->CastSpell(pUnit, SPELL_DUEL_VICTORY, true);
+            if (Player* pPlayer = m_creature->GetMap()->GetPlayer(m_uiDuelerGUID))
+                m_creature->CastSpell(pPlayer, SPELL_DUEL_VICTORY, true);
 
             //possibly not evade, but instead have end sequenze
             EnterEvadeMode();
@@ -598,8 +598,8 @@ struct MANGOS_DLL_DECL npc_death_knight_initiateAI : public ScriptedAI
                 {
                     m_creature->setFaction(FACTION_HOSTILE);
 
-                    if (Unit* pUnit = Unit::GetUnit(*m_creature, m_uiDuelerGUID))
-                        AttackStart(pUnit);
+                    if (Player* pPlayer = m_creature->GetMap()->GetPlayer(m_uiDuelerGUID))
+                        AttackStart(pPlayer);
                 }
                 else
                     m_uiDuelTimer -= uiDiff;
@@ -714,13 +714,13 @@ struct MANGOS_DLL_DECL npc_koltira_deathweaverAI : public npc_escortAI
             case 2:
                 m_creature->SetStandState(UNIT_STAND_STATE_STAND);
                 //m_creature->UpdateEntry(NPC_KOLTIRA_ALT); //unclear if we must update or not
-                DoCast(m_creature, SPELL_KOLTIRA_TRANSFORM);
+                DoCastSpellIfCan(m_creature, SPELL_KOLTIRA_TRANSFORM);
                 break;
             case 3:
                 SetEscortPaused(true);
                 m_creature->SetStandState(UNIT_STAND_STATE_KNEEL);
                 DoScriptText(SAY_BREAKOUT2, m_creature);
-                DoCast(m_creature, SPELL_ANTI_MAGIC_ZONE);  // cast again that makes bubble up
+                DoCastSpellIfCan(m_creature, SPELL_ANTI_MAGIC_ZONE);  // cast again that makes bubble up
                 break;
             case 4:
                 SetRun(true);
@@ -749,7 +749,7 @@ struct MANGOS_DLL_DECL npc_koltira_deathweaverAI : public npc_escortAI
     void SummonAcolyte(uint32 uiAmount)
     {
         for(uint32 i = 0; i < uiAmount; ++i)
-            m_creature->SummonCreature(NPC_CRIMSON_ACOLYTE, 1642.329, -6045.818, 127.583, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+            m_creature->SummonCreature(NPC_CRIMSON_ACOLYTE, 1642.329f, -6045.818f, 127.583f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
     }
 
     void UpdateEscortAI(const uint32 uiDiff)
@@ -777,12 +777,12 @@ struct MANGOS_DLL_DECL npc_koltira_deathweaverAI : public npc_escortAI
                         break;
                     case 3:
                         DoScriptText(SAY_BREAKOUT6, m_creature);
-                        m_creature->SummonCreature(NPC_HIGH_INQUISITOR_VALROTH, 1642.329, -6045.818, 127.583, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1000);
+                        m_creature->SummonCreature(NPC_HIGH_INQUISITOR_VALROTH, 1642.329f, -6045.818f, 127.583f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1000);
                         m_uiWave_Timer = 1000;
                         break;
                     case 4:
                     {
-                        Unit* pTemp = Unit::GetUnit(*m_creature, m_uiValrothGUID);
+                        Creature* pTemp = m_creature->GetMap()->GetCreature(m_uiValrothGUID);
 
                         if (!pTemp || !pTemp->isAlive())
                         {
@@ -832,7 +832,7 @@ bool QuestAccept_npc_koltira_deathweaver(Player* pPlayer, Creature* pCreature, c
         pCreature->SetStandState(UNIT_STAND_STATE_STAND);
 
         if (npc_koltira_deathweaverAI* pEscortAI = dynamic_cast<npc_koltira_deathweaverAI*>(pCreature->AI()))
-            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest);
+            pEscortAI->Start(false, pPlayer->GetGUID(), pQuest);
     }
     return true;
 }
@@ -913,7 +913,7 @@ struct MANGOS_DLL_DECL npc_unworthy_initiate_anchorAI : public ScriptedAI
 
     void NotifyMe(Unit* pSource)
     {
-        Creature* pInitiate = (Creature*)Unit::GetUnit(*m_creature, m_uiMyInitiate);
+        Creature* pInitiate = m_creature->GetMap()->GetCreature(m_uiMyInitiate);
 
         if (pInitiate && pSource)
         {
@@ -998,7 +998,8 @@ struct MANGOS_DLL_DECL npc_unworthy_initiateAI : public ScriptedAI
     {
         if (Creature* pAnchor = GetClosestCreatureWithEntry(m_creature, NPC_ANCHOR, INTERACTION_DISTANCE*2))
         {
-            ((npc_unworthy_initiate_anchorAI*)pAnchor->AI())->RegisterCloseInitiate(m_creature->GetGUID());
+            if (npc_unworthy_initiate_anchorAI* pAnchorAI = dynamic_cast<npc_unworthy_initiate_anchorAI*>(pAnchor->AI()))
+                pAnchorAI->RegisterCloseInitiate(m_creature->GetGUID());
 
             pAnchor->CastSpell(m_creature, SPELL_CHAINED_PESANT_CHEST, false);
 
@@ -1037,25 +1038,25 @@ struct MANGOS_DLL_DECL npc_unworthy_initiateAI : public ScriptedAI
 
             if (m_uiBloodStrike_Timer < uiDiff)
             {
-                DoCast(m_creature->getVictim(),SPELL_BLOOD_STRIKE);
+                DoCastSpellIfCan(m_creature->getVictim(),SPELL_BLOOD_STRIKE);
                 m_uiBloodStrike_Timer = 9000;
             }else m_uiBloodStrike_Timer -= uiDiff;
 
             if (m_uiDeathCoil_Timer < uiDiff)
             {
-                DoCast(m_creature->getVictim(),SPELL_DEATH_COIL);
+                DoCastSpellIfCan(m_creature->getVictim(),SPELL_DEATH_COIL);
                 m_uiDeathCoil_Timer = 8000;
             }else m_uiDeathCoil_Timer -= uiDiff;
 
             if (m_uiIcyTouch_Timer < uiDiff)
             {
-                DoCast(m_creature->getVictim(),SPELL_ICY_TOUCH);
+                DoCastSpellIfCan(m_creature->getVictim(),SPELL_ICY_TOUCH);
                 m_uiIcyTouch_Timer = 8000;
             }else m_uiIcyTouch_Timer -= uiDiff;
 
             if (m_uiPlagueStrike_Timer < uiDiff)
             {
-                DoCast(m_creature->getVictim(),SPELL_PLAGUE_STRIKE);
+                DoCastSpellIfCan(m_creature->getVictim(),SPELL_PLAGUE_STRIKE);
                 m_uiPlagueStrike_Timer = 8000;
             }else m_uiPlagueStrike_Timer -= uiDiff;
 
@@ -1110,7 +1111,10 @@ CreatureAI* GetAI_npc_unworthy_initiate(Creature* pCreature)
 bool GOHello_go_acherus_soul_prison(Player* pPlayer, GameObject* pGo)
 {
     if (Creature* pAnchor = GetClosestCreatureWithEntry(pGo, NPC_ANCHOR, INTERACTION_DISTANCE))
-        ((npc_unworthy_initiate_anchorAI*)pAnchor->AI())->NotifyMe(pPlayer);
+    {
+        if (npc_unworthy_initiate_anchorAI* pAnchorAI = dynamic_cast<npc_unworthy_initiate_anchorAI*>(pAnchor->AI()))
+            pAnchorAI->NotifyMe(pPlayer);
+    }
 
     return false;
 }

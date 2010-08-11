@@ -202,9 +202,9 @@ static Yells MaievTaunts[]=
 #define SPELL_SHADOWFIEND_PASSIVE       41913               // Passive aura for shadowfiends
 
 // Other defines
-#define CENTER_X            676.740
-#define CENTER_Y            305.297
-#define CENTER_Z            353.192
+#define CENTER_X            676.740f
+#define CENTER_Y            305.297f
+#define CENTER_Z            353.192f
 
 #define EQUIP_ID_MAIN_HAND  32837
 #define EQUIP_ID_OFF_HAND   32838
@@ -228,41 +228,41 @@ struct Locations
 
 static Locations GlaivePosition[]=
 {
-    {695.105, 305.303, 354.256},
-    {659.338, 305.303, 354.256},
-    {700.105, 305.303, 354.256},
-    {664.338, 305.303, 354.256}
+    {695.105f, 305.303f, 354.256f},
+    {659.338f, 305.303f, 354.256f},
+    {700.105f, 305.303f, 354.256f},
+    {664.338f, 305.303f, 354.256f}
 };
 
 static Locations EyeBlast[]=
 {
-    {650.697, 320.128, 353.730},
-    {652.799, 275.091, 353.367},
-    {701.527, 273.815, 353.230},
-    {709.865, 325.654, 353.322}
+    {650.697f, 320.128f, 353.730f},
+    {652.799f, 275.091f, 353.367f},
+    {701.527f, 273.815f, 353.230f},
+    {709.865f, 325.654f, 353.322f}
 };
 
 static Locations AkamaWP[]=
 {
-    { 770.01, 304.50, 312.29 },                             // Bottom of the first stairs, at the doors
-    { 780.66, 304.50, 319.74 },                             // Top of the first stairs
-    { 790.13, 319.68, 319.76 },                             // Bottom of the second stairs (left from the entrance)
-    { 787.17, 347.38, 341.42 },                             // Top of the second stairs
-    { 781.34, 350.31, 341.44 },                             // Bottom of the third stairs
-    { 762.60, 361.06, 353.60 },                             // Top of the third stairs
-    { 756.35, 360.52, 353.27 },                             // Before the door-thingy
-    { 743.82, 342.21, 353.00 },                             // Somewhere further
-    { 732.69, 305.13, 353.00 },                             // In front of Illidan
-    { 738.11, 365.44, 353.00 },                             // in front of the door-thingy (the other one!)
-    { 792.18, 366.62, 341.42 },                             // Down the first flight of stairs
-    { 796.84, 304.89, 319.76 },                             // Down the second flight of stairs
-    { 782.01, 304.55, 319.76 }                              // Final location - back at the initial gates. This is where he will fight the minions!
+    {770.01f, 304.50f, 312.29f},                            // Bottom of the first stairs, at the doors
+    {780.66f, 304.50f, 319.74f},                            // Top of the first stairs
+    {790.13f, 319.68f, 319.76f},                            // Bottom of the second stairs (left from the entrance)
+    {787.17f, 347.38f, 341.42f},                            // Top of the second stairs
+    {781.34f, 350.31f, 341.44f},                            // Bottom of the third stairs
+    {762.60f, 361.06f, 353.60f},                            // Top of the third stairs
+    {756.35f, 360.52f, 353.27f},                            // Before the door-thingy
+    {743.82f, 342.21f, 353.00f},                            // Somewhere further
+    {732.69f, 305.13f, 353.00f},                            // In front of Illidan
+    {738.11f, 365.44f, 353.00f},                            // in front of the door-thingy (the other one!)
+    {792.18f, 366.62f, 341.42f},                            // Down the first flight of stairs
+    {796.84f, 304.89f, 319.76f},                            // Down the second flight of stairs
+    {782.01f, 304.55f, 319.76f}                             // Final location - back at the initial gates. This is where he will fight the minions!
 };
 // 755.762, 304.0747, 312.1769 -- This is where Akama should be spawned
 static Locations SpiritSpawns[]=
 {
-    {755.5426, 309.9156, 312.2129, SPIRIT_OF_UDALO},
-    {755.5426, 298.7923, 312.0834, SPIRIT_OF_OLUM}
+    {755.5426f, 309.9156f, 312.2129f, SPIRIT_OF_UDALO},
+    {755.5426f, 298.7923f, 312.0834f, SPIRIT_OF_OLUM}
 };
 
 struct WayPoints
@@ -346,7 +346,7 @@ struct MANGOS_DLL_DECL demonfireAI : public ScriptedAI
                 {
                     IllidanGUID = m_pInstance->GetData64(DATA_ILLIDANSTORMRAGE);
 
-                    if (!pIllidan->HasMonsterMoveFlag(MONSTER_MOVE_LEVITATING))
+                    if (!pIllidan->HasSplineFlag(SPLINEFLAG_NO_SPLINE))
                         m_creature->setDeathState(JUST_DIED);
                 }
             }
@@ -355,7 +355,7 @@ struct MANGOS_DLL_DECL demonfireAI : public ScriptedAI
 
         if (DemonFireTimer < diff)
         {
-            DoCast(m_creature, SPELL_DEMON_FIRE);
+            DoCastSpellIfCan(m_creature, SPELL_DEMON_FIRE);
             DemonFireTimer = 30000;
         }else DemonFireTimer -= diff;
 
@@ -467,8 +467,9 @@ struct MANGOS_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         ThreatList const& tList = m_creature->getThreatManager().getThreatList();
         for (ThreatList::const_iterator itr = tList.begin();itr != tList.end(); ++itr)
         {
-            Unit* pUnit = Unit::GetUnit((*m_creature), (*itr)->getUnitGuid());
-            if (pUnit && (pUnit->GetTypeId() == TYPEID_UNIT) && (pUnit->GetEntry() == ILLIDARI_ELITE))
+            Unit* pUnit = m_creature->GetMap()->GetUnit((*itr)->getUnitGuid());
+
+            if (pUnit && pUnit->GetTypeId() == TYPEID_UNIT && pUnit->GetEntry() == ILLIDARI_ELITE)
                 pUnit->setDeathState(JUST_DIED);
         }
     }
@@ -479,8 +480,8 @@ struct MANGOS_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         FightMinions = false;
         IsReturningToIllidan = true;
         WayPoint = WayPointList.begin();
-        m_creature->SetSpeed(MOVE_RUN, 2.0f);
-        m_creature->RemoveMonsterMoveFlag(MONSTER_MOVE_WALK);
+        m_creature->SetSpeedRate(MOVE_RUN, 2.0f);
+        m_creature->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
         IsWalking = true;
     }
 
@@ -495,7 +496,7 @@ struct MANGOS_DLL_DECL npc_akama_illidanAI : public ScriptedAI
         if (damage > m_creature->GetHealth() && (done_by->GetGUID() != m_creature->GetGUID()))
         {
             damage = 0;
-            DoCast(m_creature, SPELL_HEALING_POTION);
+            DoCastSpellIfCan(m_creature, SPELL_HEALING_POTION);
         }
     }
 
@@ -535,7 +536,7 @@ struct MANGOS_DLL_DECL npc_akama_illidanAI : public ScriptedAI
                 StartChanneling = true;
                 m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                DoCast(Channel, SPELL_AKAMA_DOOR_FAIL);
+                DoCastSpellIfCan(Channel, SPELL_AKAMA_DOOR_FAIL);
             }
         }
     }
@@ -567,7 +568,7 @@ struct MANGOS_DLL_DECL npc_akama_illidanAI : public ScriptedAI
                     IsWalking = false;
                     if (IllidanGUID)
                     {
-                        Unit* Illidan = Unit::GetUnit((*m_creature), IllidanGUID);
+                        Creature* Illidan = m_creature->GetMap()->GetCreature(IllidanGUID);
                         if (Illidan)
                         {
                             float dx = Illidan->GetPositionX() + rand()%15;
@@ -604,7 +605,7 @@ struct MANGOS_DLL_DECL npc_akama_illidanAI : public ScriptedAI
             return;
 
         // Create a pointer to Illidan
-        Creature* Illidan = ((Creature*)Unit::GetUnit((*m_creature), IllidanGUID));
+        Creature* Illidan = m_creature->GetMap()->GetCreature(IllidanGUID);
 
         // No use to continue if Illidan does not exist
         if (!Illidan)
@@ -629,13 +630,12 @@ struct MANGOS_DLL_DECL npc_akama_illidanAI : public ScriptedAI
     {
         if (IllidanGUID)
         {
-            Creature* Illidan = ((Creature*)Unit::GetUnit((*m_creature), IllidanGUID));
-            if (Illidan)
+            if (Creature* Illidan = m_creature->GetMap()->GetCreature(IllidanGUID))
             {
                 if (Illidan->IsInEvadeMode() && !m_creature->IsInEvadeMode())
                     EnterEvadeMode();
 
-                if (((Illidan->GetHealth()*100 / Illidan->GetMaxHealth()) < 85) && m_creature->isInCombat() && !FightMinions)
+                if (Illidan->GetHealthPercent() < 85.0f && m_creature->isInCombat() && !FightMinions)
                 {
                     if (TalkTimer < diff)
                     {
@@ -665,13 +665,13 @@ struct MANGOS_DLL_DECL npc_akama_illidanAI : public ScriptedAI
                                 IsWalking = true;
                                 WayPoint = WayPointList.begin();
                                 std::advance(WayPoint, 9);
-                                m_creature->RemoveMonsterMoveFlag(MONSTER_MOVE_WALK);
+                                m_creature->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
                                 break;
                         }
                     }else TalkTimer -= diff;
                 }
 
-                if (((Illidan->GetHealth()*100 / Illidan->GetMaxHealth()) < 4) && !IsReturningToIllidan)
+                if (Illidan->GetHealthPercent() < 4.0f && !IsReturningToIllidan)
                     ReturnToIllidan();
             }
         }else
@@ -707,7 +707,7 @@ struct MANGOS_DLL_DECL npc_akama_illidanAI : public ScriptedAI
                             {
                                 if (SpiritGUID[i])
                                 {
-                                    Unit* Spirit = Unit::GetUnit((*m_creature), SpiritGUID[i]);
+                                    Creature* Spirit = m_creature->GetMap()->GetCreature(SpiritGUID[i]);
                                     if (Spirit)
                                         Spirit->InterruptNonMeleeSpells(true);
                                 }
@@ -721,7 +721,7 @@ struct MANGOS_DLL_DECL npc_akama_illidanAI : public ScriptedAI
                         }
                         break;
                     case 4:
-                        m_creature->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
+                        m_creature->HandleEmote(EMOTE_ONESHOT_SALUTE);
                         ChannelTimer = 2000;
                         ++ChannelCount;
                         break;
@@ -729,7 +729,7 @@ struct MANGOS_DLL_DECL npc_akama_illidanAI : public ScriptedAI
                         DoScriptText(SAY_AKAMA_BEWARE, m_creature);
                         if (ChannelGUID)
                         {
-                            Unit* ChannelTarget = Unit::GetUnit((*m_creature), ChannelGUID);
+                            Creature* ChannelTarget = m_creature->GetMap()->GetCreature(ChannelGUID);
                             if (ChannelTarget)
                                 ChannelTarget->setDeathState(JUST_DIED);
                             ChannelGUID = 0;
@@ -738,7 +738,7 @@ struct MANGOS_DLL_DECL npc_akama_illidanAI : public ScriptedAI
                         {
                             if (SpiritGUID[i])
                             {
-                                Unit* Spirit = Unit::GetUnit((*m_creature), SpiritGUID[i]);
+                                Creature* Spirit = m_creature->GetMap()->GetCreature(SpiritGUID[i]);
                                 if (Spirit)
                                     Spirit->setDeathState(JUST_DIED);
                             }
@@ -755,14 +755,14 @@ struct MANGOS_DLL_DECL npc_akama_illidanAI : public ScriptedAI
                         }
 
                         WayPoint = WayPointList.begin();
-                        m_creature->AddMonsterMoveFlag(MONSTER_MOVE_WALK);
+                        m_creature->AddSplineFlag(SPLINEFLAG_WALKMODE);
                         m_creature->GetMotionMaster()->MovePoint(WayPoint->id, WayPoint->x, WayPoint->y, WayPoint->z);
                         IsWalking = true;
                         break;
                     default:
                         if (ChannelGUID)
                         {
-                            Unit* Channel = Unit::GetUnit((*m_creature), ChannelGUID);
+                            Creature* Channel = m_creature->GetMap()->GetCreature(ChannelGUID);
                             if (Channel)
                             {
                                 m_creature->InterruptNonMeleeSpells(true);
@@ -771,14 +771,14 @@ struct MANGOS_DLL_DECL npc_akama_illidanAI : public ScriptedAI
                                 {
                                     if (SpiritGUID[i])
                                     {
-                                        Unit* Spirit = Unit::GetUnit((*m_creature), SpiritGUID[i]);
+                                        Creature* Spirit = m_creature->GetMap()->GetCreature(SpiritGUID[i]);
                                         if (Spirit)
                                         {
                                             Spirit->InterruptNonMeleeSpells(true);
                                             if (ChannelCount%2 == 0)
                                             {
                                                 Spirit->CastSpell(Channel, SPELL_DEATHSWORN_DOOR_CHANNEL,false);
-                                                DoCast(Channel, SPELL_AKAMA_DOOR_CHANNEL);
+                                                DoCastSpellIfCan(Channel, SPELL_AKAMA_DOOR_CHANNEL);
                                             }
                                             else
                                             {
@@ -804,7 +804,7 @@ struct MANGOS_DLL_DECL npc_akama_illidanAI : public ScriptedAI
             {
                 if (IllidanGUID)
                 {
-                    Creature* Illidan = ((Creature*)Unit::GetUnit((*m_creature), IllidanGUID));
+                    Creature* Illidan = m_creature->GetMap()->GetCreature(IllidanGUID);
                     if (!Illidan || Illidan->IsInEvadeMode())
                     {
                         Reset();
@@ -905,7 +905,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
         // Check if any flames/glaives are alive/existing. Kill if alive and set GUIDs to 0
         for(uint8 i = 0; i < 2; ++i)
         {
-            if (Unit* Flame = Unit::GetUnit((*m_creature), FlameGUID[i]))
+            if (Creature* Flame = m_creature->GetMap()->GetCreature(FlameGUID[i]))
             {
                 if (Flame->isAlive())
                     Flame->setDeathState(JUST_DIED);
@@ -913,7 +913,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
                 FlameGUID[i] = 0;
             }
 
-            if (Unit* Glaive = Unit::GetUnit((*m_creature), GlaiveGUID[i]))
+            if (Creature* Glaive = m_creature->GetMap()->GetCreature(GlaiveGUID[i]))
             {
                 if (Glaive->isAlive())
                     Glaive->setDeathState(JUST_DIED);
@@ -922,14 +922,12 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
             }
         }
 
-        if (Creature* Akama = ((Creature*)Unit::GetUnit((*m_creature), AkamaGUID)))
+        if (Creature* pAkama = m_creature->GetMap()->GetCreature(AkamaGUID))
         {
-            if (!Akama->isAlive())
-                Akama->Respawn();
+            if (!pAkama->isAlive())
+                pAkama->Respawn();
 
-            ((npc_akama_illidanAI*)Akama->AI())->Reset();
-            ((npc_akama_illidanAI*)Akama->AI())->EnterEvadeMode();
-            Akama->GetMotionMaster()->MoveTargetedHome();
+            pAkama->AI()->EnterEvadeMode();
         }
 
         InformAkama = false;
@@ -978,7 +976,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
         // Unequip warglaives if needed
         SetEquipmentSlots(false, EQUIP_UNEQUIP, EQUIP_UNEQUIP, EQUIP_NO_CHANGE);
 
-        m_creature->RemoveMonsterMoveFlag(MONSTER_MOVE_LEVITATING);
+        m_creature->RemoveSplineFlag(SPLINEFLAG_NO_SPLINE);
 
         IsTalking = false;
 
@@ -996,7 +994,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
 
     void AttackStart(Unit *who)
     {
-        if (!who || IsTalking || Phase == 2 || Phase == 4 || Phase == 6 || m_creature->HasAura(SPELL_KNEEL, 0))
+        if (!who || IsTalking || Phase == 2 || Phase == 4 || Phase == 6 || m_creature->HasAura(SPELL_KNEEL, EFFECT_INDEX_0))
             return;
 
         if (who == m_creature)
@@ -1106,20 +1104,20 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
 
         for(uint8 i = 0; i < 2; ++i)
         {
-            Creature* Trigger = NULL;
-            Trigger = m_creature->SummonCreature(DEMON_FIRE, initial_X, initial_Y, initial_Z, 0, TEMPSUMMON_TIMED_DESPAWN, 20000);
-            if (Trigger)
+            if (Creature* pTrigger = m_creature->SummonCreature(DEMON_FIRE, initial_X, initial_Y, initial_Z, 0, TEMPSUMMON_TIMED_DESPAWN, 20000))
             {
-                ((demonfireAI*)Trigger->AI())->IsTrigger = true;
-                Trigger->GetMotionMaster()->MovePoint(0, final_X, final_Y, final_Z);
+                if (demonfireAI* pTriggerAI = dynamic_cast<demonfireAI*>(pTrigger->AI()))
+                    pTriggerAI->IsTrigger = true;
+
+                pTrigger->GetMotionMaster()->MovePoint(0, final_X, final_Y, final_Z);
 
                 if (!i)
-                    Trigger->CastSpell(Trigger, SPELL_EYE_BLAST_TRIGGER, true);
+                    pTrigger->CastSpell(pTrigger, SPELL_EYE_BLAST_TRIGGER, true);
                 else
                 {
-                    Trigger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    m_creature->SetUInt64Value(UNIT_FIELD_TARGET, Trigger->GetGUID());
-                    DoCast(Trigger, SPELL_EYE_BLAST);
+                    pTrigger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                    m_creature->SetUInt64Value(UNIT_FIELD_TARGET, pTrigger->GetGUID());
+                    DoCastSpellIfCan(pTrigger, SPELL_EYE_BLAST);
                 }
             }
         }
@@ -1131,9 +1129,9 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
     {
         // We'll use a grid searcher that selects a player that is at a distance >15 yards
         if (Player* pPlayer = GetPlayerAtMinimumRange(15.0f))
-            DoCast(pPlayer, SPELL_AGONIZING_FLAMES);
+            DoCastSpellIfCan(pPlayer, SPELL_AGONIZING_FLAMES);
         else
-            DoCast(m_creature->getVictim(), SPELL_AGONIZING_FLAMES);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_AGONIZING_FLAMES);
     }
 
     void Talk(uint32 count)
@@ -1179,14 +1177,14 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
 
         if (GUID)                                           // Now we check if we actually specified a GUID, if so:
                                                             // we grab a pointer to that creature
-            pCreature = ((Creature*)Unit::GetUnit((*m_creature), GUID));
+            pCreature = m_creature->GetMap()->GetCreature(GUID);
 
         if (pCreature)
         {
             if (emote)
-                pCreature->HandleEmoteCommand(emote);        // Make the creature do some animation!
+                pCreature->HandleEmote(emote);              // Make the creature do some animation
             if (text)
-                DoScriptText(text, pCreature);               // Have the creature yell out some text
+                DoScriptText(text, pCreature);              // Have the creature yell out some text
         }
     }
 
@@ -1215,7 +1213,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
             m_creature->RemoveAurasDueToSpell(unaura);
 
         if (aura)
-            DoCast(m_creature, aura, true);
+            DoCastSpellIfCan(m_creature, aura, CAST_TRIGGERED);
 
         if (displayid)
             // It's morphin time!
@@ -1254,8 +1252,8 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
         else if (count == 4)
         {
             DoResetThreat();
-            if (!m_creature->HasAura(SPELL_DEMON_FORM, 0))
-                DoCast(m_creature, SPELL_DEMON_FORM, true);
+            if (!m_creature->HasAura(SPELL_DEMON_FORM, EFFECT_INDEX_0))
+                DoCastSpellIfCan(m_creature, SPELL_DEMON_FORM, CAST_TRIGGERED);
         }
     }
 
@@ -1276,7 +1274,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
         // We now hover!
-        m_creature->AddMonsterMoveFlag(MONSTER_MOVE_LEVITATING);
+        m_creature->AddSplineFlag(SPLINEFLAG_NO_SPLINE);
 
         m_creature->GetMotionMaster()->MovePoint(0, CENTER_X, CENTER_Y, CENTER_Z);
         for(uint8 i = 0; i < 2; ++i)
@@ -1300,7 +1298,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
         RetrieveBladesTimer = 0;
 
         // Make it look like we're throwing the glaives on the ground
-        DoCast(m_creature, SPELL_THROW_GLAIVE2);
+        DoCastSpellIfCan(m_creature, SPELL_THROW_GLAIVE2);
 
         // We no longer wear the glaives!
         // since they are now channeling the flames (or will be)
@@ -1309,10 +1307,10 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
         for(uint8 i = 0; i < 2; ++i)
         {
             Creature* Glaive = NULL;
-            Glaive = ((Creature*)Unit::GetUnit((*m_creature), GlaiveGUID[i]));
+            Glaive = m_creature->GetMap()->GetCreature(GlaiveGUID[i]);
             if (Glaive)
             {
-                DoCast(Glaive, SPELL_THROW_GLAIVE, true);
+                DoCastSpellIfCan(Glaive, SPELL_THROW_GLAIVE, CAST_TRIGGERED);
                 Glaive->SetVisibility(VISIBILITY_ON);
             }
         }
@@ -1326,7 +1324,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
         {
             Creature* Flame = NULL;
             Creature* Glaive = NULL;
-            Glaive = ((Creature*)Unit::GetUnit((*m_creature), GlaiveGUID[i]));
+            Glaive = m_creature->GetMap()->GetCreature(GlaiveGUID[i]);
             if (Glaive)
             {
                 Flame = m_creature->SummonCreature(FLAME_OF_AZZINOTH, GlaivePosition[i+2].x, GlaivePosition[i+2].y, GlaivePosition[i+2].z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
@@ -1376,7 +1374,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
             m_creature->GetMotionMaster()->MoveIdle();
                                                             // Just in case someone is unaffected by Shadow Prison
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            DoCast(m_creature, SPELL_SHADOW_PRISON, true);
+            DoCastSpellIfCan(m_creature, SPELL_SHADOW_PRISON, CAST_TRIGGERED);
             TalkCount = 10;
             IsTalking = true;                               // We are now talking/
             Maiev->SetVisibility(VISIBILITY_OFF);           // Leave her invisible until she has to talk
@@ -1394,7 +1392,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
     void InitializeDeath()
     {
         m_creature->RemoveAllAuras();
-        DoCast(m_creature, SPELL_DEATH);                    // Animate his kneeling + stun him
+        DoCastSpellIfCan(m_creature, SPELL_DEATH);                    // Animate his kneeling + stun him
                                                             // Don't let the players interrupt our talk!
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->GetMotionMaster()->Clear(false);        // No moving!
@@ -1402,7 +1400,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
 
         if (MaievGUID)
         {
-            if (Creature* Maiev = ((Creature*)Unit::GetUnit((*m_creature), MaievGUID)))
+            if (Creature* Maiev = m_creature->GetMap()->GetCreature(MaievGUID))
             {
                 Maiev->CombatStop(true);                    // Maiev shouldn't do anything either. No point in her attacking us =]
                 Maiev->GetMotionMaster()->Clear(false);     // Stop her from moving as well
@@ -1412,8 +1410,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
                 float dx = m_creature->GetPositionX() + (distance*cos(m_creature->GetOrientation()));
                 float dy = m_creature->GetPositionY() + (distance*sin(m_creature->GetOrientation()));
 
-                Maiev->GetMap()->CreatureRelocation(m_creature, dx, dy, Maiev->GetPositionZ(), 0.0f);
-                Maiev->SendMonsterMove(dx, dy, Maiev->GetPositionZ(), 0, MONSTER_MOVE_NONE, 0);
+                Maiev->NearTeleportTo(dx, dy, Maiev->GetPositionZ(), 0.0f);
 
                 Maiev->CastSpell(Maiev, SPELL_TELEPORT_VISUAL, true);
                 Maiev->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->GetGUID());
@@ -1445,18 +1442,20 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
                     case 9:
                         if (AkamaGUID)
                         {
-                            Creature* Akama = ((Creature*)Unit::GetUnit((*m_creature), AkamaGUID));
-                            if (Akama)
+                            if (Creature* pAkama = m_creature->GetMap()->GetCreature(AkamaGUID))
                             {
                                 // Start attacking Akama
-                                AttackStart(Akama);
+                                AttackStart(pAkama);
 
                                 // Akama stop talk and start attack illidan
-                                ((npc_akama_illidanAI*)Akama->AI())->IsTalking = false;
-                                ((npc_akama_illidanAI*)Akama->AI())->AttackStart(m_creature);
-                                Akama->AddThreat(m_creature, 1000000.0f);
+                                if (npc_akama_illidanAI* pAkamaAI = dynamic_cast<npc_akama_illidanAI*>(pAkama->AI()))
+                                    pAkamaAI->IsTalking = false;
+
+                                pAkama->AI()->AttackStart(m_creature);
+                                pAkama->AddThreat(m_creature, 1000000.0f);
                             }
                         }
+
                         // We are now attackable!
                         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         debug_log("SD2: Black Temple: Illidan intro complete, players can attack Illidan.");
@@ -1464,7 +1463,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
                     case 11:
                         if (MaievGUID)
                         {
-                            Unit* Maiev = Unit::GetUnit((*m_creature), MaievGUID);
+                            Creature* Maiev = m_creature->GetMap()->GetCreature(MaievGUID);
                             if (Maiev)
                             {
                                 // Maiev is now visible
@@ -1481,7 +1480,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
                     case 14:
                         if (MaievGUID)
                         {
-                            Creature* Maiev = ((Creature*)Unit::GetUnit((*m_creature), MaievGUID));
+                            Creature* Maiev = m_creature->GetMap()->GetCreature(MaievGUID);
                             if (Maiev)
                             {
                                 Maiev->GetMotionMaster()->Clear(false);
@@ -1503,7 +1502,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
                         // Kill ourself.
                         if (MaievGUID)
                         {
-                            Creature* Maiev = ((Creature*)Unit::GetUnit((*m_creature), MaievGUID));
+                            Creature* Maiev = m_creature->GetMap()->GetCreature(MaievGUID);
                             if (Maiev)
                             {
                                 // Make Maiev leave
@@ -1531,7 +1530,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
             return;
 
         // If we are 'caged', then we shouldn't do anything such as cast spells or transform into Demon Form.
-        if (m_creature->HasAura(SPELL_CAGED, 0))
+        if (m_creature->HasAura(SPELL_CAGED, EFFECT_INDEX_0))
         {
             // Just so that he doesn't immediately enrage after he stops being caged.
             EnrageTimer = 40000;
@@ -1540,12 +1539,12 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
         }
 
         // Berserk Timer - flat 25 minutes
-        if (!m_creature->HasAura(SPELL_BERSERK, 0) && Phase != PHASE_DEMON_SEQUENCE)
+        if (!m_creature->HasAura(SPELL_BERSERK, EFFECT_INDEX_0) && Phase != PHASE_DEMON_SEQUENCE)
         {
             if (BerserkTimer < diff)
             {
                 DoScriptText(SAY_ENRAGE, m_creature);
-                DoCast(m_creature, SPELL_BERSERK, true);
+                DoCastSpellIfCan(m_creature, SPELL_BERSERK, CAST_TRIGGERED);
             }else BerserkTimer -= diff;
         }
 
@@ -1560,17 +1559,15 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
         }
 
         /** Signal to change to phase 2 **/
-        if (((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 65) && (Phase == PHASE_NORMAL))
+        if (m_creature->GetHealthPercent() < 65.0f && Phase == PHASE_NORMAL)
             EnterPhase2();
 
         /** Signal to summon Maiev **/
-        if (((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 30) && !MaievGUID &&
-            (Phase != PHASE_DEMON || Phase != PHASE_DEMON_SEQUENCE))
+        if (m_creature->GetHealthPercent() < 30.0f && !MaievGUID && (Phase != PHASE_DEMON || Phase != PHASE_DEMON_SEQUENCE))
             SummonMaiev();
 
         /** Time for the death speech **/
-        if ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth() < 1) && (!IsTalking) &&
-            (Phase != PHASE_DEMON || Phase != PHASE_DEMON_SEQUENCE))
+        if (m_creature->GetHealthPercent() < 1.0f && !IsTalking && (Phase != PHASE_DEMON || Phase != PHASE_DEMON_SEQUENCE))
             InitializeDeath();
 
         /***** Spells for Phase 1, 3 and 5 (Normal Form) ******/
@@ -1590,7 +1587,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
             {
                 if (ShearTimer < diff)
                 {
-                    DoCast(m_creature->getVictim(), SPELL_SHEAR);
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_SHEAR);
                     ShearTimer = urand(25000, 40000);
                     GlobalTimer += 2000;
                 }else ShearTimer -= diff;
@@ -1598,7 +1595,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
                 if (FlameCrashTimer < diff)
                 {
                     //It spawns multiple flames sometimes. Therefore, we'll do this manually.
-                    //DoCast(m_creature->getVictim(), SPELL_FLAME_CRASH);
+                    //DoCastSpellIfCan(m_creature->getVictim(), SPELL_FLAME_CRASH);
                     m_creature->SummonCreature(FLAME_CRASH, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 40000);
                     FlameCrashTimer = 35000;
                     GlobalTimer += 2000;
@@ -1607,8 +1604,8 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
                 if (ParasiticShadowFiendTimer < diff)
                 {
                     Unit* target = NULL;
-                    target = SelectUnit(SELECT_TARGET_RANDOM,1);
-                    if (target && target->isAlive() && !target->HasAura(SPELL_PARASITIC_SHADOWFIEND, 0))
+                    target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,1);
+                    if (target && target->isAlive() && !target->HasAura(SPELL_PARASITIC_SHADOWFIEND, EFFECT_INDEX_0))
                     {
                         Cast(target, SPELL_PARASITIC_SHADOWFIEND);
                         ParasiticShadowFiendTimer = 40000;
@@ -1617,7 +1614,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
 
                 if (DrawSoulTimer < diff)
                 {
-                    DoCast(m_creature->getVictim(), SPELL_DRAW_SOUL);
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_DRAW_SOUL);
                     DrawSoulTimer = 55000;
                     GlobalTimer += 3000;
                 }else DrawSoulTimer -= diff;
@@ -1660,8 +1657,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
                         {
                             if (FlameGUID[i])
                             {
-                                Unit* Flame = NULL;
-                                Flame = Unit::GetUnit((*m_creature), FlameGUID[i]);
+                                Creature* Flame = m_creature->GetMap()->GetCreature(FlameGUID[i]);
 
                                 // If the flame dies, or somehow the pointer becomes invalid, reset GUID to 0.
                                 if (!Flame || !Flame->isAlive())
@@ -1689,8 +1685,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
                         {
                             if (GlaiveGUID[i])
                             {
-                                Unit* Glaive = NULL;
-                                Glaive = Unit::GetUnit((*m_creature), GlaiveGUID[i]);
+                                Creature* Glaive = m_creature->GetMap()->GetCreature(GlaiveGUID[i]);
                                 if (Glaive)
                                 {
                                     // Make it look like the Glaive flies back up to us
@@ -1719,8 +1714,8 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
                         DoResetThreat();
 
                         // anndddd touchdown!
-                        m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
-                        m_creature->RemoveMonsterMoveFlag(MONSTER_MOVE_LEVITATING);
+                        m_creature->HandleEmote(EMOTE_ONESHOT_LAND);
+                        m_creature->RemoveSplineFlag(SPLINEFLAG_NO_SPLINE);
                         Phase = PHASE_NORMAL_2;
 
                         // We should let the raid fight us =)
@@ -1738,14 +1733,17 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
             {
                 if (FireballTimer < diff)
                 {
-                    Cast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_FIREBALL);
+                    Cast(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0), SPELL_FIREBALL);
                     FireballTimer = 5000;
                 }else FireballTimer -= diff;
 
                 if (DarkBarrageTimer < diff)
                 {
                     m_creature->InterruptNonMeleeSpells(false);
-                    DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_DARK_BARRAGE);
+
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                        DoCastSpellIfCan(pTarget, SPELL_DARK_BARRAGE);
+
                     DarkBarrageTimer = 35000;
                     GlobalTimer += 9000;
                 }else DarkBarrageTimer -= diff;
@@ -1772,9 +1770,9 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
 
             if (TransformTimer < diff)
             {
-                uint32 CurHealth = m_creature->GetHealth()*100 / m_creature->GetMaxHealth();
+                float CurHealth = m_creature->GetHealthPercent();
                 // Prevent Illidan from morphing if less than 32% or 5%, as this may cause issues with the phase transition or death speech
-                if ((CurHealth < 32 && !MaievGUID) || (CurHealth < 5))
+                if ((CurHealth < 32.0f && !MaievGUID) || CurHealth < 5.0f)
                     return;
 
                 Phase = PHASE_DEMON_SEQUENCE;               // Transform sequence
@@ -1812,7 +1810,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
                 for(uint8 i = 0; i < 4; ++i)
                 {
                     Unit* target = NULL;
-                    target = SelectUnit(SELECT_TARGET_RANDOM,0);
+                    target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0);
 
                     // only on players.
                     if (target && target->GetTypeId() == TYPEID_PLAYER)
@@ -1833,21 +1831,21 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
             {
                 if (ShadowBlastTimer < diff)
                 {
-                    Unit* target = SelectUnit(SELECT_TARGET_TOPAGGRO, 0);
+                    Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_TOPAGGRO, 0);
                     if (target && target->isAlive())
                     {
                         m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
-                        DoCast(target, SPELL_SHADOW_BLAST);
+                        DoCastSpellIfCan(target, SPELL_SHADOW_BLAST);
                         ShadowBlastTimer = 4000;
                         GlobalTimer += 1500;
                     }
-                    if (!m_creature->HasAura(SPELL_DEMON_FORM, 0))
-                        DoCast(m_creature, SPELL_DEMON_FORM, true);
+                    if (!m_creature->HasAura(SPELL_DEMON_FORM, EFFECT_INDEX_0))
+                        DoCastSpellIfCan(m_creature, SPELL_DEMON_FORM, CAST_TRIGGERED);
                 }else ShadowBlastTimer -= diff;
 
                 if (FlameBurstTimer < diff)
                 {
-                    DoCast(m_creature, SPELL_FLAME_BURST);
+                    DoCastSpellIfCan(m_creature, SPELL_FLAME_BURST);
                     FlameBurstTimer = 15000;
                 }else FlameBurstTimer -= diff;
             }else GlobalTimer -= diff;
@@ -1858,7 +1856,7 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
         {
             if (EnrageTimer < diff)
             {
-                DoCast(m_creature, SPELL_ENRAGE);
+                DoCastSpellIfCan(m_creature, SPELL_ENRAGE);
                 EnrageTimer = 40000;
                 CageTimer = 30000;
                 TransformTimer += 10000;
@@ -1869,8 +1867,8 @@ struct MANGOS_DLL_DECL boss_illidan_stormrageAI : public ScriptedAI
             {
                 if (MaievGUID)
                 {
-                    Unit* Maiev = Unit::GetUnit((*m_creature), MaievGUID);
-                    Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                    Creature* Maiev = m_creature->GetMap()->GetCreature(MaievGUID);
+                    Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
 
                     if (!Maiev || !target || (target->GetTypeId() != TYPEID_PLAYER))
                         return;
@@ -1922,31 +1920,44 @@ void npc_akama_illidanAI::BeginEvent(uint64 PlayerGUID)
     if (IllidanGUID)
     {
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        Creature* Illidan = ((Creature*)Unit::GetUnit((*m_creature), IllidanGUID));
-        if (Illidan)
+
+        if (Creature* pIllidan = m_creature->GetMap()->GetCreature(IllidanGUID))
         {
-            Illidan->RemoveAurasDueToSpell(SPELL_KNEEL);    // Time for Illidan to stand up.
-                                                            // First line of Akama-Illidan convo
-            ((boss_illidan_stormrageAI*)Illidan->AI())->TalkCount = 0;
-                                                            // Begin Talking
-            ((boss_illidan_stormrageAI*)Illidan->AI())->IsTalking = true;
-            ((boss_illidan_stormrageAI*)Illidan->AI())->AkamaGUID = m_creature->GetGUID();
-            m_creature->SetUInt64Value(UNIT_FIELD_TARGET, Illidan->GetGUID());
-            Illidan->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->GetGUID());
+            boss_illidan_stormrageAI* pIllidanAI = dynamic_cast<boss_illidan_stormrageAI*>(pIllidan->AI());
+
+            if (!pIllidanAI)
+                return;
+
+            // Time for Illidan to stand up.
+            pIllidan->RemoveAurasDueToSpell(SPELL_KNEEL);
+
+            // First line of Akama-Illidan convo
+
+            pIllidanAI->TalkCount = 0;
+
+            // Begin Talking
+            pIllidanAI->IsTalking = true;
+            pIllidanAI->AkamaGUID = m_creature->GetGUID();
+
+            m_creature->SetUInt64Value(UNIT_FIELD_TARGET, pIllidan->GetGUID());
+            pIllidan->SetUInt64Value(UNIT_FIELD_TARGET, m_creature->GetGUID());
+
             IsTalking = true;                               // Prevent Akama from starting to attack him
                                                             // Prevent players from talking again
+
             m_creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            Illidan->GetMotionMaster()->Clear(false);
-            Illidan->GetMotionMaster()->MoveIdle();
+
+            pIllidan->GetMotionMaster()->Clear(false);
+            pIllidan->GetMotionMaster()->MoveIdle();
+
             m_creature->GetMotionMaster()->Clear(false);
             m_creature->GetMotionMaster()->MoveIdle();
 
             if (PlayerGUID)
             {
-                Unit* pPlayer = Unit::GetUnit((*m_creature), PlayerGUID);
-                if (pPlayer)
-                    Illidan->AddThreat(pPlayer, 100.0f);
+                if (Player* pPlayer = m_creature->GetMap()->GetPlayer(PlayerGUID))
+                    pIllidan->AddThreat(pPlayer, 100.0f);
             }
         }
     }
@@ -1965,7 +1976,9 @@ bool GossipSelect_npc_akama_at_illidan(Player* pPlayer, Creature* pCreature, uin
     if (uiAction == GOSSIP_ACTION_INFO_DEF)                    // Time to begin the event
     {
         pPlayer->CLOSE_GOSSIP_MENU();
-        ((npc_akama_illidanAI*)pCreature->AI())->BeginDoorEvent(pPlayer);
+
+        if (npc_akama_illidanAI* pAkamaAI = dynamic_cast<npc_akama_illidanAI*>(pCreature->AI()))
+            pAkamaAI->BeginDoorEvent(pPlayer);
     }
     return true;
 }
@@ -1997,14 +2010,14 @@ struct MANGOS_DLL_DECL boss_maievAI : public ScriptedAI
                 IllidanGUID = m_pInstance->GetData64(DATA_ILLIDANSTORMRAGE);
         }else
         {
-            Creature* Illidan = NULL;
-            Illidan = ((Creature*)Unit::GetUnit((*m_creature), IllidanGUID));
+            Creature* Illidan = m_creature->GetMap()->GetCreature(IllidanGUID);
+
             if (!Illidan || !Illidan->isAlive() || Illidan->IsInEvadeMode())
             {
                 m_creature->SetVisibility(VISIBILITY_OFF);
                 m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             }
-            else if (Illidan && ((Illidan->GetHealth()*100 / Illidan->GetMaxHealth()) < 2))
+            else if (Illidan && Illidan->GetHealthPercent() < 2.0f)
                 return;
         }
 
@@ -2060,14 +2073,14 @@ struct MANGOS_DLL_DECL cage_trap_triggerAI : public ScriptedAI
         {
             if (who->GetEntry() == ILLIDAN_STORMRAGE)       // Check if who is Illidan
             {
-                if (!IllidanGUID && m_creature->IsWithinDistInMap(who, 3) && !who->HasAura(SPELL_CAGED, 0))
+                if (!IllidanGUID && m_creature->IsWithinDistInMap(who, 3) && !who->HasAura(SPELL_CAGED, EFFECT_INDEX_0))
                 {
                     IllidanGUID = who->GetGUID();
                     who->CastSpell(who, SPELL_CAGED, true);
                     DespawnTimer = 5000;
 
                     // Dispel his enrage
-                    if (who->HasAura(SPELL_ENRAGE, 0))
+                    if (who->HasAura(SPELL_ENRAGE, EFFECT_INDEX_0))
                         who->RemoveAurasDueToSpell(SPELL_ENRAGE);
 
                     if (GameObject* pCageTrap = m_creature->GetMap()->GetGameObject(CageTrapGUID))
@@ -2088,7 +2101,7 @@ struct MANGOS_DLL_DECL cage_trap_triggerAI : public ScriptedAI
 
         //if (IllidanGUID && !SummonedBeams)
         //{
-        //    if (Unit* Illidan = Unit::GetUnit(*m_creature, IllidanGUID)
+        //    if (Creature* pIllidan = m_creature->GetMap()->GetCreature(IllidanGUID)
         //    {
         //        //TODO: Find proper spells and properly apply 'caged' Illidan effect
         //    }
@@ -2110,7 +2123,9 @@ bool GOHello_cage_trap(Player* pPlayer, GameObject* pGo)
         return false;
     }
 
-    ((cage_trap_triggerAI*)pTrigger->AI())->Active = true;
+    if (cage_trap_triggerAI* pTriggerAI = dynamic_cast<cage_trap_triggerAI*>(pTrigger->AI()))
+        pTriggerAI->Active = true;
+
     pGo->SetGoState(GO_STATE_ACTIVE);
     return true;
 }
@@ -2144,7 +2159,8 @@ struct MANGOS_DLL_DECL flame_of_azzinothAI : public ScriptedAI
         //store the threat list in a different container
         for (ThreatList::const_iterator itr = tList.begin();itr != tList.end(); ++itr)
         {
-            Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+            Unit *target = m_creature->GetMap()->GetUnit((*itr)->getUnitGuid());
+
             //only on alive players
             if (target && target->isAlive() && target->GetTypeId() == TYPEID_PLAYER)
                 targets.push_back(target);
@@ -2158,8 +2174,8 @@ struct MANGOS_DLL_DECL flame_of_azzinothAI : public ScriptedAI
         Unit* target = (*targets.begin());
         if (target && (!m_creature->IsWithinDistInMap(target, 40)))
         {
-            DoCast(m_creature, SPELL_ENRAGE, true);
-            DoCast(target, SPELL_CHARGE);
+            DoCastSpellIfCan(m_creature, SPELL_ENRAGE, CAST_TRIGGERED);
+            DoCastSpellIfCan(target, SPELL_CHARGE);
         }
     }
 
@@ -2170,13 +2186,13 @@ struct MANGOS_DLL_DECL flame_of_azzinothAI : public ScriptedAI
 
         if (FlameBlastTimer < diff)
         {
-            DoCast(m_creature->getVictim(), SPELL_FLAME_BLAST);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_FLAME_BLAST);
             FlameBlastTimer = 30000;
         }else FlameBlastTimer -= diff;
 
         if (SummonBlazeTimer < diff)
         {
-            DoCast(m_creature, SPELL_BLAZE_SUMMON);
+            DoCastSpellIfCan(m_creature, SPELL_BLAZE_SUMMON);
             SummonBlazeTimer = urand(30000, 50000);
         }else SummonBlazeTimer -= diff;
 
@@ -2202,9 +2218,8 @@ struct MANGOS_DLL_DECL shadow_demonAI : public ScriptedAI
     {
         if (TargetGUID)
         {
-            Unit* target = Unit::GetUnit((*m_creature), TargetGUID);
-            if (target)
-                target->RemoveAurasDueToSpell(SPELL_PARALYZE);
+            if (Player* pPlayer = m_creature->GetMap()->GetPlayer(TargetGUID))
+                pPlayer->RemoveAurasDueToSpell(SPELL_PARALYZE);
         }
     }
 
@@ -2215,17 +2230,17 @@ struct MANGOS_DLL_DECL shadow_demonAI : public ScriptedAI
         // Only cast the below on players.
         if (m_creature->getVictim()->GetTypeId() != TYPEID_PLAYER) return;
 
-        if (!m_creature->getVictim()->HasAura(SPELL_PARALYZE, 0))
+        if (!m_creature->getVictim()->HasAura(SPELL_PARALYZE, EFFECT_INDEX_0))
         {
             TargetGUID = m_creature->getVictim()->GetGUID();
             m_creature->AddThreat(m_creature->getVictim(), 10000000.0f);
-            DoCast(m_creature, SPELL_SHADOW_DEMON_PASSIVE, true);
-            DoCast(m_creature->getVictim(), SPELL_PURPLE_BEAM, true);
-            DoCast(m_creature->getVictim(), SPELL_PARALYZE, true);
+            DoCastSpellIfCan(m_creature, SPELL_SHADOW_DEMON_PASSIVE, CAST_TRIGGERED);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_PURPLE_BEAM, CAST_TRIGGERED);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_PARALYZE, CAST_TRIGGERED);
         }
         // Kill our target if we're very close.
         if (m_creature->IsWithinDistInMap(m_creature->getVictim(), 3))
-            DoCast(m_creature->getVictim(), SPELL_CONSUME_SOUL);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_CONSUME_SOUL);
     }
 };
 
@@ -2250,7 +2265,7 @@ struct MANGOS_DLL_DECL flamecrashAI : public ScriptedAI
     {
         if (FlameCrashTimer < diff)
         {
-            DoCast(m_creature, SPELL_FLAME_CRASH_EFFECT);
+            DoCastSpellIfCan(m_creature, SPELL_FLAME_CRASH_EFFECT);
             FlameCrashTimer = 15000;
         }else FlameCrashTimer -= diff;
 
@@ -2281,8 +2296,8 @@ struct MANGOS_DLL_DECL mob_parasitic_shadowfiendAI : public ScriptedAI
             //Make sure our attack is ready and we aren't currently casting
             if (m_creature->isAttackReady() && !m_creature->IsNonMeleeSpellCasted(false))
             {
-                if (!m_creature->getVictim()->HasAura(SPELL_PARASITIC_SHADOWFIEND, 0))
-                    DoCast(m_creature->getVictim(), SPELL_PARASITIC_SHADOWFIEND, true);
+                if (!m_creature->getVictim()->HasAura(SPELL_PARASITIC_SHADOWFIEND, EFFECT_INDEX_0))
+                    DoCastSpellIfCan(m_creature->getVictim(), SPELL_PARASITIC_SHADOWFIEND, CAST_TRIGGERED);
 
                 m_creature->AttackerStateUpdate(m_creature->getVictim());
                 m_creature->resetAttackTimer();
@@ -2312,7 +2327,7 @@ struct MANGOS_DLL_DECL blazeAI : public ScriptedAI
     {
         if (BlazeTimer < diff)
         {
-            DoCast(m_creature, SPELL_BLAZE_EFFECT);
+            DoCastSpellIfCan(m_creature, SPELL_BLAZE_EFFECT);
             BlazeTimer = 15000;
         }else BlazeTimer -= diff;
 

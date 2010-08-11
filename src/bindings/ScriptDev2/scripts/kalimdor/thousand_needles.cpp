@@ -44,7 +44,7 @@ enum
     NPC_GALAK_ASS               = 10720
 };
 
-const float m_afGalakLoc[]= {-4867.387695, -1357.353760, -48.226 };
+const float m_afGalakLoc[] = {-4867.387695f, -1357.353760f, -48.226f};
 
 struct MANGOS_DLL_DECL npc_kanatiAI : public npc_escortAI
 {
@@ -91,7 +91,7 @@ bool QuestAccept_npc_kanati(Player* pPlayer, Creature* pCreature, const Quest* p
     if (pQuest->GetQuestId() == QUEST_PROTECT_KANATI)
     {
         if (npc_kanatiAI* pEscortAI = dynamic_cast<npc_kanatiAI*>(pCreature->AI()))
-            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest, true);
+            pEscortAI->Start(false, pPlayer->GetGUID(), pQuest, true);
     }
     return true;
 }
@@ -118,12 +118,12 @@ enum
 
 float m_afBanditLoc[6][6]=
 {
-    {-4905.479492, -2062.732666, 84.352},
-    {-4915.201172, -2073.528320, 84.733},
-    {-4878.883301, -1986.947876, 91.966},
-    {-4877.503906, -1966.113403, 91.859},
-    {-4767.985352, -1873.169189, 90.192},
-    {-4788.861328, -1888.007813, 89.888}
+    {-4905.479492f, -2062.732666f, 84.352f},
+    {-4915.201172f, -2073.528320f, 84.733f},
+    {-4878.883301f, -1986.947876f, 91.966f},
+    {-4877.503906f, -1966.113403f, 91.859f},
+    {-4767.985352f, -1873.169189f, 90.192f},
+    {-4788.861328f, -1888.007813f, 89.888f}
 };
 
 struct MANGOS_DLL_DECL npc_lakota_windsongAI : public npc_escortAI
@@ -177,7 +177,7 @@ bool QuestAccept_npc_lakota_windsong(Player* pPlayer, Creature* pCreature, const
         pCreature->setFaction(FACTION_ESCORT_H_NEUTRAL_ACTIVE);
 
         if (npc_lakota_windsongAI* pEscortAI = dynamic_cast<npc_lakota_windsongAI*>(pCreature->AI()))
-            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest);
+            pEscortAI->Start(false, pPlayer->GetGUID(), pQuest);
     }
     return true;
 }
@@ -198,9 +198,9 @@ enum
 
 float m_afWyvernLoc[3][3]=
 {
-    {-4990.606, -906.057, -5.343},
-    {-4970.241, -927.378, -4.951},
-    {-4985.364, -952.528, -5.199}
+    {-4990.606f, -906.057f, -5.343f},
+    {-4970.241f, -927.378f, -4.951f},
+    {-4985.364f, -952.528f, -5.199f}
 };
 
 struct MANGOS_DLL_DECL npc_paoka_swiftmountainAI : public npc_escortAI
@@ -249,7 +249,7 @@ bool QuestAccept_npc_paoka_swiftmountain(Player* pPlayer, Creature* pCreature, c
         pCreature->setFaction(FACTION_ESCORT_H_NEUTRAL_ACTIVE);
 
         if (npc_paoka_swiftmountainAI* pEscortAI = dynamic_cast<npc_paoka_swiftmountainAI*>(pCreature->AI()))
-            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest);
+            pEscortAI->Start(false, pPlayer->GetGUID(), pQuest);
     }
     return true;
 }
@@ -313,7 +313,7 @@ struct MANGOS_DLL_DECL npc_plucky_johnsonAI : public ScriptedAI
                 m_creature->setFaction(FACTION_FRIENDLY);
                 m_creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                 m_creature->CastSpell(m_creature, SPELL_PLUCKY_HUMAN, false);
-                m_creature->HandleEmoteCommand(EMOTE_ONESHOT_WAVE);
+                m_creature->HandleEmote(EMOTE_ONESHOT_WAVE);
             }
         }
     }

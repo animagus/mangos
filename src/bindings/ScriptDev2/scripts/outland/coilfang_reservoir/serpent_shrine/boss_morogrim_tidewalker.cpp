@@ -132,13 +132,13 @@ struct MANGOS_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
     {
         if (pSummoned->GetEntry() == NPC_TIDEWALKER_LURKER)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 pSummoned->AI()->AttackStart(pTarget);
         }
 
         if (pSummoned->GetEntry() == NPC_WATER_GLOBULE)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 pSummoned->GetMotionMaster()->MoveFollow(pTarget, 0.0f, 0.0f);
         }
     }
@@ -154,7 +154,7 @@ struct MANGOS_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
         {
             if (!m_bEarthquake)
             {
-                DoCast(m_creature->getVictim(), SPELL_EARTHQUAKE);
+                DoCastSpellIfCan(m_creature->getVictim(), SPELL_EARTHQUAKE);
                 m_bEarthquake = true;
                 m_uiEarthquake_Timer = 5000;
             }
@@ -186,7 +186,7 @@ struct MANGOS_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
         //m_uiTidalWave_Timer
         if (m_uiTidalWave_Timer < uiDiff)
         {
-            DoCast(m_creature->getVictim(), SPELL_TIDAL_WAVE);
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_TIDAL_WAVE);
             m_uiTidalWave_Timer = 20000;
         }else m_uiTidalWave_Timer -= uiDiff;
 
@@ -198,7 +198,7 @@ struct MANGOS_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
                 //Teleport 4 players under the waterfalls
                 for(uint8 i = 0; i < 4; ++i)
                 {
-                    Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 1);
+                    Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 1);
 
                     if (pTarget && pTarget->GetTypeId() == TYPEID_PLAYER && !pTarget->HasAuraType(SPELL_AURA_MOD_STUN) && pTarget->IsWithinDistInMap(m_creature, 45.0f))
                     {
@@ -219,7 +219,7 @@ struct MANGOS_DLL_DECL boss_morogrim_tidewalkerAI : public ScriptedAI
             }else m_uiWateryGrave_Timer -= uiDiff;
 
             //Start Phase2
-            if ((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 25)
+            if (m_creature->GetHealthPercent() < 25.0f)
                 m_bPhase2 = true;
         }
         else

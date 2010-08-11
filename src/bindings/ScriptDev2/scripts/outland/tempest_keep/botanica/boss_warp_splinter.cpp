@@ -39,7 +39,7 @@ struct MANGOS_DLL_DECL mob_treantAI  : public ScriptedAI
 
     void Reset()
     {
-        m_creature->SetSpeed(MOVE_RUN, 0.5f, true);
+        m_creature->SetSpeedRate(MOVE_RUN, 0.5f);
     }
 
     void MoveInLineOfSight(Unit *who) { }
@@ -75,12 +75,12 @@ struct MANGOS_DLL_DECL mob_treantAI  : public ScriptedAI
 
 float treant_pos[6][3] =
 {
-    {24.301233, 427.221100, -27.060635},
-    {16.795492, 359.678802, -27.355425},
-    {53.493484, 345.381470, -26.196192},
-    {61.867096, 439.362732, -25.921030},
-    {109.861877, 423.201630, -27.356019},
-    {106.780159, 355.582581, -27.593357}
+    {24.301233f, 427.221100f, -27.060635f},
+    {16.795492f, 359.678802f, -27.355425f},
+    {53.493484f, 345.381470f, -26.196192f},
+    {61.867096f, 439.362732f, -25.921030f},
+    {109.86187f, 423.201630f, -27.356019f},
+    {106.78015f, 355.582580f, -27.593357f}
 };
 
 struct MANGOS_DLL_DECL boss_warp_splinterAI : public ScriptedAI
@@ -113,7 +113,7 @@ struct MANGOS_DLL_DECL boss_warp_splinterAI : public ScriptedAI
         for(int i = 0; i < 6; ++i)
             Treant_GUIDs[i] = 0;
 
-        m_creature->SetSpeed(MOVE_RUN, 0.7f, true);
+        m_creature->SetSpeedRate(MOVE_RUN, 0.7f);
     }
 
     void Aggro(Unit *who)
@@ -143,13 +143,14 @@ struct MANGOS_DLL_DECL boss_warp_splinterAI : public ScriptedAI
             //float Z = m_creature->GetPositionZ();
             float O = - m_creature->GetAngle(X,Y);
 
-            Creature* pTreant = m_creature->SummonCreature(CREATURE_TREANT,treant_pos[i][0],treant_pos[i][1],treant_pos[i][2],O,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,40000);
-            if (pTreant)
+            if (Creature* pTreant = m_creature->SummonCreature(CREATURE_TREANT,treant_pos[i][0],treant_pos[i][1],treant_pos[i][2],O,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,40000))
             {
                 //pTreant->GetMotionMaster()->Mutate(new TargetedMovementGenerator<Creature>(*m_creature));
                 pTreant->AddThreat(m_creature);
                 Treant_GUIDs[i] = pTreant->GetGUID();
-                ((mob_treantAI*)pTreant->AI())->WarpGuid = m_creature->GetGUID();
+
+                if (mob_treantAI* pTreantAI = dynamic_cast<mob_treantAI*>(pTreant->AI()))
+                    pTreantAI->WarpGuid = m_creature->GetGUID();
             }
         }
 
@@ -161,7 +162,7 @@ struct MANGOS_DLL_DECL boss_warp_splinterAI : public ScriptedAI
     {
         for(int i=0; i<6; ++i)
         {
-            Unit *pTreant = Unit::GetUnit(*m_creature, Treant_GUIDs[i]);
+            Creature* pTreant = m_creature->GetMap()->GetCreature(Treant_GUIDs[i]);
 
             if (pTreant)
             {
@@ -186,14 +187,14 @@ struct MANGOS_DLL_DECL boss_warp_splinterAI : public ScriptedAI
         //Check for War Stomp
         if (War_Stomp_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),WAR_STOMP);
+            DoCastSpellIfCan(m_creature->getVictim(),WAR_STOMP);
             War_Stomp_Timer = urand(25000, 40000);
         } else War_Stomp_Timer -= diff;
 
         //Check for Arcane Volley
         if (Arcane_Volley_Timer < diff)
         {
-            DoCast(m_creature->getVictim(),ARCANE_VOLLEY);
+            DoCastSpellIfCan(m_creature->getVictim(),ARCANE_VOLLEY);
             Arcane_Volley_Timer = urand(20000, 35000);
         } else Arcane_Volley_Timer -= diff;
 
