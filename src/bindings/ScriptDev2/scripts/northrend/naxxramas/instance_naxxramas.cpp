@@ -646,7 +646,7 @@ InstanceData* GetInstanceData_naxxramas(Map* map)
     return new instance_naxxramas(map);
 }
 
-bool AreaTrigger_at_frostwyrm_lair(Player* pPlayer, AreaTriggerEntry* pAt)
+bool AreaTrigger_at_frostwyrm_lair(Player* pPlayer, AreaTriggerEntry const* pAt)
 {
     if (ScriptedInstance* pInstance = (ScriptedInstance*)pPlayer->GetInstanceData())
     {

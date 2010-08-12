@@ -598,7 +598,7 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
             }
 
             if (!m_bInMeleeRange)
-                DoCast(SelectUnit(SELECT_TARGET_TOPAGGRO,0), SPELL_BALL_LIGHTNING);
+                DoCast(m_creature->SelectAttackingTarget(ATTACKING_TARGET_TOPAGGRO,0), SPELL_BALL_LIGHTNING);
 
             RangeCheck_Timer = 2000;
         }else RangeCheck_Timer -= uiDiff;

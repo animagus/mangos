@@ -68,10 +68,10 @@ enum
 
 float fCoord[4][4] =
 {
-    {296.498169,-346.462433,90.547546,0},
-    {299.563782,-343.736572,90.559288,3.93},
-    {293.811676,-343.331238,90.529503,5.340091},
-    {296.490417,-349.221039,90.5550446,1.578029},
+    {296.498169f,-346.462433f,90.547546f,0},
+    {299.563782f,-343.736572f,90.559288f,3.93f},
+    {293.811676f,-343.331238f,90.529503f,5.340091f},
+    {296.490417f,-349.221039f,90.5550446f,1.578029f},
 };
 
 /*######
@@ -148,7 +148,7 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
                 m_pInstance->SetData(TYPE_SVALA, SPECIAL);
 
                 float fX, fY, fZ;
-                m_creature->GetClosePoint(fX, fY, fZ, m_creature->GetObjectSize(), 16.0f, 0.0f);
+                m_creature->GetClosePoint(fX, fY, fZ, m_creature->GetObjectScale(), 16.0f, 0.0f);
 
                 // we assume m_creature is spawned in proper location
                 m_creature->SummonCreature(NPC_ARTHAS_IMAGE, fX, fY, fZ, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 60000);
@@ -162,8 +162,8 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
 
     void Aggro(Unit* pWho)
     {
-        if (m_creature->HasMonsterMoveFlag(MONSTER_MOVE_SPLINE))
-            m_creature->RemoveMonsterMoveFlag(MONSTER_MOVE_SPLINE);
+        if (m_creature->HasSplineFlag(SPLINEFLAG_TRAJECTORY))
+            m_creature->RemoveSplineFlag(SPLINEFLAG_TRAJECTORY);
 
         DoScriptText(SAY_AGGRO, m_creature);
     }
@@ -218,7 +218,7 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
         float fX, fZ, fY;
         m_creature->GetRespawnCoord(fX, fY, fZ);
 
-        m_creature->AddMonsterMoveFlag(MONSTER_MOVE_SPLINE);
+        m_creature->AddSplineFlag(SPLINEFLAG_TRAJECTORY);
 
         m_creature->SendMonsterMoveWithSpeed(fX, fY, fZ + 5.0f, m_uiIntroTimer);
         m_creature->GetMap()->CreatureRelocation(m_creature, fX, fY, fZ + 5.0f, m_creature->GetOrientation());
@@ -325,7 +325,7 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
         if(m_uiSacrificeTimer < uiDiff)
         {
             m_uiPlayerGUID = 0;
-            if(Unit* pPlayer = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if(Unit* pPlayer = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
             {
                 m_uiPlayerGUID = pPlayer->GetGUID();
                 DoTeleportPlayer(pPlayer, fCoord[0][0], fCoord[0][1], fCoord[0][2], pPlayer->GetOrientation());
@@ -390,7 +390,7 @@ CreatureAI* GetAI_boss_svala(Creature* pCreature)
     return new boss_svalaAI(pCreature);
 }
 
-bool AreaTrigger_at_svala_intro(Player* pPlayer, AreaTriggerEntry* pAt)
+bool AreaTrigger_at_svala_intro(Player* pPlayer, AreaTriggerEntry const* pAt)
 {
     if (ScriptedInstance* pInstance = (ScriptedInstance*)pPlayer->GetInstanceData())
     {

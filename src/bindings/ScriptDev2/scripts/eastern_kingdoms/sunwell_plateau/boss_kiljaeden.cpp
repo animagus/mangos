@@ -23,7 +23,6 @@ SDCategory: Sunwell_Plateau
 EndScriptData */
 #include "precompiled.h"
 #include "def_sunwell_plateau.h"
-
 enum
 {
     /*** Speech and sounds***/
@@ -206,7 +205,7 @@ struct MANGOS_DLL_DECL mob_kalecgosAI : public ScriptedAI
         FindOrbs();
 
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-        m_creature->AddMonsterMoveFlag(MONSTER_MOVE_LEVITATING);
+        m_creature->AddSplineFlag(SPLINEFLAG_FLYING);
     }
 
     void UpdateAI(const uint32 diff) {
@@ -346,7 +345,7 @@ struct MANGOS_DLL_DECL mob_shield_orbAI : public ScriptedAI
         if(ui_ShadowBoltTimer < diff)
         {
         	for(uint8 i = 0; i < rand()%3; ++i)
-                DoCast(SelectUnit(SELECT_TARGET_RANDOM,0), SPELL_SHADOW_BOLT);
+                DoCast(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0), SPELL_SHADOW_BOLT);
             ui_ShadowBoltTimer = 1000 + rand()%3000;
         }else ui_ShadowBoltTimer -= diff;
 
@@ -354,7 +353,7 @@ struct MANGOS_DLL_DECL mob_shield_orbAI : public ScriptedAI
         {
             if (m_pInstance)
             {
-                if(Creature* pKiljaeden = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(TYPE_KILJAEDEN))))
+                if(Creature* pKiljaeden = m_pInstance->instance->GetCreature(m_pInstance->GetData64(TYPE_KILJAEDEN)))
                 {
                     float angle = (M_PI / 10) * ui_MovingSteps;
                     float X = pKiljaeden->GetPositionX() + 22 * cos(angle);
@@ -494,7 +493,7 @@ struct MANGOS_DLL_DECL mob_sinister_reflectionAI : public ScriptedAI
                     ui_WindClip_Timer = 1100;
                 } else ui_WindClip_Timer -= diff;
 
-                if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE && b_needmove)
+                if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE && b_needmove)
                 {
                     //Drop current movement gen
                     m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim(), 14.0f, ((float)10/180)*M_PI);
@@ -540,7 +539,7 @@ struct MANGOS_DLL_DECL mob_sinister_reflectionAI : public ScriptedAI
             {
                 m_creature->InterruptNonMeleeSpells(true);
                 std::list<Creature *> targets = DoFindFriendlyMissingBuff(40.0f, SPELL_SINISTER_PRIEST_RENEW);
-                if( !(m_creature->HasAura(SPELL_SINISTER_PRIEST_RENEW, 0) || m_creature->HasAura(SPELL_SINISTER_PRIEST_RENEW, 1) || m_creature->HasAura(SPELL_SINISTER_PRIEST_RENEW, 2)))
+                if( !(m_creature->HasAura(SPELL_SINISTER_PRIEST_RENEW, SpellEffectIndex(0)) || m_creature->HasAura(SPELL_SINISTER_PRIEST_RENEW, SpellEffectIndex(1)) || m_creature->HasAura(SPELL_SINISTER_PRIEST_RENEW, SpellEffectIndex(3))))
                 {
                     std::list<Creature *>::iterator c = targets.begin();
                     uint32 n;
@@ -587,7 +586,7 @@ struct MANGOS_DLL_DECL mob_sinister_reflectionAI : public ScriptedAI
             if(ui_Curse_Timer < diff)
             {
                 m_creature->InterruptNonMeleeSpells(true);
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_SINISTER_WARLOCK_CURSE);
                 ui_Curse_Timer = 2000 + rand()%4500;
             } else ui_Curse_Timer -= diff;
@@ -697,11 +696,11 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
     void CastSinisterReflection()
     {
 //        for (uint8 i = 0; i < 4; ++i) // disadvantage is it may be duplicated target
-//            DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_SINISTER_REFLECTION);
+//            DoCast(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0), SPELL_SINISTER_REFLECTION);
         // workaround
         for (uint8 i = 0; i < 4; ++i)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
             {
                 Unit* pSummon = pTarget->SummonCreature(25708, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 45000);
                 pSummon->SetDisplayId(pTarget->GetDisplayId());
@@ -747,7 +746,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
         if(ui_LegionLightning_Timer < diff) 
         {
             m_creature->InterruptNonMeleeSpells(true);
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_LEGION_LIGHTNING);
+            DoCast(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0), SPELL_LEGION_LIGHTNING);
             ui_LegionLightning_Timer = (ui_Phase == PHASE_SACRIFICE) ? 18000 : 30000; // 18 seconds in PHASE_SACRIFICE
         }else ui_LegionLightning_Timer -= diff;
 
@@ -755,7 +754,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
         if(ui_FireBloom_Timer < diff)
         {
             m_creature->InterruptNonMeleeSpells(true);
-            m_creature->CastSpell(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_FIRE_BLOOM, false);
+            m_creature->CastSpell(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0), SPELL_FIRE_BLOOM, false);
             ui_FireBloom_Timer = (ui_Phase == PHASE_SACRIFICE) ? 25000 : 40000; // 25 seconds in PHASE_SACRIFICE
         }else ui_FireBloom_Timer -= diff;
 
@@ -779,7 +778,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
             CastSinisterReflection();
 
             // Shadow Spike
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_SHADOW_SPIKE);
+            DoCast(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0), SPELL_SHADOW_SPIKE);
 
             ui_SoulFlay_Timer         = 30000; // Don't let other spells
             ui_LegionLightning_Timer += 30000; // interrupt Shadow Spikes
@@ -790,7 +789,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
             ui_ShadowSpikeCount      = 30000; // shadow spike visual timer
 
             // Active orb after 35 seconds
-            if (Creature* pKalecgos = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_KALECGOS))))
+            if (Creature* pKalecgos = m_pInstance->instance->GetCreature(m_pInstance->GetData64(DATA_KALECGOS)))
                 ((mob_kalecgosAI*)pKalecgos->AI())->ui_EmpowerTimer = 35000;
 
             ui_Phase = PHASE_DARKNESS;
@@ -802,7 +801,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
             if(ui_ShadowSpike_Timer < diff)
             {
                 // workaround
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                     m_creature->CastSpell(pTarget, SPELL_SHADOW_SPIKE_VISUAL, true);
 
                 ui_ShadowSpike_Timer = 5000;
@@ -813,8 +812,8 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
         if(ui_FlameDart_Timer < diff)
         {
             m_creature->InterruptNonMeleeSpells(true);
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_FLAME_DART);
-            //m_creature->CastSpell(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_FLAME_DART, true);
+            DoCast(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0), SPELL_FLAME_DART);
+            //m_creature->CastSpell(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0), SPELL_FLAME_DART, true);
             ui_FlameDart_Timer = 60000;
         }else ui_FlameDart_Timer -= diff;
 
@@ -864,7 +863,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
             CastSinisterReflection();
 
             // Shadow Spike
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_SHADOW_SPIKE);
+            DoCast(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0), SPELL_SHADOW_SPIKE);
 
             ui_SoulFlay_Timer         = 30000; // Don't let other spells
             ui_LegionLightning_Timer += 30000; // interrupt Shadow Spikes
@@ -876,7 +875,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
             ui_ShadowSpikeCount      = 30000; // shadow spike visual timer
 
             // Active orb after 35 seconds
-            if (Creature* pKalecgos = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_KALECGOS))))
+            if (Creature* pKalecgos = m_pInstance->instance->GetCreature(m_pInstance->GetData64(DATA_KALECGOS)))
                 ((mob_kalecgosAI*)pKalecgos->AI())->ui_EmpowerTimer = 35000;
 
             ui_Phase = PHASE_ARMAGEDDON;
@@ -886,7 +885,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
         // Armageddon
         if(ui_Armageddon_Timer < diff)
         {
-            if(Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if(Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
             {
                 float x, y, z;
                 pTarget->GetPosition(x, y, z);
@@ -912,7 +911,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
             CastSinisterReflection();
 
             // Shadow Spike
-            DoCast(SelectUnit(SELECT_TARGET_RANDOM, 0), SPELL_SHADOW_SPIKE);
+            DoCast(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0), SPELL_SHADOW_SPIKE);
 
             ui_SoulFlay_Timer         = 30000; // Don't let other spells
             ui_LegionLightning_Timer += 30000; // interrupt Shadow Spikes
@@ -924,7 +923,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
             ui_ShadowSpikeCount      = 30000; // shadow spike visual timer
 
             // Active orb after 35 seconds
-            if (Creature* pKalecgos = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_KALECGOS))))
+            if (Creature* pKalecgos = m_pInstance->instance->GetCreature(m_pInstance->GetData64(DATA_KALECGOS)))
                 ((mob_kalecgosAI*)pKalecgos->AI())->ui_EmpowerTimer = 35000;
 
             ui_Phase = PHASE_SACRIFICE;
@@ -1010,10 +1009,10 @@ struct MANGOS_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementAI
         {
             m_pInstance->SetData(TYPE_KILJAEDEN, NOT_STARTED);
 
-            if (Creature* pKalecgosAnveena = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_KALECGOS))))
+            if (Creature* pKalecgosAnveena = m_pInstance->instance->GetCreature(m_pInstance->GetData64(DATA_KALECGOS)))
                 pKalecgosAnveena->Respawn();
 
-            if (Creature* pKalecgos = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_KALECGOS))))
+            if (Creature* pKalecgos = m_pInstance->instance->GetCreature(m_pInstance->GetData64(DATA_KALECGOS)))
                 ((mob_kalecgosAI*)pKalecgos->AI())->Reset();
         }
     }
@@ -1044,7 +1043,7 @@ struct MANGOS_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementAI
             	FindHandDeceivers();
                 for(std::list<uint64>::iterator itr = ui_HandDeceivers.begin(); itr != ui_HandDeceivers.end(); ++itr)
                 {
-                    if (Creature* pCreature = ((Creature*)Unit::GetUnit(*m_creature, *itr)))
+                    if (Creature* pCreature = m_creature->GetMap()->GetCreature(*itr))
                     {
                         // alive & no target
                         if (pCreature->isAlive() && !pCreature->getVictim())
@@ -1073,12 +1072,12 @@ struct MANGOS_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementAI
                 if (pTarget)
                 {
                     for(uint8 i = 0; i < 2; ++i)
-                        if (Unit* pDeciver = Unit::GetUnit((*m_creature), ui_DeciverGUID[i]))
+                        if (Unit* pDeciver = m_creature->GetMap()->GetUnit(ui_DeciverGUID[i]))
                             ((Creature*)pDeciver)->AI()->AttackStart(pTarget);
 
                     if (m_pInstance)
-                        if (Creature* pAnveena = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_ANVEENA))))
-                            pAnveena->Relocate(1698.45, 628.03, 28.1989);
+                        if (Creature* pAnveena = m_pInstance->instance->GetCreature(m_pInstance->GetData64(DATA_ANVEENA)))
+                            pAnveena->Relocate(1698.45f, 628.03f, 28.1989f);
                             //pAnveena->GetMotionMaster()->MovePoint(0, 1698.45, 628.03, 70.1989);
 
                     //m_creature->SetInCombatWithZone();
@@ -1088,7 +1087,7 @@ struct MANGOS_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementAI
                 else if (!pTarget && !b_DevicerChanneling)
                 {
                     for(uint8 i = 0; i < 3; ++i)
-                        if (Unit* pDeciver = Unit::GetUnit((*m_creature), ui_DeciverGUID[i]))
+                        if (Unit* pDeciver = m_creature->GetMap()->GetUnit(ui_DeciverGUID[i]))
                             pDeciver->CastSpell(pDeciver, SPELL_SHADOW_CHANNELING, false);
                     b_DevicerChanneling = true;
                 }
@@ -1102,7 +1101,7 @@ struct MANGOS_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementAI
                 FindHandDeceivers();
                 for(std::list<uint64>::iterator itr = ui_HandDeceivers.begin(); itr != ui_HandDeceivers.end(); ++itr)
                 {
-                    if (Creature* pCreature = ((Creature*)Unit::GetUnit(*m_creature, *itr)))
+                    if (Unit* pCreature = m_creature->GetMap()->GetUnit(*itr))
                     {
                         // if any is alive
                         if (pCreature->isAlive())
@@ -1145,7 +1144,7 @@ struct MANGOS_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementAI
 
             if (ui_Phase > PHASE_NORMAL)
             {
-                if(Creature* pKiljaeden = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(TYPE_KILJAEDEN))))
+                if(Creature* pKiljaeden = m_pInstance->instance->GetCreature(m_pInstance->GetData64(TYPE_KILJAEDEN)))
                 {
                     if (pKiljaeden->isAlive())
                     	if (m_pInstance && m_pInstance->GetData(TYPE_KILJAEDEN) == NOT_STARTED)
@@ -1161,9 +1160,9 @@ struct MANGOS_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementAI
             // Anveena and Kil'jaeden spawn check
             if (m_pInstance)
             {
-                Creature* pKiljaeden = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(TYPE_KILJAEDEN)));
-                Creature* pAnveena = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_ANVEENA)));
-                Creature* pKalecgosAnveena = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_KALECGOS)));
+                Creature* pKiljaeden = m_pInstance->instance->GetCreature(m_pInstance->GetData64(TYPE_KILJAEDEN));
+                Creature* pAnveena = m_pInstance->instance->GetCreature(m_pInstance->GetData64(DATA_ANVEENA));
+                Creature* pKalecgosAnveena = m_pInstance->instance->GetCreature(m_pInstance->GetData64(DATA_KALECGOS));
 
                 if (pKiljaeden && pKiljaeden->isAlive() && m_pInstance->GetData(TYPE_KILJAEDEN) == NOT_STARTED)
                 {
@@ -1328,10 +1327,10 @@ struct MANGOS_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementAI
                     if (pAnveena && pAnveena->isAlive() && b_AnveenaSpellCheck == false)
                     {
                         DoCast(m_creature, SPELL_ANVEENA_ENERGY_DRAIN);
-                        pAnveena->AddMonsterMoveFlag(MONSTER_MOVE_LEVITATING);
+                        pAnveena->AddSplineFlag(SPLINEFLAG_FLYING);
                         pAnveena->CastSpell(pAnveena, SPELL_ANVEENA_PRISON, true);
                         //pAnveena->GetMotionMaster()->MovePoint(0, 1698.45, 628.03, 70.1989);
-                        pAnveena->Relocate(1698.45, 628.03, 28.1989);
+                        pAnveena->Relocate(1698.45f, 628.03f, 28.1989f);
                         b_AnveenaSpellCheck = true;
                     }
                 }
@@ -1413,7 +1412,7 @@ struct MANGOS_DLL_DECL mob_hand_of_the_deceiverAI : public ScriptedAI
             return;
 
         // Gain Shadow Infusion at 20% health
-        if(((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 20) && !m_creature->HasAura(SPELL_SHADOW_INFUSION, 0))
+        if(((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 20) && !m_creature->HasAura(SPELL_SHADOW_INFUSION, SpellEffectIndex(0)))
             DoCast(m_creature, SPELL_SHADOW_INFUSION, true);
 
         // Shadow Bolt Volley - Shoots Shadow Bolts at all enemies within 30 yards, for ~2k Shadow damage.
@@ -1470,7 +1469,7 @@ struct MANGOS_DLL_DECL mob_felfire_portalAI : public Scripted_NoMovementAI
         if(ui_SpawnFiend_Timer < diff)
         {
             if(Creature* pFiend = DoSpawnCreature(NPC_VOLATILE_FELFIRE_FIEND, 0, 0, 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 20000))
-                pFiend->AddThreat(SelectUnit(SELECT_TARGET_RANDOM,0), 100000.0f);
+                pFiend->AddThreat(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0), 100000.0f);
             ui_SpawnFiend_Timer = 4000 + rand()%4000;
         }else ui_SpawnFiend_Timer -= diff;
     }
@@ -1505,8 +1504,9 @@ struct MANGOS_DLL_DECL mob_blue_flightAI : public ScriptedAI
 
     void JustDied(Unit *who)
     {
-        Unit *player = ((TemporarySummon *)m_creature)->GetSummoner();
-        if(player)
+        TemporarySummon* summon = (TemporarySummon*)m_creature;
+
+        if (Unit* player = m_creature->GetMap()->GetUnit(summon->GetSummonerGuid()))
         {
             player->RemoveAurasDueToSpell(45833);
             player->RemoveAurasDueToSpell(45838);
@@ -1646,7 +1646,7 @@ bool GOHello_orb_of_the_blue_flight(Player* pPlayer, GameObject* pGo)
 
         pGo->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
 
-        if (Creature* pKalecgos = ((Creature*)Unit::GetUnit((*pGo), m_pInstance->GetData64(DATA_KALECGOS))))
+        if (Creature* pKalecgos = pGo->GetMap()->GetCreature(m_pInstance->GetData64(DATA_KALECGOS)))
         {
             mob_kalecgosAI *pKalecgosAI = ((mob_kalecgosAI*)pKalecgos->AI());
             Unit *pOrbVisual = pKalecgosAI->pOrbVisuals[pKalecgosAI->ui_OrbsEmpowered - 1];

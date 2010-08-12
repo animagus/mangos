@@ -204,16 +204,16 @@ struct LocationsXY
 };
 static Locations GOPositions[]=
 {
-    {754.346, 1300.87, 256.249, 3.14159},   // Raid Platform position
-    {754.731, 1300.12, 266.171, 5.01343},   // Focusing iris
-    {724.684, 1332.92, 267.234, -0.802851}, // Exit Portal
+    {754.346f, 1300.87f, 256.249f, 3.14159f},   // Raid Platform position
+    {754.731f, 1300.12f, 266.171f, 5.01343f},   // Focusing iris
+    {724.684f, 1332.92f, 267.234f, -0.802851f}, // Exit Portal
 };
 static LocationsXY SparkLoc[]=
 {
-    {652.417, 1200.52},
-    {847.67, 1408.05},
-    {647.675, 1403.8},
-    {843.182, 1215.42},
+    {652.417f, 1200.52f},
+    {847.67f, 1408.05f},
+    {647.675f, 1403.8f},
+    {843.182f, 1215.42f},
 };
 static LocationsXY VortexLoc[]=
 {
@@ -242,8 +242,8 @@ static LocationsXY VortexLoc[]=
 #define MAX_VORTEX              21
 #define VORTEX_Z                268
 
-#define FLOOR_Z                 269.17
-#define AIR_Z                   297.24   
+#define FLOOR_Z                 269.17f
+#define AIR_Z                   297.24f   
 /*######
 ## boss_malygos
 ######*/
@@ -376,7 +376,7 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
             m_creature->RemoveAllAuras();
             SetCombatMovement(false);
 
-            if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE)
+            if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
                 m_creature->GetMotionMaster()->MovementExpired();
 
             DespawnCreatures(NPC_SURGE_OF_POWER, 120.0f);
@@ -476,7 +476,7 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
         else
         {
             m_creature->GetMap()->CreatureRelocation(m_creature, x, y, z, m_creature->GetOrientation());
-            m_creature->SendMonsterMove(x, y, z, 0, MONSTER_MOVE_FLY, 1);
+            m_creature->SendMonsterMove(x, y, z, SPLINETYPE_FACINGTARGET, SPLINEFLAG_FLYING, 1);
         }
     }
     void DoVortex(uint8 phase)
@@ -553,7 +553,7 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
             {
                 pSpark->CastSpell(pSpark, SPELL_POWER_SPARK_VISUAL, false);
                 pSpark->GetMotionMaster()->MoveFollow(m_creature, 0, 0);
-                //m_creature->AddMonsterMoveFlag(MONSTER_MOVE_SPLINE_FLY);
+                //m_creature->AddSplineFlag(SPLINEFLAG_TRAJECTORY_FLY);
                 m_lSparkGUIDList.push_back(pSpark->GetGUID());
             }
         }
@@ -596,7 +596,7 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
             uint32 x = urand(SHELL_MIN_X, SHELL_MAX_X);
             uint32 y = urand(SHELL_MIN_Y, SHELL_MAX_Y);
             if(Creature *pScion = m_creature->SummonCreature(NPC_SCION_OF_ETERNITY, x,y, m_creature->getVictim()->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 30000))
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                     pScion->AI()->AttackStart(pTarget);
         }       
     }
@@ -1004,7 +1004,7 @@ struct MANGOS_DLL_DECL mob_power_sparkAI : public ScriptedAI
         pMalygos = GetClosestCreatureWithEntry(m_creature, NPC_MALYGOS, 150.0f);
         m_creature->SetUInt32Value(UNIT_FIELD_BYTES_0, 50331648);
         m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 50331648);
-        m_creature->AddMonsterMoveFlag(MONSTER_MOVE_FLY);
+        m_creature->AddSplineFlag(SPLINEFLAG_FLYING);
         //WorldPacket heart;
         //m_creature->BuildHeartBeatMsg(&heart);
         //m_creature->SendMessageToSet(&heart, false);
@@ -1033,7 +1033,7 @@ struct MANGOS_DLL_DECL mob_power_sparkAI : public ScriptedAI
             m_creature->AttackStop();
             SetCombatMovement(false);
 
-            if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == TARGETED_MOTION_TYPE)
+            if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
                 m_creature->GetMotionMaster()->MovementExpired();
 
             uiDamage = 0;
@@ -1090,9 +1090,9 @@ struct MANGOS_DLL_DECL mob_scion_of_eternityAI : public ScriptedAI
 
     void Reset()
     {
-        m_creature->SetSpeed(MOVE_WALK, 3.5f, true);
-        m_creature->SetSpeed(MOVE_RUN, 3.5f, true);
-        m_creature->SetSpeed(MOVE_FLIGHT, 3.5f, true);
+        m_creature->SetSpeedRate(MOVE_WALK, 3.5f, true);
+        m_creature->SetSpeedRate(MOVE_RUN, 3.5f, true);
+        m_creature->SetSpeedRate(MOVE_FLIGHT, 3.5f, true);
         DoNextMovement();
         m_uiArcaneBarrageTimer = 6000 + rand()%5000;
 
@@ -1135,7 +1135,7 @@ struct MANGOS_DLL_DECL mob_scion_of_eternityAI : public ScriptedAI
         if(m_uiArcaneBarrageTimer <= uiDiff)
         {
             m_creature->GetMotionMaster()->MovementExpired(false);
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 DoCast(pTarget, SPELL_ARCANE_BARRAGE, true);
             m_uiArcaneBarrageTimer = 3000 + rand()%5000;
             DoNextMovement();

@@ -122,7 +122,7 @@ enum
     SPELL_LIQUID_FIRE_AURA  = 47972
 };
 
-bool EffectDummyCreature_npc_liquid_fire_of_elune(Unit* pCaster, uint32 uiSpellId, uint32 uiEffIndex, Creature* pCreatureTarget)
+bool EffectDummyCreature_npc_liquid_fire_of_elune(Unit* pCaster, uint32 uiSpellId, SpellEffectIndex uiEffIndex, Creature* pCreatureTarget)
 {
     //always check spellid and effectindex
     if (uiSpellId == SPELL_LIQUID_FIRE && uiEffIndex == 0)
@@ -246,10 +246,10 @@ enum
     EMOTE_CREATE                = -1000552
 };
 
-bool EffectDummyCreature_npc_woodlands_walker(Unit* pCaster, uint32 uiSpellId, uint32 uiEffIndex, Creature* pCreatureTarget)
+bool EffectDummyCreature_npc_woodlands_walker(Unit* pCaster, uint32 uiSpellId, SpellEffectIndex uiEffIndex, Creature* pCreatureTarget)
 {
     //always check spellid and effectindex
-    if (uiSpellId == SPELL_STRENGTH_ANCIENTS && uiEffIndex == 0)
+    if (uiSpellId == SPELL_STRENGTH_ANCIENTS && uiEffIndex == SpellEffectIndex(0))
     {
         if (pCaster->GetTypeId() == TYPEID_PLAYER)
         {

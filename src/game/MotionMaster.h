@@ -111,7 +111,7 @@ class MANGOS_DLL_SPEC MotionMaster : private std::stack<MovementGenerator *>
 
         void propagateSpeedChange();
 
-        // will only work in MMgens where we have a target (TARGETED_MOTION_TYPE)
+        // will only work in MMgens where we have a target (CHASE_MOTION_TYPE)
         void UpdateFinalDistanceToTarget(float fDistance);
 
         bool GetDestination(float &x, float &y, float &z);

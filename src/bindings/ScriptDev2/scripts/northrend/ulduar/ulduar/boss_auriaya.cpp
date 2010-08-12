@@ -78,7 +78,7 @@ struct MANGOS_DLL_DECL boss_auriaya_AI : public ScriptedAI
         m_uiSonicScreechTimer = 28000;
         m_uiTerrifyingScreechTimer = urand(34000, 40000);
         m_uiActivateDefenderTimer = 60000;
-        m_uiBerserkTimer = 10*MINUTE*IN_MILISECONDS;
+        m_uiBerserkTimer = 10*MINUTE*IN_MILLISECONDS;
         m_uiGuardianSwarmTimer = urand(50000, 60000);
         m_bGuardianSummoned = false;
         m_bNeedCastSentinelBlast = false;
@@ -225,7 +225,7 @@ struct MANGOS_DLL_DECL boss_auriaya_AI : public ScriptedAI
             if (DoCastSpellIfCan(m_creature, SPELL_BERSERK) == CAST_OK)
             {
                 DoScriptText(SAY_BERSERK, m_creature);
-                m_uiBerserkTimer = 30*MINUTE*IN_MILISECONDS;
+                m_uiBerserkTimer = 30*MINUTE*IN_MILLISECONDS;
             }
         }
         else
@@ -269,7 +269,7 @@ struct MANGOS_DLL_DECL boss_auriaya_AI : public ScriptedAI
 
         if (m_uiGuardianSwarmTimer < uiDiff)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
             {
                 if (DoCastSpellIfCan(pTarget, SPELL_GUARDIAN_SWARM) == CAST_OK)
                     m_uiGuardianSwarmTimer = urand(35000, 42000);
@@ -435,7 +435,7 @@ struct MANGOS_DLL_DECL mob_feral_defender_AI : public ScriptedAI
 
         if (m_uiRushTimer < uiDiff)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
             {
                 if (DoCastSpellIfCan(pTarget, m_bIsRegularMode ? SPELL_FERAL_RUSH : H_SPELL_FERAL_RUSH) == CAST_OK)
                     m_uiRushTimer = urand(10000, 18000);
@@ -446,7 +446,7 @@ struct MANGOS_DLL_DECL mob_feral_defender_AI : public ScriptedAI
 
         if (m_uiPounceTimer < uiDiff)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
             {
                 if (DoCastSpellIfCan(pTarget, m_bIsRegularMode ? SPELL_FERAL_POUNCE : H_SPELL_FERAL_POUNCE) == CAST_OK)
                     m_uiPounceTimer = urand(7000, 12000);

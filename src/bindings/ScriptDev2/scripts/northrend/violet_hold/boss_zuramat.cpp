@@ -139,7 +139,7 @@ struct MANGOS_DLL_DECL boss_zuramatAI : public ScriptedAI
     {
         if (m_pInstance->GetData(TYPE_ZURAMAT) == SPECIAL && !MovementStarted) {
 	m_creature->GetMotionMaster()->MovePoint(0, PortalLoc[0].x, PortalLoc[0].y, PortalLoc[0].z);
-        m_creature->AddMonsterMoveFlag(MONSTER_MOVE_WALK);
+        m_creature->AddSplineFlag(SPLINEFLAG_WALKMODE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         MovementStarted = true;
@@ -158,7 +158,7 @@ struct MANGOS_DLL_DECL boss_zuramatAI : public ScriptedAI
 
         if (m_uiVoidShift_Timer < uiDiff)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 DoCast(pTarget, m_bIsRegularMode ? SPELL_VOID_SHIFT_H : SPELL_VOID_SHIFT);
             m_uiVoidShift_Timer = urand(10000, 11000);
         }

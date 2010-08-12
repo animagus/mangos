@@ -49,7 +49,7 @@ EndScriptData */
 // Blizzard Guardians
 #define BLIZZ_GUARDIAN1_X   2847.493652f
 #define BLIZZ_GUARDIAN1_Y   -3684.977783f
-#define BLIZZ_GUARDIAN1_Z   278.358521
+#define BLIZZ_GUARDIAN1_Z   278.358521f
 #define BLIZZ_GUARDIAN1_O   3.09f
 
 #define BLIZZ_GUARDIAN2_X   2771.178711f
@@ -200,8 +200,8 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
     void Aggro(Unit* who)
     {
         // Cheaters must die =)
-        blizzGuard1 = (TemporarySummon*)m_creature->SummonCreature(5764, BLIZZ_GUARDIAN1_X, BLIZZ_GUARDIAN1_Y, BLIZZ_GUARDIAN1_Z, BLIZZ_GUARDIAN1_O, TEMPSUMMON_MANUAL_DESPAWN, 120*IN_MILISECONDS);
-        blizzGuard2 = (TemporarySummon*)m_creature->SummonCreature(5764, BLIZZ_GUARDIAN2_X, BLIZZ_GUARDIAN2_Y, BLIZZ_GUARDIAN2_Z, BLIZZ_GUARDIAN2_O, TEMPSUMMON_MANUAL_DESPAWN, 120*IN_MILISECONDS);  
+        blizzGuard1 = (TemporarySummon*)m_creature->SummonCreature(5764, BLIZZ_GUARDIAN1_X, BLIZZ_GUARDIAN1_Y, BLIZZ_GUARDIAN1_Z, BLIZZ_GUARDIAN1_O, TEMPSUMMON_MANUAL_DESPAWN, 120*IN_MILLISECONDS);
+        blizzGuard2 = (TemporarySummon*)m_creature->SummonCreature(5764, BLIZZ_GUARDIAN2_X, BLIZZ_GUARDIAN2_Y, BLIZZ_GUARDIAN2_Z, BLIZZ_GUARDIAN2_O, TEMPSUMMON_MANUAL_DESPAWN, 120*IN_MILLISECONDS);  
 
         if(m_pInstance)
             m_pInstance->SetData(ENCOUNT_HEIGAN, IN_PROGRESS);
@@ -252,8 +252,8 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
                 phase = 2;
                 //Teleport To Start Position
                 //m_creature->NearTeleportTo(2793.86, -3707.38, 276.627, 0.593412);
-                m_creature->GetMap()->CreatureRelocation(m_creature, 2793.86, -3707.38, 276.627, 0.593412);
-                m_creature->SendMonsterMove(2793.86, -3707.38, 276.627, 0, MONSTER_MOVE_NONE, 0);
+                m_creature->GetMap()->CreatureRelocation(m_creature, 2793.86f, -3707.38f, 276.627f, 0.593412f);
+                m_creature->SendMonsterMove(2793.86f, -3707.38f, 276.627f, SPLINETYPE_FACINGTARGET, SPLINEFLAG_NONE, 0);
                 switch (rand()%5)
                 {
                     case 0: DoScriptText(SAY_TAUNT1, m_creature); break;

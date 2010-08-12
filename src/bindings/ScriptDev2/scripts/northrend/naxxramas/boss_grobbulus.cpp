@@ -93,13 +93,13 @@ struct MANGOS_DLL_DECL boss_grobbulusAI : public ScriptedAI
     {
         if(spell->Id == SPELL_SLIME_SPRAY || spell->Id == H_SPELL_SLIME_SPRAY && target->GetTypeId() == TYPEID_PLAYER && target != m_creature->getVictim())
         {
-            if (Creature* pSlime = m_creature->SummonCreature(MOB_FALLOUT_SLIME, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, MINUTE*1*IN_MILISECONDS))
+            if (Creature* pSlime = m_creature->SummonCreature(MOB_FALLOUT_SLIME, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, MINUTE*1*IN_MILLISECONDS))
                 pSlime->SetInCombatWithZone();
         }
         /*//mob poison slime
         if(spell->Id == SPELL_POISON_CLOUD)
         {
-            if (Creature* pSlime = m_creature->SummonCreature(MOB_POISON_SLIME, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, MINUTE*1.5*IN_MILISECONDS))
+            if (Creature* pSlime = m_creature->SummonCreature(MOB_POISON_SLIME, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, MINUTE*1.5*IN_MILLISECONDS))
                 pSlime->SetInCombatWithZone();
         }*/
     } 
@@ -118,11 +118,11 @@ struct MANGOS_DLL_DECL boss_grobbulusAI : public ScriptedAI
         if (MutatingInjection_Timer < diff)
         {
             // small hack to avoid target non players
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1))
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,1))
             {
                 if (target->GetTypeId() == TYPEID_PLAYER)
                     DoCast(target, SPELL_MUTATING_INJECTION);
-                else if (target = SelectUnit(SELECT_TARGET_RANDOM,1))
+                else if (target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,1))
                     DoCast(target, SPELL_MUTATING_INJECTION);
             }
 

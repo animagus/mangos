@@ -237,7 +237,7 @@ struct MANGOS_DLL_DECL boss_loathebAI : public ScriptedAI
 			};
             if (SummonedSpores)
             {
-				target = SelectUnit(SELECT_TARGET_RANDOM,0);
+				target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0);
                 if (target)
 					SummonedSpores->AddThreat(target,1.0f);
             }

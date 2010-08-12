@@ -175,7 +175,7 @@ struct MANGOS_DLL_DECL mob_vh_dragonsAI : public ScriptedAI
         }
 
         WayPoint = WayPointList.begin();
-        m_creature->AddMonsterMoveFlag(MONSTER_MOVE_WALK);
+        m_creature->AddSplineFlag(SPLINEFLAG_WALKMODE);
         IsWalking = true;
         MovementStarted = true;
     }
@@ -219,14 +219,14 @@ struct MANGOS_DLL_DECL mob_vh_dragonsAI : public ScriptedAI
                 IsWalking = false;
                 WayPointList.clear();
                 m_creature->GetMotionMaster()->Clear(false);
-                m_creature->RemoveMonsterMoveFlag(MONSTER_MOVE_WALK);
+                m_creature->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
                 DoCast(pDoorSeal, SPELL_CORRUPT);
                 m_pInstance->SetData(TYPE_DOOR,SPECIAL);
             }
         }
         if(!IsWalking && !IsInCombat) 
         {
-            if (Unit* m_uEmbraceTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* m_uEmbraceTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                 m_creature->GetMotionMaster()->MoveChase(m_uEmbraceTarget);
             m_creature->SetInCombatWithZone();
             IsInCombat = true;
@@ -307,7 +307,7 @@ struct MANGOS_DLL_DECL mob_vh_dragonsAI : public ScriptedAI
         //Arcane Stream
         if (m_uiArcaneStream_Timer <= uiDiff)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                 DoCast(pTarget, m_bIsRegular ? SPELL_ARCANE_STREAM : SPELL_ARCANE_STREAM_H);
             m_uiArcaneStream_Timer = 7000;
         }else m_uiArcaneStream_Timer -= uiDiff;
@@ -551,7 +551,7 @@ struct MANGOS_DLL_DECL npc_sinclariAI : public ScriptedAI
         m_uiLastRift = 0;
         m_creature->SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
         m_uiNextPortal_Timer = 5000;
-        m_creature->GetMotionMaster()->MovePoint(0, 1815.571, 800.112, 44.364);
+        m_creature->GetMotionMaster()->MovePoint(0, 1815.571f, 800.112f, 44.364f);
         if (m_pInstance)
         {
             m_pInstance->SetData(TYPE_EVENT, IN_PROGRESS);
@@ -811,7 +811,7 @@ struct MANGOS_DLL_DECL npc_door_sealAI : public ScriptedAI
         {
             if (SpellCorrupt_Timer <= diff)
             {
-                if (m_creature->HasAura(SPELL_CORRUPT,0))
+                if (m_creature->HasAura(SPELL_CORRUPT,SpellEffectIndex(0)))
                     SpellCorrupt_Timer = 1500;
                 else
                     SpellCorrupt_Timer = 0;
@@ -855,7 +855,7 @@ struct MANGOS_DLL_DECL npc_azure_saboteurAI : public ScriptedAI
         m_bIsActiving = false;
 
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        m_creature->RemoveMonsterMoveFlag(MONSTER_MOVE_WALK);
+        m_creature->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
         m_uiDisruptionCounter = 0;
         m_uiDisruptionsCount = 0;
         m_uiDisruption_Timer = 1000;
@@ -909,7 +909,7 @@ struct MANGOS_DLL_DECL npc_azure_saboteurAI : public ScriptedAI
             if (m_uiBossType != 0)  
                 m_creature->GetMotionMaster()->MovePoint(0, BossLoc[m_uiBossID].x,  BossLoc[m_uiBossID].y,  BossLoc[m_uiBossID].z);
             else 
-                m_creature->GetMotionMaster()->MovePoint(0, 1827.960, 804.208, 44.364);
+                m_creature->GetMotionMaster()->MovePoint(0, 1827.960f, 804.208f, 44.364f);
         }
     }
 

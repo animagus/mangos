@@ -257,7 +257,7 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
 
         //Summoned Crypt Guard will target random player
         guidCryptGuards[CryptGuard_count++] = temp->GetGUID();
-        if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+        if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
         {
             temp->AddThreat(target,0.0f);
             m_creature->SetInCombatWithZone();
@@ -299,7 +299,7 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
             if (SummonFirst_Timer < diff)
             {
                 if (CryptGuard_count < MAX_CRYPT_GUARDS)
-                    m_creature->SummonCreature(MOB_CRYPT_GUARD,3330,-3477,288,3.2,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,10000);
+                    m_creature->SummonCreature(MOB_CRYPT_GUARD,3330.0f,-3477.0f,288.0f,3.2f,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,10000);
                 SummonFirst_Timer = 2000000;
             }else SummonFirst_Timer -= diff;
         }
@@ -340,8 +340,8 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
             {
                 //Cast Impale on a random target
                 //Do NOT cast it when we are afflicted by locust swarm
-                if (!m_creature->HasAura(SPELL_LOCUSTSWARM,1))
-                    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1))
+                if (!m_creature->HasAura(SPELL_LOCUSTSWARM,SpellEffectIndex(1)))
+                    if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,SpellEffectIndex(1)))
                         DoCast(target,m_bIsRegularMode ? SPELL_IMPALE : SPELL_IMPALE_H);
                 Impale_Timer = 15000;
             }else Impale_Timer -= diff;
@@ -354,7 +354,7 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
                 swarm = true;
                 //Summon Crypt Guard immidietly after Locust Swarm
                 if (CryptGuard_count < MAX_CRYPT_GUARDS)
-                    m_creature->SummonCreature(MOB_CRYPT_GUARD,3330,-3477,288,3.2,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,10000);
+                    m_creature->SummonCreature(MOB_CRYPT_GUARD,3330.0f,-3477.0f,288.0f,3.2f,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,10000);
                 LocustSwarm_Timer = 20000;
             }else LocustSwarm_Timer -= diff;
         }

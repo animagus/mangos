@@ -127,8 +127,8 @@ struct MANGOS_DLL_DECL boss_xevozzAI : public ScriptedAI
 
     void JustSummoned(Creature* pSummoned)
     {
-        pSummoned->SetSpeed(MOVE_RUN, 0.5f);
-        if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+        pSummoned->SetSpeedRate(MOVE_RUN, 0.5f);
+        if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
         {
             pSummoned->AddThreat(pTarget);
             pSummoned->AI()->AttackStart(pTarget);
@@ -140,7 +140,7 @@ struct MANGOS_DLL_DECL boss_xevozzAI : public ScriptedAI
         if (m_pInstance->GetData(TYPE_XEVOZZ) == SPECIAL && !MovementStarted) 
         {
             m_creature->GetMotionMaster()->MovePoint(0, PortalLoc[0].x, PortalLoc[0].y, PortalLoc[0].z);
-            m_creature->AddMonsterMoveFlag(MONSTER_MOVE_WALK);
+            m_creature->AddSplineFlag(SPLINEFLAG_WALKMODE);
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             MovementStarted = true;

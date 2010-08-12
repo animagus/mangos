@@ -126,10 +126,10 @@ struct MANGOS_DLL_DECL mob_iron_constructAI : public ScriptedAI
             if (pTemp->isAlive())
                 if (pTemp->HasAura(BUFF_STRENGHT_OF_CREATOR))
                 {
-                    if (pTemp->GetAura(BUFF_STRENGHT_OF_CREATOR, 0)->GetStackAmount() == 1)
+                    if (pTemp->GetAura(BUFF_STRENGHT_OF_CREATOR, SpellEffectIndex(0))->GetStackAmount() == 1)
                         pTemp->RemoveAurasDueToSpell(BUFF_STRENGHT_OF_CREATOR);
                     else
-                        pTemp->GetAura(BUFF_STRENGHT_OF_CREATOR, 0)->modStackAmount(-1);
+                        pTemp->GetAura(BUFF_STRENGHT_OF_CREATOR, SpellEffectIndex(0))->GetHolder()->ModStackAmount(-1);
                 }
     }
 
@@ -154,7 +154,7 @@ struct MANGOS_DLL_DECL mob_iron_constructAI : public ScriptedAI
             m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }else Death_Timer -= diff;   
 
-        if (m_creature->HasAura(SPELL_BRITTLE,0))
+        if (m_creature->HasAura(SPELL_BRITTLE,SpellEffectIndex(0)))
             brittle = true;
         else
             brittle = false;
@@ -163,7 +163,7 @@ struct MANGOS_DLL_DECL mob_iron_constructAI : public ScriptedAI
         if (Aura_Check_Timer < diff)
         {
             // проверяем есть ли бафф жары и его колличество, если есть, раскаляем конструкта.
-            if(Aura* aura = m_creature->GetAura(SPELL_HEAT,0))
+            if(Aura* aura = m_creature->GetAura(SPELL_HEAT,SpellEffectIndex(0)))
             {
                 if(aura->GetStackAmount() > 9)
                 {
@@ -174,7 +174,7 @@ struct MANGOS_DLL_DECL mob_iron_constructAI : public ScriptedAI
             }
 
             // конструкт раскален, если в воде -> каст стуна.
-            if(Aura* aura = m_creature->GetAura(SPELL_MOLTEN,0))
+            if(Aura* aura = m_creature->GetAura(SPELL_MOLTEN,SpellEffectIndex(0)))
                 if(m_creature->IsInWater())
                 {
                     m_creature->RemoveAurasDueToSpell(SPELL_MOLTEN);
@@ -295,7 +295,7 @@ struct MANGOS_DLL_DECL boss_ignisAI : public ScriptedAI
         if (Slag_Pot_Timer < diff)
         {
             //slag pot yell
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1))
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,1))
             {
                 DoCast(target, m_bIsRegularMode ? SPELL_SLAG_POT : SPELL_SLAG_POT_H);
                 m_uiPotTarget = target->GetGUID();
@@ -323,7 +323,7 @@ struct MANGOS_DLL_DECL boss_ignisAI : public ScriptedAI
         {
             //summon yell
             if (Creature* pTemp = m_creature->SummonCreature(MOB_IRON_CONSTRUCT, 0.0f, 0.0f, 0.0f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000))
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                 {
                     pTemp->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     pTemp->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -336,7 +336,7 @@ struct MANGOS_DLL_DECL boss_ignisAI : public ScriptedAI
                 Summon_Timer = 40000;
                 
                 if (m_creature->HasAura(BUFF_STRENGHT_OF_CREATOR))
-                    m_creature->GetAura(BUFF_STRENGHT_OF_CREATOR, 0)->modStackAmount(+1);
+                    m_creature->GetAura(BUFF_STRENGHT_OF_CREATOR, SpellEffectIndex(0))->GetHolder()->ModStackAmount(+1);
                 else
                     DoCast(m_creature, BUFF_STRENGHT_OF_CREATOR);
         }else Summon_Timer -= diff;

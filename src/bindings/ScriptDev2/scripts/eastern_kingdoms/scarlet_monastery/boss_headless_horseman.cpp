@@ -151,7 +151,7 @@ struct MANGOS_DLL_DECL boss_headless_horsemanAI : public ScriptedAI
             {
                 if (m_conflagate_timer <= uiDiff)
                 {
-                    DoCast(SelectUnit(SELECT_TARGET_RANDOM,1),31340);
+                    DoCast(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,1),31340);
                     m_conflagate_timer = 5000;
                 }else m_conflagate_timer -= uiDiff;
             }

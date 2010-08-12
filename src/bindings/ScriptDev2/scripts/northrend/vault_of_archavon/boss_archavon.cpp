@@ -73,7 +73,7 @@ EndScriptData */
      void Reset()
      {
          m_uiEvadeCheckCooldown = 2000;
-         m_creature->SetSpeed(MOVE_RUN, m_fDefaultMoveSpeed);
+         m_creature->SetSpeedRate(MOVE_RUN, m_fDefaultMoveSpeed);
          m_uiBerserkTimer = 300000;
          m_uiRockShardsTimer = 15000;
          m_bRockShardsInProgress = false;
@@ -147,14 +147,15 @@ EndScriptData */
                      return;
                  }
              }
-             else             {
+             else
+             {
                  m_bCrushingLeapInProgress = false;
                  return;
              }
              if ((m_uiCrushingLeapSecureTimer < uiDiff) || (m_pCrushingLeapTarget && m_creature->IsWithinDist(m_pCrushingLeapTarget, 5.0f)))
              {
                  m_creature->getThreatManager().addThreat(m_pCrushingLeapTarget, -100000000.0f);
-                 m_creature->SetSpeed(MOVE_RUN, m_fDefaultMoveSpeed);
+                 m_creature->SetSpeedRate(MOVE_RUN, m_fDefaultMoveSpeed);
                  DoCast(m_pCrushingLeapTarget, !m_bIsRegularMode ? SPELL_CRUSHING_LEAP_H : SPELL_CRUSHING_LEAP_N, true);
                  m_bCrushingLeapInProgress = false;
              }
@@ -197,7 +198,7 @@ EndScriptData */
              m_uiRockShardsProgressTimer = 3000;
              m_bRLRockShard = true;
              m_pRockShardsTarget = NULL;
-             if (m_pRockShardsTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+             if (m_pRockShardsTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                  m_creature->getThreatManager().addThreat(m_pRockShardsTarget, 100000000.0f);
              m_uiRockShardsTimer = 15000+rand()%15000;
              return;
@@ -225,7 +226,7 @@ EndScriptData */
                  {
                      m_creature->MonsterSay(m_pCrushingLeapTarget->GetName(), LANG_UNIVERSAL, NULL);
                      m_creature->getThreatManager().addThreat(m_pCrushingLeapTarget, 100000000.0f);
-                     m_creature->SetSpeed(MOVE_RUN, m_fDefaultMoveSpeed*10.0f);
+                     m_creature->SetSpeedRate(MOVE_RUN, m_fDefaultMoveSpeed*10.0f);
                      m_bCrushingLeapInProgress = true;
                      m_uiCrushingLeapSecureTimer = 2000;
                  }
@@ -234,7 +235,8 @@ EndScriptData */
              return;
          }
          else
-             m_uiCrushingLeapTimer -= uiDiff; 
+             m_uiCrushingLeapTimer -= uiDiff;
+ 
         if (m_uiStompTimer < uiDiff)
          {
              DoCast(m_creature, !m_bIsRegularMode ? SPELL_STOMP_H : SPELL_STOMP_N);

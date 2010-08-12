@@ -134,7 +134,7 @@ struct MANGOS_DLL_DECL boss_ichoronAI : public ScriptedAI
 
     void JustSummoned(Creature* pSummoned)
     {
-        pSummoned->SetSpeed(MOVE_RUN, 0.2f);
+        pSummoned->SetSpeedRate(MOVE_RUN, 0.2f);
         pSummoned->GetMotionMaster()->MoveFollow(m_creature, 0, 0);
         m_lWaterElementsGUIDList.push_back(pSummoned->GetGUID());
     }
@@ -162,7 +162,7 @@ struct MANGOS_DLL_DECL boss_ichoronAI : public ScriptedAI
         if (m_pInstance->GetData(TYPE_ICHORON) == SPECIAL && !MovementStarted)
         {
             m_creature->GetMotionMaster()->MovePoint(0, PortalLoc[0].x, PortalLoc[0].y, PortalLoc[0].z);
-            m_creature->AddMonsterMoveFlag(MONSTER_MOVE_WALK);
+            m_creature->AddSplineFlag(SPLINEFLAG_WALKMODE);
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             MovementStarted = true;
@@ -178,7 +178,7 @@ struct MANGOS_DLL_DECL boss_ichoronAI : public ScriptedAI
             {
                 if (!m_bIsExploded)
                 {
-                    if (!m_creature->HasAura(SPELL_PROTECTIVE_BUBBLE, 0))
+                    if (!m_creature->HasAura(SPELL_PROTECTIVE_BUBBLE, SpellEffectIndex(0)))
                     {
                         DoCast(m_creature, m_bIsRegularMode ? SPELL_WATER_BLAST_H : SPELL_WATER_BLAST);
                         //DoCast(m_creature, SPELL_DRAINED);

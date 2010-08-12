@@ -23,6 +23,7 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "def_naxxramas.h"
+#include "ObjectGuid.h"
 
 // Spells and Mobs used in Maexxna encounter
 enum
@@ -48,9 +49,9 @@ static const uint32 MAX_PLAYERS_WEB_WRAP = 3;
 
 WorldLocation WWlocs[MAX_PLAYERS_WEB_WRAP] = 
 {
-    WorldLocation(533,3502.164,-3832.138,305.178,1.570),
-    WorldLocation(533,3544.651,-3850.027,299.068,2.356),
-    WorldLocation(533,3561.365,-3884.543,297.819,3.141)
+    WorldLocation(533,3502.164f,-3832.138f,305.178f,1.570f),
+    WorldLocation(533,3544.651f,-3850.027f,299.068f,2.356f),
+    WorldLocation(533,3561.365f,-3884.543f,297.819f,3.141f)
 };
 
 // Cocoon AI. It frees player from SPELL_WEBWRAP_SELF when cocoon dies
@@ -242,7 +243,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
 
         //Summoned Spiderling will target random player
         //guidSpiderlings[Spiderlings_count++] = temp->GetGUID();
-        if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1))
+        if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,1))
         {
             temp->AddThreat(target,0.2f);
             m_creature->SetInCombatWithZone();
@@ -284,21 +285,23 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         if (!target || target->GetTypeId() != TYPEID_PLAYER || WWplayers[placeOnWall])
             return;
 
-        float vsin = sin(target->GetAngle(WWlocs[placeOnWall].coord_x,WWlocs[placeOnWall].coord_y));
-        float vcos = cos(target->GetAngle(WWlocs[placeOnWall].coord_x,WWlocs[placeOnWall].coord_y));
         float l = target->GetDistance2d(WWlocs[placeOnWall].coord_x,WWlocs[placeOnWall].coord_y) * 1.4f;
         float h = WWlocs[placeOnWall].coord_z-target->GetPositionZ() + 30.0f;
         h = (h > 0) ? h : 0;
+        target->KnockBackPlayerWithAngle(target->GetAngle(WWlocs[placeOnWall].coord_x,WWlocs[placeOnWall].coord_y),sqrt(l*l*10.0f/(h*2)),sqrt(2*10.0f*h));
+        /*float vsin = sin(target->GetAngle(WWlocs[placeOnWall].coord_x,WWlocs[placeOnWall].coord_y));
+        float vcos = cos(target->GetAngle(WWlocs[placeOnWall].coord_x,WWlocs[placeOnWall].coord_y));
+        
 
         WorldPacket data(SMSG_MOVE_KNOCK_BACK, (8+4+4+4+4+4));
-        data.append(target->GetPackGUID());
+        data << target->GetPackGUID();
         data << uint32(0);                                      // Sequence
         data << float(vcos);                                    // x direction
         data << float(vsin);                                    // y direction
         data << float(sqrt(l*l*10.0f/(h*2)));                   // Horizontal speed
         data << float(-sqrt(2*10.0f*h));                        // Z Movement speed (vertical)
 
-        ((Player*)target)->GetSession()->SendPacket(&data);
+        ((Player*)target)->GetSession()->SendPacket(&data);*/
         WWplayers[placeOnWall] = target->GetGUID();
         WWplayersFlyTimer[placeOnWall] = 2300;
         WWplayersFlyTimer2[placeOnWall] = 99999999;
@@ -341,7 +344,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         //WebTrap_Timer
         if (WebWrap_Timer < diff)
         {
-            Unit *target = SelectUnit(SELECT_TARGET_RANDOM,1);
+            Unit *target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,1);
             if(target && !target->HasAura(SPELL_WEBWRAP_SELF) && !target->HasAura(SPELL_WEBSPRAY))
                 SendPlayerToWall(target,rand()%MAX_PLAYERS_WEB_WRAP);
             WebWrap_Timer = 40000;

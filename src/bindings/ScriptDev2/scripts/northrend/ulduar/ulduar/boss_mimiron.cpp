@@ -1,52 +1,51 @@
 #include "precompiled.h"
 #include "ulduar.h"
 #include "Spell.h"
-#include "TemporarySummon.h"
 
 float PlasmaLocations[3][4]=
 {
-    {2730.562, 2547.082, 364.314, 1.093},
-    {2732.091, 2592.117, 364.314, 5.224},
-    {2770.267, 2568.920, 364.314, 3.123},
+    {2730.562f, 2547.082f, 364.314f, 1.093f},
+    {2732.091f, 2592.117f, 364.314f, 5.224f},
+    {2770.267f, 2568.920f, 364.314f, 3.123f},
 };
 
 float PlasmaMoves[9][4]=
 {
-    {2728.023926, 2548.022705, 364.314026, 0.715062},
-    {2724.964600, 2550.900879, 364.314026, 0.715062},
-    {2723.065918, 2555.593262, 364.314026, 0.404045},
-    {2721.977, 2559.528 ,364.314, 0.404},
-    {2720.097656, 2563.924072, 364.314026, 0.404045},
-    {2718.895508, 2568.858154, 364.314026, 0.057684},
-    {2719.282715, 2574.330566, 364.314026, 0.057684},
-    {2721.432129, 2581.117920, 364.314026, 5.959166},
-    {2724.421631, 2585.947754, 364.314026, 5.735327},
+    {2728.023926f, 2548.022705f, 364.314026f, 0.715062f},
+    {2724.964600f, 2550.900879f, 364.314026f, 0.715062f},
+    {2723.065918f, 2555.593262f, 364.314026f, 0.404045f},
+    {2721.977f, 2559.528f, 364.314f, 0.404f},
+    {2720.097656f, 2563.924072f, 364.314026f, 0.404045f},
+    {2718.895508f, 2568.858154f, 364.314026f, 0.057684f},
+    {2719.282715f, 2574.330566f, 364.314026f, 0.057684f},
+    {2721.432129f, 2581.117920f, 364.314026f, 5.959166f},
+    {2724.421631f, 2585.947754f, 364.314026f, 5.735327f},
 };
 
 float PlasmaMoves2[9][4]=
 {
-    {2735.051270, 2593.949219, 364.313995, 4.934407},
-    {2739.114014, 2594.866455, 364.313995, 4.934407},
-    {2743.815674, 2595.384521, 364.313995, 4.645380},
-    {2748.425293, 2595.075195, 364.313995, 4.645380},
-    {2753.299316, 2593.463379, 364.313995, 4.645380},
-    {2757.589111, 2590.688965, 364.313995, 4.291166},
-    {2762.483154, 2587.703125, 364.313995, 3.889042},
-    {2765.217041, 2583.651611, 364.313995, 3.889042},
-    {2768.429443, 2577.902344, 364.313995, 3.483776},
+    {2735.051270f, 2593.949219f, 364.313995f, 4.934407f},
+    {2739.114014f, 2594.866455f, 364.313995f, 4.934407f},
+    {2743.815674f, 2595.384521f, 364.313995f, 4.645380f},
+    {2748.425293f, 2595.075195f, 364.313995f, 4.645380f},
+    {2753.299316f, 2593.463379f, 364.313995f, 4.645380f},
+    {2757.589111f, 2590.688965f, 364.313995f, 4.291166f},
+    {2762.483154f, 2587.703125f, 364.313995f, 3.889042f},
+    {2765.217041f, 2583.651611f, 364.313995f, 3.889042f},
+    {2768.429443f, 2577.902344f, 364.313995f, 3.483776f},
 };
 
 float PlasmaMoves3[9][4]=
 {
-    {2770.800049, 2565.269043, 364.313690, 2.997624},
-    {2769.469727, 2561.020020, 364.313690, 2.783996},
-    {2767.032959, 2556.438232, 364.313690, 2.783996},
-    {2765.476563, 2552.473145, 364.313690, 2.425854},
-    {2762.564453, 2549.124268, 364.313690, 2.177668},
-    {2758.593018, 2546.461182, 364.313690, 2.177668},
-    {2754.350830, 2544.082520, 364.313690, 2.052004},
-    {2749.330566, 2542.955566, 364.313690, 2.052004},
-    {2743.203125, 2542.535400, 364.313690, 1.348287},
+    {2770.800049f, 2565.269043f, 364.313690f, 2.997624f},
+    {2769.469727f, 2561.020020f, 364.313690f, 2.783996f},
+    {2767.032959f, 2556.438232f, 364.313690f, 2.783996f},
+    {2765.476563f, 2552.473145f, 364.313690f, 2.425854f},
+    {2762.564453f, 2549.124268f, 364.313690f, 2.177668f},
+    {2758.593018f, 2546.461182f, 364.313690f, 2.177668f},
+    {2754.350830f, 2544.082520f, 364.313690f, 2.052004f},
+    {2749.330566f, 2542.955566f, 364.313690f, 2.052004f},
+    {2743.203125f, 2542.535400f, 364.313690f, 1.348287f},
 };
 
 
@@ -241,7 +240,7 @@ struct MANGOS_DLL_DECL boss_mimironAI : public Scripted_NoMovementAI
                         else if (!levi->isAlive() && m_bIsDeath)
                         {
                             levi->Respawn();
-                            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                                 levi->AI()->AttackStart(pTarget);
                             m_bIsDeath = false;
                             LeviTimer = 1000;
@@ -261,7 +260,7 @@ struct MANGOS_DLL_DECL boss_mimironAI : public Scripted_NoMovementAI
                         else if (!Air->isAlive() && m_bIsDeath2)
                         {
                             Air->Respawn();
-                            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                                 Air->AI()->AttackStart(pTarget);
                             m_bIsDeath2 = false;
                             AirTimer = 1000;
@@ -281,7 +280,7 @@ struct MANGOS_DLL_DECL boss_mimironAI : public Scripted_NoMovementAI
                         else if (!Cannon->isAlive() && m_bIsDeath3)
                         {
                             Cannon->Respawn();
-                            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                                 Cannon->AI()->AttackStart(pTarget);
                             m_bIsDeath3 = false;
                             CannonTimer = 1000;
@@ -371,7 +370,7 @@ struct MANGOS_DLL_DECL boss_leviathan_mkAI : public ScriptedAI
                 {
                     for (uint8 i = 0; i < 20; i++)
                     {
-                        target = SelectUnit(SELECT_TARGET_RANDOM,1);
+                        target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,1);
                         if (target && m_creature->GetDistance(target) >= 14)
                             break;
                     }
@@ -390,7 +389,7 @@ struct MANGOS_DLL_DECL boss_leviathan_mkAI : public ScriptedAI
         {
             if (!last_phase)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM,1);
+                Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,1);
                 if (target)
                 {
                     m_creature->SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
@@ -510,7 +509,7 @@ struct MANGOS_DLL_DECL boss_vx_001AI : public Scripted_NoMovementAI
         }
         else last_phase = false;
 
-        m_creature->AddMonsterMoveFlag(MONSTER_MOVE_LEVITATING);
+        m_creature->AddSplineFlag(SPLINEFLAG_FLYING);
         m_creature->SendMovementFlagUpdate();
         plasma = false;
         plasma_timer = 14000;
@@ -577,7 +576,7 @@ struct MANGOS_DLL_DECL boss_vx_001AI : public Scripted_NoMovementAI
                     if (spell->m_spellInfo->Id == 63274)
                         return;
 
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
 
                 if (target)
                 {
@@ -604,7 +603,7 @@ struct MANGOS_DLL_DECL boss_vx_001AI : public Scripted_NoMovementAI
 
             for (uint8 i = 0; i < count; i++)
             {
-                Unit* target = SelectUnit(SELECT_TARGET_RANDOM, 0);
+                Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0);
                 if (target)
                     DoCast(target, 63036, true);
             }
@@ -674,7 +673,7 @@ struct MANGOS_DLL_DECL boss_aerial_command_unitAI : public ScriptedAI
         else last_phase = false;
 
         stop = false;
-        m_creature->AddMonsterMoveFlag(MONSTER_MOVE_LEVITATING);
+        m_creature->AddSplineFlag(SPLINEFLAG_FLYING);
         m_creature->SendMovementFlagUpdate();
         
         plasma_ball_timer = 3000;
@@ -752,25 +751,25 @@ struct MANGOS_DLL_DECL boss_aerial_command_unitAI : public ScriptedAI
             if (m_creature->HasAura(64436) && m_creature->GetPositionZ() > 366.0f)
             {
                 m_creature->GetMap()->CreatureRelocation(m_creature, m_creature->GetPositionX(), m_creature->GetPositionY(), 364.0f, m_creature->GetOrientation());
-                m_creature->SendMonsterMove(m_creature->GetPositionX(), m_creature->GetPositionY(), 364.0f, 0, MONSTER_MOVE_NONE, 1000);  
+                m_creature->SendMonsterMove(m_creature->GetPositionX(), m_creature->GetPositionY(), 364.0f, SPLINETYPE_NORMAL, SPLINEFLAG_NONE, 1000);  
             }
 
             if (!m_creature->HasAura(64436) && m_creature->GetPositionZ() < 366.0f)
             {
                 m_creature->GetMap()->CreatureRelocation(m_creature, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ() + 10.0f, m_creature->GetOrientation());
-                m_creature->SendMonsterMove(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ() + 10.0f, 0, MONSTER_MOVE_NONE, 1000);
+                m_creature->SendMonsterMove(m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ() + 10.0f, SPLINETYPE_NORMAL, SPLINEFLAG_NONE, 1000);
             }
 
             if (summon_assault_timer <= diff)
             {
-                if (Creature* assault = m_creature->SummonCreature(34057, 2726.807, 2569.337, 364.314, m_creature->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 10000))
+                if (Creature* assault = m_creature->SummonCreature(34057, 2726.807f, 2569.337f, 364.314f, m_creature->GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 10000))
                     assault->AI()->AttackStart(m_creature->getVictim());
                 summon_assault_timer = urand(28000, 31000);
             } else summon_assault_timer -= diff;
 
             if (summon_junk_timer <= diff)
             {
-                if (Creature* Junk = m_creature->SummonCreature(33855, 2715.661, 2569.088, 364.314, m_creature->GetOrientation(), TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 10000))
+                if (Creature* Junk = m_creature->SummonCreature(33855, 2715.661f, 2569.088f, 364.314f, m_creature->GetOrientation(), TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 10000))
                     Junk->AI()->AttackStart(m_creature->getVictim());
                 summon_junk_timer = urand(5000, 8000);
             } else summon_junk_timer -= diff;

@@ -144,7 +144,7 @@ struct MANGOS_DLL_DECL boss_erekemAI : public ScriptedAI
     {
         if (m_pInstance->GetData(TYPE_EREKEM) == SPECIAL && !MovementStarted) {
 	m_creature->GetMotionMaster()->MovePoint(0, PortalLoc[0].x, PortalLoc[0].y, PortalLoc[0].z);
-        m_creature->AddMonsterMoveFlag(MONSTER_MOVE_WALK);
+        m_creature->AddSplineFlag(SPLINEFLAG_WALKMODE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         MovementStarted = true;
@@ -165,7 +165,7 @@ struct MANGOS_DLL_DECL boss_erekemAI : public ScriptedAI
         if (m_uiEarthShock_Timer < uiDiff)
         {
             m_creature->InterruptNonMeleeSpells(false);
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 DoCast(pTarget, SPELL_EARTH_SHOCK);
             m_uiEarthShock_Timer = urand(12000, 17000);
         }
@@ -191,7 +191,7 @@ struct MANGOS_DLL_DECL boss_erekemAI : public ScriptedAI
         {
             if (m_uiLightningBolt_Timer < uiDiff)
             {
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                     DoCast(pTarget, SPELL_LIGHTNING_BOLT);
                 m_uiLightningBolt_Timer = 2000;
             }
@@ -278,7 +278,7 @@ struct MANGOS_DLL_DECL mob_erekem_guardAI : public ScriptedAI
     {
         if (m_pInstance->GetData(TYPE_EREKEM) == SPECIAL && !MovementStarted) {
         m_creature->GetMotionMaster()->MovePoint(0, PortalLoc[0].x, PortalLoc[0].y, PortalLoc[0].z);
-        m_creature->AddMonsterMoveFlag(MONSTER_MOVE_WALK);
+        m_creature->AddSplineFlag(SPLINEFLAG_WALKMODE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         MovementStarted = true;

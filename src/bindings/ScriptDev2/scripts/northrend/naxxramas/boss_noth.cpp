@@ -65,17 +65,17 @@ uint32 m_auiSpellSummonPlaguedGuardian[]=
 
 float SpawnLocations[4][4]=
 {
-    {2646.818, -3462.727, 263.412, 5.280},
-    {2670.403, -3461.881, 262.879, 4.800},
-    {2704.462, -3460.483, 262.884, 4.338},
-    {2725.451, -3463.500, 263.295, 3.983},
+    {2646.818f, -3462.727f, 263.412f, 5.280f},
+    {2670.403f, -3461.881f, 262.879f, 4.800f},
+    {2704.462f, -3460.483f, 262.884f, 4.338f},
+    {2725.451f, -3463.500f, 263.295f, 3.983f},
 };
 
 // Teleport position of Noth on his balcony
-#define TELE_X 2631.370
-#define TELE_Y -3529.680
-#define TELE_Z 274.040
-#define TELE_O 6.277
+#define TELE_X 2631.370f
+#define TELE_Y -3529.680f
+#define TELE_Z 274.040f
+#define TELE_O 6.277f
 
 // IMPORTANT: BALCONY TELEPORT NOT ADDED YET! WILL BE ADDED SOON!
 // Dev note 26.12.2008: When is soon? :)
@@ -147,7 +147,7 @@ struct MANGOS_DLL_DECL boss_nothAI : public ScriptedAI
     {
         if (!summoned)
             return;
-        if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+        if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
             summoned->AddThreat(target,0.0f);
     }
 
@@ -225,7 +225,7 @@ struct MANGOS_DLL_DECL boss_nothAI : public ScriptedAI
                     m_creature->GetMotionMaster()->Clear(false);     // Stop he from moving as well
                     m_creature->GetMotionMaster()->MoveIdle();
                     m_creature->GetMap()->CreatureRelocation(m_creature, TELE_X, TELE_Y, TELE_Z, TELE_O);
-                    m_creature->SendMonsterMove(TELE_X, TELE_Y, TELE_Z, 0, MONSTER_MOVE_NONE, 0);                    
+                    m_creature->SendMonsterMove(TELE_X, TELE_Y, TELE_Z, SPLINETYPE_FACINGTARGET, SPLINEFLAG_NONE, 0);                    
                     m_creature->RemoveAllAuras();
                     m_creature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
                     ++m_Stage;
@@ -266,8 +266,8 @@ struct MANGOS_DLL_DECL boss_nothAI : public ScriptedAI
 
                 if (Ground_Timer < diff)
                 {
-                    m_creature->GetMap()->CreatureRelocation(m_creature, 2684.830, -3503.489, 261.308, 0.24);
-                    m_creature->SendMonsterMove(2684.830, -3503.489, 261.308, 0, MONSTER_MOVE_NONE, 0);
+                    m_creature->GetMap()->CreatureRelocation(m_creature, 2684.830f, -3503.489f, 261.308f, 0.24f);
+                    m_creature->SendMonsterMove(2684.830f, -3503.489f, 261.308f, SPLINETYPE_FACINGSPOT, SPLINEFLAG_NONE, 0);
                     m_creature->GetMotionMaster()->Clear();
                     m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
                     m_creature->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);

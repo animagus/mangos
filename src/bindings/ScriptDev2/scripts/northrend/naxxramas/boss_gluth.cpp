@@ -38,17 +38,17 @@ enum
     SPELL_INFECTED_WOUND            = 29306,
 };
 
-#define ADD_1X 3269.590
-#define ADD_1Y -3161.287
-#define ADD_1Z 297.423
+#define ADD_1X 3269.590f
+#define ADD_1Y -3161.287f
+#define ADD_1Z 297.423f
 
-#define ADD_2X 3252.157
-#define ADD_2Y -3132.135
-#define ADD_2Z 297.423
+#define ADD_2X 3252.157f
+#define ADD_2Y -3132.135f
+#define ADD_2Z 297.423f
 
-#define ADD_3X 3307.873
-#define ADD_3Y -3186.122
-#define ADD_3Z 297.423
+#define ADD_3X 3307.873f
+#define ADD_3Y -3186.122f
+#define ADD_3Z 297.423f
 
 struct MANGOS_DLL_DECL mob_zombie_chowsAI : public ScriptedAI
 {
@@ -84,7 +84,7 @@ struct MANGOS_DLL_DECL mob_zombie_chowsAI : public ScriptedAI
     void UpdateAI(const uint32 diff)
     {
         if (bIsForceMove)
-            m_creature->SetSpeed(MOVE_RUN,0.5f);
+            m_creature->SetSpeedRate(MOVE_RUN,0.5f);
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim() || bIsForceMove)
             return;
 
@@ -124,7 +124,7 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
         Summon_Timer = 10000;
         RangeCheck_Timer = 1000;
 
-        m_uiBerserkTimer = MINUTE*8*IN_MILISECONDS;
+        m_uiBerserkTimer = MINUTE*8*IN_MILLISECONDS;
         m_lZombieGUIDList.clear();
     }
 
@@ -158,7 +158,7 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
 
     void JustSummoned(Creature* summoned)
     {
-        summoned->SetSpeed(MOVE_RUN, 1.2f);
+        summoned->SetSpeedRate(MOVE_RUN, 1.2f);
     }
 
     void UpdateAI(const uint32 diff)
@@ -241,7 +241,7 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
             {
                 if (Creature* pZombie = m_creature->SummonCreature(NPC_ZOMBIE_CHOW,ADD_1X,ADD_1Y,ADD_1Z,0,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,80000))
                 {
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                     {
                         pZombie->AI()->AttackStart(pTarget);
                         m_lZombieGUIDList.push_back(pZombie->GetGUID());
@@ -249,7 +249,7 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
                 }
                 if (Creature* pZombie = m_creature->SummonCreature(NPC_ZOMBIE_CHOW,ADD_2X,ADD_2Y,ADD_2Z,0,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,80000))
                 {
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                     {
                         pZombie->AI()->AttackStart(pTarget);
                         m_lZombieGUIDList.push_back(pZombie->GetGUID());
@@ -257,7 +257,7 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
                 }
                 if (Creature* pZombie = m_creature->SummonCreature(NPC_ZOMBIE_CHOW,ADD_3X,ADD_3Y,ADD_3Z,0,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,80000))
                 {
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                     {
                         pZombie->AI()->AttackStart(pTarget);
                         m_lZombieGUIDList.push_back(pZombie->GetGUID());
@@ -268,7 +268,7 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
             {
                 if (Creature* pZombie = m_creature->SummonCreature(NPC_ZOMBIE_CHOW,ADD_1X,ADD_1Y,ADD_1Z,0,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,80000))
                 {
-                    if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                     {
                         pZombie->AI()->AttackStart(pTarget);
                         m_lZombieGUIDList.push_back(pZombie->GetGUID());
@@ -282,7 +282,7 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
         if (m_uiBerserkTimer < diff)
         {
             DoCast(m_creature, SPELL_BERSERK, true);
-            m_uiBerserkTimer = MINUTE*5*IN_MILISECONDS;
+            m_uiBerserkTimer = MINUTE*5*IN_MILLISECONDS;
         }else m_uiBerserkTimer -= diff;
 
         DoMeleeAttackIfReady();

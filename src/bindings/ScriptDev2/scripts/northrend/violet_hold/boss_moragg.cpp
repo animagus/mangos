@@ -95,7 +95,7 @@ struct MANGOS_DLL_DECL boss_moraggAI : public ScriptedAI
     {
         if (m_pInstance->GetData(TYPE_MORAGG) == SPECIAL && !MovementStarted) {
 	m_creature->GetMotionMaster()->MovePoint(0, PortalLoc[0].x, PortalLoc[0].y, PortalLoc[0].z);
-        m_creature->AddMonsterMoveFlag(MONSTER_MOVE_WALK);
+        m_creature->AddSplineFlag(SPLINEFLAG_WALKMODE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         MovementStarted = true;
@@ -114,7 +114,7 @@ struct MANGOS_DLL_DECL boss_moraggAI : public ScriptedAI
 
         if (m_uiOpticLink_Timer < uiDiff)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 DoCast(pTarget, SPELL_OPTIC_LINK);
             m_uiOpticLink_Timer = urand(25000, 30000);
         }
@@ -122,7 +122,7 @@ struct MANGOS_DLL_DECL boss_moraggAI : public ScriptedAI
 
         if (m_uiRay_Timer < uiDiff)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                 DoCast(pTarget, urand(0, 1) ? SPELL_RAY_PAIN : SPELL_RAY_SUFFERING);
             m_uiRay_Timer = urand(2000, 7000);
         }

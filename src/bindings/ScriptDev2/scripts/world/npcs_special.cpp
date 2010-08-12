@@ -28,6 +28,7 @@ EndScriptData
 #include "GameEventMgr.h"
 #include "World.h"
 #include "Config/Config.h"
+#include "Mail.h"
 
 /* ContentData
 npc_air_force_bots       80%    support for misc (invisible) guard bots in areas where player allowed to fly. Summon guards after a preset time if tagged by spell
@@ -194,7 +195,7 @@ struct MANGOS_DLL_DECL npc_air_force_botsAI : public ScriptedAI
                     if (!pWho->IsWithinDistInMap(m_creature, RANGE_GUARDS_MARK))
                         return;
 
-                    Aura* pMarkAura = pWho->GetAura(SPELL_GUARDS_MARK, 0);
+                    Aura* pMarkAura = pWho->GetAura(SPELL_GUARDS_MARK, SpellEffectIndex(0));
                     if (pMarkAura)
                     {
                         // the target wasn't able to move out of our range within 25 seconds
@@ -478,34 +479,34 @@ struct Location
 
 static Location AllianceCoords[]=
 {
-    {-3757.38, -4533.05, 14.16, 3.62},                      // Top-far-right bunk as seen from entrance
-    {-3754.36, -4539.13, 14.16, 5.13},                      // Top-far-left bunk
-    {-3749.54, -4540.25, 14.28, 3.34},                      // Far-right bunk
-    {-3742.10, -4536.85, 14.28, 3.64},                      // Right bunk near entrance
-    {-3755.89, -4529.07, 14.05, 0.57},                      // Far-left bunk
-    {-3749.51, -4527.08, 14.07, 5.26},                      // Mid-left bunk
-    {-3746.37, -4525.35, 14.16, 5.22},                      // Left bunk near entrance
+    {-3757.38f, -4533.05f, 14.16f, 3.62f},                      // Top-far-right bunk as seen from entrance
+    {-3754.36f, -4539.13f, 14.16f, 5.13f},                      // Top-far-left bunk
+    {-3749.54f, -4540.25f, 14.28f, 3.34f},                      // Far-right bunk
+    {-3742.10f, -4536.85f, 14.28f, 3.64f},                      // Right bunk near entrance
+    {-3755.89f, -4529.07f, 14.05f, 0.57f},                      // Far-left bunk
+    {-3749.51f, -4527.08f, 14.07f, 5.26f},                      // Mid-left bunk
+    {-3746.37f, -4525.35f, 14.16f, 5.22f},                      // Left bunk near entrance
 };
 
 //alliance run to where
-#define A_RUNTOX -3742.96
-#define A_RUNTOY -4531.52
-#define A_RUNTOZ 11.91
+#define A_RUNTOX -3742.96f
+#define A_RUNTOY -4531.52f
+#define A_RUNTOZ 11.91f
 
 static Location HordeCoords[]=
 {
-    {-1013.75, -3492.59, 62.62, 4.34},                      // Left, Behind
-    {-1017.72, -3490.92, 62.62, 4.34},                      // Right, Behind
-    {-1015.77, -3497.15, 62.82, 4.34},                      // Left, Mid
-    {-1019.51, -3495.49, 62.82, 4.34},                      // Right, Mid
-    {-1017.25, -3500.85, 62.98, 4.34},                      // Left, front
-    {-1020.95, -3499.21, 62.98, 4.34}                       // Right, Front
+    {-1013.75f, -3492.59f, 62.62f, 4.34f},                      // Left, Behind
+    {-1017.72f, -3490.92f, 62.62f, 4.34f},                      // Right, Behind
+    {-1015.77f, -3497.15f, 62.82f, 4.34f},                      // Left, Mid
+    {-1019.51f, -3495.49f, 62.82f, 4.34f},                      // Right, Mid
+    {-1017.25f, -3500.85f, 62.98f, 4.34f},                      // Left, front
+    {-1020.95f, -3499.21f, 62.98f, 4.34f},                       // Right, Front
 };
 
 //horde run to where
-#define H_RUNTOX -1016.44
-#define H_RUNTOY -3508.48
-#define H_RUNTOZ 62.96
+#define H_RUNTOX -1016.44f
+#define H_RUNTOY -3508.48f
+#define H_RUNTOZ 62.96f
 
 const uint32 AllianceSoldierId[3] =
 {
@@ -632,7 +633,7 @@ struct MANGOS_DLL_DECL npc_injured_patientAI : public ScriptedAI
                 case 2: DoScriptText(SAY_DOC3,m_creature); break;
             }
 
-            m_creature->RemoveMonsterMoveFlag(MONSTER_MOVE_WALK);
+            m_creature->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
 
             uint32 mobId = m_creature->GetEntry();
 
@@ -1119,7 +1120,7 @@ bool GossipHello_npc_innkeeper(Player* pPlayer, Creature* pCreature)
 {
     pPlayer->PrepareGossipMenu(pCreature);
 
-    if (IsHolidayActive(HOLIDAY_HALLOWS_END) && !pPlayer->HasAura(SPELL_TRICK_OR_TREATED,0))
+    if (IsHolidayActive(HOLIDAY_HALLOWS_END) && !pPlayer->HasAura(SPELL_TRICK_OR_TREATED,SpellEffectIndex(0)))
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_TRICK_OR_TREAT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
 
     // Should only apply to innkeeper close to start areas.
@@ -1363,9 +1364,6 @@ bool GossipHello_npc_rogue_trainer(Player* pPlayer, Creature* pCreature)
     if (pCreature->isCanTrainingAndResetTalentsOf(pPlayer))
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "I wish to unlearn my talents", GOSSIP_SENDER_MAIN, GOSSIP_OPTION_UNLEARNTALENTS);
 
-    if (pPlayer->GetSpecsCount() == 1 && pCreature->isCanTrainingAndResetTalentsOf(pPlayer) && !(pPlayer->getLevel() < 40))
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_TRAINER, "I wish to learn Dual Spec", GOSSIP_SENDER_MAIN, GOSSIP_OPTION_LEARNDUALSPEC);
-
     if (pPlayer->getClass() == CLASS_ROGUE && pPlayer->getLevel() >= 24 && !pPlayer->HasItemCount(17126,1) && !pPlayer->GetQuestRewardStatus(6681))
     {
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "<Take the letter>", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
@@ -1391,7 +1389,7 @@ bool GossipSelect_npc_rogue_trainer(Player* pPlayer, Creature* pCreature, uint32
             pPlayer->CLOSE_GOSSIP_MENU();
             pPlayer->SendTalentWipeConfirm(pCreature->GetGUID());
             break;
-        case GOSSIP_OPTION_LEARNDUALSPEC:
+        /*case GOSSIP_OPTION_LEARNDUALSPEC:
             if(pPlayer->GetSpecsCount() == 1 && !(pPlayer->getLevel() < 40))
             {
                 if (pPlayer->GetMoney() < 10000000)
@@ -1412,7 +1410,7 @@ bool GossipSelect_npc_rogue_trainer(Player* pPlayer, Creature* pCreature, uint32
                     // Should show another Gossip text with "Congratulations..."
                     pPlayer->CLOSE_GOSSIP_MENU();
                 }
-            }
+            }*/
             break;
     }
     return true;
@@ -2214,12 +2212,9 @@ struct MANGOS_DLL_DECL npc_spring_rabbitAI : public ScriptedAI
                     cell.data.Part.reserved = ALL_DISTRICT;
                     cell.SetNoCreate();
 
-                    MaNGOS::AnyFriendlyUnitInObjectRangeCheck u_check(m_creature, m_creature, 8.0f);
-                    MaNGOS::UnitListSearcher<MaNGOS::AnyFriendlyUnitInObjectRangeCheck> searcher(m_creature,targets, u_check);
-                    TypeContainerVisitor<MaNGOS::UnitListSearcher<MaNGOS::AnyFriendlyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
-                    TypeContainerVisitor<MaNGOS::UnitListSearcher<MaNGOS::AnyFriendlyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
-                    cell.Visit(p, world_unit_searcher, *m_creature->GetMap(), *m_creature, 8.0f);
-                    cell.Visit(p, grid_unit_searcher, *m_creature->GetMap(), *m_creature, 8.0f);
+                    MaNGOS::AnyFriendlyUnitInObjectRangeCheck u_check(m_creature, 8.0f);
+                    MaNGOS::UnitListSearcher<MaNGOS::AnyFriendlyUnitInObjectRangeCheck> searcher(m_creature, targets, u_check);
+                    Cell::VisitAllObjects(m_creature, searcher, 8.0f);
 
                     for(std::list<Unit *>::iterator tIter = targets.begin(); tIter != targets.end(); tIter++)
                     {
@@ -2371,13 +2366,13 @@ void NotifyPlayer(Player* pPlayer, Creature* pCreature, const char* item, std::s
 	std::string tail = ". Ваш код для получения приза - ";
 	text = text + tail + Code;
 
-    uint32 itemTextId = !text.empty() ? CreateItemText( text ) : 0;
+    //uint32 itemTextId = !text.empty() ? CreateItemText( text ) : 0;
 
-    MailDraft(subject, itemTextId)
+    MailDraft(subject, text)
         .SendMailTo(MailReceiver(pPlayer,GUID_LOPART(pPlayer->GetGUID())),MailSender(MAIL_CREATURE, pCreature->GetEntry()));
 }
 
-void DoDrawing(Player *pPlayer, Creature *pCreature, int32 Price, int Chance, const char* Item, int type, int b)
+void DoDrawing(Player *pPlayer, Creature *pCreature, uint32 Price, int Chance, const char* Item, int type, int b)
 {
     if (pPlayer->GetMoney() < Price)
     {
@@ -2386,7 +2381,7 @@ void DoDrawing(Player *pPlayer, Creature *pCreature, int32 Price, int Chance, co
     }
     else
     {
-        pPlayer->ModifyMoney(-Price);
+        pPlayer->ModifyMoney(-int(Price));
         if (roll_chance_f(Chance))
         {
             std::string Code;

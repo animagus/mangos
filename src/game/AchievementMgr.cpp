@@ -453,7 +453,7 @@ void AchievementMgr::ResetAchievementCriteria(AchievementCriteriaTypes type, uin
                     case 157: 
                         continue; 
                 } 
-                SetCriteriaProgress(achievementCriteria, 0, PROGRESS_SET); 
+                SetCriteriaProgress(achievementCriteria, achievement, 0, PROGRESS_SET); 
             }
             default:                                        // reset all cases
                 break;

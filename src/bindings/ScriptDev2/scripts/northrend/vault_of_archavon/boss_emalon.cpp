@@ -180,7 +180,7 @@ struct MANGOS_DLL_DECL npc_tempest_minionAI : public ScriptedAI
             }
         }
 
-        Aura* pAuraOvercharged = m_creature->GetAura(SPELL_OVERCHARGED, 0);
+        Aura* pAuraOvercharged = m_creature->GetAura(SPELL_OVERCHARGED, SpellEffectIndex(0));
         if(pAuraOvercharged && pAuraOvercharged->GetStackAmount() >= 10)
         {
             DoCast(m_creature, SPELL_OVERCHARGED_BLAST);
@@ -326,7 +326,7 @@ struct MANGOS_DLL_DECL boss_emalonAI : public ScriptedAI
 
         if (m_uiChainLightningTimer < uiDiff)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                 DoCast(pTarget, !m_bIsRegularMode ? SPELL_CHAIN_LIGHTNING_H : SPELL_CHAIN_LIGHTNING_N);
             m_uiChainLightningTimer = 10000 + rand()%15000;
         }
@@ -392,7 +392,7 @@ struct MANGOS_DLL_DECL npc_tempest_warderAI : public ScriptedAI
             return;
         }
 
-        Aura* pAuraOvercharged = m_creature->GetAura(SPELL_OVERCHARGED, 0);
+        Aura* pAuraOvercharged = m_creature->GetAura(SPELL_OVERCHARGED, SpellEffectIndex(0));
         if(pAuraOvercharged && pAuraOvercharged->GetStackAmount() >= 10)
         {
             DoCast(m_creature, SPELL_OVERCHARGED_BLAST);

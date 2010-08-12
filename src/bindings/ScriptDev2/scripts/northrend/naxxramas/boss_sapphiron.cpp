@@ -200,7 +200,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
         if (id == 1)
         {
             m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
-            m_creature->AddMonsterMoveFlag(MONSTER_MOVE_LEVITATING);
+            m_creature->AddSplineFlag(SPLINEFLAG_FLYING);
             m_creature->SendMovementFlagUpdate();
             m_creature->GetMotionMaster()->Clear(false);
             m_creature->GetMotionMaster()->MoveIdle();
@@ -247,14 +247,14 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
         {
             if (LifeDrain_Timer <= diff)
             {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
 					DoCast(target,!m_bIsRegularMode ? SPELL_LIFE_DRAIN_H : SPELL_LIFE_DRAIN);
                 LifeDrain_Timer = 24000;
             }else LifeDrain_Timer -= diff;
 
             if (Blizzard_Timer <= diff)
             {
-                if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                     m_creature->SummonCreature(MOB_BLIZZARD,target->GetPositionX(),target->GetPositionY(),target->GetPositionZ(),0,TEMPSUMMON_CORPSE_DESPAWN,600000);
                 Blizzard_Timer = 20000;
             }else Blizzard_Timer -= diff;
@@ -305,7 +305,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
                     advance(itr, rand()%targets.size());
                     iceblocks.insert(std::make_pair((*itr)->GetGUID(), 0));
                     DoCast(*itr, SPELL_ICEBOLT);
-                    m_creature->AddMonsterMoveFlag(MONSTER_MOVE_LEVITATING);
+                    m_creature->AddSplineFlag(SPLINEFLAG_FLYING);
                     m_creature->SendMovementFlagUpdate();
                     ++Icebolt_Count;
                 }
@@ -319,7 +319,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
                 {
                     DoScriptText(EMOTE_BREATH, m_creature);
                     DoCast(m_creature,SPELL_FROST_MISSILE);
-                    m_creature->AddMonsterMoveFlag(MONSTER_MOVE_LEVITATING);
+                    m_creature->AddSplineFlag(SPLINEFLAG_FLYING);
                     m_creature->SendMovementFlagUpdate();
                     land_Timer = 5000;
                     FrostBreath_Timer = 6000;
@@ -340,7 +340,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
                 {
                     phase = 1;
                     m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
-                    m_creature->RemoveMonsterMoveFlag(MONSTER_MOVE_LEVITATING);
+                    m_creature->RemoveSplineFlag(SPLINEFLAG_FLYING);
                     m_creature->SendMovementFlagUpdate();
                     m_creature->GetMotionMaster()->Clear(false);
                     m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());

@@ -268,10 +268,10 @@ struct MANGOS_DLL_DECL boss_brundirAI : public ScriptedAI
             {
                 if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_MOLGEIM))))
                     if (pTemp->isAlive() && pTemp->HasAura(SPELL_SUPERCHARGE, EFFECT_INDEX_0))
-                        pTemp->GetAura(SPELL_SUPERCHARGE, EFFECT_INDEX_0)->modStackAmount(+1);
+                        pTemp->GetAura(SPELL_SUPERCHARGE, EFFECT_INDEX_0)->GetHolder()->ModStackAmount(+1);
                 if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_STEELBREAKER))))
                     if (pTemp->isAlive() && pTemp->HasAura(SPELL_SUPERCHARGE, EFFECT_INDEX_0))
-                        pTemp->GetAura(SPELL_SUPERCHARGE,EFFECT_INDEX_0)->modStackAmount(+1);
+                        pTemp->GetAura(SPELL_SUPERCHARGE,EFFECT_INDEX_0)->GetHolder()->ModStackAmount(+1);
             }else
                 DoCast(m_creature, SPELL_SUPERCHARGE);
             die_delay = 500;
@@ -385,13 +385,13 @@ struct MANGOS_DLL_DECL boss_brundirAI : public ScriptedAI
                 //tendrils emote (?)
                 m_creature->CastStop();
                 DoCast(m_creature, LIGHTNING_TENDRILS_VISUAL);
-                if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+                if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                 {
                     m_creature->AddThreat(pTarget,0.0f);
                     m_creature->AI()->AttackStart(pTarget);
                 }
                 tendrils = true;
-                m_creature->SetSpeed(MOVE_RUN, 0.8f);
+                m_creature->SetSpeedRate(MOVE_RUN, 0.8f);
                 Tendrils_start_Timer = 3000;
                 Tendrils_end_Timer = 40000;
                 Tendrils_Change = 5000;
@@ -404,7 +404,7 @@ struct MANGOS_DLL_DECL boss_brundirAI : public ScriptedAI
 
         if (Tendrils_Change < diff && tendrils)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
             {
                 m_creature->AddThreat(pTarget,0.0f);
                 m_creature->AI()->AttackStart(pTarget);
@@ -421,7 +421,7 @@ struct MANGOS_DLL_DECL boss_brundirAI : public ScriptedAI
             if (m_creature->HasAura(LIGHTNING_TENDRILS_VISUAL))
                 m_creature->RemoveAurasDueToSpell(LIGHTNING_TENDRILS_VISUAL);
             Tendrils_start_Timer = 90000;
-            m_creature->SetSpeed(MOVE_RUN, 1.8f);
+            m_creature->SetSpeedRate(MOVE_RUN, 1.8f);
             tendrils = false;
             Chain_Lightning_Timer = 5000;
             Overload_Timer = 35000;
@@ -550,10 +550,10 @@ struct MANGOS_DLL_DECL boss_molgeimAI : public ScriptedAI
             {
                 if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_BRUNDIR))))
                     if (pTemp->isAlive() && pTemp->HasAura(SPELL_SUPERCHARGE, EFFECT_INDEX_0))
-                        pTemp->GetAura(SPELL_SUPERCHARGE, EFFECT_INDEX_0)->modStackAmount(+1);
+                        pTemp->GetAura(SPELL_SUPERCHARGE, EFFECT_INDEX_0)->GetHolder()->ModStackAmount(+1);
                 if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_STEELBREAKER))))
                     if (pTemp->isAlive() && pTemp->HasAura(SPELL_SUPERCHARGE, EFFECT_INDEX_0))
-                        pTemp->GetAura(SPELL_SUPERCHARGE, EFFECT_INDEX_0)->modStackAmount(+1);
+                        pTemp->GetAura(SPELL_SUPERCHARGE, EFFECT_INDEX_0)->GetHolder()->ModStackAmount(+1);
             }else
                 DoCast(m_creature, SPELL_SUPERCHARGE);
             die_delay = 500;
@@ -669,7 +669,7 @@ struct MANGOS_DLL_DECL boss_molgeimAI : public ScriptedAI
 
         if (Rune_Death_Timer < diff && supercharge1)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                 DoCast(pTarget, m_bIsRegularMode ? SPELL_RUNE_OF_DEATH : SPELL_RUNE_OF_DEATH_H);
             Rune_Death_Timer = 60000;
         }else Rune_Death_Timer -= diff;
@@ -677,7 +677,7 @@ struct MANGOS_DLL_DECL boss_molgeimAI : public ScriptedAI
         if (Rune_Summon_Timer < diff && supercharge2)
         {
             m_creature->CastStop();
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                 DoCast(pTarget, SPELL_RUNE_OF_SUMMONING);
             Rune_Summon_Timer = 30000;
         }else Rune_Summon_Timer -= diff;
@@ -814,10 +814,10 @@ struct MANGOS_DLL_DECL boss_steelbreakerAI : public ScriptedAI
             {
                 if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_MOLGEIM))))
                     if (pTemp->isAlive() && pTemp->HasAura(SPELL_SUPERCHARGE, EFFECT_INDEX_0))
-                        pTemp->GetAura(SPELL_SUPERCHARGE, EFFECT_INDEX_0)->modStackAmount(+1);
+                        pTemp->GetAura(SPELL_SUPERCHARGE, EFFECT_INDEX_0)->GetHolder()->ModStackAmount(+1);
                 if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(NPC_BRUNDIR))))
                     if (pTemp->isAlive() && pTemp->HasAura(SPELL_SUPERCHARGE, EFFECT_INDEX_0))
-                        pTemp->GetAura(SPELL_SUPERCHARGE, EFFECT_INDEX_0)->modStackAmount(+1);
+                        pTemp->GetAura(SPELL_SUPERCHARGE, EFFECT_INDEX_0)->GetHolder()->ModStackAmount(+1);
             }else
                 DoCast(m_creature, SPELL_SUPERCHARGE);
             die_delay = 500;
@@ -909,7 +909,7 @@ struct MANGOS_DLL_DECL boss_steelbreakerAI : public ScriptedAI
 
         if (Static_Disruption_Timer < diff && supercharge1)
         {
-            if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM,1))
+            if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,1))
                 DoCast(pTarget, m_bIsRegularMode ? SPELL_STATIC_DISRUPTION : SPELL_STATIC_DISRUPTION_H);
             Static_Disruption_Timer = 60000;
         }else Static_Disruption_Timer -= diff;

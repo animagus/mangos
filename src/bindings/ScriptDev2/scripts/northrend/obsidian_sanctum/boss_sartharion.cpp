@@ -1214,13 +1214,13 @@ struct MANGOS_DLL_DECL mob_tsunamiAI : public ScriptedAI
             move = true;
             if (m_creature->GetPositionX() < 3205)
             {
-                //m_creature->AddMonsterMoveFlag(MONSTER_MOVE_WALK);
+                //m_creature->AddSplineFlag(SPLINEFLAG_WALKMODE);
                 m_creature->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_creature->GetPositionX()+84.0f, m_creature->GetPositionY(), m_creature->GetPositionZ());
                 //m_creature->SendMonsterMoveWithSpeed(m_creature->GetPositionX()+84.0f,m_creature->GetPositionY(),m_creature->GetPositionZ(),15000);
                 //m_creature->GetMap()->CreatureRelocation(m_creature,m_creature->GetPositionX()+84.0f,m_creature->GetPositionY(),m_creature->GetPositionZ(),m_creature->GetOrientation());
             }else
             {
-                //m_creature->AddMonsterMoveFlag(MONSTER_MOVE_WALK);
+                //m_creature->AddSplineFlag(SPLINEFLAG_WALKMODE);
                 m_creature->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_creature->GetPositionX()-84.0f, m_creature->GetPositionY(), m_creature->GetPositionZ());
                 //m_creature->SendMonsterMoveWithSpeed(m_creature->GetPositionX()-84.0f,m_creature->GetPositionY(),m_creature->GetPositionZ(),15000);
                 //m_creature->GetMap()->CreatureRelocation(m_creature,m_creature->GetPositionX()-84.0f,m_creature->GetPositionY(),m_creature->GetPositionZ(),m_creature->GetOrientation());

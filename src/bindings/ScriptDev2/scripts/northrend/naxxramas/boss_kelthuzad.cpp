@@ -150,13 +150,13 @@ I also don't know the emotes
 
 float AddNpc[7][4]=
 {
-    {3763.591553, -5074.789062, 143.182022, 3.698747},
-    {3727.601074, -5049.215332, 143.281937, 4.492000},
-    {3685.690430, -5062.457520, 143.179794, 5.501236},
-    {3660.546875, -5096.548828, 143.284775, 6.029805},
-    {3668.957764, -5139.075684, 143.181763, 0.743290},
-    {3704.820312, -5164.700684, 143.285233, 1.363758},
-    {3749.049805, -5155.220703, 143.182693, 2.124021},
+    {3763.591553f, -5074.789062f, 143.182022f, 3.698747f},
+    {3727.601074f, -5049.215332f, 143.281937f, 4.492000f},
+    {3685.690430f, -5062.457520f, 143.179794f, 5.501236f},
+    {3660.546875f, -5096.548828f, 143.284775f, 6.029805f},
+    {3668.957764f, -5139.075684f, 143.181763f, 0.743290f},
+    {3704.820312f, -5164.700684f, 143.285233f, 1.363758f},
+    {3749.049805f, -5155.220703f, 143.182693f, 2.124021f},
 };
 
 float AddLocations[42][4]=
@@ -433,7 +433,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
             {
                 uint8 j = (rand()%7);
                 if (Creature* pSkelet = m_creature->SummonCreature(16427,AddNpc[j][0],AddNpc[j][1],AddNpc[j][2],AddNpc[j][3],TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,20000))
-                    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                     {
                         pSkelet->SetNoCallAssistance(true);
                         pSkelet->AI()->AttackStart(target);
@@ -446,7 +446,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
             {
                 uint8 j = (rand()%7);
                 if (Creature* pAbom = m_creature->SummonCreature(16428,AddNpc[j][0],AddNpc[j][1],AddNpc[j][2],AddNpc[j][3],TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,20000))
-                    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                     {
                         pAbom->SetNoCallAssistance(true);
                         pAbom->AI()->AttackStart(target);
@@ -458,7 +458,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
             {
                 uint8 j = (rand()%7);
                 if (Creature* pBanshe = m_creature->SummonCreature(16429,AddNpc[j][0],AddNpc[j][1],AddNpc[j][2],AddNpc[j][3],TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,20000))
-                    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                     {
                         pBanshe->SetNoCallAssistance(true);
                         pBanshe->AI()->AttackStart(target);
@@ -568,7 +568,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
             //Check for Shadow Fissure
             if (ShadowFisure_Timer < diff)
             {
-                DoCast(SelectUnit(SELECT_TARGET_RANDOM,0),SPELL_SHADOW_FISURE, true);
+                DoCast(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0),SPELL_SHADOW_FISURE, true);
 
                 if (rand()%2)
                     DoScriptText(SAY_SPECIAL3_MANA_DET, m_creature);
@@ -720,7 +720,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
                 if (pGuardian)
                 {
                     //if we find no one to figth walk to the center
-                    if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+                    if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                         pGuardian->AI()->AttackStart(target);
 
                     //Safe storing of creatures

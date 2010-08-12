@@ -279,7 +279,7 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
         //RainOfFire_Timer
         if (RainOfFire_Timer < diff)
         {
-            if (Unit* target = SelectUnit(SELECT_TARGET_RANDOM,0))
+            if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                 DoCast(target, !m_bIsRegularModeMode ? SPELL_RAINOFFIRE_H : SPELL_RAINOFFIRE);
 
             RainOfFire_Timer = 16000;

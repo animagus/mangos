@@ -22,16 +22,16 @@
 #include "Creature.h"
 #include "ObjectAccessor.h"
 
-class MANGOS_DLL_SPEC TemporarySummon : public Creature
+class TemporarySummon : public Creature
 {
     public:
         explicit TemporarySummon(ObjectGuid summoner = ObjectGuid());
         virtual ~TemporarySummon(){};
         void Update(uint32 time);
         void Summon(TempSummonType type, uint32 lifetime);
-        void UnSummon();
+        void MANGOS_DLL_SPEC  UnSummon();
         void SaveToDB();
-        ObjectGuid const& GetSummonerGuid() const { return m_summoner ; }
+        ObjectGuid MANGOS_DLL_SPEC const& GetSummonerGuid() const { return m_summoner ; }
         Unit* GetSummoner() const { return ObjectAccessor::GetUnit(*this, m_summoner); }
     private:
         TempSummonType m_type;
