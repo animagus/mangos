@@ -374,6 +374,7 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
         berserk = false;
         m_achievement = true;
         Counter = 0;
+        m_creature->AddSplineFlag(SPLINEFLAG_FLYING);
         if (m_pInstance)
             m_pInstance->SetData(TYPE_RAZORSCALE, NOT_STARTED);
     }
@@ -410,7 +411,7 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
         SetCombatMovement(false);
         m_creature->GetMotionMaster()->MoveIdle();
         m_creature->GetMap()->CreatureRelocation(m_creature, RazorscaleBossX[1], RazorscaleBossY[1], RazorscaleBossZ[1], 0.0f);
-        m_creature->SendMonsterMove(RazorscaleBossX[1], RazorscaleBossY[1], RazorscaleBossZ[1], SPLINETYPE_FACINGSPOT, SPLINEFLAG_TRAJECTORY, 1);
+        m_creature->SendMonsterMove(RazorscaleBossX[1], RazorscaleBossY[1], RazorscaleBossZ[1], SPLINETYPE_FACINGTARGET, SPLINEFLAG_FLYING, 1);
     }
 
     void JustReachedHome()
@@ -498,6 +499,7 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
 
         if (Timetoground < diff && airphase)
         {
+            m_creature->RemoveSplineFlag(SPLINEFLAG_FLYING);
             m_creature->GetMap()->CreatureRelocation(m_creature, RazorscaleBossX[2], RazorscaleBossY[2], RazorscaleBossZ[2], 1.5);
             m_creature->SendMonsterMove(RazorscaleBossX[2], RazorscaleBossY[2], RazorscaleBossZ[2], SPLINETYPE_NORMAL, SPLINEFLAG_NONE, 1);
             grounded = true;
@@ -529,8 +531,9 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
 
         if (Grounded_Timer < diff && grounded)
         {
+            m_creature->AddSplineFlag(SPLINEFLAG_FLYING);
             m_creature->GetMap()->CreatureRelocation(m_creature, RazorscaleBossX[1], RazorscaleBossY[1], RazorscaleBossZ[1], 0.0f);
-            m_creature->SendMonsterMove(RazorscaleBossX[1], RazorscaleBossY[1], RazorscaleBossZ[1], SPLINETYPE_FACINGSPOT, SPLINEFLAG_TRAJECTORY, 1);
+            m_creature->SendMonsterMove(RazorscaleBossX[1], RazorscaleBossY[1], RazorscaleBossZ[1], SPLINETYPE_FACINGSPOT, SPLINEFLAG_FLYING, 1);
             grounded = false;
             Fireball_Timer = 10000;
             Devouring_Flame_Timer = 18000;
@@ -544,6 +547,7 @@ struct MANGOS_DLL_DECL boss_razorscaleAI : public ScriptedAI
         {
             if (m_creature->HasAura(SPELL_STUN))
                 m_creature->RemoveAurasDueToSpell(SPELL_STUN);
+            m_creature->RemoveSplineFlag(SPLINEFLAG_FLYING);
             airphase = false;
             grounded = false;
             Devouring_Flame_Timer = 12000;

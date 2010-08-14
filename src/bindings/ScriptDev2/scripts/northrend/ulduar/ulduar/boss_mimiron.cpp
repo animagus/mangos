@@ -117,12 +117,17 @@ struct MANGOS_DLL_DECL boss_mimironAI : public Scripted_NoMovementAI
         m_bIsDeath = false;
         m_bIsDeath2 = false;
         m_bIsDeath3 = false;
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
     void Aggro(Unit *who) 
     {
         if(m_pInstance)
             m_pInstance->SetData(TYPE_MIMIRON, IN_PROGRESS);
+
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
     void JustDied(Unit *killer)
