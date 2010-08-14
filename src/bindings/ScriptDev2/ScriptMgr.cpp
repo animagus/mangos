@@ -17,6 +17,11 @@ Script *m_scripts[MAX_SCRIPTS];
 
 Config SD2Config;
 
+QueryResult* strSD2Pquery(char* str)
+{
+    return SD2Database.Query(str);
+}
+
 void FillSpellSummary();
 
 void LoadDatabase()

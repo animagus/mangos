@@ -62,7 +62,7 @@ struct MANGOS_DLL_DECL mob_ulduar_teleporterAI : public ScriptedAI
     {
         if (!m_pInstance)
             return;
-        pPlayer->TeleportTo(603, -706.098022, -92.512573, 430.275574, 6.279854);
+        pPlayer->TeleportTo(603, -706.098022f, -92.512573f, 430.275574f, 6.279854f);
     }
 
     void FormationGrounds(Player* pPlayer)
@@ -121,7 +121,7 @@ struct MANGOS_DLL_DECL mob_ulduar_teleporterAI : public ScriptedAI
             return;
         if(m_pInstance->GetData(TYPE_MIMIRON) == FAIL || m_pInstance->GetData(TYPE_MIMIRON) == DONE)
         {
-            pPlayer->TeleportTo(603, 2517.345459, 2568.905762, 412.698486, 0.000377);
+            pPlayer->TeleportTo(603, 2517.345459f, 2568.905762f, 412.698486f, 0.000377f);
         }else debug_log("SD2: Ulduar - player %s is a moron. he tried to teleport to the spark of imagination without engaging Mimiron", pPlayer->GetName());
     }
 
