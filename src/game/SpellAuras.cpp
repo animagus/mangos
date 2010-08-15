@@ -7494,6 +7494,22 @@ void Aura::PeriodicDummyTick()
                     target->CastSpell(target, 53521, true, NULL, this);
                     target->CastSpell(target, 53521, true, NULL, this);
                     return;
+                case 63382:
+                    {
+                        Unit *Caster = GetCaster();
+                        if (!Caster)
+                            return;
+
+                        bool isNormal = Caster->GetMap()->IsRegularDifficulty();                        
+                        if (m_effIndex == 0)
+                        {
+                            if (rand()%2)
+                                Caster->CastSpell(target, isNormal ? 64019 : 64532, true, NULL, this);
+                            else
+                                Caster->CastSpell(target, isNormal ? 63387 : 64531, true, NULL, this);
+                        }
+                    }
+                    return;
                 case 55592:                                 // Clean
                     switch(urand(0,2))
                     {
@@ -7544,8 +7560,12 @@ void Aura::PeriodicDummyTick()
         case SPELLFAMILY_MAGE:
         {
             // Mirror Image
-//            if (spell->Id == 55342)
-//                return;
+            if (spell->Id == 55342)
+            {
+                // Set name of summons to name of caster
+                target->CastSpell((Unit *)NULL, GetSpellProto()->EffectTriggerSpell[m_effIndex], true);
+                m_isPeriodic = false;
+            }
             break;
         }
         case SPELLFAMILY_DRUID:
