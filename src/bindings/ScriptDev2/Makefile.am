@@ -80,6 +80,8 @@ scripts/eastern_kingdoms/blackrock_spire/boss_rend_blackhand.cpp \
 scripts/eastern_kingdoms/blackrock_spire/boss_shadow_hunter_voshgajin.cpp \
 scripts/eastern_kingdoms/blackrock_spire/boss_the_beast.cpp \
 scripts/eastern_kingdoms/blackrock_spire/boss_warmaster_voone.cpp \
+scripts/eastern_kingdoms/blackrock_spire/instance_blackrock_spire.cpp \
+scripts/eastern_kingdoms/blackrock_spire/blackrock_spire.h \
 scripts/eastern_kingdoms/blackwing_lair/boss_broodlord_lashlayer.cpp \
 scripts/eastern_kingdoms/blackwing_lair/boss_chromaggus.cpp \
 scripts/eastern_kingdoms/blackwing_lair/boss_ebonroc.cpp \
@@ -118,6 +120,7 @@ scripts/eastern_kingdoms/karazhan/instance_karazhan.cpp \
 scripts/eastern_kingdoms/karazhan/karazhan.cpp \
 scripts/eastern_kingdoms/karazhan/karazhan.h \
 scripts/eastern_kingdoms/loch_modan.cpp \
+scripts/eastern_kingdoms/redridge_mountains.cpp \
 scripts/eastern_kingdoms/magisters_terrace/boss_felblood_kaelthas.cpp \
 scripts/eastern_kingdoms/magisters_terrace/boss_priestess_delrissa.cpp \
 scripts/eastern_kingdoms/magisters_terrace/boss_selin_fireheart.cpp \
@@ -173,6 +176,7 @@ scripts/eastern_kingdoms/silvermoon_city.cpp \
 scripts/eastern_kingdoms/silverpine_forest.cpp \
 scripts/eastern_kingdoms/stormwind_city.cpp \
 scripts/eastern_kingdoms/stranglethorn_vale.cpp \
+scripts/eastern_kingdoms/swamp_of_sorrows.cpp \
 scripts/eastern_kingdoms/stratholme/boss_baron_rivendare.cpp \
 scripts/eastern_kingdoms/stratholme/boss_baroness_anastari.cpp \
 scripts/eastern_kingdoms/stratholme/boss_cannon_master_willey.cpp \
@@ -197,6 +201,8 @@ scripts/eastern_kingdoms/sunwell_plateau/def_sunwell_plateau.h \
 scripts/eastern_kingdoms/sunwell_plateau/instance_sunwell_plateau.cpp \
 scripts/eastern_kingdoms/tirisfal_glades.cpp \
 scripts/eastern_kingdoms/uldaman/boss_ironaya.cpp \
+scripts/eastern_kingdoms/uldaman/boss_archaedas.cpp \
+scripts/eastern_kingdoms/uldaman/uldaman.h \
 scripts/eastern_kingdoms/uldaman/uldaman.cpp \
 scripts/eastern_kingdoms/undercity.cpp \
 scripts/eastern_kingdoms/western_plaguelands.cpp \
@@ -274,9 +280,13 @@ scripts/kalimdor/maraudon/boss_princess_theradras.cpp \
 scripts/kalimdor/moonglade.cpp \
 scripts/kalimdor/mulgore.cpp \
 scripts/kalimdor/onyxias_lair/boss_onyxia.cpp \
+scripts/kalimdor/onyxias_lair/instance_onyxias_lair.cpp \
+scripts/kalimdor/onyxias_lair/onyxias_lair.h \
 scripts/kalimdor/orgrimmar.cpp \
 scripts/kalimdor/razorfen_downs/boss_amnennar_the_coldbringer.cpp \
 scripts/kalimdor/razorfen_downs/razorfen_downs.cpp \
+scripts/kalimdor/razorfen_kraul/instance_razorfen_kraul.cpp \
+scripts/kalimdor/razorfen_kraul/razorfen_kraul.h \
 scripts/kalimdor/ruins_of_ahnqiraj/boss_ayamiss.cpp \
 scripts/kalimdor/ruins_of_ahnqiraj/boss_buru.cpp \
 scripts/kalimdor/ruins_of_ahnqiraj/boss_kurinnaxx.cpp \
@@ -535,6 +545,7 @@ scripts/world/item_scripts.cpp \
 scripts/world/mob_generic_creature.cpp \
 scripts/world/npc_professions.cpp \
 scripts/world/npcs_special.cpp \
+scripts/world/spell_scripts.cpp \
 system/ScriptLoader.cpp \
 system/ScriptLoader.h \
 system/system.cpp \
