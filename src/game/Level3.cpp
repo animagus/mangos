@@ -3572,7 +3572,7 @@ bool ChatHandler::HandleGuildUninviteCommand(char *args)
     if (!targetGuild)
         return false;
 
-    targetGuild->DelMember (target_guid);
+    targetGuild->DelMember(target_guid);
     return true;
 }
 
@@ -3601,7 +3601,11 @@ bool ChatHandler::HandleGuildRankCommand(char *args)
     if (newrank > targetGuild->GetLowestRank ())
         return false;
 
-    targetGuild->ChangeRank (target_guid,newrank);
+    MemberSlot* slot = targetGuild->GetMemberSlot(target_guid);
+    if (!slot)
+        return false;
+
+    slot->ChangeRank(newrank);
     return true;
 }
 
@@ -5713,7 +5717,7 @@ bool ChatHandler::HandlePDumpLoadCommand(char *args)
 
     char* name_str = ExtractLiteralArg(&args);
 
-    uint32 guid = 0;
+    uint32 lowguid = 0;
     std::string name;
 
     if (name_str)
@@ -5736,26 +5740,28 @@ bool ChatHandler::HandlePDumpLoadCommand(char *args)
 
         if (*args)
         {
-            if (!ExtractUInt32(&args, guid))
+            if (!ExtractUInt32(&args, lowguid))
                 return false;
 
-            if (!guid)
+            if (!lowguid)
             {
                 PSendSysMessage(LANG_INVALID_CHARACTER_GUID);
                 SetSentErrorMessage(true);
                 return false;
             }
 
+            ObjectGuid guid = ObjectGuid(HIGHGUID_PLAYER, lowguid);
+
             if (sObjectMgr.GetPlayerAccountIdByGUID(guid))
             {
-                PSendSysMessage(LANG_CHARACTER_GUID_IN_USE,guid);
+                PSendSysMessage(LANG_CHARACTER_GUID_IN_USE, lowguid);
                 SetSentErrorMessage(true);
                 return false;
             }
         }
     }
 
-    switch(PlayerDumpReader().LoadDump(file, account_id, name, guid))
+    switch(PlayerDumpReader().LoadDump(file, account_id, name, lowguid))
     {
         case DUMP_SUCCESS:
             PSendSysMessage(LANG_COMMAND_IMPORT_SUCCESS);
@@ -5787,34 +5793,45 @@ bool ChatHandler::HandlePDumpWriteCommand(char *args)
         return false;
 
     char* file = ExtractQuotedOrLiteralArg(&args);
-    if(!file)
+    if (!file)
         return false;
 
     char* p2 = ExtractLiteralArg(&args);
 
-    uint32 guid;
+    uint32 lowguid;
+    ObjectGuid guid;
     // character name can't start from number
-    if (!ExtractUInt32(&args, guid))
+    if (!ExtractUInt32(&p2, lowguid))
     {
         std::string name = ExtractPlayerNameFromLink(&p2);
-        if(name.empty())
+        if (name.empty())
         {
             SendSysMessage(LANG_PLAYER_NOT_FOUND);
             SetSentErrorMessage(true);
             return false;
         }
 
-        guid = GUID_LOPART(sObjectMgr.GetPlayerGUIDByName(name));
-    }
+        guid = sObjectMgr.GetPlayerGUIDByName(name);
+        if (guid.IsEmpty())
+        {
+            PSendSysMessage(LANG_PLAYER_NOT_FOUND);
+            SetSentErrorMessage(true);
+            return false;
+        }
 
-    if(!sObjectMgr.GetPlayerAccountIdByGUID(guid))
+        lowguid = guid.GetCounter();
+    }
+    else
+        guid = ObjectGuid(HIGHGUID_PLAYER, lowguid);
+
+    if (!sObjectMgr.GetPlayerAccountIdByGUID(guid))
     {
         PSendSysMessage(LANG_PLAYER_NOT_FOUND);
         SetSentErrorMessage(true);
         return false;
     }
 
-    switch(PlayerDumpWriter().WriteDump(file, guid))
+    switch(PlayerDumpWriter().WriteDump(file, lowguid))
     {
         case DUMP_SUCCESS:
             PSendSysMessage(LANG_COMMAND_EXPORT_SUCCESS);
