@@ -105,7 +105,7 @@ struct MANGOS_DLL_DECL boss_ymironAI : public ScriptedAI
     bool m_bIsRanulf;
     bool m_bIsTorgyn;
 
-    uint64 m_uiOrbGUID;
+    ObjectGuid m_uiOrbGUID;
     uint32 m_uiPauseTimer;
     uint32 m_uiBaneTimer;
     uint32 m_uiFetidRotTimer; 
@@ -179,7 +179,7 @@ struct MANGOS_DLL_DECL boss_ymironAI : public ScriptedAI
 
         if(m_uiOrbTargetChanger < uiDiff)
         {
-            Creature* pSpirit = (Creature*)Unit::GetUnit(*m_creature, m_uiOrbGUID);
+            Creature* pSpirit = (Creature*)m_creature->GetMap()->GetUnit(m_uiOrbGUID);
             if(pSpirit && pSpirit->isAlive())
                 if(Unit* pPlayer = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
                     pSpirit->GetMotionMaster()->MoveChase(pPlayer);
@@ -244,7 +244,7 @@ struct MANGOS_DLL_DECL boss_ymironAI : public ScriptedAI
             if (Creature* pSpirit = m_creature->SummonCreature(CREATURE_SPIRIT_FOUNT, m_creature->GetPositionX()+urand(1,10), m_creature->GetPositionY()+urand(1,10), m_creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
             {
                 pSpirit->CastSpell(pSpirit, m_bIsRegularMode ? SPELL_SPIRIT_FOUNT : H_SPELL_SPIRIT_FOUNT, true);
-                m_uiOrbGUID = pSpirit->GetGUID();
+                m_uiOrbGUID = pSpirit->GetObjectGuid();
                 m_uiOrbTargetChanger = 1000;
             }
             m_bIsBjorn = false;
@@ -252,7 +252,7 @@ struct MANGOS_DLL_DECL boss_ymironAI : public ScriptedAI
 
         if((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < (100-((m_bIsRegularMode ? 33 : 20) * m_uiHealthAmountModifier)))
         {
-            if(Creature* pSpirit = (Creature*)Unit::GetUnit(*m_creature, m_uiOrbGUID))
+            if(Creature* pSpirit = (Creature*)m_creature->GetMap()->GetUnit(m_uiOrbGUID))
             {
                 pSpirit->setFaction(35);
                 pSpirit->ForcedDespawn();

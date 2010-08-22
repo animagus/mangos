@@ -51,7 +51,7 @@ EndScriptData */
 #define ACHIEVEMENT_THE_HUNDRED_CLUB    2146
 #define ACHIEVEMENT_THE_HUNDRED_CLUB_H  2147
 #define MAX_FROST_RESISTANCE            100
-typedef std::map<uint64, uint64> IceBlockMap;
+typedef std::map<ObjectGuid, uint64> IceBlockMap;
 
 struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
 {
@@ -174,7 +174,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
     {
         for (IceBlockMap::iterator itr = iceblocks.begin(); itr != iceblocks.end(); ++itr)
         {
-            if (Unit* pPlayer = Unit::GetUnit(*m_creature,itr->first))
+            if (Unit* pPlayer = m_creature->GetMap()->GetUnit(itr->first))
                 pPlayer->RemoveAurasDueToSpell(SPELL_ICEBOLT);
             if (GameObject* pGo = GameObject::GetGameObject(*m_creature, itr->second))
                 pGo->Delete();
@@ -186,7 +186,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
 	{
 		if (spell->Id == SPELL_ICEBOLT)
 		{
-			IceBlockMap::iterator itr = iceblocks.find(pTarget->GetGUID());
+			IceBlockMap::iterator itr = iceblocks.find(pTarget->GetObjectGuid());
 			if (itr != iceblocks.end() && !itr->second)
 			{
 				if (GameObject *iceblock = m_creature->SummonGameObject(GO_ICEBLOCK, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, 0, 0, 0, 0, 1000))
@@ -303,7 +303,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
                 {
                     std::vector<Unit*>::iterator itr = targets.begin();
                     advance(itr, rand()%targets.size());
-                    iceblocks.insert(std::make_pair((*itr)->GetGUID(), 0));
+                    iceblocks.insert(std::make_pair((*itr)->GetObjectGuid(), 0));
                     DoCast(*itr, SPELL_ICEBOLT);
                     m_creature->AddSplineFlag(SPLINEFLAG_FLYING);
                     m_creature->SendMovementFlagUpdate();

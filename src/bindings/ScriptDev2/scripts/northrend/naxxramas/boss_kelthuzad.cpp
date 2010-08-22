@@ -224,8 +224,8 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
     }
 
     ScriptedInstance* m_pInstance;
-    uint64 GuardiansOfIcecrown[5];
-    uint64 MobsArround[42];
+    ObjectGuid GuardiansOfIcecrown[5];
+    ObjectGuid MobsArround[42];
     bool m_bIsRegularMode;
 
     uint32 AbomsTimer;
@@ -266,10 +266,10 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
 
         for(int i=0; i<5; i++)
         {
-            if (GuardiansOfIcecrown[i])
+            if (!GuardiansOfIcecrown[i].IsEmpty())
             {
                 //delete creature
-                if (Creature* pGuardian = (Creature*)Unit::GetUnit(*m_creature, GuardiansOfIcecrown[i]))
+                if (Creature* pGuardian = (Creature*)m_creature->GetMap()->GetUnit(GuardiansOfIcecrown[i]))
                 {
                     if (pGuardian->isAlive())
                         pGuardian->ForcedDespawn();
@@ -281,10 +281,10 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
 
         for(int i=0; i<42; i++)
         {
-            if (MobsArround[i])
+            if (!MobsArround[i].IsEmpty())
             {
                 //delete creature
-                if (Creature* pGuardian = (Creature*)Unit::GetUnit(*m_creature, MobsArround[i]))
+                if (Creature* pGuardian = (Creature*)m_creature->GetMap()->GetUnit(MobsArround[i]))
                 {
                     if (pGuardian->isAlive())
                         pGuardian->ForcedDespawn();
@@ -331,9 +331,9 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
 
         for(int i=0; i<5; i++)
         {
-            if (GuardiansOfIcecrown[i])
+            if (!GuardiansOfIcecrown[i].IsEmpty())
             {
-                Creature* pGuardian = (Creature*)Unit::GetUnit(*m_creature, GuardiansOfIcecrown[i]);
+                Creature* pGuardian = (Creature*)m_creature->GetMap()->GetUnit(GuardiansOfIcecrown[i]);
 
                 if (!pGuardian || !pGuardian->isAlive())
                     continue;
@@ -390,21 +390,21 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
         for (int i = 0; i < 12; i++)
         {
             if (Creature* pBanshe = m_creature->SummonCreature(16429,AddLocations[i][0],AddLocations[i][1],AddLocations[i][2],AddLocations[i][3],TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,600000))
-                MobsArround[i] = pBanshe->GetGUID();
+                MobsArround[i] = pBanshe->GetObjectGuid();
         }
         
         // spawn aboms
         for (int i = 12; i < 24; i++)
         {
             if (Creature* pAboms = m_creature->SummonCreature(16428,AddLocations[i][0],AddLocations[i][1],AddLocations[i][2],AddLocations[i][3],TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,600000))
-                MobsArround[i] = pAboms->GetGUID();
+                MobsArround[i] = pAboms->GetObjectGuid();
         }
 
         // spawn skelets
         for (int i = 24; i < 42; i++)
         {
             if (Creature* pSkelets = m_creature->SummonCreature(16427,AddLocations[i][0],AddLocations[i][1],AddLocations[i][2],AddLocations[i][3],TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,600000))
-                MobsArround[i] = pSkelets->GetGUID();
+                MobsArround[i] = pSkelets->GetObjectGuid();
         }
     }
 
@@ -479,10 +479,10 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
 
                 for(int i=0; i<42; i++)
                 {
-                    if (MobsArround[i])
+                    if (!MobsArround[i].IsEmpty())
                     {
                         //delete creature
-                        if (Creature* pGuardian = (Creature*)Unit::GetUnit(*m_creature, MobsArround[i]))
+                        if (Creature* pGuardian = (Creature*)m_creature->GetMap()->GetUnit(MobsArround[i]))
                             if (pGuardian->isAlive())
                                 pGuardian->ForcedDespawn();
 
@@ -549,7 +549,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
                 std::vector<Unit *> target_list;
                 for(ThreatList::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                 {
-                    pTarget = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+                    pTarget = m_creature->GetMap()->GetUnit((*itr)->getUnitGuid());
                     if (pTarget && pTarget->GetTypeId() == TYPEID_PLAYER && pTarget->getPowerType() == POWER_MANA)
                         target_list.push_back(pTarget);
                     pTarget = NULL;
@@ -587,7 +587,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
                 // find random player target
                 for(ThreatList::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                 {
-                    pTarget = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+                    pTarget = m_creature->GetMap()->GetUnit((*itr)->getUnitGuid());
                     if (pTarget && pTarget->GetTypeId() == TYPEID_PLAYER)
                         target_list.push_back(pTarget);
                     pTarget = NULL;
@@ -724,7 +724,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
                         pGuardian->AI()->AttackStart(target);
 
                     //Safe storing of creatures
-                    GuardiansOfIcecrown[GuardiansOfIcecrown_Count] = pGuardian->GetGUID();
+                    GuardiansOfIcecrown[GuardiansOfIcecrown_Count] = pGuardian->GetObjectGuid();
 
                     //Update guardian count
                     GuardiansOfIcecrown_Count++;

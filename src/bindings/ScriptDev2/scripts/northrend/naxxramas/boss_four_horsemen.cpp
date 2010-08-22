@@ -81,13 +81,13 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
 
         if (m_pInstance)
         {
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_KORTHAZZ))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_RIVENDARE))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_ZELIEK))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
         }
@@ -112,23 +112,23 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
         {
             m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, IN_PROGRESS);
             
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_KORTHAZZ))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_RIVENDARE))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_ZELIEK))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
 
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_KORTHAZZ))))
                 if (pTemp->isAlive() && !pTemp->getVictim())
                     pTemp->AI()->AttackStart(who);
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_RIVENDARE))))
                 if (pTemp->isAlive() && !pTemp->getVictim())
                     pTemp->AI()->AttackStart(who);
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_ZELIEK))))
                 if (pTemp->isAlive() && !pTemp->getVictim())
                     pTemp->AI()->AttackStart(who);
         }
@@ -171,13 +171,13 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public Scripted_NoMovementAI
         if (m_pInstance)
         {
             bool HorsemenDead = true;
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_KORTHAZZ))))
                 if (pTemp->isAlive())
                     HorsemenDead = false;
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_RIVENDARE))))
                 if (pTemp->isAlive())
                     HorsemenDead = false;
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_ZELIEK))))
                 if (pTemp->isAlive())
                     HorsemenDead = false;
 
@@ -308,13 +308,13 @@ struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
 
         if (m_pInstance)
         {
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_KORTHAZZ))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_BLAUMEUX))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_ZELIEK))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
         }
@@ -344,23 +344,23 @@ struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
         {
             m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, IN_PROGRESS);
 
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_KORTHAZZ))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_BLAUMEUX))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_ZELIEK))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
 
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_KORTHAZZ))))
                 if (pTemp->isAlive() && !pTemp->getVictim())
                     pTemp->AI()->AttackStart(who);
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_BLAUMEUX))))
                 if (pTemp->isAlive() && !pTemp->getVictim())
                     pTemp->AI()->AttackStart(who);
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_ZELIEK))))
                 if (pTemp->isAlive() && !pTemp->getVictim())
                     pTemp->AI()->AttackStart(who);
         }
@@ -382,13 +382,13 @@ struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
         if (m_pInstance)
         {
             bool HorsemenDead = true;
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_KORTHAZZ))))
                 if (pTemp->isAlive())
                     HorsemenDead = false;
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_BLAUMEUX))))
                 if (pTemp->isAlive())
                     HorsemenDead = false;
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_ZELIEK))))
                 if (pTemp->isAlive())
                     HorsemenDead = false;
 
@@ -485,13 +485,13 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
 
         if (m_pInstance)
         {
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_RIVENDARE))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_BLAUMEUX))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_ZELIEK))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
         }
@@ -516,23 +516,23 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
         {
             m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, IN_PROGRESS);
 
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_RIVENDARE))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_BLAUMEUX))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_ZELIEK))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
 
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_RIVENDARE))))
                 if (pTemp->isAlive() && !pTemp->getVictim())
                     pTemp->AI()->AttackStart(who);
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_BLAUMEUX))))
                 if (pTemp->isAlive() && !pTemp->getVictim())
                     pTemp->AI()->AttackStart(who);
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_ZELIEK))))
                 if (pTemp->isAlive() && !pTemp->getVictim())
                     pTemp->AI()->AttackStart(who);
         }
@@ -545,13 +545,13 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
         if (m_pInstance)
         {
             bool HorsemenDead = true;
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_RIVENDARE))))
                 if (pTemp->isAlive())
                     HorsemenDead = false;
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_BLAUMEUX))))
                 if (pTemp->isAlive())
                     HorsemenDead = false;
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_ZELIEK))))
                 if (pTemp->isAlive())
                     HorsemenDead = false;
 
@@ -567,13 +567,13 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
         if (m_pInstance)
         {
             bool HorsemenDead = true;
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_ZELIEK))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_ZELIEK))))
                 if (pTemp->isAlive())
                     HorsemenDead = false;
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_RIVENDARE))))
                 if (pTemp->isAlive())
                     HorsemenDead = false;
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_BLAUMEUX))))
                 if (pTemp->isAlive())
                     HorsemenDead = false;
 
@@ -683,13 +683,13 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
 
         if (m_pInstance)
         {
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_KORTHAZZ))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_RIVENDARE))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_BLAUMEUX))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
         }
@@ -715,23 +715,23 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
             m_pInstance->SetData(ENCOUNT_FOURHORSEMAN, IN_PROGRESS);
 
             // stupid check. need to avoid bug with one-pull boss.
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_KORTHAZZ))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_RIVENDARE))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_BLAUMEUX))))
                 if (!pTemp->isAlive())
                     pTemp->Respawn();
 
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_KORTHAZZ))))
                 if (pTemp->isAlive() && !pTemp->getVictim())
                     pTemp->AI()->AttackStart(who);
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_RIVENDARE))))
                 if (pTemp->isAlive() && !pTemp->getVictim())
                     pTemp->AI()->AttackStart(who);
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_BLAUMEUX))))
                 if (pTemp->isAlive() && !pTemp->getVictim())
                     pTemp->AI()->AttackStart(who);
         }
@@ -774,13 +774,13 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public Scripted_NoMovementAI
         if (m_pInstance)
         {
             bool HorsemenDead = true;
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_KORTHAZZ))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_KORTHAZZ))))
                 if (pTemp->isAlive())
                     HorsemenDead = false;
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_RIVENDARE))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_RIVENDARE))))
                 if (pTemp->isAlive())
                     HorsemenDead = false;
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_BLAUMEUX))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_BLAUMEUX))))
                 if (pTemp->isAlive())
                     HorsemenDead = false;
 

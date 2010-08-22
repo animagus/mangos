@@ -974,28 +974,10 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
 
                                 if (q_status.uState != QUEST_NEW) q_status.uState = QUEST_CHANGED;
 
-                                user->SendQuestUpdateAddCreatureOrGo( pQuest, 0, 0, oldCount, m_counted );
+                                user->SendQuestUpdateAddCreatureOrGo( pQuest, ObjectGuid(), 0, oldCount, m_counted );
                                 if( user->CanCompleteQuest(QuestID) )
                                     user->CompleteQuest( QuestID );
                             }
-                        }
-                        return;
-                    }
-                    case 50547: // Q: Atop the Woodlands (H/A)
-                    {
-                        if( m_caster->GetTypeId() == TYPEID_PLAYER )
-                        {
-                            if( ((Player*)m_caster)->GetQuestStatus(12084) == QUEST_STATUS_INCOMPLETE || ((Player*)m_caster)->GetQuestStatus(12083) == QUEST_STATUS_INCOMPLETE )
-                                ((Player*)m_caster)->KilledMonsterCredit(26831, 0);
-                        }
-                        return;
-                    }
-                    case 50546: // Q: The Focus on the Beach (H/A)
-                    {
-                        if( m_caster->GetTypeId() == TYPEID_PLAYER )
-                        {
-                            if( ((Player*)m_caster)->GetQuestStatus(12065) == QUEST_STATUS_INCOMPLETE || ((Player*)m_caster)->GetQuestStatus(12066) == QUEST_STATUS_INCOMPLETE )
-                                ((Player*)m_caster)->KilledMonsterCredit(26773, 0);
                         }
                         return;
                     }
@@ -1004,7 +986,7 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
                         if( m_caster->GetTypeId() != TYPEID_PLAYER )
                             return;
 
-                        ((Player*)m_caster)->KilledMonsterCredit(24281, 0);
+                        ((Player*)m_caster)->KilledMonsterCredit(24281, ObjectGuid());
                     }
                 }
                 break;
@@ -2110,7 +2092,7 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
                     m_caster->DealDamage(unitTarget, unitTarget->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                     if(m_originalCaster && m_originalCaster->GetTypeId() == TYPEID_PLAYER)
                     {
-                        ((Player*)m_originalCaster)->KilledMonsterCredit(23797, 0);
+                        ((Player*)m_originalCaster)->KilledMonsterCredit(23797, unitTarget->GetObjectGuid());
                     }
                     break;
                 }
@@ -6807,9 +6789,8 @@ void Spell::EffectScriptEffect(SpellEffectIndex eff_idx)
                 {
                     // Cool hack, bro!
                     if(!m_caster || m_caster->GetTypeId() != TYPEID_PLAYER)
-                        return;
-
-                    ((Player*)m_caster)->KilledMonsterCredit(24108, 0);
+                        return
+                    ((Player*)m_caster)->KilledMonsterCredit(24108, ObjectGuid());
                     return;
                 }
                 case 24719:

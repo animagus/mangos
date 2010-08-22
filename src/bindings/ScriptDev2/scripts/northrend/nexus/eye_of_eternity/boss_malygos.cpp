@@ -267,7 +267,7 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
     uint8 m_uiSubPhase; //Subphase if needed
     uint8 m_uiSpeechCount;
     uint8 m_uiVortexPhase;
-    std::list<uint64> m_lSparkGUIDList;
+    std::list<ObjectGuid> m_lSparkGUIDList;
 
     uint32 m_uiEnrageTimer;
     uint32 m_uiSpeechTimer[5];
@@ -554,7 +554,7 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
                 pSpark->CastSpell(pSpark, SPELL_POWER_SPARK_VISUAL, false);
                 pSpark->GetMotionMaster()->MoveFollow(m_creature, 0, 0);
                 //m_creature->AddSplineFlag(SPLINEFLAG_TRAJECTORY_FLY);
-                m_lSparkGUIDList.push_back(pSpark->GetGUID());
+                m_lSparkGUIDList.push_back(pSpark->GetObjectGuid());
             }
         }
         else if(action == 2 || action == 3) // Start/stop movement
@@ -565,9 +565,9 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
             if (m_lSparkGUIDList.empty())
                 return;
 
-            for(std::list<uint64>::iterator itr = m_lSparkGUIDList.begin(); itr != m_lSparkGUIDList.end(); ++itr)
+            for(std::list<ObjectGuid>::iterator itr = m_lSparkGUIDList.begin(); itr != m_lSparkGUIDList.end(); ++itr)
             {
-                if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
+                if (Creature* pTemp = (Creature*)m_creature->GetMap()->GetUnit(*itr))
                 {
                     if (pTemp->isAlive())
                     {
@@ -921,7 +921,7 @@ struct MANGOS_DLL_DECL boss_malygosAI : public ScriptedAI
                     m_creature->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
                     if(m_creature->getVictim())
                         m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
-                    /*if(Unit *pVehicle = ((Unit*)Unit::GetUnit(*m_creature, m_creature->getVictim()->GetVehicleGUID())))
+                    /*if(Unit *pVehicle = ((Unit*)m_creature->GetMap()->GetUnit(m_creature->getVictim()->GetVehicleGUID())))
                     {
                         DoResetThreat();
                         m_creature->AI()->AttackStart(pVehicle);

@@ -58,7 +58,7 @@ WorldLocation WWlocs[MAX_PLAYERS_WEB_WRAP] =
 struct MANGOS_DLL_DECL mob_webwrapAI : public ScriptedAI
 {
     mob_webwrapAI(Creature *c) : ScriptedAI(c) {victimGUID = 0; Reset();}
-    uint64 victimGUID;
+    ObjectGuid victimGUID;
     void Reset()
     {
         victimGUID = 0;
@@ -73,7 +73,7 @@ struct MANGOS_DLL_DECL mob_webwrapAI : public ScriptedAI
     {
         if (victim)
         {
-			victimGUID = victim->GetGUID();
+            victimGUID = victim->GetObjectGuid();
             m_creature->AddThreat(victim, 1.0f);
             m_creature->GetMotionMaster()->MovePoint(0,victim->GetPositionX(),victim->GetPositionY(),victim->GetPositionZ());
             victim->SetDisplayId(0);
@@ -82,7 +82,7 @@ struct MANGOS_DLL_DECL mob_webwrapAI : public ScriptedAI
 
     void JustDied(Unit* Killer)
     {
-        Unit* victim = Unit::GetUnit((*m_creature), victimGUID);
+        Unit* victim = m_creature->GetMap()->GetUnit(victimGUID);
         if (victim)
         {
             victim->RemoveAurasDueToSpell(SPELL_WEBWRAP_SELF);
@@ -142,11 +142,11 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
     uint32 SummonSpiderling_Timer;
     bool Enraged;
 
-    uint32 WWplayers[MAX_PLAYERS_WEB_WRAP];
+    ObjectGuid WWplayers[MAX_PLAYERS_WEB_WRAP];
     uint32 WWplayersFlyTimer[MAX_PLAYERS_WEB_WRAP];
     uint32 WWplayersFlyTimer2[MAX_PLAYERS_WEB_WRAP];
 
-    uint64 guidSpiderlings[MAX_SPIDERLINGS];
+    ObjectGuid guidSpiderlings[MAX_SPIDERLINGS];
     uint32 Spiderlings_count;
 
     void Reset()
@@ -169,7 +169,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         Spiderlings_count = 0;
         /*for (int i = 0; i < MAX_SPIDERLINGS; i++)
         {
-            if (Unit* pUnit = Unit::GetUnit((*m_creature), guidSpiderlings[i]))
+            if (Unit* pUnit = m_creature->GetMap()->GetUnit(guidSpiderlings[i]))
                 pUnit->AddObjectToRemoveList();
             guidSpiderlings[i] = 0;
         }*/
@@ -282,7 +282,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
 
     void SendPlayerToWall(Unit* target, uint8 placeOnWall)
     {
-        if (!target || target->GetTypeId() != TYPEID_PLAYER || WWplayers[placeOnWall])
+        if (!target || target->GetTypeId() != TYPEID_PLAYER || !WWplayers[placeOnWall].IsEmpty())
             return;
 
         float l = target->GetDistance2d(WWlocs[placeOnWall].coord_x,WWlocs[placeOnWall].coord_y) * 1.4f;
@@ -302,7 +302,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         data << float(-sqrt(2*10.0f*h));                        // Z Movement speed (vertical)
 
         ((Player*)target)->GetSession()->SendPacket(&data);*/
-        WWplayers[placeOnWall] = target->GetGUID();
+        WWplayers[placeOnWall] = target->GetObjectGuid();
         WWplayersFlyTimer[placeOnWall] = 2300;
         WWplayersFlyTimer2[placeOnWall] = 99999999;
     }
@@ -318,9 +318,9 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
 
         // Handle flying players, cast webwrap and summon cocoon
         for (int i = 0; i < MAX_PLAYERS_WEB_WRAP; i++)
-            if (WWplayers[i])
+            if (!WWplayers[i].IsEmpty())
             {
-                Unit* pl = Unit::GetUnit((*m_creature),WWplayers[i]);
+                Unit* pl = m_creature->GetMap()->GetUnit(WWplayers[i]);
                 if (pl)
                     pl->SetOrientation(WWlocs[i].orientation);
                 if (WWplayersFlyTimer2[i] < diff && pl)
@@ -355,9 +355,9 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         {
             DoCast(m_creature->getVictim(), !m_bIsRegularMode ? SPELL_WEBSPRAY_H:SPELL_WEBSPRAY);
             for (int i = 0; i < MAX_PLAYERS_WEB_WRAP; i++)
-                if (WWplayers[i])
+                if (!WWplayers[i].IsEmpty())
                 {
-                    Unit* pl = Unit::GetUnit((*m_creature),WWplayers[i]);
+                    Unit* pl = m_creature->GetMap()->GetUnit(WWplayers[i]);
                     if (pl)
                     {
                         pl->RemoveAurasDueToSpell(SPELL_WEBSPRAY);

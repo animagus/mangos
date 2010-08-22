@@ -218,7 +218,7 @@ struct MANGOS_DLL_DECL boss_freya_AI : public ScriptedAI
     uint32 m_uiLastSummonType;
     uint32 m_uiLastSummonType2;
 
-    std::set<uint64> m_lAdds;
+    std::set<ObjectGuid> m_lAdds;
 
     void Reset()
     {
@@ -327,9 +327,9 @@ struct MANGOS_DLL_DECL boss_freya_AI : public ScriptedAI
             ResetElders();
         }
 
-        for(std::set<uint64>::const_iterator itr = m_lAdds.begin(); itr != m_lAdds.end(); ++itr)
+        for(std::set<ObjectGuid>::const_iterator itr = m_lAdds.begin(); itr != m_lAdds.end(); ++itr)
         {
-            if (Creature* pCreature = (Creature*)Unit::GetUnit(*m_creature, *itr))
+            if (Creature* pCreature = (Creature*)m_creature->GetMap()->GetUnit(*itr))
             {
                 if (pCreature->GetEntry() == NPC_ANCIENT_WATER_SPIRIT || pCreature->GetEntry() == NPC_SNAPLASHER ||
                     pCreature->GetEntry() == NPC_STORM_LASHER)
@@ -393,7 +393,7 @@ struct MANGOS_DLL_DECL boss_freya_AI : public ScriptedAI
             case NPC_DETONATING_LASHER:
                 pSummoned->SetInCombatWithZone();
             case NPC_EONAR_GIFT:
-                m_lAdds.insert(pSummoned->GetGUID());
+                m_lAdds.insert(pSummoned->GetObjectGuid());
                 break;
         };
 
@@ -437,9 +437,9 @@ struct MANGOS_DLL_DECL boss_freya_AI : public ScriptedAI
         m1 = false;
         m2 = false;
         m3 = false;
-        for(std::set<uint64>::const_iterator itr = m_lAdds.begin(); itr != m_lAdds.end(); ++itr)
+        for(std::set<ObjectGuid>::const_iterator itr = m_lAdds.begin(); itr != m_lAdds.end(); ++itr)
         {
-            if (Creature* pCreature = (Creature*)Unit::GetUnit(*m_creature, *itr))
+            if (Creature* pCreature = (Creature*)m_creature->GetMap()->GetUnit(*itr))
             {
                 if (pCreature->GetEntry() == NPC_ANCIENT_WATER_SPIRIT && !pCreature->isAlive())
                     m1 = true;
@@ -453,9 +453,9 @@ struct MANGOS_DLL_DECL boss_freya_AI : public ScriptedAI
         if (m1 && m2 && m3)
         {
             RemoveAttunedToNatureStacks(30);
-            for(std::set<uint64>::const_iterator itr = m_lAdds.begin(); itr != m_lAdds.end(); ++itr)
+            for(std::set<ObjectGuid>::const_iterator itr = m_lAdds.begin(); itr != m_lAdds.end(); ++itr)
             {
-                if (Creature* pCreature = (Creature*)Unit::GetUnit(*m_creature, *itr))
+                if (Creature* pCreature = (Creature*)m_creature->GetMap()->GetUnit(*itr))
                 {
                     if (pCreature->GetEntry() == NPC_ANCIENT_WATER_SPIRIT && !pCreature->isAlive())
                         ((TemporarySummon *)pCreature)->UnSummon();
@@ -473,24 +473,24 @@ struct MANGOS_DLL_DECL boss_freya_AI : public ScriptedAI
         switch(pSummoned->GetEntry())
         {
             case NPC_ANCIENT_CONSERVATOR:
-                m_lAdds.erase(pSummoned->GetGUID());
+                m_lAdds.erase(pSummoned->GetObjectGuid());
                 RemoveAttunedToNatureStacks(25);
                 pSummoned->ForcedDespawn();
                 break;
             case NPC_ANCIENT_WATER_SPIRIT:
             case NPC_STORM_LASHER:
             case NPC_SNAPLASHER:
-                m_lAdds.erase(pSummoned->GetGUID());
+                m_lAdds.erase(pSummoned->GetObjectGuid());
                 RemoveAttunedToNatureStacks(10);
                 pSummoned->ForcedDespawn();
                 break;
             case NPC_DETONATING_LASHER:
-                m_lAdds.erase(pSummoned->GetGUID());
+                m_lAdds.erase(pSummoned->GetObjectGuid());
                 RemoveAttunedToNatureStacks(2);
                 pSummoned->ForcedDespawn();
                 break;
             case NPC_EONAR_GIFT:
-                m_lAdds.erase(pSummoned->GetGUID());
+                m_lAdds.erase(pSummoned->GetObjectGuid());
                 pSummoned->ForcedDespawn();
                 break;
         };
@@ -1302,8 +1302,8 @@ struct MANGOS_DLL_DECL mob_ancient_water_spirit_AI : public ScriptedAI
     bool m_bIsRegularMode;
     uint32 m_uiChangeTargetTimer;
     uint32 DeathCheck_Timer;
-    uint64 StormLasherGuid;
-    uint64 SnaplasherGuid;
+    ObjectGuid StormLasherGuid;
+    ObjectGuid SnaplasherGuid;
     bool m_bIsDeath;
     bool m_bIsDeath2;
 
@@ -1320,9 +1320,9 @@ struct MANGOS_DLL_DECL mob_ancient_water_spirit_AI : public ScriptedAI
     void Aggro(Unit *who)
     {
         if (Creature* Snaplasher = GetClosestCreatureWithEntry(m_creature,32916,250))
-            SnaplasherGuid = Snaplasher->GetGUID();
+            SnaplasherGuid = Snaplasher->GetObjectGuid();
         if (Creature* StormLasher = GetClosestCreatureWithEntry(m_creature,32919,250))
-            StormLasherGuid = StormLasher->GetGUID();
+            StormLasherGuid = StormLasher->GetObjectGuid();
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -1407,8 +1407,8 @@ struct MANGOS_DLL_DECL mob_storm_lasher_AI : public ScriptedAI
     uint32 m_uiStormboltTimer;
     uint32 m_uiLightningLashTimer;
     uint32 DeathCheck_Timer;
-    uint64 AncientWaterSpiritGuid;
-    uint64 SnaplasherGuid;
+    ObjectGuid AncientWaterSpiritGuid;
+    ObjectGuid SnaplasherGuid;
     bool m_bIsDeath;
     bool m_bIsDeath2;
 
@@ -1426,9 +1426,9 @@ struct MANGOS_DLL_DECL mob_storm_lasher_AI : public ScriptedAI
     void Aggro(Unit *who)
     {
         if (Creature* Snaplasher = GetClosestCreatureWithEntry(m_creature,32916,250))
-            SnaplasherGuid = Snaplasher->GetGUID();
+            SnaplasherGuid = Snaplasher->GetObjectGuid();
         if (Creature* AncientWaterSpirit = GetClosestCreatureWithEntry(m_creature,33202,250))
-            AncientWaterSpiritGuid = AncientWaterSpirit->GetGUID();
+            AncientWaterSpiritGuid = AncientWaterSpirit->GetObjectGuid();
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -1519,8 +1519,8 @@ struct MANGOS_DLL_DECL mob_snaplasher_AI : public ScriptedAI
     ScriptedInstance* m_pInstance;
     bool m_bIsRegularMode;
     uint32 DeathCheck_Timer;
-    uint64 StormLasherGuid;
-    uint64 AncientWaterSpiritGuid;
+    ObjectGuid StormLasherGuid;
+    ObjectGuid AncientWaterSpiritGuid;
     bool m_bIsDeath;
     bool m_bIsDeath2;
 
@@ -1536,9 +1536,9 @@ struct MANGOS_DLL_DECL mob_snaplasher_AI : public ScriptedAI
     void Aggro(Unit *who)
     {
         if (Creature* AncientWaterSpirit = GetClosestCreatureWithEntry(m_creature,33202,250))
-            AncientWaterSpiritGuid = AncientWaterSpirit->GetGUID();
+            AncientWaterSpiritGuid = AncientWaterSpirit->GetObjectGuid();
         if (Creature* StormLasher = GetClosestCreatureWithEntry(m_creature,32919,250))
-            StormLasherGuid = StormLasher->GetGUID();
+            StormLasherGuid = StormLasher->GetObjectGuid();
     }
 
     void UpdateAI(const uint32 uiDiff)

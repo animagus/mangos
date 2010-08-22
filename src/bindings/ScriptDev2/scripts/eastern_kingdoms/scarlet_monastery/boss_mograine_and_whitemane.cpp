@@ -72,7 +72,7 @@ struct MANGOS_DLL_DECL boss_scarlet_commander_mograineAI : public ScriptedAI
     {
         if (m_pInstance)
         {
-            Unit* Whitemane = Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_WHITEMANE));
+            Unit* Whitemane = m_creature->GetMap()->GetUnit(ObjectGuid(m_pInstance->GetData64(DATA_WHITEMANE)));
             if(Whitemane && !Whitemane->isAlive())
                 ((Creature*)Whitemane)->Respawn();
         }

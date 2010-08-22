@@ -177,7 +177,7 @@ struct MANGOS_DLL_DECL mob_xtheartAI : public ScriptedAI
     void JustDied(Unit* pKiller)
     {
         if (heartdamage != 0)
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(TYPE_XT002))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(TYPE_XT002))))
                 if (pTemp->isAlive())
                 {
                     pTemp->DealDamage(pTemp, heartdamage, NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
@@ -189,7 +189,7 @@ struct MANGOS_DLL_DECL mob_xtheartAI : public ScriptedAI
     {
         if (Exposed_Timer < diff)
         {
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(TYPE_XT002))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(TYPE_XT002))))
                 if (pTemp->isAlive())
                     pTemp->DealDamage(pTemp, heartdamage, NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             heartdamage = 0;
@@ -226,9 +226,9 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
     ScriptedInstance* m_pInstance;
     bool m_bIsRegularMode;
 
-    std::list<uint64> m_lScrapbotsGUIDList;
-    std::list<uint64> m_lBoombotsGUIDList;
-    std::list<uint64> m_lPummelerGUIDList;
+    std::list<ObjectGuid> m_lScrapbotsGUIDList;
+    std::list<ObjectGuid> m_lBoombotsGUIDList;
+    std::list<ObjectGuid> m_lPummelerGUIDList;
 
     uint32 Heart_Timer;
     uint32 Light_Bomb_Timer;
@@ -281,20 +281,20 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
         DoScriptText(SAY_DEATH, m_creature);
         if (!m_lScrapbotsGUIDList.empty())
         {
-            for(std::list<uint64>::iterator itr = m_lScrapbotsGUIDList.begin(); itr != m_lScrapbotsGUIDList.end(); ++itr)
-                if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
+            for(std::list<ObjectGuid>::iterator itr = m_lScrapbotsGUIDList.begin(); itr != m_lScrapbotsGUIDList.end(); ++itr)
+                if (Creature* pTemp = (Creature*)m_creature->GetMap()->GetUnit(*itr))
                     pTemp->ForcedDespawn();
         }
         if (!m_lBoombotsGUIDList.empty())
         {
-            for(std::list<uint64>::iterator itr = m_lBoombotsGUIDList.begin(); itr != m_lBoombotsGUIDList.end(); ++itr)
-                if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
+            for(std::list<ObjectGuid>::iterator itr = m_lBoombotsGUIDList.begin(); itr != m_lBoombotsGUIDList.end(); ++itr)
+                if (Creature* pTemp = (Creature*)m_creature->GetMap()->GetUnit(*itr))
                     pTemp->ForcedDespawn();
         }
         if (!m_lPummelerGUIDList.empty())
         {
-            for(std::list<uint64>::iterator itr = m_lPummelerGUIDList.begin(); itr != m_lPummelerGUIDList.end(); ++itr)
-                if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
+            for(std::list<ObjectGuid>::iterator itr = m_lPummelerGUIDList.begin(); itr != m_lPummelerGUIDList.end(); ++itr)
+                if (Creature* pTemp = (Creature*)m_creature->GetMap()->GetUnit(*itr))
                     pTemp->ForcedDespawn();
         }
     }
@@ -363,8 +363,8 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
         {
             if (!m_lScrapbotsGUIDList.empty())
             {
-                for(std::list<uint64>::iterator itr = m_lScrapbotsGUIDList.begin(); itr != m_lScrapbotsGUIDList.end(); ++itr)
-                    if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
+                for(std::list<ObjectGuid>::iterator itr = m_lScrapbotsGUIDList.begin(); itr != m_lScrapbotsGUIDList.end(); ++itr)
+                    if (Creature* pTemp = (Creature*)m_creature->GetMap()->GetUnit(*itr))
                         if (pTemp->isAlive() && m_creature->IsWithinDistInMap(pTemp, ATTACK_DISTANCE))
                         {
                             m_creature->SetHealth(m_creature->GetHealth() + m_creature->GetMaxHealth() * 0.01);
@@ -373,8 +373,8 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
             }
             if (!m_lBoombotsGUIDList.empty())
             {
-                for(std::list<uint64>::iterator itr = m_lBoombotsGUIDList.begin(); itr != m_lBoombotsGUIDList.end(); ++itr)
-                    if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
+                for(std::list<ObjectGuid>::iterator itr = m_lBoombotsGUIDList.begin(); itr != m_lBoombotsGUIDList.end(); ++itr)
+                    if (Creature* pTemp = (Creature*)m_creature->GetMap()->GetUnit(*itr))
                         if (pTemp->isAlive() && m_creature->IsWithinDistInMap(pTemp, ATTACK_DISTANCE))
                         {
                             pTemp->DealDamage(pTemp, pTemp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
@@ -457,7 +457,7 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
                 {
                     pTemp->AddThreat(m_creature->getVictim(),1000.0f);
                     pTemp->AI()->AttackStart(m_creature->getVictim());
-                    m_lScrapbotsGUIDList.push_back(pTemp->GetGUID());
+                    m_lScrapbotsGUIDList.push_back(pTemp->GetObjectGuid());
                     Addcount++;
                 }} while(Addcount<3);
                 Addcount = 0;
@@ -466,7 +466,7 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
                 {
                     pTemp->AddThreat(m_creature->getVictim(),1000.0f);
                     pTemp->AI()->AttackStart(m_creature->getVictim());
-                    m_lBoombotsGUIDList.push_back(pTemp->GetGUID());
+                    m_lBoombotsGUIDList.push_back(pTemp->GetObjectGuid());
                     Addcount++;
                 }} while(Addcount<1);
                 add1 = true;
@@ -481,7 +481,7 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
                     {
                         pTemp->AddThreat(m_creature->getVictim(),1000.0f);
                         pTemp->AI()->AttackStart(m_creature->getVictim());
-                        m_lScrapbotsGUIDList.push_back(pTemp->GetGUID());
+                        m_lScrapbotsGUIDList.push_back(pTemp->GetObjectGuid());
                         Addcount++;
                     }
                 } while(Addcount<3);
@@ -493,7 +493,7 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
                     {
                         pTemp->AddThreat(m_creature->getVictim(),1000.0f);
                         pTemp->AI()->AttackStart(m_creature->getVictim());
-                        m_lBoombotsGUIDList.push_back(pTemp->GetGUID());
+                        m_lBoombotsGUIDList.push_back(pTemp->GetObjectGuid());
                         Addcount++;
                     }
                 } while(Addcount<1);
@@ -510,7 +510,7 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
                     {
                         pTemp->AddThreat(m_creature->getVictim(),1000.0f);
                         pTemp->AI()->AttackStart(m_creature->getVictim());
-                        m_lScrapbotsGUIDList.push_back(pTemp->GetGUID());
+                        m_lScrapbotsGUIDList.push_back(pTemp->GetObjectGuid());
                         Addcount++;
                     }
                 } while(Addcount<3);
@@ -522,7 +522,7 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
                     {
                         pTemp->AddThreat(m_creature->getVictim(),1000.0f);
                         pTemp->AI()->AttackStart(m_creature->getVictim());
-                        m_lBoombotsGUIDList.push_back(pTemp->GetGUID());
+                        m_lBoombotsGUIDList.push_back(pTemp->GetObjectGuid());
                         Addcount++;
                     }
                 } while(Addcount<1);
@@ -539,7 +539,7 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
                         {
                             pTemp->AddThreat(pTarget,0.0f);
                             pTemp->AI()->AttackStart(pTarget);
-                            m_lPummelerGUIDList.push_back(pTemp->GetGUID());
+                            m_lPummelerGUIDList.push_back(pTemp->GetObjectGuid());
                         }
                     }
                 }
@@ -551,7 +551,7 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
                     {
                         pTemp->AddThreat(m_creature->getVictim(),1000.0f);
                         pTemp->AI()->AttackStart(m_creature->getVictim());
-                        m_lScrapbotsGUIDList.push_back(pTemp->GetGUID());
+                        m_lScrapbotsGUIDList.push_back(pTemp->GetObjectGuid());
                         Addcount++;
                     }
 
@@ -563,7 +563,7 @@ struct MANGOS_DLL_DECL boss_xt002AI : public ScriptedAI
                     {
                         pTemp->AddThreat(m_creature->getVictim(),1000.0f);
                         pTemp->AI()->AttackStart(m_creature->getVictim());
-                        m_lBoombotsGUIDList.push_back(pTemp->GetGUID());
+                        m_lBoombotsGUIDList.push_back(pTemp->GetObjectGuid());
                         Addcount++;
                     }
                 } while(Addcount<1);

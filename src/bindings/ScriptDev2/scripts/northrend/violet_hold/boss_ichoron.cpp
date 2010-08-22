@@ -60,7 +60,7 @@ struct MANGOS_DLL_DECL boss_ichoronAI : public ScriptedAI
         Reset();
     }
     ScriptedInstance *m_pInstance;
-    std::list<uint64> m_lWaterElementsGUIDList;
+    std::list<ObjectGuid> m_lWaterElementsGUIDList;
 
     bool m_bIsRegularMode;
     bool m_bIsExploded;
@@ -136,7 +136,7 @@ struct MANGOS_DLL_DECL boss_ichoronAI : public ScriptedAI
     {
         pSummoned->SetSpeedRate(MOVE_RUN, 0.2f);
         pSummoned->GetMotionMaster()->MoveFollow(m_creature, 0, 0);
-        m_lWaterElementsGUIDList.push_back(pSummoned->GetGUID());
+        m_lWaterElementsGUIDList.push_back(pSummoned->GetObjectGuid());
     }
 
     void DespawnWaterElements()
@@ -144,9 +144,9 @@ struct MANGOS_DLL_DECL boss_ichoronAI : public ScriptedAI
         if (m_lWaterElementsGUIDList.empty())
             return;
 
-        for(std::list<uint64>::iterator itr = m_lWaterElementsGUIDList.begin(); itr != m_lWaterElementsGUIDList.end(); ++itr)
+        for(std::list<ObjectGuid>::iterator itr = m_lWaterElementsGUIDList.begin(); itr != m_lWaterElementsGUIDList.end(); ++itr)
         {
-            if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
+            if (Creature* pTemp = (Creature*)m_creature->GetMap()->GetUnit(*itr))
             {
                 if (pTemp->isAlive())
                     //pTemp->ForcedDespawn();
@@ -202,8 +202,8 @@ struct MANGOS_DLL_DECL boss_ichoronAI : public ScriptedAI
                     ++m_uiShowup_Counter;
                     if (!m_lWaterElementsGUIDList.empty())
                     {
-                        for(std::list<uint64>::iterator itr = m_lWaterElementsGUIDList.begin(); itr != m_lWaterElementsGUIDList.end(); ++itr)
-                            if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
+                        for(std::list<ObjectGuid>::iterator itr = m_lWaterElementsGUIDList.begin(); itr != m_lWaterElementsGUIDList.end(); ++itr)
+                            if (Creature* pTemp = (Creature*)m_creature->GetMap()->GetUnit(*itr))
                                 if (pTemp->isAlive())
                                     bIsWaterElementsAlive = true;
                     }
@@ -287,7 +287,7 @@ struct MANGOS_DLL_DECL mob_ichor_globuleAI : public ScriptedAI
         {
             if (m_pInstance)
             {
-                if (Creature* pIchoron = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_ICHORON))))
+                if (Creature* pIchoron = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(DATA_ICHORON))))
                 {
                     float fDistance = m_creature->GetDistance2d(pIchoron);
                     if (fDistance <= 2)

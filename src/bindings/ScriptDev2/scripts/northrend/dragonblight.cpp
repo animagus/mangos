@@ -135,12 +135,12 @@ bool EffectDummyCreature_npc_liquid_fire_of_elune(Unit* pCaster, uint32 uiSpellI
             if (pCreatureTarget->GetEntry() == NPC_ELK)
             {
                 pCreatureTarget->CastSpell(pCreatureTarget, SPELL_LIQUID_FIRE_AURA, true);
-                ((Player*)pCaster)->KilledMonsterCredit(NPC_ELK_BUNNY, 0);
+                ((Player*)pCaster)->KilledMonsterCredit(NPC_ELK_BUNNY, pCreatureTarget->GetObjectGuid());
             }
             else if (pCreatureTarget->GetEntry() == NPC_GRIZZLY)
             {
                 pCreatureTarget->CastSpell(pCreatureTarget, SPELL_LIQUID_FIRE_AURA, true);
-                ((Player*)pCaster)->KilledMonsterCredit(NPC_GRIZZLY_BUNNY, 0);
+                ((Player*)pCaster)->KilledMonsterCredit(NPC_GRIZZLY_BUNNY, pCreatureTarget->GetObjectGuid());
             }
         }
 

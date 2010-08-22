@@ -119,7 +119,7 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
 
             for(ThreatList::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
             {
-                pTemp = Unit::GetUnit((*m_creature),(*itr)->getUnitGuid());
+                pTemp = m_creature->GetMap()->GetUnit((*itr)->getUnitGuid());
                 if (pTemp && pTemp->isAlive() && pTemp->GetHealth() > MostHP && m_creature->IsWithinDist(pTemp, 5.0f, false))
                 {
                     MostHP = pTemp->GetHealth();

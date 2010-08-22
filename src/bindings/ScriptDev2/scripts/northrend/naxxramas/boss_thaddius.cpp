@@ -155,7 +155,7 @@ struct MANGOS_DLL_DECL mob_stalaggAI : public ScriptedAI
         if (DeathCheck_Timer < uiDiff)
         {
             if (m_pInstance)
-                if (Creature* pFeugen = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_FEUGEN))))
+                if (Creature* pFeugen = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_FEUGEN))))
                 {
                     if (!pFeugen->isAlive() && !m_bIsDeath)
                     {
@@ -286,7 +286,7 @@ struct MANGOS_DLL_DECL mob_feugenAI : public ScriptedAI
         if (DeathCheck_Timer < uiDiff)
         {
             if (m_pInstance)
-                if (Creature* pStalagg = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_STALAGG))))
+                if (Creature* pStalagg = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_STALAGG))))
                 {
                     if (!pStalagg->isAlive() && !m_bIsDeath)
                     {
@@ -382,11 +382,11 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
 
         if (m_pInstance)
         {
-            if (Creature* pStalagg = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_STALAGG))))
+            if (Creature* pStalagg = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_STALAGG))))
                 if (!pStalagg->isAlive())
                     pStalagg->Respawn();
 
-            if (Creature* pFeugen = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_FEUGEN))))
+            if (Creature* pFeugen = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_FEUGEN))))
                 if (!pFeugen->isAlive())
                     pFeugen->Respawn();
         }
@@ -456,10 +456,10 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
                     bool m_bIsAlive = false;
                     Creature* pStalagg;
                     Creature* pFeugen;
-                    if (pStalagg = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_STALAGG))))
+                    if (pStalagg = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_STALAGG))))
                         if (pStalagg->isAlive())
                             m_bIsAlive = true;
-                    if (pFeugen = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_FEUGEN))))
+                    if (pFeugen = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_FEUGEN))))
                         if (pFeugen->isAlive())
                             m_bIsAlive = true;
 
@@ -587,7 +587,7 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
             ThreatList const& t_list = m_creature->getThreatManager().getThreatList();
             for(ThreatList::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
             {
-                Unit* pTarget = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+                Unit* pTarget = m_creature->GetMap()->GetUnit((*itr)->getUnitGuid());
 
                 //if in melee range
                 if (pTarget && pTarget->IsWithinDistInMap(m_creature, ATTACK_DISTANCE))

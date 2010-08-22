@@ -93,7 +93,7 @@ struct MANGOS_DLL_DECL npc_expedition_commanderAI : public ScriptedAI
         {
             debug_log("SD2: Razorscale - event initiated by player %s", pPlayer->GetName());
             
-            if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(TYPE_RAZORSCALE))))
+            if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(TYPE_RAZORSCALE))))
             {
                 pTemp->SetInCombatWithZone();
                 pTemp->AddThreat(pPlayer,0.0f);
