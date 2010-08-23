@@ -2737,24 +2737,6 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
             if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000000000002000))
             {
                 int32 healval = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, damage, DOT );
-                if( m_caster->GetOwner() )
-//                    healval += m_caster->GetOwner()->SpellDamageBonus(unitTarget, m_spellInfo, healval, HEAL );
-                {
-                    if (Unit *owner = m_caster->GetOwner())
-                    {
-                        healval += int32(owner->SpellBaseHealingBonusDone(GetSpellSchoolMask(m_spellInfo)) * 0.045f);
-                        // Restorative Totems
-                        Unit::AuraList const& mDummyAuras = owner->GetAurasByType(SPELL_AURA_DUMMY);
-                        for(Unit::AuraList::const_iterator i = mDummyAuras.begin(); i != mDummyAuras.end(); ++i)
-                            // only its have dummy with specific icon
-                            if ((*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_SHAMAN && (*i)->GetSpellProto()->SpellIconID == 338)
-                                healval += (*i)->GetModifier()->m_amount * healval / 100;
-
-                        // Glyph of Healing Stream Totem
-                        if (Aura *dummy = owner->GetDummyAura(55456))
-                            healval += dummy->GetModifier()->m_amount * healval / 100;
-                    }
-                }
                 if (unitTarget)
                 {
                     if (Unit *owner = m_caster->GetOwner())
@@ -4855,7 +4837,7 @@ void Spell::DoSummonGuardian(SpellEffectIndex eff_idx, uint32 forceFaction)
 
     int32 amount = damage > 0 ? damage : 1;
 
-    if (m_spellInfo->Id == 19804)
+    if (m_spellInfo->Id == 19804 || m_spellInfo->Id == 46584)
         amount = 1;
 
     for(int32 count = 0; count < amount; ++count)
@@ -7593,6 +7575,13 @@ void Spell::DoSummonTotem(SpellEffectIndex eff_idx, uint8 slot_dbc)
         return;
     }
 
+    // special model selection case for totems
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+    {
+        if (uint32 modelid_race = sObjectMgr.GetModelForRace(pTotem->GetNativeDisplayId(), m_caster->getRaceMask()))
+            pTotem->SetDisplayId(modelid_race);
+    }
+
     float angle = slot < MAX_TOTEM_SLOT ? M_PI_F/MAX_TOTEM_SLOT - (slot*2*M_PI_F/MAX_TOTEM_SLOT) : 0;
 
     float x, y, z;
@@ -8162,21 +8151,6 @@ void Spell::EffectKnockBack(SpellEffectIndex eff_idx)
 {
     if(!unitTarget)
         return;
-
-
-    // Typhoon
-    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && m_spellInfo->SpellFamilyFlags & UI64LIT(0x100000000000000) )
-        if (m_caster->HasAura(62135))         // Glyph of Typhoon
-            return;
-
-    // Thunderstorm
-    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN && m_spellInfo->SpellFamilyFlags & UI64LIT(0x00200000000000))
-        if (m_caster->HasAura(62132))         // Glyph of Thunderstorm
-            return;
-
-    if (m_spellInfo->SpellFamilyName == SPELLFAMILY_MAGE && m_spellInfo->SpellFamilyFlags & UI64LIT(0x0004000000000))
-        if (m_caster->HasAura(62126))         // Glyph of Blast Wave
-            return;
 
     unitTarget->KnockBackFrom(m_caster,float(m_spellInfo->EffectMiscValue[eff_idx])/10,float(damage)/10);
 }
