@@ -73,7 +73,7 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
     uint32 RainOfFire_Timer;
     uint32 Enrage_Timer;
     uint32 m_uiEvadeCheckCooldown;
-    uint64 m_uiworshipperGUID[4];
+    ObjectGuid m_uiworshipperGUID[4];
     bool HasTaunted;
 
     void Reset()
@@ -100,7 +100,7 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
 
         for (uint8 i=0; i<4; ++i)
         {
-            Creature* pMinion = (Creature*)Unit::GetUnit((*m_creature), m_uiworshipperGUID[i]);
+            Creature* pMinion = (Creature*)m_creature->GetMap()->GetUnit(m_uiworshipperGUID[i]);
             if (pMinion)
                 pMinion->Respawn();
         }
@@ -133,7 +133,7 @@ struct MANGOS_DLL_DECL boss_faerlinaAI : public ScriptedAI
 
         for (uint8 i=0; i<4; ++i)
         {
-            Creature* pMinion = (Creature*)Unit::GetUnit((*m_creature), m_uiworshipperGUID[i]);
+            Creature* pMinion = (Creature*)m_creature->GetMap()->GetUnit(m_uiworshipperGUID[i]);
             if (pMinion && !pMinion->getVictim())
                 pMinion->AI()->AttackStart(who);
         }
@@ -339,7 +339,7 @@ struct MANGOS_DLL_DECL mob_faerlina_worshipperAI : public ScriptedAI
     {
         if(m_bIsRegularMode) // in heroic need use mc
         {
-            Creature* Faerlina = (Creature*)Unit::GetUnit((*m_creature), pInstance->GetData64(GUID_FAERLINA));
+            Creature* Faerlina = (Creature*)m_creature->GetMap()->GetUnit(ObjectGuid(pInstance->GetData64(GUID_FAERLINA)));
             if(Faerlina)
                 ((boss_faerlinaAI*)Faerlina->AI())->KillWorshipper();
         }		

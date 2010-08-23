@@ -61,7 +61,7 @@ struct MANGOS_DLL_DECL boss_zuramatAI : public ScriptedAI
 
     bool m_bIsRegularMode;
     bool MovementStarted;
-    std::list<uint64> m_lSentryGUIDList;
+    std::list<ObjectGuid> m_lSentryGUIDList;
 
     uint32 m_uiShroudDarkness_Timer;
     uint32 m_uiVoidShift_Timer;
@@ -122,9 +122,9 @@ struct MANGOS_DLL_DECL boss_zuramatAI : public ScriptedAI
         if (m_lSentryGUIDList.empty())
             return;
 
-        for(std::list<uint64>::iterator itr = m_lSentryGUIDList.begin(); itr != m_lSentryGUIDList.end(); ++itr)
+        for(std::list<ObjectGuid>::iterator itr = m_lSentryGUIDList.begin(); itr != m_lSentryGUIDList.end(); ++itr)
         {
-            if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
+            if (Creature* pTemp = (Creature*)m_creature->GetMap()->GetUnit(*itr))
             {
                 if (pTemp->isAlive())
                     //pTemp->ForcedDespawn();

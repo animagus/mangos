@@ -107,7 +107,7 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
     ScriptedInstance* m_pInstance;
     bool m_bIsRegularMode;
 
-    std::list<uint64> m_lZombieGUIDList;
+    std::list<ObjectGuid> m_lZombieGUIDList;
 
     uint32 MortalWound_Timer;
     uint32 Decimate_Timer;
@@ -144,8 +144,8 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
         if (m_pInstance)
             m_pInstance->SetData(ENCOUNT_GLUTH, DONE);
 
-        for(std::list<uint64>::iterator itr = m_lZombieGUIDList.begin(); itr != m_lZombieGUIDList.end(); ++itr)
-            if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
+        for(std::list<ObjectGuid>::iterator itr = m_lZombieGUIDList.begin(); itr != m_lZombieGUIDList.end(); ++itr)
+            if (Creature* pTemp = (Creature*)m_creature->GetMap()->GetUnit(*itr))
                 if (pTemp->isAlive())
                     ((TemporarySummon*) pTemp)->UnSummon();
     }
@@ -190,7 +190,7 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
                 //std::advance(itr, 1);
                 for(; itr!= t_list.end(); ++itr)
                 {
-                    Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+                    Unit *target = m_creature->GetMap()->GetUnit((*itr)->getUnitGuid());
                     if (target && target->isAlive() && target->GetTypeId() == TYPEID_PLAYER &&
                         (target->GetHealth() > target->GetMaxHealth() * 0.05))
                         target->SetHealth(target->GetMaxHealth() * 0.05);
@@ -199,8 +199,8 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
             // Move Zombies
             if (!m_lZombieGUIDList.empty())
             {
-                for(std::list<uint64>::iterator itr = m_lZombieGUIDList.begin(); itr != m_lZombieGUIDList.end(); ++itr)
-                    if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
+                for(std::list<ObjectGuid>::iterator itr = m_lZombieGUIDList.begin(); itr != m_lZombieGUIDList.end(); ++itr)
+                    if (Creature* pTemp = (Creature*)m_creature->GetMap()->GetUnit(*itr))
                         if (pTemp->isAlive())
                         {
                             ((mob_zombie_chowsAI*)pTemp->AI())->bIsForceMove = true;
@@ -244,7 +244,7 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                     {
                         pZombie->AI()->AttackStart(pTarget);
-                        m_lZombieGUIDList.push_back(pZombie->GetGUID());
+                        m_lZombieGUIDList.push_back(pZombie->GetObjectGuid());
                     }
                 }
                 if (Creature* pZombie = m_creature->SummonCreature(NPC_ZOMBIE_CHOW,ADD_2X,ADD_2Y,ADD_2Z,0,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,80000))
@@ -252,7 +252,7 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                     {
                         pZombie->AI()->AttackStart(pTarget);
-                        m_lZombieGUIDList.push_back(pZombie->GetGUID());
+                        m_lZombieGUIDList.push_back(pZombie->GetObjectGuid());
                     }
                 }
                 if (Creature* pZombie = m_creature->SummonCreature(NPC_ZOMBIE_CHOW,ADD_3X,ADD_3Y,ADD_3Z,0,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,80000))
@@ -260,7 +260,7 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                     {
                         pZombie->AI()->AttackStart(pTarget);
-                        m_lZombieGUIDList.push_back(pZombie->GetGUID());
+                        m_lZombieGUIDList.push_back(pZombie->GetObjectGuid());
                     }
                 }
             }
@@ -271,7 +271,7 @@ struct MANGOS_DLL_DECL boss_gluthAI : public ScriptedAI
                     if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                     {
                         pZombie->AI()->AttackStart(pTarget);
-                        m_lZombieGUIDList.push_back(pZombie->GetGUID());
+                        m_lZombieGUIDList.push_back(pZombie->GetObjectGuid());
                     }
                 }
             }

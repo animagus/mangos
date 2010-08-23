@@ -74,7 +74,7 @@ struct MANGOS_DLL_DECL boss_gortokAI : public ScriptedAI
     bool m_bIsRegularMode;
 
     bool   m_bIsEventNow;
-    uint64 m_uiAddGUID[4];
+    ObjectGuid m_uiAddGUID[4];
     uint32 m_uiRoarTimer;
     uint32 m_uiImpaleTimer;
     uint32 m_uiArcingSmashTimer;
@@ -123,7 +123,7 @@ struct MANGOS_DLL_DECL boss_gortokAI : public ScriptedAI
         Creature* pAdd = m_creature->SummonCreature(m_uiCreature[m_uiPhase], fSpawn[m_uiPhase][0], fSpawn[m_uiPhase][1], m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
         if(pAdd)
         {
-            m_uiAddGUID[m_uiPhase] = pAdd->GetGUID();
+            m_uiAddGUID[m_uiPhase] = pAdd->GetObjectGuid();
             pAdd->setFaction(974);
             pAdd->AI()->AttackStart(pVictim);
         }
@@ -140,7 +140,7 @@ struct MANGOS_DLL_DECL boss_gortokAI : public ScriptedAI
             m_creature->GetMotionMaster()->Clear();
             m_creature->GetMotionMaster()->MoveIdle();
 
-            Unit* pAdd = Unit::GetUnit(*m_creature, m_uiAddGUID[m_uiPhase]);
+            Unit* pAdd = m_creature->GetMap()->GetUnit(m_uiAddGUID[m_uiPhase]);
             if(pAdd && !pAdd->isAlive()) 
             {
                 if((m_bIsRegularMode && m_uiPhase == 1) || m_uiPhase == 3)

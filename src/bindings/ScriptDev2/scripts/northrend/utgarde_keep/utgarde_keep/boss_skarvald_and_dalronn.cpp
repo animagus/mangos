@@ -86,7 +86,7 @@ struct MANGOS_DLL_DECL boss_s_and_d_dummyAI : public ScriptedAI
 
     ScriptedInstance* m_pInstance;
     bool m_bIsRegularMode;
-    uint64 m_uiGhostGUID;
+    ObjectGuid m_uiGhostGUID;
 
     Creature* GetBuddy()
     {
@@ -106,7 +106,7 @@ struct MANGOS_DLL_DECL boss_s_and_d_dummyAI : public ScriptedAI
                 pBuddy->Respawn();
         }
 
-        if (Creature* pGhost = (Creature*)Unit::GetUnit(*m_creature, m_uiGhostGUID))
+        if (Creature* pGhost = (Creature*)m_creature->GetMap()->GetUnit(m_uiGhostGUID))
         {
             if (pGhost->isAlive())
                 pGhost->ForcedDespawn();
@@ -131,7 +131,7 @@ struct MANGOS_DLL_DECL boss_s_and_d_dummyAI : public ScriptedAI
     {
         // EventAI can probably handle ghosts
         if (pSummoned->GetEntry() == NPC_DAL_GHOST || pSummoned->GetEntry() == NPC_SKA_GHOST)
-            m_uiGhostGUID = pSummoned->GetGUID();
+            m_uiGhostGUID = pSummoned->GetObjectGuid();
 
         Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_TOPAGGRO,1);
 
@@ -154,7 +154,7 @@ struct MANGOS_DLL_DECL boss_s_and_d_dummyAI : public ScriptedAI
             }
             else
             {
-                if (Creature* pGhost = (Creature*)Unit::GetUnit(*m_creature,m_uiGhostGUID))
+                if (Creature* pGhost = (Creature*)m_creature->GetMap()->GetUnit(m_uiGhostGUID))
                     pGhost->ForcedDespawn();
 
                 pBuddy->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);

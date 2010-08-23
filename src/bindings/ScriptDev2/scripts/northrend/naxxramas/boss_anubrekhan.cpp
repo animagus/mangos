@@ -89,7 +89,7 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
     uint32 RiseFromCorpse_Timer;
     uint32 m_uiEvadeCheckCooldown;
 
-    uint64 guidCryptGuards[MAX_CRYPT_GUARDS];
+    ObjectGuid guidCryptGuards[MAX_CRYPT_GUARDS];
     uint32 CryptGuard_count;
 
     bool HasTaunted;                //in fact says we entered the room with big beetle
@@ -114,7 +114,7 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
         for (int i = 0; i < MAX_CRYPT_GUARDS; i++)
         {
             //delete creature
-            Unit* pUnit = Unit::GetUnit((*m_creature), guidCryptGuards[i]);
+            Unit* pUnit = m_creature->GetMap()->GetUnit(guidCryptGuards[i]);
             if (pUnit)
                 pUnit->AddObjectToRemoveList();
             guidCryptGuards[i] = 0;
@@ -256,7 +256,7 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
             return;
 
         //Summoned Crypt Guard will target random player
-        guidCryptGuards[CryptGuard_count++] = temp->GetGUID();
+        guidCryptGuards[CryptGuard_count++] = temp->GetObjectGuid();
         if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
         {
             temp->AddThreat(target,0.0f);

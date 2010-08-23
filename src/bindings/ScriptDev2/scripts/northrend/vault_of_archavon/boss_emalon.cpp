@@ -90,20 +90,20 @@ struct MANGOS_DLL_DECL npc_tempest_minionAI : public ScriptedAI
     {
         if (m_pInstance)
         {
-            Creature* pEmalon = (Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_EMALON));
+            Creature* pEmalon = (Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(DATA_EMALON));
             if (pEmalon && !pEmalon->getVictim())
                 pEmalon->AI()->AttackStart(pWho);
             Creature* pMinion = NULL;
-            pMinion = (Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_TEMPEST_MINION_1));
+            pMinion = (Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(DATA_TEMPEST_MINION_1));
             if (pMinion && !pMinion->getVictim())
                 pMinion->AI()->AttackStart(pWho);
-            pMinion = (Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_TEMPEST_MINION_2));
+            pMinion = (Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(DATA_TEMPEST_MINION_2));
             if (pMinion && !pMinion->getVictim())
                 pMinion->AI()->AttackStart(pWho);
-            pMinion = (Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_TEMPEST_MINION_3));
+            pMinion = (Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(DATA_TEMPEST_MINION_3));
             if (pMinion && pMinion->isAlive() && !pMinion->getVictim())
                 pMinion->AI()->AttackStart(pWho);
-            pMinion = (Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_TEMPEST_MINION_4));
+            pMinion = (Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(DATA_TEMPEST_MINION_4));
             if (pMinion && !pMinion->getVictim())
                 pMinion->AI()->AttackStart(pWho);
         }
@@ -163,7 +163,7 @@ struct MANGOS_DLL_DECL npc_tempest_minionAI : public ScriptedAI
                 m_creature->MonsterTextEmote("%s appears to defend Emalon!", 0, true);
                 if (m_pInstance)
                 {
-                    Creature* pEmalon = (Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_EMALON));
+                    Creature* pEmalon = (Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(DATA_EMALON));
                     if (pEmalon)
                     {
                         Unit* pTarget = pEmalon->getVictim();
@@ -227,7 +227,7 @@ struct MANGOS_DLL_DECL boss_emalonAI : public ScriptedAI
     ScriptedInstance* m_pInstance;
     bool m_bIsRegularMode;
 
-    uint64 m_auiTempestMinionGUID[4];
+    ObjectGuid m_auiTempestMinionGUID[4];
     uint32 m_uiChainLightningTimer;
     uint32 m_uiChainLightningCount;
     uint32 m_uiLightningNovaTimer;
@@ -255,7 +255,7 @@ struct MANGOS_DLL_DECL boss_emalonAI : public ScriptedAI
 
         for (uint8 i=0; i<4; ++i)
         {
-            Creature* pMinion = (Creature*)Unit::GetUnit((*m_creature), m_auiTempestMinionGUID[i]);
+            Creature* pMinion = (Creature*)m_creature->GetMap()->GetUnit(m_auiTempestMinionGUID[i]);
             if (pMinion)
                 pMinion->Respawn();
         }
@@ -275,7 +275,7 @@ struct MANGOS_DLL_DECL boss_emalonAI : public ScriptedAI
         }
         for (uint8 i=0; i<4; ++i)
         {
-            Creature* pMinion = (Creature*)Unit::GetUnit((*m_creature), m_auiTempestMinionGUID[i]);
+            Creature* pMinion = (Creature*)m_creature->GetMap()->GetUnit(m_auiTempestMinionGUID[i]);
             if (pMinion && !pMinion->getVictim())
                 pMinion->AI()->AttackStart(pWho);
         }
@@ -290,7 +290,7 @@ struct MANGOS_DLL_DECL boss_emalonAI : public ScriptedAI
             m_pInstance->SetData(TYPE_EMALON, DONE);
         for (uint8 i=0; i<4; ++i)
         {
-            Creature *pMinion = (Creature*)Unit::GetUnit((*m_creature), m_auiTempestMinionGUID[i]);
+            Creature *pMinion = (Creature*)m_creature->GetMap()->GetUnit(m_auiTempestMinionGUID[i]);
             if (pMinion)
                 pMinion->DealDamage(pMinion, pMinion->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         }
@@ -312,7 +312,7 @@ struct MANGOS_DLL_DECL boss_emalonAI : public ScriptedAI
 
         if(m_uiOverchargeTimer < uiDiff)
         {
-            Creature* pMinion = (Creature*)Unit::GetUnit((*m_creature), m_auiTempestMinionGUID[rand()%3]);
+            Creature* pMinion = (Creature*)m_creature->GetMap()->GetUnit(m_auiTempestMinionGUID[rand()%3]);
             if(pMinion && pMinion->isAlive())
             {
                 m_creature->MonsterTextEmote("%s overcharges Tempest Minion!", 0, true);

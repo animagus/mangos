@@ -85,7 +85,7 @@ struct MANGOS_DLL_DECL boss_auriaya_AI : public ScriptedAI
 
         if (m_pInstance && m_creature->isAlive())
         {
-            Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_SANCTUM_SENTRY_1)));
+            Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(DATA_SANCTUM_SENTRY_1)));
             if (pTemp)
             {
                 if (pTemp->isAlive())
@@ -97,7 +97,7 @@ struct MANGOS_DLL_DECL boss_auriaya_AI : public ScriptedAI
                     pTemp->Respawn();
             }
 
-            Creature* pTemp2 = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_SANCTUM_SENTRY_2)));
+            Creature* pTemp2 = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(DATA_SANCTUM_SENTRY_2)));
             if (pTemp2)
             {
                 if (pTemp2->isAlive())
@@ -109,7 +109,7 @@ struct MANGOS_DLL_DECL boss_auriaya_AI : public ScriptedAI
                     pTemp2->Respawn();
             }
 
-            Creature* pTemp3 = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_SANCTUM_SENTRY_3)));
+            Creature* pTemp3 = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(DATA_SANCTUM_SENTRY_3)));
             if (pTemp3)
             {
                 if (pTemp3->isAlive())
@@ -121,7 +121,7 @@ struct MANGOS_DLL_DECL boss_auriaya_AI : public ScriptedAI
                     pTemp3->Respawn();
             }
 
-            Creature* pTemp4 = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_SANCTUM_SENTRY_4)));
+            Creature* pTemp4 = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(DATA_SANCTUM_SENTRY_4)));
             if (pTemp4)
             {
                 if (pTemp4->isAlive())
@@ -141,7 +141,7 @@ struct MANGOS_DLL_DECL boss_auriaya_AI : public ScriptedAI
         {
             m_pInstance->SetData(TYPE_AURIAYA, IN_PROGRESS);
 
-            Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_SANCTUM_SENTRY_1)));
+            Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(DATA_SANCTUM_SENTRY_1)));
             if (pTemp)
             {
                 if (pTemp->isAlive())
@@ -150,7 +150,7 @@ struct MANGOS_DLL_DECL boss_auriaya_AI : public ScriptedAI
                 }
             }
 
-            Creature* pTemp2 = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_SANCTUM_SENTRY_2)));
+            Creature* pTemp2 = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(DATA_SANCTUM_SENTRY_2)));
             if (pTemp2)
             {
                 if (pTemp2->isAlive())
@@ -159,7 +159,7 @@ struct MANGOS_DLL_DECL boss_auriaya_AI : public ScriptedAI
                 }
             }
 
-            Creature* pTemp3 = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_SANCTUM_SENTRY_3)));
+            Creature* pTemp3 = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(DATA_SANCTUM_SENTRY_3)));
             if (pTemp3)
             {
                 if (pTemp3->isAlive())
@@ -168,7 +168,7 @@ struct MANGOS_DLL_DECL boss_auriaya_AI : public ScriptedAI
                 }
             }
 
-            Creature* pTemp4 = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(DATA_SANCTUM_SENTRY_4)));
+            Creature* pTemp4 = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(DATA_SANCTUM_SENTRY_4)));
             if (pTemp4)
             {
                 if (pTemp4->isAlive())
@@ -312,7 +312,7 @@ struct MANGOS_DLL_DECL mob_feral_defender_AI : public ScriptedAI
     uint32 m_uiPounceTimer;
     uint32 m_uiReviveTimer;
     bool m_bFakeDeath;
-    std::list<uint64> m_lVoidZones;
+    std::list<ObjectGuid> m_lVoidZones;
 
     void Reset()
     {
@@ -328,9 +328,9 @@ struct MANGOS_DLL_DECL mob_feral_defender_AI : public ScriptedAI
 
     void DespawnVoidZones()
     {
-        for(std::list<uint64>::const_iterator itr = m_lVoidZones.begin(); itr != m_lVoidZones.end(); ++itr)
+        for(std::list<ObjectGuid>::const_iterator itr = m_lVoidZones.begin(); itr != m_lVoidZones.end(); ++itr)
         {
-            if (Creature* pCreature = (Creature*)Unit::GetUnit(*m_creature, *itr))
+            if (Creature* pCreature = (Creature*)m_creature->GetMap()->GetUnit(*itr))
                 pCreature->ForcedDespawn();
         }
 
@@ -390,7 +390,7 @@ struct MANGOS_DLL_DECL mob_feral_defender_AI : public ScriptedAI
     void JustSummoned(Creature* pSummoned)
     {
         if (pSummoned->GetEntry() == NPC_FERAL_ESSENCE)
-            m_lVoidZones.push_back(pSummoned->GetGUID());
+            m_lVoidZones.push_back(pSummoned->GetObjectGuid());
     }
 
     void UpdateAI(const uint32 uiDiff)

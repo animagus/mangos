@@ -104,7 +104,7 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
     uint32 m_uiSacrificeEndTimer;
 
     uint64 m_uiPlayerGUID;
-    uint64 m_uiAddsGUID[3];
+    ObjectGuid m_uiAddsGUID[3];
 
     void Reset()
     {
@@ -278,16 +278,16 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
         {
             for(uint8 i=0; i<3; ++i)
             {
-                Unit* pAdd = Unit::GetUnit(*m_creature, m_uiAddsGUID[i]);
+                Unit* pAdd = m_creature->GetMap()->GetUnit(m_uiAddsGUID[i]);
                 if(pAdd && pAdd->isAlive())
                 {
-                    Unit* pPlayer = Unit::GetUnit(*m_creature, m_uiPlayerGUID);
+                    Unit* pPlayer = m_creature->GetMap()->GetUnit(m_uiPlayerGUID);
                     if(pPlayer)
                         m_creature->CastSpell(pPlayer, SPELL_KILL, false);
 
                     for(uint8 k=0; k<3; ++k)
                     {
-                        Unit* pAdd = Unit::GetUnit(*m_creature, m_uiAddsGUID[i]);
+                        Unit* pAdd = m_creature->GetMap()->GetUnit(m_uiAddsGUID[i]);
                         if(pAdd && pAdd->isAlive())
                         {
                             pAdd->SetVisibility(VISIBILITY_OFF);
@@ -315,7 +315,7 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
             std::list<HostileReference *> t_list = m_creature->getThreatManager().getThreatList();
             for(std::list<HostileReference *>::iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
             {
-                Unit *TargetedPlayer = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());  
+                Unit *TargetedPlayer = m_creature->GetMap()->GetUnit((*itr)->getUnitGuid());  
                 if(TargetedPlayer && TargetedPlayer->isAlive())
                     m_creature->CastSpell(TargetedPlayer, SPELL_BOLT, true);
             }
@@ -334,7 +334,7 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
                 for(uint8 i=0; i<3; ++i)
                     if(Creature* pAdd = m_creature->SummonCreature(NPC_CHANNELER, fCoord[i][0], fCoord[i][1], fCoord[i][2], fCoord[i][3], TEMPSUMMON_TIMED_DESPAWN, 9000))
                     {
-                        m_uiAddsGUID[i] = pAdd->GetGUID();
+                        m_uiAddsGUID[i] = pAdd->GetObjectGuid();
                         pAdd->AI()->AttackStart(pPlayer);
                         pAdd->CastSpell(pPlayer, SPELL_PARALYZE, false);
                         m_creature->CastSpell(m_creature, SPELL_PARALYZE, false);

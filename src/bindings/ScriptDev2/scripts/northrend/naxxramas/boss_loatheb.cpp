@@ -277,7 +277,7 @@ struct MANGOS_DLL_DECL mob_loatheb_sporesAI : public ScriptedAI
     void JustDied(Unit* Killer)
     {
         DoCast(m_creature,SPELL_FUNGAL_CREEP,true);
-        Creature* Loatheb = (Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(GUID_LOATHEB));
+        Creature* Loatheb = (Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_LOATHEB));
         if(Loatheb)
             ((boss_loathebAI*)Loatheb->AI())->KillSpore();
 

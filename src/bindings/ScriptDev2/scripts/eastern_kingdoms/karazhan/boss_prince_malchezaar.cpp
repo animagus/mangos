@@ -96,11 +96,11 @@ static InfernalPoint InfernalPoints[] =
 struct MANGOS_DLL_DECL netherspite_infernalAI : public ScriptedAI
 {
     netherspite_infernalAI(Creature* pCreature) : ScriptedAI(pCreature) ,
-        malchezaar(0), HellfireTimer(0), CleanupTimer(0), point(NULL) {Reset();}
+        malchezaar(), HellfireTimer(0), CleanupTimer(0), point(NULL) {Reset();}
 
     uint32 HellfireTimer;
     uint32 CleanupTimer;
-    uint32 malchezaar;
+    ObjectGuid malchezaar;
     InfernalPoint *point;
 
     void Reset() {}
@@ -146,7 +146,7 @@ struct MANGOS_DLL_DECL netherspite_infernalAI : public ScriptedAI
 
     void DamageTaken(Unit *done_by, uint32 &damage)
     {
-        if (done_by->GetGUID() != malchezaar)
+        if (done_by->GetObjectGuid() != malchezaar)
             damage = 0;
     }
 
@@ -367,7 +367,7 @@ struct MANGOS_DLL_DECL boss_malchezaarAI : public ScriptedAI
                 if (point)
                     pInfernalAI->point = point;
 
-                pInfernalAI->malchezaar = m_creature->GetGUID();
+                pInfernalAI->malchezaar = m_creature->GetObjectGuid();
             }
 
             infernals.push_back(Infernal->GetGUID());

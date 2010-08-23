@@ -161,7 +161,7 @@ struct MANGOS_DLL_DECL npc_air_force_botsAI : public ScriptedAI
 
     Creature* GetSummonedGuard()
     {
-        Creature* pCreature = (Creature*)Unit::GetUnit(*m_creature, m_uiSpawnedGUID);
+        Creature* pCreature = (Creature*)m_creature->GetMap()->GetUnit(m_uiSpawnedGUID);
 
         if (pCreature && pCreature->isAlive())
             return pCreature;
@@ -530,7 +530,7 @@ struct MANGOS_DLL_DECL npc_doctorAI : public ScriptedAI
 {
     npc_doctorAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
 
-    uint64 Playerguid;
+    ObjectGuid Playerguid;
 
     uint32 SummonPatient_Timer;
     uint32 SummonPatientCount;
@@ -539,7 +539,7 @@ struct MANGOS_DLL_DECL npc_doctorAI : public ScriptedAI
 
     bool Event;
 
-    std::list<uint64> Patients;
+    std::list<ObjectGuid> Patients;
     std::vector<Location*> Coordinates;
 
     void Reset()
@@ -573,7 +573,7 @@ struct MANGOS_DLL_DECL npc_injured_patientAI : public ScriptedAI
 {
     npc_injured_patientAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
 
-    uint64 Doctorguid;
+    ObjectGuid Doctorguid;
     Location* Coord;
 
     void Reset()
@@ -613,9 +613,9 @@ struct MANGOS_DLL_DECL npc_injured_patientAI : public ScriptedAI
         {
             if ((((Player*)caster)->GetQuestStatus(6624) == QUEST_STATUS_INCOMPLETE) || (((Player*)caster)->GetQuestStatus(6622) == QUEST_STATUS_INCOMPLETE))
             {
-                if (Doctorguid)
+                if (!Doctorguid.IsEmpty())
                 {
-                    if (Creature* Doctor = ((Creature*)Unit::GetUnit((*m_creature), Doctorguid)))
+                    if (Creature* Doctor = ((Creature*)m_creature->GetMap()->GetUnit(Doctorguid)))
                         ((npc_doctorAI*)Doctor->AI())->PatientSaved(m_creature, ((Player*)caster), Coord);
                 }
             }
@@ -668,9 +668,9 @@ struct MANGOS_DLL_DECL npc_injured_patientAI : public ScriptedAI
             m_creature->setDeathState(JUST_DIED);
             m_creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
 
-            if (Doctorguid)
+            if (!Doctorguid.IsEmpty())
             {
-                if (Creature* Doctor = ((Creature*)Unit::GetUnit((*m_creature), Doctorguid)))
+                if (Creature* Doctor = ((Creature*)m_creature->GetMap()->GetUnit(Doctorguid)))
                     ((npc_doctorAI*)Doctor->AI())->PatientDied(Coord);
             }
         }
@@ -688,7 +688,7 @@ npc_doctor (continue)
 
 void npc_doctorAI::BeginEvent(Player* pPlayer)
 {
-    Playerguid = pPlayer->GetGUID();
+    Playerguid = pPlayer->GetObjectGuid();
 
     SummonPatient_Timer = 10000;
     SummonPatientCount = 0;
@@ -713,7 +713,7 @@ void npc_doctorAI::BeginEvent(Player* pPlayer)
 
 void npc_doctorAI::PatientDied(Location* Point)
 {
-    Player* pPlayer = ((Player*)Unit::GetUnit((*m_creature), Playerguid));
+    Player* pPlayer = ((Player*)m_creature->GetMap()->GetUnit(Playerguid));
 
     if (pPlayer && ((pPlayer->GetQuestStatus(6624) == QUEST_STATUS_INCOMPLETE) || (pPlayer->GetQuestStatus(6622) == QUEST_STATUS_INCOMPLETE)))
     {
@@ -739,7 +739,7 @@ void npc_doctorAI::PatientDied(Location* Point)
 
 void npc_doctorAI::PatientSaved(Creature* soldier, Player* pPlayer, Location* Point)
 {
-    if (pPlayer && Playerguid == pPlayer->GetGUID())
+    if (pPlayer && Playerguid == pPlayer->GetObjectGuid())
     {
         if ((pPlayer->GetQuestStatus(QUEST_TRIAGE_A) == QUEST_STATUS_INCOMPLETE) || (pPlayer->GetQuestStatus(QUEST_TRIAGE_H) == QUEST_STATUS_INCOMPLETE))
         {
@@ -749,10 +749,10 @@ void npc_doctorAI::PatientSaved(Creature* soldier, Player* pPlayer, Location* Po
             {
                 if (!Patients.empty())
                 {
-                    std::list<uint64>::iterator itr;
+                    std::list<ObjectGuid>::iterator itr;
                     for(itr = Patients.begin(); itr != Patients.end(); ++itr)
                     {
-                        if (Creature* Patient = ((Creature*)Unit::GetUnit((*m_creature), *itr)))
+                        if (Creature* Patient = ((Creature*)m_creature->GetMap()->GetUnit(*itr)))
                             Patient->setDeathState(JUST_DIED);
                     }
                 }
@@ -810,8 +810,8 @@ void npc_doctorAI::UpdateAI(const uint32 diff)
                 //303, this flag appear to be required for client side item->spell to work (TARGET_SINGLE_FRIEND)
                 Patient->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
 
-                Patients.push_back(Patient->GetGUID());
-                ((npc_injured_patientAI*)Patient->AI())->Doctorguid = m_creature->GetGUID();
+                Patients.push_back(Patient->GetObjectGuid());
+                ((npc_injured_patientAI*)Patient->AI())->Doctorguid = m_creature->GetObjectGuid();
 
                 if (Point)
                     ((npc_injured_patientAI*)Patient->AI())->Coord = Point;
@@ -880,7 +880,7 @@ struct MANGOS_DLL_DECL npc_garments_of_questsAI : public npc_escortAI
 {
     npc_garments_of_questsAI(Creature* pCreature) : npc_escortAI(pCreature) {Reset();}
 
-    uint64 caster;
+    ObjectGuid caster;
 
     bool bIsHealed;
     bool bCanRun;
@@ -927,7 +927,7 @@ struct MANGOS_DLL_DECL npc_garments_of_questsAI : public npc_escortAI
                             }
                             else if (!bIsHealed && Spell->Id == SPELL_LESSER_HEAL_R2)
                             {
-                                caster = pCaster->GetGUID();
+                                caster = pCaster->GetObjectGuid();
                                 m_creature->SetStandState(UNIT_STAND_STATE_STAND);
                                 DoScriptText(SAY_COMMON_HEALED,m_creature,pCaster);
                                 bIsHealed = true;
@@ -944,7 +944,7 @@ struct MANGOS_DLL_DECL npc_garments_of_questsAI : public npc_escortAI
                             }
                             else if (!bIsHealed && Spell->Id == SPELL_LESSER_HEAL_R2)
                             {
-                                caster = pCaster->GetGUID();
+                                caster = pCaster->GetObjectGuid();
                                 m_creature->SetStandState(UNIT_STAND_STATE_STAND);
                                 DoScriptText(SAY_COMMON_HEALED,m_creature,pCaster);
                                 bIsHealed = true;
@@ -961,7 +961,7 @@ struct MANGOS_DLL_DECL npc_garments_of_questsAI : public npc_escortAI
                             }
                             else if (!bIsHealed && Spell->Id == SPELL_LESSER_HEAL_R2)
                             {
-                                caster = pCaster->GetGUID();
+                                caster = pCaster->GetObjectGuid();
                                 m_creature->SetStandState(UNIT_STAND_STATE_STAND);
                                 DoScriptText(SAY_COMMON_HEALED,m_creature,pCaster);
                                 bIsHealed = true;
@@ -978,7 +978,7 @@ struct MANGOS_DLL_DECL npc_garments_of_questsAI : public npc_escortAI
                             }
                             else if (!bIsHealed && Spell->Id == SPELL_LESSER_HEAL_R2)
                             {
-                                caster = pCaster->GetGUID();
+                                caster = pCaster->GetObjectGuid();
                                 m_creature->SetStandState(UNIT_STAND_STATE_STAND);
                                 DoScriptText(SAY_COMMON_HEALED,m_creature,pCaster);
                                 bIsHealed = true;
@@ -995,7 +995,7 @@ struct MANGOS_DLL_DECL npc_garments_of_questsAI : public npc_escortAI
                             }
                             else if (!bIsHealed && Spell->Id == SPELL_LESSER_HEAL_R2)
                             {
-                                caster = pCaster->GetGUID();
+                                caster = pCaster->GetObjectGuid();
                                 m_creature->SetStandState(UNIT_STAND_STATE_STAND);
                                 DoScriptText(SAY_COMMON_HEALED,m_creature,pCaster);
                                 bIsHealed = true;
@@ -1021,7 +1021,7 @@ struct MANGOS_DLL_DECL npc_garments_of_questsAI : public npc_escortAI
         {
             if (RunAwayTimer <= diff)
             {
-                if (Unit *pUnit = Unit::GetUnit(*m_creature,caster))
+                if (Unit *pUnit = m_creature->GetMap()->GetUnit(caster))
                 {
                     switch(m_creature->GetEntry())
                     {

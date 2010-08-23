@@ -974,28 +974,10 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
 
                                 if (q_status.uState != QUEST_NEW) q_status.uState = QUEST_CHANGED;
 
-                                user->SendQuestUpdateAddCreatureOrGo( pQuest, 0, 0, oldCount, m_counted );
+                                user->SendQuestUpdateAddCreatureOrGo( pQuest, ObjectGuid(), 0, oldCount, m_counted );
                                 if( user->CanCompleteQuest(QuestID) )
                                     user->CompleteQuest( QuestID );
                             }
-                        }
-                        return;
-                    }
-                    case 50547: // Q: Atop the Woodlands (H/A)
-                    {
-                        if( m_caster->GetTypeId() == TYPEID_PLAYER )
-                        {
-                            if( ((Player*)m_caster)->GetQuestStatus(12084) == QUEST_STATUS_INCOMPLETE || ((Player*)m_caster)->GetQuestStatus(12083) == QUEST_STATUS_INCOMPLETE )
-                                ((Player*)m_caster)->KilledMonsterCredit(26831, 0);
-                        }
-                        return;
-                    }
-                    case 50546: // Q: The Focus on the Beach (H/A)
-                    {
-                        if( m_caster->GetTypeId() == TYPEID_PLAYER )
-                        {
-                            if( ((Player*)m_caster)->GetQuestStatus(12065) == QUEST_STATUS_INCOMPLETE || ((Player*)m_caster)->GetQuestStatus(12066) == QUEST_STATUS_INCOMPLETE )
-                                ((Player*)m_caster)->KilledMonsterCredit(26773, 0);
                         }
                         return;
                     }
@@ -1004,7 +986,7 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
                         if( m_caster->GetTypeId() != TYPEID_PLAYER )
                             return;
 
-                        ((Player*)m_caster)->KilledMonsterCredit(24281, 0);
+                        ((Player*)m_caster)->KilledMonsterCredit(24281, ObjectGuid());
                     }
                 }
                 break;
@@ -1147,7 +1129,7 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
                     if (caster && caster->GetTypeId() == TYPEID_PLAYER)
                     {
                         WorldPacket data(SMSG_SPIRIT_HEALER_CONFIRM, 8);
-                        data << uint64(unitTarget->GetGUID());
+                        data << unitTarget->GetObjectGuid();
                         ((Player*)caster)->GetSession()->SendPacket( &data );
                     }
                     return;
@@ -1558,7 +1540,7 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
                         if (const SpellEntry *pSpell = sSpellStore.LookupEntry(46022))
                         {
                             m_caster->CastSpell(unitTarget, pSpell, true);
-                            ((Player*)m_caster)->KilledMonsterCredit(pSpell->EffectMiscValue[EFFECT_INDEX_0], 0);
+                            ((Player*)m_caster)->KilledMonsterCredit(pSpell->EffectMiscValue[EFFECT_INDEX_0]);
                         }
 
                         if (unitTarget->GetTypeId() == TYPEID_UNIT)
@@ -1634,7 +1616,7 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
                         m_caster->CastSpell(unitTarget, pSpell, true);
 
                         if (const SpellEntry *pSpellCredit = sSpellStore.LookupEntry(pSpell->EffectMiscValue[EFFECT_INDEX_0]))
-                            ((Player*)m_caster)->KilledMonsterCredit(pSpellCredit->EffectMiscValue[EFFECT_INDEX_0], 0);
+                            ((Player*)m_caster)->KilledMonsterCredit(pSpellCredit->EffectMiscValue[EFFECT_INDEX_0]);
 
                         ((Creature*)unitTarget)->ForcedDespawn();
                     }
@@ -2110,7 +2092,7 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
                     m_caster->DealDamage(unitTarget, unitTarget->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                     if(m_originalCaster && m_originalCaster->GetTypeId() == TYPEID_PLAYER)
                     {
-                        ((Player*)m_originalCaster)->KilledMonsterCredit(23797, 0);
+                        ((Player*)m_originalCaster)->KilledMonsterCredit(23797, unitTarget->GetObjectGuid());
                     }
                     break;
                 }
@@ -4138,9 +4120,9 @@ void Spell::EffectOpenLock(SpellEffectIndex eff_idx)
             if (gameObjTarget)
             {
                 // Allow one skill-up until respawned
-                if (!gameObjTarget->IsInSkillupList(player->GetGUIDLow()) &&
+                if (!gameObjTarget->IsInSkillupList(player) &&
                     player->UpdateGatherSkill(skillId, pureSkillValue, reqSkillValue))
-                    gameObjTarget->AddToSkillupList(player->GetGUIDLow());
+                    gameObjTarget->AddToSkillupList(player);
             }
             else if (itemTarget)
             {
@@ -4634,8 +4616,8 @@ void Spell::EffectDispel(SpellEffectIndex eff_idx)
         {
             // Failed to dispell
             WorldPacket data(SMSG_DISPEL_FAILED, 8+8+4+4*fail_list.size());
-            data << uint64(m_caster->GetGUID());            // Caster GUID
-            data << uint64(unitTarget->GetGUID());          // Victim GUID
+            data << m_caster->GetObjectGuid();              // Caster GUID
+            data << unitTarget->GetObjectGuid();            // Victim GUID
             data << uint32(m_spellInfo->Id);                // Dispell spell id
             for (std::list< uint32 >::iterator j = fail_list.begin(); j != fail_list.end(); ++j)
                 data << uint32(*j);                         // Spell Id
@@ -6789,9 +6771,8 @@ void Spell::EffectScriptEffect(SpellEffectIndex eff_idx)
                 {
                     // Cool hack, bro!
                     if(!m_caster || m_caster->GetTypeId() != TYPEID_PLAYER)
-                        return;
-
-                    ((Player*)m_caster)->KilledMonsterCredit(24108, 0);
+                        return
+                    ((Player*)m_caster)->KilledMonsterCredit(24108, ObjectGuid());
                     return;
                 }
                 case 24719:
@@ -7431,8 +7412,8 @@ void Spell::EffectDuel(SpellEffectIndex eff_idx)
 
     // Send request
     WorldPacket data(SMSG_DUEL_REQUESTED, 8 + 8);
-    data << uint64(pGameObj->GetGUID());
-    data << uint64(caster->GetGUID());
+    data << pGameObj->GetObjectGuid();
+    data << caster->GetObjectGuid();
     caster->GetSession()->SendPacket(&data);
     target->GetSession()->SendPacket(&data);
 
@@ -7478,7 +7459,7 @@ void Spell::EffectStuck(SpellEffectIndex /*eff_idx*/)
     SpellEntry const *spellInfo = sSpellStore.LookupEntry(8690);
     if(!spellInfo)
         return;
-    Spell spell(pTarget, spellInfo, true, 0);
+    Spell spell(pTarget, spellInfo, true);
     spell.SendSpellCooldown();
 }
 
@@ -7497,7 +7478,7 @@ void Spell::EffectSummonPlayer(SpellEffectIndex /*eff_idx*/)
     ((Player*)unitTarget)->SetSummonPoint(m_caster->GetMapId(),x,y,z);
 
     WorldPacket data(SMSG_SUMMON_REQUEST, 8+4+4);
-    data << uint64(m_caster->GetGUID());                    // summoner guid
+    data << m_caster->GetObjectGuid();                      // summoner guid
     data << uint32(m_caster->GetZoneId());                  // summoner zone
     data << uint32(MAX_PLAYER_SUMMON_DELAY*IN_MILLISECONDS); // auto decline after msecs
     ((Player*)unitTarget)->GetSession()->SendPacket(&data);
@@ -7636,7 +7617,7 @@ void Spell::DoSummonTotem(SpellEffectIndex eff_idx, uint8 slot_dbc)
     {
         WorldPacket data(SMSG_TOTEM_CREATED, 1 + 8 + 4 + 4);
         data << uint8(slot);
-        data << uint64(pTotem->GetGUID());
+        data << pTotem->GetObjectGuid();
         data << uint32(duration);
         data << uint32(m_spellInfo->Id);
         ((Player*)m_caster)->SendDirectMessage(&data);
@@ -8610,7 +8591,7 @@ void Spell::EffectKillCreditPersonal(SpellEffectIndex eff_idx)
     if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    ((Player*)unitTarget)->KilledMonsterCredit(m_spellInfo->EffectMiscValue[eff_idx], 0);
+    ((Player*)unitTarget)->KilledMonsterCredit(m_spellInfo->EffectMiscValue[eff_idx]);
 }
 
 void Spell::EffectKillCredit(SpellEffectIndex eff_idx)
@@ -8759,7 +8740,7 @@ void Spell::EffectBind(SpellEffectIndex eff_idx)
 
     // zone update
     data.Initialize(SMSG_PLAYERBOUND, 8+4);
-    data << uint64(player->GetGUID());
+    data << player->GetObjectGuid();
     data << uint32(area_id);
     player->SendDirectMessage( &data );
 }
@@ -8805,7 +8786,7 @@ void Spell::EffectTeachTaxiNode( SpellEffectIndex eff_idx )
         player->SendDirectMessage( &data );
 
         data.Initialize( SMSG_TAXINODE_STATUS, 9 );
-        data << uint64( m_caster->GetGUID() );
+        data << m_caster->GetObjectGuid();
         data << uint8( 1 );
         player->SendDirectMessage( &data );
     }

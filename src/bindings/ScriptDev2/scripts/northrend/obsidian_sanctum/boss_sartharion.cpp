@@ -234,9 +234,9 @@ struct MANGOS_DLL_DECL boss_sartharionAI : public ScriptedAI
         if (m_pInstance)
             m_pInstance->SetData(TYPE_SARTHARION_EVENT, NOT_STARTED);
 
-        Creature* pTene = (Creature*)Unit::GetUnit(*m_creature,m_pInstance->GetData64(DATA_TENEBRON));
-        Creature* pShad = (Creature*)Unit::GetUnit(*m_creature,m_pInstance->GetData64(DATA_SHADRON));
-        Creature* pVesp = (Creature*)Unit::GetUnit(*m_creature,m_pInstance->GetData64(DATA_VESPERON));
+        Creature* pTene = (Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(DATA_TENEBRON));
+        Creature* pShad = (Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(DATA_SHADRON));
+        Creature* pVesp = (Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(DATA_VESPERON));
 
         if (pTene && pTene->isAlive())
         {
@@ -1479,7 +1479,7 @@ struct MANGOS_DLL_DECL mob_onyx_flight_captainAI : public ScriptedAI
         {
             if (m_pInstance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
             {
-                if (Unit* pSart = Unit::GetUnit(*m_creature,m_pInstance->GetData64(DATA_SARTHARION)))
+                if (Unit* pSart = m_creature->GetMap()->GetUnit(m_pInstance->GetData64(DATA_SARTHARION)))
                 {
                     if (pSart->getVictim())
                     {

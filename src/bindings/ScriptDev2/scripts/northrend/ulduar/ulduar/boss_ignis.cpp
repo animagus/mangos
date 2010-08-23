@@ -122,7 +122,7 @@ struct MANGOS_DLL_DECL mob_iron_constructAI : public ScriptedAI
     {
         if (!m_pInstance)
             return;
-        if (Creature* pTemp = ((Creature*)Unit::GetUnit((*m_creature), m_pInstance->GetData64(TYPE_IGNIS))))
+        if (Creature* pTemp = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(TYPE_IGNIS))))
             if (pTemp->isAlive())
                 if (pTemp->HasAura(BUFF_STRENGHT_OF_CREATOR))
                 {
@@ -210,7 +210,7 @@ struct MANGOS_DLL_DECL boss_ignisAI : public ScriptedAI
     bool m_bIsRegularMode;
     bool m_achievement_time;
 
-    std::list<uint64> m_lIronConstructGUIDList;
+    std::list<ObjectGuid> m_lIronConstructGUIDList;
 
     uint32 Flame_Jets_Timer;
     uint32 Slag_Pot_Timer;
@@ -220,7 +220,7 @@ struct MANGOS_DLL_DECL boss_ignisAI : public ScriptedAI
     uint32 PotDmgCount;
     uint32 m_achievement_t;
 
-    uint64 m_uiPotTarget;
+    ObjectGuid m_uiPotTarget;
 
     void Reset()
     {
@@ -244,8 +244,8 @@ struct MANGOS_DLL_DECL boss_ignisAI : public ScriptedAI
             m_pInstance->SetData(TYPE_IGNIS, DONE);
         if (!m_lIronConstructGUIDList.empty())
         {
-            for(std::list<uint64>::iterator itr = m_lIronConstructGUIDList.begin(); itr != m_lIronConstructGUIDList.end(); ++itr)
-                if (Creature* pTemp = (Creature*)Unit::GetUnit(*m_creature, *itr))
+            for(std::list<ObjectGuid>::iterator itr = m_lIronConstructGUIDList.begin(); itr != m_lIronConstructGUIDList.end(); ++itr)
+                if (Creature* pTemp = (Creature*)m_creature->GetMap()->GetUnit(*itr))
                     pTemp->ForcedDespawn();
         }
 
@@ -298,7 +298,7 @@ struct MANGOS_DLL_DECL boss_ignisAI : public ScriptedAI
             if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,1))
             {
                 DoCast(target, m_bIsRegularMode ? SPELL_SLAG_POT : SPELL_SLAG_POT_H);
-                m_uiPotTarget = target->GetGUID();
+                m_uiPotTarget = target->GetObjectGuid();
             }
             Slag_Pot_Timer = 30000;
             Slag_Pot_Dmg_Timer = 1000;
@@ -307,7 +307,7 @@ struct MANGOS_DLL_DECL boss_ignisAI : public ScriptedAI
 
         if (Slag_Pot_Dmg_Timer < diff)
         {
-            if (Unit* pPotTarget = Unit::GetUnit(*m_creature, m_uiPotTarget))
+            if (Unit* pPotTarget = m_creature->GetMap()->GetUnit(m_uiPotTarget))
             {
                 if (PotDmgCount < 10)
                     DoCast(pPotTarget, m_bIsRegularMode ? SPELL_SLAG_POT_DMG : SPELL_SLAG_POT_DMG_H);
@@ -330,7 +330,7 @@ struct MANGOS_DLL_DECL boss_ignisAI : public ScriptedAI
                     pTemp->setFaction(14);
                     pTemp->AddThreat(pTarget,0.0f);
                     pTemp->AI()->AttackStart(pTarget);
-                    m_lIronConstructGUIDList.push_back(pTemp->GetGUID());
+                    m_lIronConstructGUIDList.push_back(pTemp->GetObjectGuid());
                 }
                 
                 Summon_Timer = 40000;
