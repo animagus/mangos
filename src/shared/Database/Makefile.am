@@ -55,3 +55,7 @@ libmangosdatabase_a_SOURCES = \
 	SqlDelayThread.h \
 	SqlOperations.cpp \
 	SqlOperations.h
+
+EXTRA_DIST = \
+    pg_type.h
+

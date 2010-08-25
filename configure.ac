@@ -124,10 +124,25 @@ AC_ARG_WITH(mysql,
 AC_MSG_CHECKING(whether to build/link POSTGRESQL)
 if test "x$DO_POSTGRESQL" = "xyes"; then
 DO_MYSQL=no
-POSTGRE_INCLUDES="-I/usr/include/postgresql $POSTGRE_INCLUDES"
-POSTGRE_LIBS="-L/usr/lib/postresql -lpq -lz -lpthread -lcrypt -lnsl -lm -lpthread -L/usr/lib $OPENSSL_LIBS $POSTGRE_LIBS "
+POSTGRE_INC_DIR="`pg_config --includedir`"
+POSTGRE_INCLUDES="-I${POSTGRE_INC_DIR} -I\$(top_builddir)/src/shared/Database $POSTGRE_INCLUDES"
+POSTGRE_LIBS="-L`pg_config --libdir` -lpq -lz -lpthread -lcrypt -lnsl -lm -lpthread -L/usr/lib $OPENSSL_LIBS $POSTGRE_LIBS "
 CXXFLAGS="-DDO_POSTGRESQL $CXXFLAGS"
+
+AC_CHECK_FILE("${POSTGRE_INC_DIR}/catalog/pg_type.h",[PGTYPE="${POSTGRE_INC_DIR}/catalog/pg_type.h"],
+    [AC_CHECK_FILE("${POSTGRE_INC_DIR}/server/catalog/pg_type.h", [PGTYPE="${POSTGRE_INC_DIR}/server/catalog/pg_type.h"],
+        [AC_MSG_ERROR(can't find pg_type.h under ${POSTGRE_INC_DIR})]
+    )]
+)
+
+AC_CONFIG_COMMANDS_PRE([
+pg_config --configure | grep disable-thread && AC_MSG_ERROR(Required thread-safe libpq)
+pg_type_content="`awk '/#define .+OID/ {np2=2; np3=3; print "#define "$np2" "$np3}' $PGTYPE`"
+AC_SUBST(pg_type_content)
+AC_CONFIG_FILES([src/shared/Database/pg_type.h])
+])
 fi
+
 AC_MSG_RESULT($DO_POSTGRESQL)
 
 # here mysql
