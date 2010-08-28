@@ -25,8 +25,8 @@
 #include <postgre/libpq-fe.h>
 #include <postgre/pg_type.h>
 #else
+#include "pg_type.h"
 #include <libpq-fe.h>
-//#include <pg_type.h>
 #endif
 
 class QueryResultPostgre : public QueryResult
