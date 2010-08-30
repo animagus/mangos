@@ -1560,6 +1560,12 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
                 case 54835:                                 // Curse of the Plaguebringer (h)
                     unMaxTargets = 10;
                     break;
+                case 69075:                                 // Bone Storm
+                case 70834:                                 
+                case 70835:                                 
+                case 70836:                                 
+                    radius = DEFAULT_VISIBILITY_INSTANCE;
+                    break;
                 case 25991:                                 // Poison Bolt Volley (Pincess Huhuran)
                     unMaxTargets = 15;
                     break;
