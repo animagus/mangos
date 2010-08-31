@@ -23,14 +23,17 @@
 #include "World.h"
 #include "Player.h"
 
-void ArenaTeamMember::ModifyPersonalRating(Player* plr, int32 mod, uint32 slot)
+void ArenaTeamMember::ModifyPersonalRating(Player* plr, int32 mod, uint32 slot, uint32 type)
 {
     if (int32(personal_rating) + mod < 0)
         personal_rating = 0;
     else
         personal_rating += mod;
     if(plr)
+    {
         plr->SetArenaTeamInfoField(slot, ARENA_TEAM_PERSONAL_RATING, personal_rating);
+        plr->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_TEAM_RATING,type,personal_rating);
+    }
 }
 
 ArenaTeam::ArenaTeam()

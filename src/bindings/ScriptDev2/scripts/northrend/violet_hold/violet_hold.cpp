@@ -195,7 +195,8 @@ struct MANGOS_DLL_DECL mob_vh_dragonsAI : public ScriptedAI
         ++WayPoint;
         WalkTimer = 200;
     }
-    void UpdateAI(const uint32 uiDiff){
+    void UpdateAI(const uint32 uiDiff)
+    {
         if(portalLoc != -1)
             StartMovement();
 
