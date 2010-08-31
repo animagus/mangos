@@ -1563,6 +1563,16 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
                 case 25991:                                 // Poison Bolt Volley (Pincess Huhuran)
                     unMaxTargets = 15;
                     break;
+                case 72350:                                 // Fury of Frostmourne (Icecrown Citadel: The Lich King)
+                case 72351:                                 
+                    radius = 300;
+                    break;
+				case 69278:                                 // Gas spore (Icecrown Citadel 10: Festergut)
+                    unMaxTargets = 2;
+                    break;
+                case 71221:                                 // Gas spore (Icecrown Citadel 25: Festergut)    
+                    unMaxTargets = 4;
+                    break;
             }
             break;
         }
