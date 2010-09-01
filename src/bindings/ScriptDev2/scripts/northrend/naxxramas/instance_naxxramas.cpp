@@ -657,7 +657,7 @@ bool AreaTrigger_at_frostwyrm_lair(Player* pPlayer, AreaTriggerEntry const* pAt)
         return false;
     }
     return false;*/
-    return true;
+    return false;
 }
 
 void AddSC_instance_naxxramas()
