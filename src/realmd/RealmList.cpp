@@ -93,7 +93,7 @@ void RealmList::UpdateRealm( uint32 ID, const std::string& name, const std::stri
     realm.allowedSecurityLevel = allowedSecurityLevel;
     realm.populationLevel      = popu;
 
-    Tokens tokens = StrSplit(builds, " ");
+    Tokens tokens = StrSplit(builds ? builds : "", " ");
     Tokens::iterator iter;
 
     for (iter = tokens.begin(); iter != tokens.end(); ++iter)
