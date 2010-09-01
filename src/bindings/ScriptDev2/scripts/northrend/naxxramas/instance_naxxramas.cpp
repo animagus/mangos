@@ -648,7 +648,7 @@ InstanceData* GetInstanceData_naxxramas(Map* map)
 
 bool AreaTrigger_at_frostwyrm_lair(Player* pPlayer, AreaTriggerEntry const* pAt)
 {
-    if (ScriptedInstance* pInstance = (ScriptedInstance*)pPlayer->GetInstanceData())
+/*    if (ScriptedInstance* pInstance = (ScriptedInstance*)pPlayer->GetInstanceData())
     {
         if (pInstance->GetData(ENCOUNT_MAEXXNA) != DONE || pInstance->GetData(ENCOUNT_THADDIUS) != DONE ||
             pInstance->GetData(ENCOUNT_FOURHORSEMAN) != DONE || pInstance->GetData(ENCOUNT_LOATHEB) != DONE)
@@ -656,7 +656,8 @@ bool AreaTrigger_at_frostwyrm_lair(Player* pPlayer, AreaTriggerEntry const* pAt)
 
         return false;
     }
-    return false;
+    return false;*/
+    return true;
 }
 
 void AddSC_instance_naxxramas()
