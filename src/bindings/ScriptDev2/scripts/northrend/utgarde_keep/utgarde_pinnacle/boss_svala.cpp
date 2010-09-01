@@ -337,7 +337,6 @@ struct MANGOS_DLL_DECL boss_svalaAI : public ScriptedAI
                         m_uiAddsGUID[i] = pAdd->GetObjectGuid();
                         pAdd->AI()->AttackStart(pPlayer);
                         pAdd->CastSpell(pPlayer, SPELL_PARALYZE, false);
-                        m_creature->CastSpell(m_creature, SPELL_PARALYZE, false);
                     }
             }
             m_bIsSacrifice = true;

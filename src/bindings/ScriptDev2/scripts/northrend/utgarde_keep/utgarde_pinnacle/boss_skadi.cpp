@@ -107,6 +107,7 @@ struct MANGOS_DLL_DECL boss_skadiAI : public ScriptedAI
         m_uiNextWaveCount           = 0;
         m_uiIsInHarpoonRangeTimer   = urand(5000,10000);
         m_uiNextWaveTimer           = urand(5000,10000);
+        m_creature->SetVisibility(VISIBILITY_ON);
     }
 
     void JustReachedHome()
@@ -145,7 +146,7 @@ struct MANGOS_DLL_DECL boss_skadiAI : public ScriptedAI
 
     void SendNextWeave()
     {
-        for(uint8 i=0; i<(urand(3,4)); ++i)
+        for(uint8 i=0; i<(urand(4,5)); ++i)
         {
             Creature* pAdd = m_creature->SummonCreature(m_uiSkadiAdds[urand(0,2)], m_creature->GetPositionX()+urand(5,10), m_creature->GetPositionY()+urand(5,10), m_creature->GetPositionZ(), m_creature->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
             if(pAdd)
@@ -162,9 +163,9 @@ struct MANGOS_DLL_DECL boss_skadiAI : public ScriptedAI
 
         if(!m_bIsLandPhase)
         {
-            if(m_uiNextWaveCount >= 4)
+            if(m_uiNextWaveCount > 5)
             {
-                if(m_pInstance && m_pInstance->GetData(TYPE_HARPOONLUNCHER) != (m_bIsRegularMode ? DONE : SPECIAL))
+                /*if(m_pInstance && m_pInstance->GetData(TYPE_HARPOONLUNCHER) != (m_bIsRegularMode ? DONE : SPECIAL))
                 {
                     if(m_uiIsInHarpoonRangeTimer < uiDiff)
                     {
@@ -178,7 +179,7 @@ struct MANGOS_DLL_DECL boss_skadiAI : public ScriptedAI
                     }else m_uiIsInHarpoonRangeTimer -= uiDiff;
                 }
                 else
-                {
+                {*/
                     DoScriptText(SAY_DRAKE_DEATH, m_creature);
                     m_bIsLandPhase = true;
                     m_creature->SetVisibility(VISIBILITY_ON);
@@ -187,7 +188,7 @@ struct MANGOS_DLL_DECL boss_skadiAI : public ScriptedAI
                         m_pInstance->SetData(TYPE_SKADI, IN_PROGRESS);
                         m_pInstance->SetData(TYPE_HARPOONLUNCHER, 0);
                     }
-                }
+               // }
             }
 
             if(m_uiNextWaveTimer < uiDiff)
