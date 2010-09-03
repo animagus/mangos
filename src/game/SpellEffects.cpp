@@ -3638,6 +3638,13 @@ void Spell::EffectHeal(SpellEffectIndex /*eff_idx*/)
 
             addhealth += tickheal * tickcount;
         }
+        // Runic Healing Injector & Healing Potion Injector effect increase for engineers
+        else if ((m_spellInfo->Id == 67486 || m_spellInfo->Id == 67489) && unitTarget->GetTypeId() == TYPEID_PLAYER)
+        {
+            Player* player = (Player*)unitTarget;
+            if (player->HasSkill(SKILL_ENGINERING))
+                addhealth += int32(addhealth * 0.25);
+        }
 
         // Chain Healing
         if (m_spellInfo->SpellFamilyName == SPELLFAMILY_SHAMAN && m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000000000000100))
@@ -3936,6 +3943,17 @@ void Spell::EffectEnergize(SpellEffectIndex eff_idx)
         case 68082:                                         // Glyph of Seal of Command
             damage = damage * unitTarget->GetCreateMana() / 100;
             break;
+        case 67487:                                         // Mana Potion Injector
+        case 67490:                                         // Runic Mana Injector
+        {
+            if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+            {
+                Player* player = (Player*)unitTarget;
+                if (player->HasSkill(SKILL_ENGINERING))
+                    damage += int32(damage * 0.25);
+            }
+            break;
+        }
         default:
             break;
     }
@@ -4072,7 +4090,7 @@ void Spell::EffectOpenLock(SpellEffectIndex eff_idx)
             if (BattleGround *bg = player->GetBattleGround())
             {
                 // check if it's correct bg
-                if (bg->GetTypeID() == BATTLEGROUND_AB || bg->GetTypeID() == BATTLEGROUND_AV)
+                if (bg->GetTypeID(true) == BATTLEGROUND_AB || bg->GetTypeID(true) == BATTLEGROUND_AV)
                     bg->EventPlayerClickedOnFlag(player, gameObjTarget);
                 return;
             }
@@ -4083,7 +4101,7 @@ void Spell::EffectOpenLock(SpellEffectIndex eff_idx)
             // in battleground check
             if (BattleGround *bg = player->GetBattleGround())
             {
-                if (bg->GetTypeID() == BATTLEGROUND_EY)
+                if (bg->GetTypeID(true) == BATTLEGROUND_EY)
                     bg->EventPlayerClickedOnFlag(player, gameObjTarget);
                 return;
             }
@@ -5908,7 +5926,7 @@ void Spell::EffectSummonObjectWild(SpellEffectIndex eff_idx)
         {
             case 489:                                       //WS
             {
-                if(bg && bg->GetTypeID()==BATTLEGROUND_WS && bg->GetStatus() == STATUS_IN_PROGRESS)
+                if(bg && bg->GetTypeID(true)==BATTLEGROUND_WS && bg->GetStatus() == STATUS_IN_PROGRESS)
                 {
                     uint32 team = ALLIANCE;
 
@@ -5921,7 +5939,7 @@ void Spell::EffectSummonObjectWild(SpellEffectIndex eff_idx)
             }
             case 566:                                       //EY
             {
-                if(bg && bg->GetTypeID()==BATTLEGROUND_EY && bg->GetStatus() == STATUS_IN_PROGRESS)
+                if(bg && bg->GetTypeID(true)==BATTLEGROUND_EY && bg->GetStatus() == STATUS_IN_PROGRESS)
                 {
                     ((BattleGroundEY*)bg)->SetDroppedFlagGUID(pGameObj->GetGUID());
                 }

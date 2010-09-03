@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "Common.h"
+#include "Player.h"
 #include "Language.h"
 #include "Database/DatabaseEnv.h"
 #include "Log.h"
@@ -26,7 +26,6 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "UpdateMask.h"
-#include "Player.h"
 #include "Vehicle.h"
 #include "SkillDiscovery.h"
 #include "QuestDef.h"
@@ -584,6 +583,8 @@ Player::Player (WorldSession *session): Unit(), m_achievementMgr(this), m_reputa
 
     // Honor System
     m_lastHonorUpdateTime = time(NULL);
+
+    m_IsBGRandomWinner = false;
 
     // Player summoning
     m_summon_expire = 0;
@@ -4475,7 +4476,7 @@ void Player::BuildPlayerRepop()
     if(GetCorpse())
     {
         sLog.outError("BuildPlayerRepop: player %s(%d) already has a corpse", GetName(), GetGUIDLow());
-        ASSERT(false);
+        MANGOS_ASSERT(false);
     }
 
     // create a corpse and place it at the player's location
@@ -6800,11 +6801,6 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor)
 
     // add honor points
     ModifyHonorPoints(int32(honor));
-
-    // battleground update players honor in bg statistics
-    if(BattleGround *bg = GetBattleGround())
-        bg->UpdatePlayerScore(this, SCORE_BONUS_HONOR, honor);
-
     ApplyModUInt32Value(PLAYER_FIELD_TODAY_CONTRIBUTION, uint32(honor), true);
     return true;
 }
@@ -8109,7 +8105,7 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type)
                 uint32 lootid =  go->GetGOInfo()->GetLootId();
                 if ((go->GetEntry() == BG_AV_OBJECTID_MINE_N || go->GetEntry() == BG_AV_OBJECTID_MINE_S))
                     if (BattleGround *bg = GetBattleGround())
-                        if (bg->GetTypeID() == BATTLEGROUND_AV)
+                        if (bg->GetTypeID(true) == BATTLEGROUND_AV)
                             if (!(((BattleGroundAV*)bg)->PlayerCanDoMineQuest(go->GetEntry(), GetTeam())))
                             {
                                 SendLootRelease(guid);
@@ -8184,7 +8180,7 @@ void Player::SendLoot(ObjectGuid guid, LootType loot_type)
                 bones->lootForBody = true;
                 uint32 pLevel = bones->loot.gold;
                 bones->loot.clear();
-                if (GetBattleGround()->GetTypeID() == BATTLEGROUND_AV)
+                if (GetBattleGround() && GetBattleGround()->GetTypeID(true) == BATTLEGROUND_AV)
                     loot->FillLoot(0, LootTemplates_Creature, this, false);
                 // It may need a better formula
                 // Now it works like this: lvl10: ~6copper, lvl70: ~9silver
@@ -8678,25 +8674,25 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
         case 2257:
             break;
         case 2597:                                          // AV
-            if (bg && bg->GetTypeID() == BATTLEGROUND_AV)
+            if (bg && bg->GetTypeID(true) == BATTLEGROUND_AV)
                 bg->FillInitialWorldStates(data, count);
             else
                 FillInitialWorldState(data,count, AV_world_states);
             break;
         case 3277:                                          // WS
-            if (bg && bg->GetTypeID() == BATTLEGROUND_WS)
+            if (bg && bg->GetTypeID(true) == BATTLEGROUND_WS)
                 bg->FillInitialWorldStates(data, count);
             else
                 FillInitialWorldState(data,count, WS_world_states);
             break;
         case 3358:                                          // AB
-            if (bg && bg->GetTypeID() == BATTLEGROUND_AB)
+            if (bg && bg->GetTypeID(true) == BATTLEGROUND_AB)
                 bg->FillInitialWorldStates(data, count);
             else
                 FillInitialWorldState(data,count, AB_world_states);
             break;
         case 3820:                                          // EY
-            if (bg && bg->GetTypeID() == BATTLEGROUND_EY)
+            if (bg && bg->GetTypeID(true) == BATTLEGROUND_EY)
                 bg->FillInitialWorldStates(data, count);
             else
                 FillInitialWorldState(data,count, EY_world_states);
@@ -8711,7 +8707,7 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
             FillInitialWorldState(data,count, ZM_world_states);
             break;
         case 3698:                                          // Nagrand Arena
-            if (bg && bg->GetTypeID() == BATTLEGROUND_NA)
+            if (bg && bg->GetTypeID(true) == BATTLEGROUND_NA)
                 bg->FillInitialWorldStates(data, count);
             else
             {
@@ -8721,7 +8717,7 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
             }
             break;
         case 3702:                                          // Blade's Edge Arena
-            if (bg && bg->GetTypeID() == BATTLEGROUND_BE)
+            if (bg && bg->GetTypeID(true) == BATTLEGROUND_BE)
                 bg->FillInitialWorldStates(data, count);
             else
             {
@@ -8731,7 +8727,7 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
             }
             break;
         case 3968:                                          // Ruins of Lordaeron
-            if (bg && bg->GetTypeID() == BATTLEGROUND_RL)
+            if (bg && bg->GetTypeID(true) == BATTLEGROUND_RL)
                 bg->FillInitialWorldStates(data, count);
             else
             {
@@ -8818,7 +8814,7 @@ void Player::SendPetSkillWipeConfirm()
 
 void Player::SetVirtualItemSlot( uint8 i, Item* item)
 {
-    ASSERT(i < 3);
+    MANGOS_ASSERT(i < 3);
     if(i < 2 && item)
     {
         if(!item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
@@ -12580,7 +12576,7 @@ void Player::UpdateEnchantTime(uint32 time)
 {
     for(EnchantDurationList::iterator itr = m_enchantDuration.begin(),next;itr != m_enchantDuration.end();itr=next)
     {
-        ASSERT(itr->item);
+        MANGOS_ASSERT(itr->item);
         next = itr;
         if (!itr->item->GetEnchantmentId(itr->slot))
         {
@@ -13498,7 +13494,7 @@ void Player::PrepareQuestMenu( uint64 guid )
         //we should obtain map pointer from GetMap() in 99% of cases. Special case
         //only for quests which cast teleport spells on player
         Map * _map = IsInWorld() ? GetMap() : sMapMgr.FindMap(GetMapId(), GetInstanceId());
-        ASSERT(_map);
+        MANGOS_ASSERT(_map);
         GameObject *pGameObject = _map->GetGameObject(guid);
         if( pGameObject )
         {
@@ -13665,7 +13661,7 @@ Quest const * Player::GetNextQuest( uint64 guid, Quest const *pQuest )
         //we should obtain map pointer from GetMap() in 99% of cases. Special case
         //only for quests which cast teleport spells on player
         Map * _map = IsInWorld() ? GetMap() : sMapMgr.FindMap(GetMapId(), GetInstanceId());
-        ASSERT(_map);
+        MANGOS_ASSERT(_map);
         GameObject *pGameObject = _map->GetGameObject(guid);
         if( pGameObject )
         {
@@ -13894,7 +13890,7 @@ void Player::SendPetTameFailure(PetTameFailureReason reason)
 void Player::AddQuest( Quest const *pQuest, Object *questGiver )
 {
     uint16 log_slot = FindQuestSlot( 0 );
-    ASSERT(log_slot < MAX_QUEST_LOG_SIZE);
+    MANGOS_ASSERT(log_slot < MAX_QUEST_LOG_SIZE);
 
     uint32 quest_id = pQuest->GetQuestId();
 
@@ -14011,7 +14007,7 @@ void Player::RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver
     RemoveTimedQuest(quest_id);
 
     if (BattleGround* bg = GetBattleGround())
-        if (bg->GetTypeID() == BATTLEGROUND_AV)
+        if (bg->GetTypeID(true) == BATTLEGROUND_AV)
             ((BattleGroundAV*)bg)->HandleQuestComplete(pQuest->GetQuestId(), this);
 
     if (pQuest->GetRewChoiceItemsCount() > 0)
@@ -14281,7 +14277,7 @@ bool Player::SatisfyQuestPreviousQuest( Quest const* qInfo, bool msg ) const
                 ObjectMgr::ExclusiveQuestGroups::const_iterator iter2 = sObjectMgr.mExclusiveQuestGroups.lower_bound(qPrevInfo->GetExclusiveGroup());
                 ObjectMgr::ExclusiveQuestGroups::const_iterator end  = sObjectMgr.mExclusiveQuestGroups.upper_bound(qPrevInfo->GetExclusiveGroup());
 
-                ASSERT(iter2!=end);                         // always must be found if qPrevInfo->ExclusiveGroup != 0
+                MANGOS_ASSERT(iter2!=end);                  // always must be found if qPrevInfo->ExclusiveGroup != 0
 
                 for(; iter2 != end; ++iter2)
                 {
@@ -14315,7 +14311,7 @@ bool Player::SatisfyQuestPreviousQuest( Quest const* qInfo, bool msg ) const
                 ObjectMgr::ExclusiveQuestGroups::const_iterator iter2 = sObjectMgr.mExclusiveQuestGroups.lower_bound(qPrevInfo->GetExclusiveGroup());
                 ObjectMgr::ExclusiveQuestGroups::const_iterator end  = sObjectMgr.mExclusiveQuestGroups.upper_bound(qPrevInfo->GetExclusiveGroup());
 
-                ASSERT(iter2!=end);                         // always must be found if qPrevInfo->ExclusiveGroup != 0
+                MANGOS_ASSERT(iter2!=end);                  // always must be found if qPrevInfo->ExclusiveGroup != 0
 
                 for(; iter2 != end; ++iter2)
                 {
@@ -14414,7 +14410,7 @@ bool Player::SatisfyQuestExclusiveGroup( Quest const* qInfo, bool msg ) const
     ObjectMgr::ExclusiveQuestGroups::const_iterator iter = sObjectMgr.mExclusiveQuestGroups.lower_bound(qInfo->GetExclusiveGroup());
     ObjectMgr::ExclusiveQuestGroups::const_iterator end  = sObjectMgr.mExclusiveQuestGroups.upper_bound(qInfo->GetExclusiveGroup());
 
-    ASSERT(iter!=end);                                      // always must be found if qInfo->ExclusiveGroup != 0
+    MANGOS_ASSERT(iter!=end);                               // always must be found if qInfo->ExclusiveGroup != 0
 
     for(; iter != end; ++iter)
     {
@@ -15248,7 +15244,7 @@ void Player::SendQuestUpdateAddItem( Quest const* /*pQuest*/, uint32 /*item_idx*
 
 void Player::SendQuestUpdateAddCreatureOrGo( Quest const* pQuest, ObjectGuid guid, uint32 creatureOrGO_idx, uint32 old_count, uint32 add_count )
 {
-    ASSERT(old_count + add_count < 65536 && "mob/GO count store in 16 bits 2^16 = 65536 (0..65536)");
+    MANGOS_ASSERT(old_count + add_count < 65536 && "mob/GO count store in 16 bits 2^16 = 65536 (0..65536)");
 
     int32 entry = pQuest->ReqCreatureOrGOId[ creatureOrGO_idx ];
     if (entry < 0)
@@ -15853,6 +15849,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     _LoadQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADQUESTSTATUS));
     _LoadDailyQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADDAILYQUESTSTATUS));
     _LoadWeeklyQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADWEEKLYQUESTSTATUS));
+    _LoadRandomBGStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADRANDOMBG));
 
     _LoadTalents(holder->GetResult(PLAYER_LOGIN_QUERY_LOADTALENTS));
 
@@ -15921,7 +15918,7 @@ bool Player::LoadFromDB( uint32 guid, SqlQueryHolder *holder )
     {
         // save source node as recall coord to prevent recall and fall from sky
         TaxiNodesEntry const* nodeEntry = sTaxiNodesStore.LookupEntry(node_id);
-        ASSERT(nodeEntry);                                  // checked in m_taxi.LoadTaxiDestinationsFromString
+        MANGOS_ASSERT(nodeEntry);                           // checked in m_taxi.LoadTaxiDestinationsFromString
         m_recallMap = nodeEntry->map_id;
         m_recallX = nodeEntry->x;
         m_recallY = nodeEntry->y;
@@ -17039,7 +17036,7 @@ void Player::ConvertInstancesToGroup(Player *player, Group *group, ObjectGuid pl
             group = player->GetGroup();
     }
 
-    ASSERT(!player_guid.IsEmpty());
+    MANGOS_ASSERT(!player_guid.IsEmpty());
 
     // copy all binds to the group, when changing leader it's assumed the character
     // will not have any solo binds
@@ -18888,7 +18885,7 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs )
         SpellEntry const *spellInfo = sSpellStore.LookupEntry(unSpellId);
         if (!spellInfo)
         {
-            ASSERT(spellInfo);
+            MANGOS_ASSERT(spellInfo);
             continue;
         }
 
@@ -19918,7 +19915,7 @@ void Player::SetGroup(Group *group, int8 subgroup)
     else
     {
         // never use SetGroup without a subgroup unless you specify NULL for group
-        ASSERT(subgroup >= 0);
+        MANGOS_ASSERT(subgroup >= 0);
         m_group.link(group, this);
         m_group.setSubGroup((uint8)subgroup);
     }
@@ -21093,7 +21090,7 @@ void Player::SetOriginalGroup(Group *group, int8 subgroup)
     else
     {
         // never use SetOriginalGroup without a subgroup unless you specify NULL for group
-        ASSERT(subgroup >= 0);
+        MANGOS_ASSERT(subgroup >= 0);
         m_originalGroup.link(group, this);
         m_originalGroup.setSubGroup((uint8)subgroup);
     }
@@ -22836,5 +22833,23 @@ void Player::SetRestType( RestType n_r_type, uint32 areaTriggerId /*= 0*/)
 
         if(sWorld.IsFFAPvPRealm())
             SetFFAPvP(false);
+    }
+}
+
+void Player::SetRandomWinner(bool isWinner)
+{
+    m_IsBGRandomWinner = isWinner;
+    if(m_IsBGRandomWinner)
+        CharacterDatabase.PExecute("INSERT INTO character_battleground_random (guid) VALUES ('%u')", GetGUIDLow());
+}
+
+void Player::_LoadRandomBGStatus(QueryResult *result)
+{
+    //QueryResult *result = CharacterDatabase.PQuery("SELECT guid FROM character_battleground_random WHERE guid = '%u'", GetGUIDLow());
+
+    if (result)
+    {
+        m_IsBGRandomWinner = true;
+        delete result;
     }
 }
