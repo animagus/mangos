@@ -575,6 +575,7 @@ void Spell::EffectSchoolDMG(SpellEffectIndex effect_idx)
                 // Conflagrate - consumes Immolate or Shadowflame
                 else if (m_spellInfo->TargetAuraState == AURA_STATE_CONFLAGRATE)
                 {
+
                     Aura const* aura = NULL;                // found req. aura for damage calculation
 
                     Unit::AuraList const &mPeriodic = unitTarget->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
@@ -601,7 +602,10 @@ void Spell::EffectSchoolDMG(SpellEffectIndex effect_idx)
                     if (aura)
                     {
                         int32 damagetick = aura->GetModifier()->m_amount;
-                        damage += damagetick * 4;
+                        
+                        // Save value of further damage
+                        m_currentBasePoints[1] = damagetick * 2 / 3;
+                        damage += damagetick * 3;
 
                         // Glyph of Conflagrate
                         if (!m_caster->HasAura(56235))
@@ -2718,7 +2722,7 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
             // Healing Stream Totem
             if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000000000002000))
             {
-                int32 healval = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, damage, DOT );
+                int32 damage = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, damage, DOT );
                 if (unitTarget)
                 {
                     if (Unit *owner = m_caster->GetOwner())
