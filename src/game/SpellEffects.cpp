@@ -2722,11 +2722,13 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
             // Healing Stream Totem
             if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000000000002000))
             {
-                int32 damage = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, damage, DOT );
+
                 if (unitTarget)
                 {
                     if (Unit *owner = m_caster->GetOwner())
                     {
+						int32 damage = owner->SpellHealingBonusDone(unitTarget, m_spellInfo, damage, HEAL );
+						damage = unitTarget->SpellHealingBonusTaken(owner, m_spellInfo, damage, HEAL);
                         // Restorative Totems
                         Unit::AuraList const& mDummyAuras = owner->GetAurasByType(SPELL_AURA_DUMMY);
                         for(Unit::AuraList::const_iterator i = mDummyAuras.begin(); i != mDummyAuras.end(); ++i)
