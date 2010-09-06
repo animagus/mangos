@@ -2621,7 +2621,7 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura
  	   if (dummySpell->Id == 56817)
              {   //Must proc only from Rune strike (56815) 
  				if (procSpell)
- 					if (procSpell->Id!= 56815)
+ 					if (procSpell->Id != 56815)
  				        return false;
              }
             
