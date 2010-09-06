@@ -2474,6 +2474,20 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura
                 target = this;
                 break;
             }
+            // Unholy Blight
+            if (dummySpell->Id == 49194)
+            {
+                basepoints[0] = damage * triggerAmount / 100;
+
+                // Glyph of Unholy Blight
+                if (Aura *aura = GetDummyAura(63332))
+                    basepoints[0] += basepoints[0] * aura->GetModifier()->m_amount / 100;
+
+                // Split between 10 ticks
+                basepoints[0] /= 10;
+                triggered_spell_id = 50536;
+                break;
+            }            
             // Necrosis
             if (dummySpell->SpellIconID == 2709)
             {
@@ -2596,6 +2610,14 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura
                 // triggered_spell_id in spell data
                 break;
             }
+              // Rune strike
+ 	   if (dummySpell->Id == 56817)
+             {   //Must proc only from Rune strike (56815) 
+ 				if (procSpell)
+ 					if (procSpell->Id!= 56815)
+ 				        return false;
+             }
+            
             break;
         }
         default:
