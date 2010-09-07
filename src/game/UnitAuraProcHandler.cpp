@@ -1266,15 +1266,15 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura
                         {
                             if ((*i)->GetEffIndex() != 0)
                                 continue;
-                            basepoints0 = int32((*i)->GetModifier()->m_amount);
+                            basepoints[0] = int32((*i)->GetModifier()->m_amount);
                             target = GetPet();
                             if (target)
                             {
                                 // regen mana for pet
-                                CastCustomSpell(target,54607,&basepoints0,NULL,NULL,true,castItem,triggeredByAura);
+                                CastCustomSpell(target,54607,&basepoints[0],NULL,NULL,true,castItem,triggeredByAura);
                             }
                             // regen mana for caster
-                            CastCustomSpell(this,59117,&basepoints0,NULL,NULL,true,castItem,triggeredByAura);
+                            CastCustomSpell(this,59117,&basepoints[0],NULL,NULL,true,castItem,triggeredByAura);
                             // Replenishment - roll chance
                             if (roll_chance_i((*i)->GetSpellProto()->CalculateSimpleValue(EFFECT_INDEX_1)))
                                 CastSpell(this,57669,true, castItem, triggeredByAura);
