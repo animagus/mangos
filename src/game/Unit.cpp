@@ -6617,7 +6617,24 @@ uint32 Unit::SpellDamageBonusDone(Unit *pVictim, SpellEntry const *spellProto, u
                 if (pVictim->GetHealth() * 100 / pVictim->GetMaxHealth() <= 25)
                     DoneTotalMod *= 4;
             }
-            break;
+            
+            //Fire and Brimstone
+            if((spellProto->SpellIconID == 3178) || (spellProto->SpellIconID == 2128 && spellProto->SpellVisual[0] == 7675))
+                {
+                    if (pVictim->GetAura(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_WARLOCK, UI64LIT(0x0000000004), 0, GetGUID()))
+                        {
+                            Unit::AuraList const& fab = GetAurasByType(SPELL_AURA_DUMMY);
+                            for(Unit::AuraList::const_iterator i = fab.begin(); i != fab.end(); ++i)
+                            {
+                                if ((*i)->GetSpellProto()->SpellIconID == 3173)
+                                    {
+                                            DoneTotalMod *=((*i)->GetModifier()->m_amount+100.0f)/100.0f;
+                                    }
+                            };
+                        }
+                }
+
+            break;            
         }
         case SPELLFAMILY_DRUID:
         {
@@ -6638,23 +6655,7 @@ uint32 Unit::SpellDamageBonusDone(Unit *pVictim, SpellEntry const *spellProto, u
                     }
                 }
             }
-
-            //Fire and Brimstone
-            if((spellProto->SpellIconID == 3178) || (spellProto->SpellIconID == 2128 && spellProto->SpellVisual[0] == 7675))
-                {
-                    if (pVictim->GetAura(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_WARLOCK, UI64LIT(0x0000000004), 0, GetGUID()))
-                        {
-                            Unit::AuraList const& fab = GetAurasByType(SPELL_AURA_DUMMY);
-                            for(Unit::AuraList::const_iterator i = fab.begin(); i != fab.end(); ++i)
-                            {
-                                if ((*i)->GetSpellProto()->SpellIconID == 3173)
-                                    {
-                                            DoneTotalMod *=((*i)->GetModifier()->m_amount+100.0f)/100.0f;
-                                    }
-                            };
-                        }
-                }
-
+            
             break;
         }
         case SPELLFAMILY_PRIEST:
@@ -6677,13 +6678,6 @@ uint32 Unit::SpellDamageBonusDone(Unit *pVictim, SpellEntry const *spellProto, u
         }
         case SPELLFAMILY_DEATHKNIGHT:
         {
-            // Glyph of Unholy Blight
-            if (spellProto->Id == 50536) 
-            { 
-                if (Aura *glyphAura = GetDummyAura(63332)) 
-                    DoneTotalMod *= (glyphAura->GetModifier()->m_amount + 100.0f)/ 100.0f; 
-                break; 
-            } 
             {
               //Crypt Fever
               AuraList const& mOverrideClassScript= owner->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
