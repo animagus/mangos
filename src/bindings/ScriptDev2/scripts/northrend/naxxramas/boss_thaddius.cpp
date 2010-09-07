@@ -432,6 +432,7 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
             m_creature->SetInCombatWithZone();
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
             DoStartMovement(who);
         }
     }
@@ -456,10 +457,10 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
                     bool m_bIsAlive = false;
                     Creature* pStalagg;
                     Creature* pFeugen;
-                    if (pStalagg = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_STALAGG))))
+                    if (pStalagg = m_pInstance->instance->GetCreature(m_pInstance->GetData64(GUID_STALAGG)))
                         if (pStalagg->isAlive())
                             m_bIsAlive = true;
-                    if (pFeugen = ((Creature*)m_creature->GetMap()->GetUnit(m_pInstance->GetData64(GUID_FEUGEN))))
+                    if (pFeugen = m_pInstance->instance->GetCreature(m_pInstance->GetData64(GUID_FEUGEN)))
                         if (pFeugen->isAlive())
                             m_bIsAlive = true;
 

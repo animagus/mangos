@@ -261,7 +261,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
         AbomsTimer = 10000; // 8
         BansheTimer = 10000; // 8
 
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
         for(int i=0; i<5; i++)
