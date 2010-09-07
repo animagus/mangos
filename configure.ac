@@ -135,8 +135,28 @@ AC_CHECK_FILE("${POSTGRE_INC_DIR}/catalog/pg_type.h",[PGTYPE="${POSTGRE_INC_DIR}
     )]
 )
 
+AC_MSG_NOTICE([Checking for postgresql libs is thread-safe])
+LIBS="$LIBS $POSTGRE_LIBS"
+CXXFLAGS="$CXXFLAGS $POSTGRE_INCLUDES"
+AC_RUN_IFELSE(
+ [
+  AC_LANG_SOURCE(
+   [[
+     #include <libpq-fe.h>
+
+     int main() {
+        return !PQisthreadsafe();
+     }
+   ]])
+ ],
+ [
+  AC_MSG_NOTICE([ok])
+ ],
+ [
+  AC_MSG_ERROR([postgre libs is not thread-safe, check your postgresql installation and /etc/ld.config*])
+ ])
+   
 AC_CONFIG_COMMANDS_PRE([
-pg_config --configure | grep disable-thread && AC_MSG_ERROR(Required thread-safe libpq)
 pg_type_content="`awk '/#define .+OID/ {np2=2; np3=3; print "#define "$np2" "$np3}' $PGTYPE`"
 AC_SUBST(pg_type_content)
 AC_CONFIG_FILES([src/shared/Database/pg_type.h])
