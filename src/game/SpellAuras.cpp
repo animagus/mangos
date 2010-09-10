@@ -970,7 +970,7 @@ void Aura::ReapplyAffectedPassiveAuras( Unit* target, bool owner_mode )
     {
         // permanent passive or permanent area aura
         // passive spells can be affected only by own or owner spell mods)
-        if (itr->second->IsPermanent() && (owner_mode && itr->second->IsPassive() /*|| itr->second->IsAreaAura()*/) &&
+        if (itr->second->IsPermanent() && (owner_mode && itr->second->IsPassive() || itr->second->IsAreaAura()) &&
             // non deleted and not same aura (any with same spell id)
             !itr->second->IsDeleted() && itr->second->GetId() != GetId() &&
             // and affected by aura
@@ -2220,19 +2220,24 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             }
             case SPELLFAMILY_SHAMAN:
             {
-                // Tidal Force
-                if (GetId() == 55198)
+                switch(GetId())
                 {
-                    // apply max stack bufs
-                    SpellEntry const* buffEntry = sSpellStore.LookupEntry(55166);
-                    if (!buffEntry)
-                        return;
+                    case 55198:                             // Tidal Force
+                    {
+                        // apply max stack bufs
+                        SpellEntry const* buffEntry = sSpellStore.LookupEntry(55166);
+                        if (!buffEntry)
+                            return;
 
-                    for(uint32 k = 0; k < buffEntry->StackAmount; ++k)
-                        target->CastSpell(target, buffEntry, true, NULL, this);
+                        for(uint32 k = 0; k < buffEntry->StackAmount; ++k)
+                            target->CastSpell(target, buffEntry, true, NULL, this);
+
+                        return;
+                    }
                 }
+
                 // Earth Shield
-                else if ((GetSpellProto()->SpellFamilyFlags & UI64LIT(0x40000000000)))
+                if ((GetSpellProto()->SpellFamilyFlags & UI64LIT(0x40000000000)))
                 {
                     // prevent double apply bonuses
                     if (target->GetTypeId() != TYPEID_PLAYER || !((Player*)target)->GetSession()->PlayerLoading())
@@ -2832,7 +2837,26 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             }
             break;
         case SPELLFAMILY_SHAMAN:
+        {
+            switch(GetId())
+            {
+                case 6495:                                  // Sentry Totem
+                {
+                    if (target->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    Totem* totem = target->GetTotem(TOTEM_SLOT_AIR);
+
+                    if (totem && apply)
+                        ((Player*)target)->GetCamera().SetView(totem);
+                    else
+                        ((Player*)target)->GetCamera().ResetView(totem);
+
+                    return;
+                }
+            }
             break;
+        }
     }
 
     // pet auras
@@ -9295,6 +9319,15 @@ bool SpellAuraHolder::IsPersistent() const
     for (int32 i = 0; i < MAX_EFFECT_INDEX; ++i)
         if (Aura *aur = m_auras[i])
             if (aur->IsPersistent())
+                return true;
+    return false;
+}
+
+bool SpellAuraHolder::IsAreaAura() const
+{
+    for (int32 i = 0; i < MAX_EFFECT_INDEX; ++i)
+        if (Aura *aur = m_auras[i])
+            if (aur->IsAreaAura())
                 return true;
     return false;
 }
