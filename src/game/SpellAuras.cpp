@@ -1055,9 +1055,17 @@ void Aura::HandleAddModifier(bool apply, bool Real)
 
     if (apply)
     {
-        // Add custom charges for some mod aura
+        Unit* caster = GetCaster();
         switch (GetSpellProto()->Id)
         {
+            // If player has Glyph of Eternal Water active - do not modify Water Elemental summon time
+            case 44557:
+            case 44560:
+            case 44561:
+                if (caster && caster->GetTypeId() == TYPEID_PLAYER && caster->HasAura(70937))
+                    return;
+                break;
+            // Add custom charges for some mod aura
             case 17941:                                     // Shadow Trance
             case 22008:                                     // Netherwind Focus
             case 31834:                                     // Light's Grace
