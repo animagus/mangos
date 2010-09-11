@@ -136,23 +136,26 @@ case "$DO_POSTGRESQL" in
     
     if test "$POSTGRE_CONFIG_HOME" != "no" ; then
         POSTGRE_VERSION="`$POSTGRE_CONFIG_HOME --version`"
-        POSTGRE_INC_DIR="`${POSTGRE_CONFIG_HOME} --includedir`"
-        POSTGRE_LIBS="-L`$POSTGRE_CONFIG_HOME --libdir` -lpq -lz -lpthread -lcrypt -lnsl -lm $OPENSSL_LIBS $POSTGRE_LIBS"
+        POSTGRE_PKGINC_DIR="`${POSTGRE_CONFIG_HOME} --pkgincludedir`"
+        POSTGRE_LIBS="-L`$POSTGRE_CONFIG_HOME --libdir` `$POSTGRE_CONFIG_HOME --libs` -lpq $OPENSSL_LIBS $POSTGRE_LIBS"
+        POSTGRE_INCLUDES="-I`$POSTGRE_CONFIG_HOME --includedir` -I\$(top_builddir)/src/shared/Database $POSTGRE_INCLUDES"
     else
         POSTGRE_VERSION="unknown"
         POSTGRE_INC_DIR="/usr/include/postgresql"
+        POSTGRE_PKGINC_DIR="/usr/include/postgresql"
         POSTGRE_LIBS="-L/usr/lib/postgresql/lib -lpq -lz -lpthread -lcrypt -lnsl -lm $OPENSSL_LIBS $POSTGRE_LIBS"
+        POSTGRE_INCLUDES="-I/usr/include/postgresql -I\$(top_builddir)/src/shared/Database $POSTGRE_INCLUDES"
     fi
-    POSTGRE_INCLUDES="-I${POSTGRE_INC_DIR} -I\$(top_builddir)/src/shared/Database $POSTGRE_INCLUDES"
 
-    AC_CHECK_FILE("${POSTGRE_INC_DIR}/catalog/pg_type.h",[PGTYPE="${POSTGRE_INC_DIR}/catalog/pg_type.h"],
-        [AC_CHECK_FILE("${POSTGRE_INC_DIR}/server/catalog/pg_type.h", [PGTYPE="${POSTGRE_INC_DIR}/server/catalog/pg_type.h"],
-            [AC_MSG_ERROR(can't find pg_type.h under ${POSTGRE_INC_DIR})]
+    AC_CHECK_FILE("${POSTGRE_PKGINC_DIR}/catalog/pg_type.h",[PGTYPE="${POSTGRE_PKGINC_DIR}/catalog/pg_type.h"],
+        [AC_CHECK_FILE("${POSTGRE_PKGINC_DIR}/server/catalog/pg_type.h", 
+          [PGTYPE="${POSTGRE_PKGINC_DIR}/server/catalog/pg_type.h"],
+          [AC_MSG_ERROR(can't find pg_type.h under ${POSTGRE_PKGINC_DIR})]
         )]
     )
 
-    POSTGRESQL_OLD_LDFLAGS="$LDFLAGS" ; LDFLAGS="$LDFLAGS ${POSTGRE_LIBS}"
-    POSTGRESQL_OLD_CXXFLAGS="$CXXFLAGS" ; CXXFLAGS="$CXXFLAGS ${POSTGRE_INCLUDES}"
+    POSTGRESQL_OLD_LIBS="$LIBS" ; LIBS="$LIBS ${POSTGRE_LIBS}"
+    POSTGRESQL_OLD_CPPFLAGS="$CPPFLAGS" ; CPPFLAGS="$CPPFLAGS ${POSTGRE_INCLUDES}"
     AC_CHECK_LIB([pq], [PQsetdbLogin], [HAVE_POSTGRESQL="yes"], [])
     AC_CHECK_HEADER([libpq-fe.h], [], [HAVE_POSTGRESQL="yes"], [])
 
@@ -184,10 +187,11 @@ case "$DO_POSTGRESQL" in
      AC_MSG_RESULT([yes])
    ],
    [
+    AC_MSG_RESULT([no])
     AC_MSG_ERROR([postgre libs is not thread-safe, check your postgresql installation and /etc/ld.config*])
    ])
-   CXXFLAGS="${POSTGRESQL_OLD_CXXFLAGS}"
-   LDFLAGS="${POSTGRESQL_OLD_CPPFLAGS}"
+   CPPFLAGS="${POSTGRESQL_OLD_CPPFLAGS}"
+   LIBS="${POSTGRESQL_OLD_LIBS}"
    CXXFLAGS="-DDO_POSTGRESQL $CXXFLAGS"
    AC_CONFIG_COMMANDS_PRE([
     pg_type_content="`awk '/#define .+OID/ {np2=2; np3=3; print "#define "$np2" "$np3}' $PGTYPE`"
