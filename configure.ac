@@ -106,7 +106,13 @@ AC_ARG_WITH(postgresql,
 	yes) DO_POSTGRESQL=yes ;;
 	no)  DO_POSTGRESQL=no ;;
 	maybe) DO_POSTGRESQL=maybe ;;
-	*)   AC_MSG_ERROR(Bad value ${withval} for --with-postgresql) ;;
+	*)
+        if test ! -x "${withval}" ; then
+            AC_MSG_ERROR([${withval} is not a executable file])
+        fi
+        POSTGRE_CONFIG_HOME="${withval}"
+        DO_POSTGRESQL=yes
+    ;;
     esac],
 [DO_POSTGRESQL=no])
 
@@ -121,49 +127,75 @@ AC_ARG_WITH(mysql,
 [DO_MYSQL=yes])
 
 # here Postgre
-AC_MSG_CHECKING(whether to build/link POSTGRESQL)
-if test "x$DO_POSTGRESQL" = "xyes"; then
-DO_MYSQL=no
-POSTGRE_INC_DIR="`pg_config --includedir`"
-POSTGRE_INCLUDES="-I${POSTGRE_INC_DIR} -I\$(top_builddir)/src/shared/Database $POSTGRE_INCLUDES"
-POSTGRE_LIBS="-L`pg_config --libdir` -lpq -lz -lpthread -lcrypt -lnsl -lm -lpthread -L/usr/lib $OPENSSL_LIBS $POSTGRE_LIBS "
-CXXFLAGS="-DDO_POSTGRESQL $CXXFLAGS"
+case "$DO_POSTGRESQL" in
+    yes|maybe)
 
-AC_CHECK_FILE("${POSTGRE_INC_DIR}/catalog/pg_type.h",[PGTYPE="${POSTGRE_INC_DIR}/catalog/pg_type.h"],
-    [AC_CHECK_FILE("${POSTGRE_INC_DIR}/server/catalog/pg_type.h", [PGTYPE="${POSTGRE_INC_DIR}/server/catalog/pg_type.h"],
-        [AC_MSG_ERROR(can't find pg_type.h under ${POSTGRE_INC_DIR})]
-    )]
-)
+    if test -z "$POSTGRE_CONFIG_HOME"; then
+        AC_PATH_PROG([POSTGRE_CONFIG_HOME], [pg_config], [no])
+    fi
+    
+    if test "$POSTGRE_CONFIG_HOME" != "no" ; then
+        POSTGRE_VERSION="`$POSTGRE_CONFIG_HOME --version`"
+        POSTGRE_INC_DIR="`${POSTGRE_CONFIG_HOME} --includedir`"
+        POSTGRE_LIBS="-L`$POSTGRE_CONFIG_HOME --libdir` -lpq -lz -lpthread -lcrypt -lnsl -lm $OPENSSL_LIBS $POSTGRE_LIBS"
+    else
+        POSTGRE_VERSION="unknown"
+        POSTGRE_INC_DIR="/usr/include/postgresql"
+        POSTGRE_LIBS="-L/usr/lib/postgresql/lib -lpq -lz -lpthread -lcrypt -lnsl -lm $OPENSSL_LIBS $POSTGRE_LIBS"
+    fi
+    POSTGRE_INCLUDES="-I${POSTGRE_INC_DIR} -I\$(top_builddir)/src/shared/Database $POSTGRE_INCLUDES"
 
-AC_MSG_NOTICE([Checking for postgresql libs is thread-safe])
-LIBS="$LIBS $POSTGRE_LIBS"
-CXXFLAGS="$CXXFLAGS $POSTGRE_INCLUDES"
-AC_RUN_IFELSE(
- [
-  AC_LANG_SOURCE(
-   [[
-     #include <libpq-fe.h>
+    AC_CHECK_FILE("${POSTGRE_INC_DIR}/catalog/pg_type.h",[PGTYPE="${POSTGRE_INC_DIR}/catalog/pg_type.h"],
+        [AC_CHECK_FILE("${POSTGRE_INC_DIR}/server/catalog/pg_type.h", [PGTYPE="${POSTGRE_INC_DIR}/server/catalog/pg_type.h"],
+            [AC_MSG_ERROR(can't find pg_type.h under ${POSTGRE_INC_DIR})]
+        )]
+    )
 
-     int main() {
-        return !PQisthreadsafe();
-     }
-   ]])
- ],
- [
-  AC_MSG_NOTICE([ok])
- ],
- [
-  AC_MSG_ERROR([postgre libs is not thread-safe, check your postgresql installation and /etc/ld.config*])
- ])
-   
-AC_CONFIG_COMMANDS_PRE([
-pg_type_content="`awk '/#define .+OID/ {np2=2; np3=3; print "#define "$np2" "$np3}' $PGTYPE`"
-AC_SUBST(pg_type_content)
-AC_CONFIG_FILES([src/shared/Database/pg_type.h])
-])
-fi
+    POSTGRESQL_OLD_LDFLAGS="$LDFLAGS" ; LDFLAGS="$LDFLAGS ${POSTGRE_LIBS}"
+    POSTGRESQL_OLD_CXXFLAGS="$CXXFLAGS" ; CXXFLAGS="$CXXFLAGS ${POSTGRE_INCLUDES}"
+    AC_CHECK_LIB([pq], [PQsetdbLogin], [HAVE_POSTGRESQL="yes"], [])
+    AC_CHECK_HEADER([libpq-fe.h], [], [HAVE_POSTGRESQL="yes"], [])
 
-AC_MSG_RESULT($DO_POSTGRESQL)
+    AC_MSG_CHECKING(whether to build/link POSTGRESQL)
+    if test "${HAVE_POSTGRESQL}" != "yes" ; then
+        AC_MSG_RESULT([no])
+        if test "${DO_POSTGRESQL}" = "yes" ; then
+            AC_MSG_ERROR([PostgreSQL not found or incompatible (requested)])
+        else
+            AC_MSG_NOTICE([disabling PostgreSQL (optional)])
+            POSTGRE_VERSION=""
+            POSTGRE_INCLUDES=""
+            POSTGRE_LIBS=""
+        fi
+    else
+      AC_MSG_RESULT([yes ($POSTGRE_VERSION)])
+    fi
+    AC_MSG_CHECKING([PostgreSQL libs is a thread-safe])
+    AC_RUN_IFELSE([
+     AC_LANG_SOURCE(
+     [[
+      #include <libpq-fe.h>
+      int main() {
+         return !PQisthreadsafe();
+      }
+    ]])
+   ],
+   [
+     AC_MSG_RESULT([yes])
+   ],
+   [
+    AC_MSG_ERROR([postgre libs is not thread-safe, check your postgresql installation and /etc/ld.config*])
+   ])
+   CXXFLAGS="${POSTGRESQL_OLD_CXXFLAGS}"
+   LDFLAGS="${POSTGRESQL_OLD_CPPFLAGS}"
+   CXXFLAGS="-DDO_POSTGRESQL $CXXFLAGS"
+   AC_CONFIG_COMMANDS_PRE([
+    pg_type_content="`awk '/#define .+OID/ {np2=2; np3=3; print "#define "$np2" "$np3}' $PGTYPE`"
+    AC_SUBST(pg_type_content)
+    AC_CONFIG_FILES([src/shared/Database/pg_type.h])
+   ])
+   ;;
+esac
 
 # here mysql
 AC_MSG_CHECKING(whether to build/link MYSQL)
