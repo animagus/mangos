@@ -2834,10 +2834,10 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 case 57934:                                 // Tricks of the Trade, main spell
                 {
                     if (apply)
-                        GetHolder()->SetAuraCharges(1);     // not have proper chnarges set in spell data
+                        GetHolder()->SetAuraCharges(1);     // not have proper charges set in spell data
                     else
                     {
-                        // used for direct in code aura removes and rpoc event charges expire
+                        // used for direct in code aura removes and spell proc event charges expire
                         if (m_removeMode != AURA_REMOVE_BY_DEFAULT)
                             target->getHostileRefManager().ResetThreatRedirection();
                     }
@@ -2854,7 +2854,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                         GetHolder()->SetAuraCharges(1);     // not have proper charges set in spell data
                     else
                     {
-                        // used for direct in code aura removes and rpoc event charges expire
+                        // used for direct in code aura removes and spell proc event charges expire
                         if (m_removeMode != AURA_REMOVE_BY_DEFAULT)
                             target->getHostileRefManager().ResetThreatRedirection();
                     }
