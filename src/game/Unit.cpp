@@ -520,6 +520,15 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     if(pVictim != this)
         pVictim->RemoveSpellsCausingAura(SPELL_AURA_MOD_STEALTH);
 
+    //You don't lose health from damage taken from another player while in a sanctuary
+    //You still see it in the combat log though
+    if(pVictim != this && GetCharmerOrOwnerPlayerOrPlayerItself() && pVictim->GetCharmerOrOwnerPlayerOrPlayerItself())
+    {
+        const AreaTableEntry *area = GetAreaEntryByAreaID(pVictim->GetAreaId());
+        if(area && area->flags & AREA_FLAG_SANCTUARY)       // sanctuary
+            damage = 0;
+    }
+
     // remove affects from attacker at any non-DoT damage (including 0 damage)
     if( damagetype != DOT)
     {
