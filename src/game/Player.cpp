@@ -20065,10 +20065,10 @@ void Player::SendInitialPacketsAfterAddToMap()
     // Juggernaut & Warbringer both need special packet
     // for alowing charge in combat and Warbringer
     // for alowing charge in different stances, too
-    /*if(HasAura(64976) || HasAura(57499))
+    if(HasAura(64976) || HasAura(57499))
     {
         WorldPacket aura_update(SMSG_AURA_UPDATE);
-        aura_update.append(GetPackGUID());
+        aura_update.appendPackGUID(GetGUID());
         aura_update << uint8(255);
         if(HasAura(64976))
             aura_update << uint32(64976);
@@ -20079,7 +20079,7 @@ void Player::SendInitialPacketsAfterAddToMap()
         aura_update << uint8(1);
         aura_update << uint8(0);
         GetSession()->SendPacket(&aura_update);
-    }*/
+    }
 }
 
 void Player::SendUpdateToOutOfRangeGroupMembers()

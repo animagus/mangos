@@ -4809,9 +4809,9 @@ void Aura::HandleAbilityIgnoreAurastate(bool apply, bool Real)
         case 64976: // for alowing charge in combat and Warbringer
         case 57499: // for alowing charge in different stances, too
             {
-                /*SetAuraSlot(255);
-                SetAuraFlags(19);
-                SendAuraUpdate(false);*/
+                GetHolder()->SetAuraSlot(255);
+                GetHolder()->SetAuraFlags(19);
+                GetHolder()->SendAuraUpdate(false);
                 break;
             }
 		default:
