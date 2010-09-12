@@ -441,12 +441,16 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
     {
         if (m_bIsActiveCheck)
         {
-            if (!m_bIsActived && Active_Timer < uiDiff)
-            {
-                m_bIsActived = true;
-                Active_Timer = 1000;
-                m_creature->RemoveAurasDueToSpell(28160);
-            }else Active_Timer -= uiDiff;
+            if (!m_bIsActived)
+                if  (Active_Timer < uiDiff)
+                {
+                    m_bIsActived = true;
+                    Active_Timer = 1000;
+                    m_creature->RemoveAurasDueToSpell(28160);
+                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
+                }else Active_Timer -= uiDiff;
         }
         else
         {

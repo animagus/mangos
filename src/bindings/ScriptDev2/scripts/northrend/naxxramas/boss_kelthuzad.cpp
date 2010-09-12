@@ -261,8 +261,8 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
         AbomsTimer = 10000; // 8
         BansheTimer = 10000; // 8
 
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
         for(int i=0; i<5; i++)
         {
@@ -415,6 +415,9 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
         SetCombatMovement(false);
         m_creature->SetInCombatWithZone();
 
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+
         if (m_pInstance)
             m_pInstance->SetData(ENCOUNT_KELTHUZAD, IN_PROGRESS);
     }
@@ -498,7 +501,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
                 
                 m_creature->RemoveAurasDueToSpell(29423);
                 m_creature->HandleEmoteCommand(EMOTE_ONESHOT_NONE);
-                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_OOC_NOT_ATTACKABLE);
+                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 SetCombatMovement(true);
                 m_creature->GetMotionMaster()->Clear();
