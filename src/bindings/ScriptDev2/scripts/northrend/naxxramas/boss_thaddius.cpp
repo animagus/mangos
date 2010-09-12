@@ -374,7 +374,7 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
         BallLightning_Timer = 1000;
         Enrage_Timer = 300000;
         Scream_Timer = 60000+rand()%30000;
-        RangeCheck_Timer = 2000;
+        RangeCheck_Timer = 3000;
 
         SwitchTarget_Timer = 20000;
 
@@ -442,7 +442,7 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
         if (m_bIsActiveCheck)
         {
             if (!m_bIsActived)
-                if  (Active_Timer < uiDiff)
+                if  (Active_Timer <= uiDiff)
                 {
                     m_bIsActived = true;
                     Active_Timer = 1000;
@@ -454,7 +454,7 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
         }
         else
         {
-            if (Active_Timer < uiDiff)
+            if (Active_Timer <= uiDiff)
             {
                 if(m_pInstance)
                 {
@@ -555,26 +555,26 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        if (ChainLightning_Timer < uiDiff)
+        if (ChainLightning_Timer <= uiDiff)
         {
             DoCast(m_creature, !m_bIsRegularMode ? H_SPELL_CHAIN_LIGHTNING : SPELL_CHAIN_LIGHTNING);
             ChainLightning_Timer = 12000+rand()%5000;
         }else ChainLightning_Timer -= uiDiff;
 
 
-        if(PolarityShift_Timer < uiDiff)
+        if(PolarityShift_Timer <= uiDiff)
         {
             DoCast(m_creature, SPELL_POLARITY_SHIFT); // need core support
             PolarityShift_Timer = 30000;
         }else PolarityShift_Timer -=uiDiff;
 
-        if (Enrage_Timer < uiDiff)
+        if (Enrage_Timer <= uiDiff)
         {
             DoCast(m_creature, SPELL_BESERK);
             Enrage_Timer = 300000;
         }else Enrage_Timer -= uiDiff;
 
-        if (Scream_Timer < uiDiff)
+        if (Scream_Timer <= uiDiff)
         {
             switch(rand()%4)
             {
@@ -586,7 +586,7 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
             Scream_Timer = 60000+rand()%30000;
         }else Scream_Timer -= uiDiff;
 
-        if (RangeCheck_Timer < uiDiff)
+        if (RangeCheck_Timer <= uiDiff)
         {
             m_bInMeleeRange = false;
             ThreatList const& t_list = m_creature->getThreatManager().getThreatList();

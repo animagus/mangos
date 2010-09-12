@@ -4191,7 +4191,7 @@ bool Unit::AddSpellAuraHolder(SpellAuraHolder *holder)
         }
     }
 
-    /*for (int32 j = 0; j < MAX_EFFECT_INDEX; ++j)
+    for (int32 j = 0; j < MAX_EFFECT_INDEX; ++j)
     {
         // no need to check non stacking auras that weren't/won't be applied on this target
         if (!holder->m_auras[j])
@@ -4249,7 +4249,7 @@ bool Unit::AddSpellAuraHolder(SpellAuraHolder *holder)
                 break;
             }
         }
-    }*/
+    }
 
 
     // add aura, register in lists and arrays
@@ -5019,14 +5019,16 @@ void Unit::RemoveAura(Aura *Aur, AuraRemoveMode mode)
             case SPELL_AURA_MOD_POSSESS_PET:
             case SPELL_AURA_CONTROL_VEHICLE:
                 Aur->ApplyModifier(false,true);
-                /*if (Aur->GetTarget())
-                    Aur->GetTarget()->ReapplyModifers(Aur);*/
                 break;
             default: break;
         }
     }
     else
+    {
         Aur->ApplyModifier(false,true);
+        if (Aur->GetTarget())
+            Aur->GetTarget()->ReapplyModifers(Aur);
+    }
 
     // If aura in use (removed from code that plan access to it data after return)
     // store it in aura list with delayed deletion
