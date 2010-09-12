@@ -2366,8 +2366,6 @@ void NotifyPlayer(Player* pPlayer, Creature* pCreature, const char* item, std::s
 	std::string tail = ". Ваш код для получения приза - ";
 	text = text + tail + Code;
 
-    //uint32 itemTextId = !text.empty() ? CreateItemText( text ) : 0;
-
     MailDraft(subject, text)
         .SendMailTo(MailReceiver(pPlayer,GUID_LOPART(pPlayer->GetGUID())),MailSender(MAIL_CREATURE, pCreature->GetEntry()));
 }
@@ -2402,6 +2400,7 @@ void DoDrawing(Player *pPlayer, Creature *pCreature, uint32 Price, int Chance, c
 #define GOSSIP_WEATHER_MACHINE          "Я хочу сыграть на Гоблинскую метеоустановку - прототип 01-B"
 #define GOSSIP_HIPPOGRYPH_HATCHLING     "Я хочу сыграть на Детеныша гиппогрифа"
 #define GOSSIP_BANANA_CHARM             "Я хочу сыграть на Банановый оберег"
+#define GOSSIP_CELESTIAL_STEED          "Я хочу сыграть на Небесного скакуна"
 bool GossipHello_npc_raffle(Player* pPlayer, Creature* pCreature)
 {
     // Reins of the Swift Spectral Tiger
@@ -2414,6 +2413,8 @@ bool GossipHello_npc_raffle(Player* pPlayer, Creature* pCreature)
     pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HIPPOGRYPH_HATCHLING, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF +7);
     // Banana Charm
     pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_BANANA_CHARM, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF +9);
+    // Celestial Steed
+    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_CELESTIAL_STEED, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF +11);
     pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
     return true;
 }
@@ -2442,6 +2443,10 @@ bool GossipSelect_npc_raffle(Player* pPlayer, Creature* pCreature, uint32 uiSend
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Испытать удачу...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+10);
         pPlayer->SEND_GOSSIP_MENU(122996, pCreature->GetGUID());
         break;
+    case GOSSIP_ACTION_INFO_DEF+11:
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Испытать удачу...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+12);
+        pPlayer->SEND_GOSSIP_MENU(122997, pCreature->GetGUID());
+        break;
     case GOSSIP_ACTION_INFO_DEF+2:
         DoDrawing(pPlayer, pCreature, 10000000, 1, "Swift Spectral Tiger", 1, 1);
         break;
@@ -2456,6 +2461,9 @@ bool GossipSelect_npc_raffle(Player* pPlayer, Creature* pCreature, uint32 uiSend
         break;
     case GOSSIP_ACTION_INFO_DEF+10:
         DoDrawing(pPlayer, pCreature, 3000000, 1, "Banana Charm", 5, 9);
+        break;
+    case GOSSIP_ACTION_INFO_DEF+12:
+        DoDrawing(pPlayer, pCreature, 12000000, 1, "Celestial Steed", 6, 11);
         break;
     }
     return true;

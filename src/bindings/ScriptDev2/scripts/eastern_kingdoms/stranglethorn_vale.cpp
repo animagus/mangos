@@ -191,19 +191,22 @@ bool GossipSelectWithCode_npc_landro_longshot(Player* pPlayer, Creature* pCreatu
                     switch (prize)
                     {
                     case 1:
-                        RewardPlayer(pPlayer, sCode, 49284, 66874);
+                        RewardPlayer(pPlayer, sCode, 49284, 0);
                         break;
                     case 2:
-                        RewardPlayer(pPlayer, sCode, 49286, 66876);
+                        RewardPlayer(pPlayer, sCode, 49286, 0);
                         break;
                     case 3:
-                        RewardPlayer(pPlayer, sCode, 35227, 46752);
+                        RewardPlayer(pPlayer, sCode, 35227, 0);
                         break;
                     case 4:
                         RewardPlayer(pPlayer, sCode, 23713, 0);
                         break;
                     case 5:
-                        RewardPlayer(pPlayer, sCode, 32588, 40550);
+                        RewardPlayer(pPlayer, sCode, 32588, 0);
+                        break;
+                    case 6:
+                        RewardPlayer(pPlayer, sCode, 54811, 0);
                         break;
                     }
                 }
