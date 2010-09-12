@@ -56,6 +56,3 @@ libmangosdatabase_a_SOURCES = \
 	SqlOperations.cpp \
 	SqlOperations.h
 
-EXTRA_DIST = \
-    pg_type.h
-
