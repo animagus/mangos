@@ -137,11 +137,11 @@ case "$DO_POSTGRESQL" in
     if test "$POSTGRE_CONFIG_HOME" != "no" ; then
         POSTGRE_VERSION="`$POSTGRE_CONFIG_HOME --version`"
         POSTGRE_LIBS="-L`$POSTGRE_CONFIG_HOME --libdir` `$POSTGRE_CONFIG_HOME --libs` -lpq $OPENSSL_LIBS $POSTGRE_LIBS"
-        POSTGRE_INCLUDES="-I`$POSTGRE_CONFIG_HOME --includedir` -I\$(top_builddir)/src/shared/Database $POSTGRE_INCLUDES"
+        POSTGRE_INCLUDES="-I`$POSTGRE_CONFIG_HOME --includedir` $POSTGRE_INCLUDES"
     else
         POSTGRE_VERSION="unknown"
         POSTGRE_LIBS="-L/usr/lib/postgresql/lib -lpq -lz -lpthread -lcrypt -lnsl -lm $OPENSSL_LIBS $POSTGRE_LIBS"
-        POSTGRE_INCLUDES="-I/usr/include/postgresql -I\$(top_builddir)/src/shared/Database $POSTGRE_INCLUDES"
+        POSTGRE_INCLUDES="-I/usr/include/postgresql $POSTGRE_INCLUDES"
     fi
 
     POSTGRESQL_OLD_LIBS="$LIBS" ; LIBS="$LIBS ${POSTGRE_LIBS}"
