@@ -1,4 +1,0 @@
-#if !defined(PG_TYPE_H)
-#define PG_TYPE_H
-@pg_type_content@
-#endif

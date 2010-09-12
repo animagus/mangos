@@ -136,23 +136,13 @@ case "$DO_POSTGRESQL" in
     
     if test "$POSTGRE_CONFIG_HOME" != "no" ; then
         POSTGRE_VERSION="`$POSTGRE_CONFIG_HOME --version`"
-        POSTGRE_PKGINC_DIR="`${POSTGRE_CONFIG_HOME} --pkgincludedir`"
         POSTGRE_LIBS="-L`$POSTGRE_CONFIG_HOME --libdir` `$POSTGRE_CONFIG_HOME --libs` -lpq $OPENSSL_LIBS $POSTGRE_LIBS"
         POSTGRE_INCLUDES="-I`$POSTGRE_CONFIG_HOME --includedir` -I\$(top_builddir)/src/shared/Database $POSTGRE_INCLUDES"
     else
         POSTGRE_VERSION="unknown"
-        POSTGRE_INC_DIR="/usr/include/postgresql"
-        POSTGRE_PKGINC_DIR="/usr/include/postgresql"
         POSTGRE_LIBS="-L/usr/lib/postgresql/lib -lpq -lz -lpthread -lcrypt -lnsl -lm $OPENSSL_LIBS $POSTGRE_LIBS"
         POSTGRE_INCLUDES="-I/usr/include/postgresql -I\$(top_builddir)/src/shared/Database $POSTGRE_INCLUDES"
     fi
-
-    AC_CHECK_FILE("${POSTGRE_PKGINC_DIR}/catalog/pg_type.h",[PGTYPE="${POSTGRE_PKGINC_DIR}/catalog/pg_type.h"],
-        [AC_CHECK_FILE("${POSTGRE_PKGINC_DIR}/server/catalog/pg_type.h", 
-          [PGTYPE="${POSTGRE_PKGINC_DIR}/server/catalog/pg_type.h"],
-          [AC_MSG_ERROR(can't find pg_type.h under ${POSTGRE_PKGINC_DIR})]
-        )]
-    )
 
     POSTGRESQL_OLD_LIBS="$LIBS" ; LIBS="$LIBS ${POSTGRE_LIBS}"
     POSTGRESQL_OLD_CPPFLAGS="$CPPFLAGS" ; CPPFLAGS="$CPPFLAGS ${POSTGRE_INCLUDES}"
@@ -193,11 +183,6 @@ case "$DO_POSTGRESQL" in
    CPPFLAGS="${POSTGRESQL_OLD_CPPFLAGS}"
    LIBS="${POSTGRESQL_OLD_LIBS}"
    CXXFLAGS="-DDO_POSTGRESQL $CXXFLAGS"
-   AC_CONFIG_COMMANDS_PRE([
-    pg_type_content="`awk '/#define .+OID/ {np2=2; np3=3; print "#define "$np2" "$np3}' $PGTYPE`"
-    AC_SUBST(pg_type_content)
-    AC_CONFIG_FILES([src/shared/Database/pg_type.h])
-   ])
    ;;
 esac
 
@@ -272,7 +257,6 @@ AC_CHECK_HEADERS([ arpa/inet.h fcntl.h limits.h locale.h malloc.h netdb.h netine
 
 AC_CHECK_HEADERS([pthread.h])
 AC_CHECK_HEADERS([mysql.h mysql/mysql.h])
-AC_CHECK_HEADERS([libpq-fe.h])
 AC_CHECK_HEADERS([zlib.h])
 
 ## Check for typedefs, structures, and compiler characteristics.
