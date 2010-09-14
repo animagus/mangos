@@ -6685,7 +6685,7 @@ uint32 Unit::SpellDamageBonusDone(Unit *pVictim, SpellEntry const *spellProto, u
                 {
                     SpellEntry const* aurSpellInfo = (*i)->GetSpellProto();
                     uint32 aurMechMask = GetAllSpellMechanicMask(aurSpellInfo);
-                    if (aurMechMask & (1 << (MECHANIC_PACIFY-1)))
+                    if (aurMechMask & (1 << (MECHANIC_SLOWATTACK-1)))
                     {
                         slowed = true;
                         break;
@@ -9234,40 +9234,6 @@ int32 Unit::CalculateSpellDuration(SpellEntry const* spellProto, SpellEffectInde
             duration = int32(int64(duration) * (100+durationMod) /100);
 
         if (duration < 0) duration = 0;
-
-        if (unitPlayer && target == this)
-        {
-            switch(spellProto->SpellFamilyName)
-            {
-                case SPELLFAMILY_DRUID:
-                {
-                    if (spellProto->SpellFamilyFlags & UI64LIT(0x100))
-                    {
-                        // Glyph of Thorns
-                        if (Aura * aur = GetAura(57862, SpellEffectIndex(0)))
-                            duration += aur->GetModifier()->m_amount * MINUTE * IN_MILLISECONDS;
-                    }
-                    break;
-                }
-
-                case SPELLFAMILY_PALADIN:
-                {
-                    if (spellProto->SpellFamilyFlags & UI64LIT(0x00000002))
-                    {
-                        // Glyph of Blessing of Might
-                        if (Aura * aur = GetAura(57958, SpellEffectIndex(0)))
-                            duration += aur->GetModifier()->m_amount * MINUTE * IN_MILLISECONDS;
-                    }
-                    else if (spellProto->SpellFamilyFlags & UI64LIT(0x00010000))
-                    {
-                        // Glyph of Blessing of Wisdom
-                        if (Aura * aur = GetAura(57979, SpellEffectIndex(0)))
-                            duration += aur->GetModifier()->m_amount * MINUTE * IN_MILLISECONDS;
-                    }
-                    break;
-                }
-            }
-        }
     }
 
     return duration;
