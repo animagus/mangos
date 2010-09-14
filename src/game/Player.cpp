@@ -1410,9 +1410,7 @@ void Player::Update( uint32 p_time )
     }
 
     if (!isAlive() && !HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
-    {
         SetHealth(0);
-    }
 
     if (m_deathState == JUST_DIED)
         KillPlayer();
@@ -4911,7 +4909,7 @@ void Player::RepopAtGraveyard()
     AreaTableEntry const *zone = GetAreaEntryByAreaID(GetAreaId());
 
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
-    if ((!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) || GetTransport() || GetPositionZ() < -300.0f)
+    if ((!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) || GetTransport() || GetPositionZ() < -500.0f)
     {
         ResurrectPlayer(0.5f);
         SpawnCorpseBones();
@@ -6773,6 +6771,9 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor)
 
             honor = 100;                                    // ??? need more info
             victim_rank = 19;                               // HK: Leader
+
+            if (groupsize > 1)
+                honor *= groupsize;
         }
     }
 
@@ -17380,7 +17381,7 @@ void Player::_SaveAuras()
         SpellAuraHolder *holder = itr->second;
         //skip all holders from spells that are passive
         //do not save single target holders (unless they were cast by the player)
-        if (!holder->IsPassive() && (holder->GetCasterGUID() == GetGUID() || !holder->IsSingleTarget()))
+        if (!holder->IsPassive() && (holder->GetCasterGUID() == GetGUID() || !holder->IsSingleTarget()) && !IsChanneledSpell(holder->GetSpellProto()))
         {
             int32 damage[MAX_EFFECT_INDEX];
             int32 remaintime[MAX_EFFECT_INDEX];

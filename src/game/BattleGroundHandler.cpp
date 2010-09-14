@@ -163,7 +163,7 @@ void WorldSession::HandleBattlemasterJoinOpcode( WorldPacket & recv_data )
             WorldPacket data;
             sBattleGroundMgr.BuildGroupJoinedBattlegroundPacket(&data, ERR_BATTLEGROUND_TOO_MANY_QUEUES);
             _player->GetSession()->SendPacket(&data);
-                return;
+            return;
         }
     }
     else

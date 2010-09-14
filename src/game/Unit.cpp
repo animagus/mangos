@@ -1773,6 +1773,23 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
                 alreadyDone.insert(*i);
                 uint32 damage=(*i)->GetModifier()->m_amount;
                 SpellEntry const *i_spellProto = (*i)->GetSpellProto();
+
+                // Thorns
+                if (i_spellProto->SpellFamilyName == SPELLFAMILY_DRUID && i_spellProto->SpellFamilyFlags & UI64LIT(0x00000100))
+                {
+                    Unit::AuraList const& dummyList = pVictim->GetAurasByType(SPELL_AURA_DUMMY);
+                    for(Unit::AuraList::const_iterator iter = dummyList.begin(); iter != dummyList.end(); ++iter)
+                    {
+                        // Brambles
+                        if((*iter)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID &&
+                            (*iter)->GetSpellProto()->SpellIconID == 53)
+                        {
+                            damage += uint32(damage * (*iter)->GetModifier()->m_amount / 100);
+                            break;
+                        }
+                    }
+                }
+
                 //Calculate absorb resist ??? no data in opcode for this possibly unable to absorb or resist?
                 //uint32 absorb;
                 //uint32 resist;
@@ -2691,7 +2708,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
             dodge_chance -= GetTotalAuraModifier(SPELL_AURA_MOD_EXPERTISE)*25;
 
         // Modify dodge chance by attacker SPELL_AURA_MOD_COMBAT_RESULT_CHANCE
-        dodge_chance+= GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_COMBAT_RESULT_CHANCE, VICTIMSTATE_DODGE);
+        dodge_chance+= GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_COMBAT_RESULT_CHANCE, VICTIMSTATE_DODGE)*100;
 
         tmp = dodge_chance;
         if (   (tmp > 0)                                        // check if unit _can_ dodge
@@ -6346,7 +6363,8 @@ Unit* Unit::SelectMagnetTarget(Unit *victim, SpellEntry const *spellInfo)
         return NULL;
 
     // Magic case
-    if(spellInfo && (spellInfo->DmgClass == SPELL_DAMAGE_CLASS_NONE || spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC))
+    if(spellInfo && (spellInfo->DmgClass == SPELL_DAMAGE_CLASS_NONE || spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC) &&
+    (spellInfo->SchoolMask & SPELL_SCHOOL_MASK_MAGIC || spellInfo->Mechanic == MECHANIC_GRIP))
     {
         Unit::AuraList const& magnetAuras = victim->GetAurasByType(SPELL_AURA_SPELL_MAGNET);
         for(Unit::AuraList::const_iterator itr = magnetAuras.begin(); itr != magnetAuras.end(); ++itr)
@@ -6599,7 +6617,7 @@ uint32 Unit::SpellDamageBonusDone(Unit *pVictim, SpellEntry const *spellProto, u
             case 7293: // Rage of Rivendare
             {
                 if (pVictim->GetAura(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_DEATHKNIGHT, UI64LIT(0x0200000000000000)))
-                    DoneTotalMod *= ((*i)->GetModifier()->m_amount+100.0f)/100.0f;
+                    DoneTotalMod *= ((*i)->GetSpellProto()->CalculateSimpleValue(EFFECT_INDEX_1)*2+100.0f)/100.0f;
                 break;
             }
             // Twisted Faith
@@ -7679,7 +7697,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit *pVictim, uint32 pdamage,WeaponAttackType
                 case 7293: // Rage of Rivendare
                 {
                     if (pVictim->GetAura(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_DEATHKNIGHT, UI64LIT(0x0200000000000000)))
-                        DonePercent *= ((*i)->GetModifier()->m_amount+100.0f)/100.0f;
+                        DonePercent *= ((*i)->GetSpellProto()->CalculateSimpleValue(EFFECT_INDEX_1)*2+100.0f)/100.0f;
                     break;
                 }
                 // Marked for Death
@@ -7936,6 +7954,10 @@ void Unit::ApplySpellImmune(uint32 spellId, uint32 op, uint32 type, bool apply)
 void Unit::ApplySpellDispelImmunity(const SpellEntry * spellProto, DispelType type, bool apply)
 {
     ApplySpellImmune(spellProto->Id,IMMUNITY_DISPEL, type, apply);
+
+    // such dispell type should not remove auras but only return visibility
+    if(type == DISPEL_STEALTH || type == DISPEL_INVISIBILITY)
+        return;
 
     if (apply && spellProto->AttributesEx & SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY)
         RemoveAurasWithDispelType(type);
@@ -8332,9 +8354,15 @@ bool Unit::isVisibleForOrDetect(Unit const* u, WorldObject const* viewPoint, boo
         else
         {
             // Hunter mark functionality
-            AuraList const& auras = GetAurasByType(SPELL_AURA_MOD_STALKED);
-            for(AuraList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
+            AuraList const& aurasstalked = GetAurasByType(SPELL_AURA_MOD_STALKED);
+            for(AuraList::const_iterator iter = aurasstalked.begin(); iter != aurasstalked.end(); ++iter)
                 if((*iter)->GetCasterGUID()==u->GetGUID())
+                    return true;
+
+            // Flare functionality
+            AuraList const& aurasimunity = GetAurasByType(SPELL_AURA_DISPEL_IMMUNITY);
+            for(AuraList::const_iterator iter = aurasimunity.begin(); iter != aurasimunity.end(); ++iter)
+                if((*iter)->GetMiscValue() == uint8(invisible ? DISPEL_INVISIBILITY : DISPEL_STEALTH))
                     return true;
 
             // else apply detecting check for stealth
@@ -9150,6 +9178,37 @@ int32 Unit::CalculateSpellDuration(SpellEntry const* spellProto, SpellEffectInde
     else
         duration = minduration;
 
+    if (unitPlayer && target == this)
+    {
+        switch(spellProto->SpellFamilyName)
+        {
+            case SPELLFAMILY_DRUID:
+                if (spellProto->SpellFamilyFlags & UI64LIT(0x100))
+                {
+                    // Glyph of Thorns
+                    if (Aura *aur = GetAura(57862, EFFECT_INDEX_0))
+                        duration += aur->GetModifier()->m_amount * MINUTE * IN_MILLISECONDS;
+                }
+                break;
+            case SPELLFAMILY_PALADIN:
+                if (spellProto->SpellIconID == 298 && spellProto->SpellFamilyFlags & UI64LIT(0x00000002))
+                {
+                    // Glyph of Blessing of Might
+                    if (Aura *aur = GetAura(57958, EFFECT_INDEX_0))
+                        duration += aur->GetModifier()->m_amount * MINUTE * IN_MILLISECONDS;
+                }
+                else if (spellProto->SpellIconID == 306 && spellProto->SpellFamilyFlags & UI64LIT(0x00010000))
+                {
+                    // Glyph of Blessing of Wisdom
+                    if (Aura *aur = GetAura(57979, EFFECT_INDEX_0))
+                        duration += aur->GetModifier()->m_amount * MINUTE * IN_MILLISECONDS;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+       
     if (duration > 0)
     {
         int32 mechanic = GetEffectMechanic(spellProto, effect_index);

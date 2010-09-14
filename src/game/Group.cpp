@@ -1589,7 +1589,8 @@ GroupJoinBattlegroundResult Group::CanJoinBattleGroundQueue(BattleGround const* 
     uint32 arenaTeamId = reference->GetArenaTeamId(arenaSlot);
     uint32 team = reference->GetTeam();
 
-    uint32 count = 0;
+    uint32 allowedPlayerCount = 0;
+
     BattleGroundQueueTypeId bgQueueTypeIdRandom = BattleGroundMgr::BGQueueTypeId(BATTLEGROUND_RB, 0);
 
     // check every member of the group to be able to join
@@ -1625,11 +1626,12 @@ GroupJoinBattlegroundResult Group::CanJoinBattleGroundQueue(BattleGround const* 
         if(!member->HasFreeBattleGroundQueueId())
             return ERR_BATTLEGROUND_TOO_MANY_QUEUES;        // not blizz-like
 
-        ++count;
+        ++allowedPlayerCount;
     }
 
-    if (isRated && count != MinPlayerCount)
-        return ERR_ARENA_TEAM_PARTY_SIZE;
+    if(bgOrTemplate->GetTypeID() == BATTLEGROUND_AA)
+        if(allowedPlayerCount < MinPlayerCount || allowedPlayerCount > MaxPlayerCount)
+            return ERR_ARENA_TEAM_PARTY_SIZE;
 
     return GroupJoinBattlegroundResult(bgOrTemplate->GetTypeID());
 }

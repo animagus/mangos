@@ -2175,7 +2175,6 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
                 FillAreaTargets(targetUnitMap, m_caster->GetPositionX(), m_caster->GetPositionY(), radius, PUSH_IN_FRONT_30, SPELL_TARGETS_AOE_DAMAGE);
             else
                 FillAreaTargets(targetUnitMap, m_caster->GetPositionX(), m_caster->GetPositionY(), radius, PUSH_IN_FRONT_90, SPELL_TARGETS_AOE_DAMAGE);
-
             break;
         }
         case TARGET_DUELVSPLAYER:
@@ -4670,7 +4669,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             }
             // TODO: this check can be applied and for player to prevent cheating when IsPositiveSpell will return always correct result.
             // check target for pet/charmed casts (not self targeted), self targeted cast used for area effects and etc
-            if (!explicit_target_mode && m_caster->GetTypeId() == TYPEID_UNIT && m_caster->GetCharmerOrOwnerGUID())
+            if (!explicit_target_mode && m_caster->GetTypeId() == TYPEID_UNIT && m_caster->GetCharmerOrOwnerGUID() && !IsDispelSpell(m_spellInfo))
             {
                 // check correctness positive/negative cast target (pet cast real check and cheating check)
                 if(IsPositiveSpell(m_spellInfo->Id))
@@ -5379,13 +5378,9 @@ SpellCastResult Spell::CheckCast(bool strict)
             }
             case SPELL_EFFECT_LEAP_BACK:
             {
-                // Disengage
-                if (m_spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000400000000000)))
-                {
-                    if(!m_caster->isInCombat())
+                if(m_spellInfo->Id == 781)
+                    if(!m_caster->isInCombat()) 
                         return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
-                }
-
                 break;
             }
             default:break;
@@ -5627,7 +5622,7 @@ SpellCastResult Spell::CheckPetCast(Unit* target)
             if(!_target->isAlive())
                 return SPELL_FAILED_BAD_TARGETS;
 
-            if(IsPositiveSpell(m_spellInfo->Id))
+            if(IsPositiveSpell(m_spellInfo->Id) && !IsDispelSpell(m_spellInfo))
             {
                 if(m_caster->IsHostileTo(_target))
                     return SPELL_FAILED_BAD_TARGETS;
@@ -5640,7 +5635,9 @@ SpellCastResult Spell::CheckPetCast(Unit* target)
                                                             //TARGET_DUELVSPLAYER is positive AND negative
                     duelvsplayertar |= (m_spellInfo->EffectImplicitTargetA[j] == TARGET_DUELVSPLAYER);
                 }
-                if(m_caster->IsFriendlyTo(target) && !duelvsplayertar && m_spellInfo->Id!=45848 && m_spellInfo->Id!=28732)
+
+                if(m_caster->IsFriendlyTo(target) && !duelvsplayertar && !IsDispelSpell(m_spellInfo)
+                    && m_spellInfo->Id!=45848 && m_spellInfo->Id!=28732)
                 {
                     return SPELL_FAILED_BAD_TARGETS;
                 }  // This code not correct.
@@ -6662,6 +6659,11 @@ bool Spell::CheckTarget( Unit* target, SpellEffectIndex eff )
         if(((Player*)target)->isGameMaster() && !IsPositiveSpell(m_spellInfo->Id))
             return false;
     }
+
+    // Check Sated & Exhaustion debuffs
+    if (((m_spellInfo->Id == 2825) && (target->HasAura(57724))) ||
+        ((m_spellInfo->Id == 32182) && (target->HasAura(57723))))
+        return false;
 
     // Check targets for LOS visibility (except spells without range limitations )
     switch(m_spellInfo->Effect[eff])

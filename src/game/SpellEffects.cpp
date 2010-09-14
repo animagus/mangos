@@ -2464,7 +2464,7 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
                         if (spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE && (spellInfo->SpellFamilyFlags & UI64LIT(0x0000024000000860)))
                             ((Player*)m_caster)->RemoveSpellCooldown((itr++)->first,true);
                         // Glyph of Preparation
-                        else if (m_caster->HasAura(56819) && spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE && (spellInfo->SpellFamilyFlags & UI64LIT(0x0010080040000010)))
+                        else if (m_caster->HasAura(56819) && (spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE && (spellInfo->SpellFamilyFlags & 0x40000010 || spellInfo->Id == 51722)))
                             ((Player*)m_caster)->RemoveSpellCooldown((itr++)->first,true);
                         else
                             ++itr;
@@ -2474,6 +2474,11 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
                 case 31231:                                 // Cheat Death
                 {
                     m_caster->CastSpell(m_caster, 45182, true);
+                    return;
+                }
+                case 51690:                                 // Killing Spree
+                {
+                    m_caster->CastSpell(m_caster, 61851, true);
                     return;
                 }
             }
@@ -2727,7 +2732,8 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
                 {
                     if (Unit *owner = m_caster->GetOwner())
                     {
-                        damage = m_caster->SpellDamageBonusDone(unitTarget, m_spellInfo, damage, DOT );
+                        damage += int32(m_caster->GetOwner()->SpellDamageBonusDone(unitTarget, m_spellInfo, 0, HEAL) * 0.45f);
+
                         // Restorative Totems
                         Unit::AuraList const& mDummyAuras = owner->GetAurasByType(SPELL_AURA_DUMMY);
                         for(Unit::AuraList::const_iterator i = mDummyAuras.begin(); i != mDummyAuras.end(); ++i)
@@ -2895,25 +2901,22 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
                 m_caster->CastCustomSpell(m_caster, 45470, &bp, NULL, NULL, true);
                 return;
             }
-            else if (m_spellInfo->SpellFamilyFlags & UI64LIT(0x0000000002000000))
+            // Death Grip
+            else if (m_spellInfo->Id == 49576)
             {
-                if (!unitTarget || !m_caster)
+                if (!unitTarget)
                     return;
-                
-                float x = m_caster->GetPositionX();
-                float y = m_caster->GetPositionY();
-                float z = m_caster->GetPositionZ()+1;
-                float orientation = unitTarget->GetOrientation();
-                
-                m_caster->CastSpell(unitTarget,51399,true,NULL);
-                
-                if(unitTarget->GetTypeId() != TYPEID_PLAYER)
-                {
-                    unitTarget->GetMap()->CreatureRelocation((Creature*)unitTarget,x,y,z,orientation);
-                    ((Creature*)unitTarget)->SendMonsterMove(x, y, z, SPLINETYPE_FACINGTARGET, SPLINEFLAG_UNKNOWN11, 1);
-                }
-                else
-                    unitTarget->NearTeleportTo(x,y,z,orientation,false);
+
+                m_caster->CastSpell(unitTarget, 49560, true);
+                return;
+            }
+            else if (m_spellInfo->Id == 49560)
+            {
+                if (!unitTarget)
+                    return;
+
+                uint32 spellId = m_spellInfo->CalculateSimpleValue(EFFECT_INDEX_0);
+                unitTarget->CastSpell(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), spellId, true);
                 return;
             }
             // Obliterate
@@ -5882,7 +5885,7 @@ void Spell::EffectHealMaxHealth(SpellEffectIndex /*eff_idx*/)
     m_healing += heal;
 }
 
-void Spell::EffectInterruptCast(SpellEffectIndex /*eff_idx*/)
+void Spell::EffectInterruptCast(SpellEffectIndex eff_idx)
 {
     if(!unitTarget)
         return;
@@ -5899,7 +5902,7 @@ void Spell::EffectInterruptCast(SpellEffectIndex /*eff_idx*/)
             // check if we can interrupt spell
             if ((curSpellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_INTERRUPT) && curSpellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE )
             {
-                unitTarget->ProhibitSpellSchool(GetSpellSchoolMask(curSpellInfo), GetSpellDuration(m_spellInfo));
+                unitTarget->ProhibitSpellSchool(GetSpellSchoolMask(curSpellInfo), unitTarget->CalculateSpellDuration(m_spellInfo, eff_idx, unitTarget));
                 unitTarget->InterruptSpell(CurrentSpellTypes(i),false);
             }
         }
@@ -6704,6 +6707,31 @@ void Spell::EffectScriptEffect(SpellEffectIndex eff_idx)
                     unitTarget->RemoveSpellsCausingAura(SPELL_AURA_MOD_DECREASE_SPEED);
                     unitTarget->RemoveSpellsCausingAura(SPELL_AURA_MOD_STALKED);
                     unitTarget->RemoveSpellsCausingAura(SPELL_AURA_MOD_STUN);
+                    return;
+                }
+                case 55328:                                    // Stoneclaw Totem I
+                case 55329:                                    // Stoneclaw Totem II
+                case 55330:                                    // Stoneclaw Totem III
+                case 55332:                                    // Stoneclaw Totem IV
+                case 55333:                                    // Stoneclaw Totem V
+                case 55335:                                    // Stoneclaw Totem VI
+                case 55278:                                    // Stoneclaw Totem VII
+                case 58589:                                    // Stoneclaw Totem VIII
+                case 58590:                                    // Stoneclaw Totem IX
+                case 58591:                                    // Stoneclaw Totem X
+                {
+                    if (!unitTarget)    // Stoneclaw Totem owner
+                        return;
+                    // Absorb shield for totems
+                    for(int itr = 0; itr < MAX_TOTEM_SLOT; ++itr)
+                        if (Totem* totem = unitTarget->GetTotem(TotemSlot(itr)))
+                            m_caster->CastCustomSpell(totem, 55277, &damage, NULL, NULL, true);
+                    // Glyph of Stoneclaw Totem
+                    if(Aura* auraGlyph = unitTarget->GetAura(63298, EFFECT_INDEX_0))
+                    {
+                        int32 playerAbsorb = damage * auraGlyph->GetModifier()->m_amount;
+                        m_caster->CastCustomSpell(unitTarget, 55277, &playerAbsorb, NULL, NULL, true);
+                    }
                     return;
                 }
                 case 55693:                                 // Remove Collapsing Cave Aura
@@ -7643,6 +7671,9 @@ void Spell::DoSummonTotem(SpellEffectIndex eff_idx, uint8 slot_dbc)
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
     pTotem->SetDuration(duration);
 
+    if (m_spellInfo->Id == 16190)
+        damage = m_caster->GetMaxHealth() * m_spellInfo->CalculateSimpleValue(EFFECT_INDEX_1) / 100;
+
     if (damage)                                             // if not spell info, DB values used
     {
         if (pTotem->GetEntry() == 10467) // Mana Tide inherits 10% of owner health
@@ -8215,11 +8246,7 @@ void Spell::EffectPlayerPull(SpellEffectIndex eff_idx)
     if(!unitTarget)
         return;
 
-    float dist = unitTarget->GetDistance2d(m_caster);
-    if (damage && dist > damage)
-        dist = float(damage);
-
-    unitTarget->KnockBackFrom(m_caster,-dist,float(m_spellInfo->EffectMiscValue[eff_idx])/10);
+    unitTarget->KnockBackFrom(m_caster, -unitTarget->GetDistance2d(m_caster), float(m_spellInfo->EffectMiscValue[eff_idx])/30);
 }
 
 void Spell::EffectDispelMechanic(SpellEffectIndex eff_idx)
