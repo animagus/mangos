@@ -5139,11 +5139,14 @@ void Unit::RemoveAurasByDurationRemaining(int32 duration)
     }
 }
 
-void Unit::DelaySpellAuraHolder(uint32 spellId, int32 delaytime)
+void Unit::DelaySpellAuraHolder(uint32 spellId, int32 delaytime, uint64 casterGUID)
 {
     SpellAuraHolderBounds bounds = GetSpellAuraHolderBounds(spellId);
     for (SpellAuraHolderMap::iterator iter = bounds.first; iter != bounds.second; ++iter)
     {
+        if (casterGUID != iter->second->GetCasterGUID())
+            continue;
+
         for (int32 i = 0; i < MAX_EFFECT_INDEX; ++i)
         {
             if (Aura *aur = iter->second->GetAuraByEffectIndex(SpellEffectIndex(i)))
@@ -5153,7 +5156,7 @@ void Unit::DelaySpellAuraHolder(uint32 spellId, int32 delaytime)
                 else
                     aur->SetAuraDuration(aur->GetAuraDuration() - delaytime);
 
-                DEBUG_FILTER_LOG(LOG_FILTER_SPELL_CAST, "Spell %u partially interrupted on unit %u, new duration: %u ms",spellId, GetGUIDLow(), aur->GetAuraDuration());
+                DEBUG_FILTER_LOG(LOG_FILTER_SPELL_CAST, "Spell %u, EffectIndex %u partially interrupted on unit %u, new duration: %u ms",spellId, i, GetGUIDLow(), aur->GetAuraDuration());
             }
         }
         iter->second->SendAuraUpdate(false);
@@ -6874,17 +6877,14 @@ uint32 Unit::SpellDamageBonusTaken(Unit *pCaster, SpellEntry const *spellProto, 
     if(!spellProto || !pCaster || damagetype==DIRECT_DAMAGE )
         return pdamage;
 
+    uint32 schoolMask = spellProto->SchoolMask;
+
     // Taken total percent damage auras
     float TakenTotalMod = 1.0f;
     int32 TakenTotal = 0;
 
     // ..taken
-    AuraList const& mModDamagePercentTaken = GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN);
-    for(AuraList::const_iterator i = mModDamagePercentTaken.begin(); i != mModDamagePercentTaken.end(); ++i)
-    {
-        if ((*i)->GetModifier()->m_miscvalue & GetSpellSchoolMask(spellProto))
-            TakenTotalMod *= ((*i)->GetModifier()->m_amount + 100.0f) / 100.0f;
-    }
+    TakenTotalMod *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN, schoolMask);
 
     // .. taken pct: dummy auras
     if (GetTypeId() == TYPEID_PLAYER)
@@ -6913,9 +6913,9 @@ uint32 Unit::SpellDamageBonusTaken(Unit *pCaster, SpellEntry const *spellProto, 
     // Mod damage taken from AoE spells
     if(IsAreaOfEffectSpell(spellProto))
     {
-        TakenTotalMod *= GetTotalAuraMultiplier(SPELL_AURA_MOD_AOE_DAMAGE_AVOIDANCE);
+        TakenTotalMod *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_AOE_DAMAGE_AVOIDANCE, schoolMask);
         if (GetTypeId() == TYPEID_UNIT && ((Creature*)this)->isPet())
-            TakenTotalMod *= GetTotalAuraMultiplier(SPELL_AURA_MOD_PET_AOE_DAMAGE_AVOIDANCE);
+            TakenTotalMod *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_PET_AOE_DAMAGE_AVOIDANCE, schoolMask);
     }
 
     // Taken fixed damage bonus auras
@@ -7872,9 +7872,9 @@ uint32 Unit::MeleeDamageBonusTaken(Unit *pCaster, uint32 pdamage,WeaponAttackTyp
     // ..taken pct (aoe avoidance)
     if(spellProto && IsAreaOfEffectSpell(spellProto))
     {
-        TakenPercent *= GetTotalAuraMultiplier(SPELL_AURA_MOD_AOE_DAMAGE_AVOIDANCE);
+        TakenPercent *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_AOE_DAMAGE_AVOIDANCE, schoolMask);
         if (GetTypeId() == TYPEID_UNIT && ((Creature*)this)->isPet())
-            TakenPercent *= GetTotalAuraMultiplier(SPELL_AURA_MOD_PET_AOE_DAMAGE_AVOIDANCE);
+            TakenPercent *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_PET_AOE_DAMAGE_AVOIDANCE, schoolMask);
     }
 
     // special dummys/class scripts and other effects
