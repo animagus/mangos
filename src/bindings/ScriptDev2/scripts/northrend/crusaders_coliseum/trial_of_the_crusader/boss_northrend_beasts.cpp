@@ -131,11 +131,12 @@ struct MANGOS_DLL_DECL boss_gormokAI : public BSWScriptedAI
 
         timedCast(SPELL_STAGGERING_STOMP, uiDiff);
 
-        if (timedQuery(SUMMON_SNOBOLD, uiDiff) && SnoboldsCount > 0 ) {
-                        doCast(SUMMON_SNOBOLD);
-                        DoScriptText(-1713601,m_creature);
-                        --SnoboldsCount;
-                        };
+        if (timedQuery(SUMMON_SNOBOLD, uiDiff) && SnoboldsCount > 0 ) 
+        {
+            doCast(SUMMON_SNOBOLD);
+            DoScriptText(-1713601,m_creature);
+            --SnoboldsCount;
+        };
 
         DoMeleeAttackIfReady();
     }
@@ -164,26 +165,31 @@ struct MANGOS_DLL_DECL mob_snobold_vassalAI : public BSWScriptedAI
         defaultTarget = NULL;
         m_creature->SetInCombatWithZone();
         m_creature->SetRespawnDelay(DAY);
-        pBoss = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(NPC_GORMOK));
-        if (pBoss) doCast(SPELL_RISING_ANGER,pBoss);
+        if (!m_pInstance)
+            pBoss = m_pInstance->instance->GetCreature(m_pInstance->GetData64(NPC_GORMOK));
+        if (pBoss) 
+            doCast(SPELL_RISING_ANGER,pBoss);
     }
 
     void Aggro(Unit *who)
     {
-        if (!m_pInstance) return;
+        if (!m_pInstance) 
+            return;
         defaultTarget = who;
         doCast(SPELL_SNOBOLLED, defaultTarget);
     }
 
     void JustReachedHome()
     {
-        if (!m_pInstance) return;
-            m_creature->ForcedDespawn();
+        if (!m_pInstance) 
+            return;
+        m_creature->ForcedDespawn();
     }
 
     void JustDied(Unit* pKiller)
     {
-    if (defaultTarget && defaultTarget->isAlive()) doRemove(SPELL_SNOBOLLED, defaultTarget);
+    if (defaultTarget && defaultTarget->isAlive()) 
+        doRemove(SPELL_SNOBOLLED, defaultTarget);
 //      if (pBoss && pBoss->isAlive()) doRemove(SPELL_RISING_ANGER,pBoss);
 //      This string - not offlike, in off this buff not removed! especially for small servers.
     }
@@ -196,9 +202,10 @@ struct MANGOS_DLL_DECL mob_snobold_vassalAI : public BSWScriptedAI
 
         timedCast(SPELL_BATTER, uiDiff);
 
-        if (timedCast(SPELL_FIRE_BOMB, uiDiff, m_creature->getVictim()) == CAST_OK) {
-        doCast(SPELL_FIRE_BOMB_1, m_creature->getVictim());
-        doCast(SPELL_FIRE_BOMB_DOT, m_creature->getVictim());
+        if (timedCast(SPELL_FIRE_BOMB, uiDiff, m_creature->getVictim()) == CAST_OK) 
+        {
+            doCast(SPELL_FIRE_BOMB_1, m_creature->getVictim());
+            doCast(SPELL_FIRE_BOMB_DOT, m_creature->getVictim());
         }
 
         timedCast(SPELL_HEAD_CRACK, uiDiff);
@@ -236,15 +243,17 @@ struct MANGOS_DLL_DECL boss_acidmawAI : public BSWScriptedAI
     void JustDied(Unit* pKiller)
     {
         if (!m_pInstance) return;
-            if (Creature* pSister = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(NPC_DREADSCALE)))
+            if (Creature* pSister = m_pInstance->instance->GetCreature(m_pInstance->GetData64(NPC_DREADSCALE)))
                if (!pSister->isAlive())
-                         m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_DONE);
-                else m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_SPECIAL);
+                   m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_DONE);
+                else
+                    m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_SPECIAL);
     }
 
     void JustReachedHome()
     {
-        if (!m_pInstance) return;
+        if (!m_pInstance) 
+            return;
         if (m_pInstance->GetData(TYPE_BEASTS) == IN_PROGRESS
             && m_pInstance->GetData(TYPE_NORTHREND_BEASTS) != FAIL)
                         m_pInstance->SetData(TYPE_NORTHREND_BEASTS, FAIL);
@@ -264,56 +273,59 @@ struct MANGOS_DLL_DECL boss_acidmawAI : public BSWScriptedAI
 
     switch (stage) 
         {
-        case 0: {
+        case 0:
+            {
                 timedCast(SPELL_ACID_SPEW, uiDiff);
-
                 timedCast(SPELL_PARALYTIC_BITE, uiDiff);
-
                 timedCast(SPELL_ACID_SPIT, uiDiff);
-
                 timedCast(SPELL_PARALYTIC_SPRAY, uiDiff);
-
                 timedCast(SPELL_SWEEP_0, uiDiff);
-
                 if (m_pInstance->GetData(TYPE_NORTHREND_BEASTS) == ACIDMAW_SUBMERGED)
-                     stage = 1;
+                    stage = 1;
 
-                    break;}
-        case 1: {
-                    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                    m_creature->InterruptNonMeleeSpells(true);
-                    doCast(SPELL_SUBMERGE_0);
-                    stage = 2;
-                    DoScriptText(-1713557,m_creature);
-                    m_pInstance->SetData(TYPE_NORTHREND_BEASTS, ACIDMAW_SUBMERGED);
-                    break;}
-        case 2: {
+                break;
+            }
+        case 1: 
+            {
+                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                m_creature->InterruptNonMeleeSpells(true);
+                doCast(SPELL_SUBMERGE_0);
+                stage = 2;
+                DoScriptText(-1713557,m_creature);
+                m_pInstance->SetData(TYPE_NORTHREND_BEASTS, ACIDMAW_SUBMERGED);
+                break;
+            }
+        case 2: 
+            {
                 if (timedQuery(SPELL_SLIME_POOL, uiDiff))
                     doCast(NPC_SLIME_POOL);
 
                 if ((timedQuery(SPELL_SUBMERGE_0, uiDiff) && m_pInstance->GetData(TYPE_NORTHREND_BEASTS) == ACIDMAW_SUBMERGED)
                     || m_pInstance->GetData(TYPE_NORTHREND_BEASTS) == DREADSCALE_SUBMERGED)
-                        stage = 3;
-                    break;}
-        case 3: {
-                    DoScriptText(-1713559,m_creature);
-                    doRemove(SPELL_SUBMERGE_0);
-                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                    stage = 0;
-                    m_pInstance->SetData(TYPE_NORTHREND_BEASTS, DREADSCALE_SUBMERGED);
-                    break;}
+                    stage = 3;
+                break;
+            }
+        case 3: 
+            {
+                DoScriptText(-1713559,m_creature);
+                doRemove(SPELL_SUBMERGE_0);
+                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                stage = 0;
+                m_pInstance->SetData(TYPE_NORTHREND_BEASTS, DREADSCALE_SUBMERGED);
+                break;
+            }
         }
 
         if (m_pInstance->GetData(TYPE_NORTHREND_BEASTS) == SNAKES_SPECIAL && !enraged)
-                        {
-                        DoScriptText(-1713559,m_creature);
-                        doRemove(SPELL_SUBMERGE_0);
-                        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                        doCast(SPELL_ENRAGE);
-                        enraged = true;
-                        stage = 0;
-                        DoScriptText(-1713504,m_creature);
-                        };
+        {
+            DoScriptText(-1713559,m_creature);
+            doRemove(SPELL_SUBMERGE_0);
+            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            doCast(SPELL_ENRAGE);
+            enraged = true;
+            stage = 0;
+            DoScriptText(-1713504,m_creature);
+        };
 
         DoMeleeAttackIfReady();
     }
@@ -346,20 +358,24 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI : public BSWScriptedAI
 
     void JustDied(Unit* pKiller)
     {
-        if (!m_pInstance) return;
-            if (Creature* pSister = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(NPC_ACIDMAW)))
-               if (!pSister->isAlive())
-                         m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_DONE);
-                else m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_SPECIAL);
+        if (!m_pInstance) 
+            return;
+        if (Creature* pSister = m_pInstance->instance->GetCreature(m_pInstance->GetData64(NPC_ACIDMAW)))
+            if (!pSister->isAlive())
+                m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_DONE);
+            else 
+                m_pInstance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_SPECIAL);
+
     }
 
     void JustReachedHome()
     {
-        if (!m_pInstance) return;
+        if (!m_pInstance) 
+            return;
         if (m_pInstance->GetData(TYPE_BEASTS) == IN_PROGRESS
             && m_pInstance->GetData(TYPE_NORTHREND_BEASTS) != FAIL)
-                        m_pInstance->SetData(TYPE_NORTHREND_BEASTS, FAIL);
-            m_creature->ForcedDespawn();
+            m_pInstance->SetData(TYPE_NORTHREND_BEASTS, FAIL);
+        m_creature->ForcedDespawn();
     }
 
     void Aggro(Unit* pWho)
@@ -374,57 +390,58 @@ struct MANGOS_DLL_DECL boss_dreadscaleAI : public BSWScriptedAI
 
         switch (stage) 
         {
-        case 0: {
+        case 0: 
+            {
                 timedCast(SPELL_BURNING_BITE, uiDiff);
-
                 timedCast(SPELL_MOLTEN_SPEW, uiDiff);
-
                 timedCast(SPELL_FIRE_SPIT, uiDiff);
-
                 timedCast(SPELL_BURNING_SPRAY, uiDiff);
-
                 timedCast(SPELL_SWEEP_0, uiDiff);
-
                 if (m_pInstance->GetData(TYPE_NORTHREND_BEASTS) == DREADSCALE_SUBMERGED)
-                     stage = 1;
-
-                    break;}
-        case 1: {
-                    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                    m_creature->InterruptNonMeleeSpells(true);
-                    doCast(SPELL_SUBMERGE_0);
-                    stage = 2;
-                    DoScriptText(-1713557,m_creature);
-                    m_pInstance->SetData(TYPE_NORTHREND_BEASTS, DREADSCALE_SUBMERGED);
-                    break;}
-        case 2: {
-
+                    stage = 1;
+                break;
+            }
+        case 1: 
+            {
+                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                m_creature->InterruptNonMeleeSpells(true);
+                doCast(SPELL_SUBMERGE_0);
+                stage = 2;
+                DoScriptText(-1713557,m_creature);
+                m_pInstance->SetData(TYPE_NORTHREND_BEASTS, DREADSCALE_SUBMERGED);
+                break;
+            }
+        case 2: 
+            {
                 if (timedQuery(SPELL_SLIME_POOL, uiDiff))
                     doCast(NPC_SLIME_POOL);
 
                 if ((timedQuery(SPELL_SUBMERGE_0, uiDiff) && m_pInstance->GetData(TYPE_NORTHREND_BEASTS) == DREADSCALE_SUBMERGED)
                     || m_pInstance->GetData(TYPE_NORTHREND_BEASTS) == ACIDMAW_SUBMERGED)
-                         stage = 3;
-                    break;}
-        case 3: {
-                    DoScriptText(-1713559,m_creature);
-                    doRemove(SPELL_SUBMERGE_0);
-                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                    stage = 0;
-                    m_pInstance->SetData(TYPE_NORTHREND_BEASTS, ACIDMAW_SUBMERGED);
-                    break;}
+                    stage = 3;
+                break;
+            }
+        case 3: 
+            {
+                DoScriptText(-1713559,m_creature);
+                doRemove(SPELL_SUBMERGE_0);
+                m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                stage = 0;
+                m_pInstance->SetData(TYPE_NORTHREND_BEASTS, ACIDMAW_SUBMERGED);
+                break;
+            }
         }
 
         if (m_pInstance->GetData(TYPE_NORTHREND_BEASTS) == SNAKES_SPECIAL && !enraged)
-                        {
-                        DoScriptText(-1713559,m_creature);
-                        doRemove(SPELL_SUBMERGE_0);
-                        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                        doCast(SPELL_ENRAGE);
-                        enraged = true;
-                        stage = 0;
-                        DoScriptText(-1713504,m_creature);
-                        };
+        {
+            DoScriptText(-1713559,m_creature);
+            doRemove(SPELL_SUBMERGE_0);
+            m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            doCast(SPELL_ENRAGE);
+            enraged = true;
+            stage = 0;
+            DoScriptText(-1713504,m_creature);
+        };
 
         DoMeleeAttackIfReady();
     }
@@ -449,7 +466,8 @@ struct MANGOS_DLL_DECL mob_slime_poolAI : public BSWScriptedAI
 
     void Reset()
     {
-        if(!m_pInstance) return;
+        if(!m_pInstance) 
+            return;
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         m_creature->SetInCombatWithZone();
         m_creature->SetSpeedRate(MOVE_RUN, 0.05f);
@@ -467,17 +485,20 @@ struct MANGOS_DLL_DECL mob_slime_poolAI : public BSWScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (!cloudcasted) {
-                          doCast(SPELL_SLIME_POOL_VISUAL);
-                          cloudcasted = true;
-                          }
+        if (!cloudcasted) 
+        {
+            doCast(SPELL_SLIME_POOL_VISUAL);
+            cloudcasted = true;
+        }
 
-        if (timedQuery(SPELL_SLIME_POOL_2,uiDiff)) {
-                m_Size = m_Size*1.035;
-                m_creature->SetFloatValue(OBJECT_FIELD_SCALE_X, m_Size);
-                }
-                // Override especially for clean core
-                   if (m_Size >= 6.0f) m_creature->ForcedDespawn();
+        if (timedQuery(SPELL_SLIME_POOL_2,uiDiff)) 
+        {
+            m_Size = m_Size*1.035;
+            m_creature->SetFloatValue(OBJECT_FIELD_SCALE_X, m_Size);
+        }
+        // Override especially for clean core
+        if (m_Size >= 6.0f) 
+            m_creature->ForcedDespawn();
     }
 
 };
@@ -502,7 +523,8 @@ struct MANGOS_DLL_DECL boss_icehowlAI : public BSWScriptedAI
     float fPosX, fPosY, fPosZ;
     Unit* pTarget;
 
-    void Reset() {
+    void Reset() 
+    {
         if(!m_pInstance) return;
         m_creature->SetRespawnDelay(7*DAY);
         MovementStarted = false;
@@ -517,25 +539,29 @@ struct MANGOS_DLL_DECL boss_icehowlAI : public BSWScriptedAI
 
     void MovementInform(uint32 type, uint32 id)
     {
-        if(!m_pInstance) return;
-        if(type != POINT_MOTION_TYPE) return;
+        if(!m_pInstance) 
+            return;
+        if(type != POINT_MOTION_TYPE) 
+            return;
         if(id != 1 && MovementStarted) 
         {
              m_creature->GetMotionMaster()->MovePoint(1, fPosX, fPosY, fPosZ);
         }
-        else    {
-                m_creature->GetMotionMaster()->MovementExpired();
-                MovementStarted = false;
-                SetCombatMovement(true);
-                m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
-                }
+        else
+        {
+            m_creature->GetMotionMaster()->MovementExpired();
+            MovementStarted = false;
+            SetCombatMovement(true);
+            m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
+        }
     }
 
     void JustReachedHome()
     {
-        if (!m_pInstance) return;
-            m_pInstance->SetData(TYPE_NORTHREND_BEASTS, FAIL);
-            m_creature->ForcedDespawn();
+        if (!m_pInstance)
+            return;
+        m_pInstance->SetData(TYPE_NORTHREND_BEASTS, FAIL);
+        m_creature->ForcedDespawn();
     }
 
     void Aggro(Unit* pWho)
@@ -551,83 +577,92 @@ struct MANGOS_DLL_DECL boss_icehowlAI : public BSWScriptedAI
 
         switch (stage) 
         {
-        case 0: {
-                 timedCast(SPELL_FEROCIOUS_BUTT, uiDiff);
-
-                 timedCast(SPELL_ARCTIC_BREATH, uiDiff);
-
-                 timedCast(SPELL_WHIRL, uiDiff);
-
-                if (timedQuery(SPELL_MASSIVE_CRASH, uiDiff)) stage = 1;
-
+        case 0: 
+            {
+                timedCast(SPELL_FEROCIOUS_BUTT, uiDiff);
+                timedCast(SPELL_ARCTIC_BREATH, uiDiff);
+                timedCast(SPELL_WHIRL, uiDiff);
+                if (timedQuery(SPELL_MASSIVE_CRASH, uiDiff))
+                    stage = 1;
                 timedCast(SPELL_FROTHING_RAGE, uiDiff);
-
                 DoMeleeAttackIfReady();
-
                 break;
-                }
-        case 1: {
-                         if (doCast(SPELL_MASSIVE_CRASH) == CAST_OK)
-                             stage = 2;
-                 break;
-                }
-        case 2: {
-                        if (pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0)) {
-                        TrampleCasted = false;
-                        m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-                        stage = 3;
-                        resetTimer(SPELL_TRAMPLE);
-                        DoScriptText(-1713506,m_creature,pTarget);
-                        SetCombatMovement(false);
-                        m_creature->GetMotionMaster()->MoveIdle();
-                        }
-                 break;
-                }
-        case 3: {
-                if (timedQuery(SPELL_TRAMPLE,uiDiff)) {
-                        if (pTarget && pTarget->isAlive() && (pTarget->IsWithinDistInMap(m_creature, 200.0f))) {
-                                    pTarget->GetPosition(fPosX, fPosY, fPosZ);
-                                    TrampleCasted = false;
-                                    MovementStarted = true;
-                                    m_creature->GetMotionMaster()->MovePoint(1, fPosX, fPosY, fPosZ);
-                                    DoScriptText(-1713508,m_creature);
-                                    doCast(SPELL_ADRENALINE);
-                                    stage = 4;
-                                    }
-                        else        {
-                                    TrampleCasted = true;
-                                    stage = 5;
-                                    }
-                        }
+            }
+        case 1: 
+            {
+                if (doCast(SPELL_MASSIVE_CRASH) == CAST_OK)
+                    stage = 2;
                 break;
+            }
+        case 2: 
+            {
+                if (pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
+                {
+                    TrampleCasted = false;
+                    m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    stage = 3;
+                    resetTimer(SPELL_TRAMPLE);
+                    DoScriptText(-1713506,m_creature,pTarget);
+                    SetCombatMovement(false);
+                    m_creature->GetMotionMaster()->MoveIdle();
                 }
-        case 4: {
-                if (MovementStarted)
+                break;
+            }
+        case 3: 
+            {
+                if (timedQuery(SPELL_TRAMPLE,uiDiff)) 
+                {
+                    if (pTarget && pTarget->isAlive() && (pTarget->IsWithinDistInMap(m_creature, 200.0f))) 
                     {
+                        pTarget->GetPosition(fPosX, fPosY, fPosZ);
+                        TrampleCasted = false;
+                        MovementStarted = true;
+                        m_creature->GetMotionMaster()->MovePoint(1, fPosX, fPosY, fPosZ);
+                        DoScriptText(-1713508,m_creature);
+                        doCast(SPELL_ADRENALINE);
+                        stage = 4;
+                    }
+                    else        
+                    {
+                        TrampleCasted = true;
+                        stage = 5;
+                    }
+                }
+                break;
+            }
+        case 4: 
+            {
+                if (MovementStarted)
+                {
                     Map* pMap = m_creature->GetMap();
                     Map::PlayerList const &lPlayers = pMap->GetPlayers();
                     for(Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
                     {
                         Unit* pPlayer = itr->getSource();
                         if (!pPlayer) continue;
-                        if (pPlayer->isAlive() && pPlayer->IsWithinDistInMap(m_creature, 5.0f)) {
-                                doCast(SPELL_TRAMPLE, pPlayer);
-                                TrampleCasted = true;
-                                MovementStarted = false;
-                                m_creature->GetMotionMaster()->MovementExpired();
-                                m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
-                            }
+                        if (pPlayer->isAlive() && pPlayer->IsWithinDistInMap(m_creature, 5.0f)) 
+                        {
+                            doCast(SPELL_TRAMPLE, pPlayer);
+                            TrampleCasted = true;
+                            MovementStarted = false;
+                            m_creature->GetMotionMaster()->MovementExpired();
+                            m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
+                        }
                     }
 
-                    } else stage = 5;
-                    if (TrampleCasted) stage = 5;
+                } 
+                else stage = 5;
+                if (TrampleCasted) 
+                    stage = 5;
                 break;
+            }
+        case 5: 
+            {
+                if (!TrampleCasted) 
+                {
+                    doCast(SPELL_STAGGERED_DAZE);
+                    DoScriptText(-1713507,m_creature);
                 }
-        case 5: {
-                if (!TrampleCasted) {
-                                    doCast(SPELL_STAGGERED_DAZE);
-                                    DoScriptText(-1713507,m_creature);
-                                    }
                 MovementStarted = false;
                 m_creature->GetMotionMaster()->MovementExpired();
                 m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
@@ -635,9 +670,8 @@ struct MANGOS_DLL_DECL boss_icehowlAI : public BSWScriptedAI
                 m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 stage = 0;
                 break;
-                }
+            }
         }
-
     }
 };
 

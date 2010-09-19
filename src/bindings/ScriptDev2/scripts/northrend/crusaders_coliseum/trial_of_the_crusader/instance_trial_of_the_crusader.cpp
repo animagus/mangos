@@ -26,9 +26,10 @@ EndScriptData */
 
 struct MANGOS_DLL_DECL instance_trial_of_the_crusader : public ScriptedInstance
 {
-    instance_trial_of_the_crusader(Map* pMap) : ScriptedInstance(pMap) { 
-    Difficulty = pMap->GetDifficulty();
-    Initialize(); 
+    instance_trial_of_the_crusader(Map* pMap) : ScriptedInstance(pMap) 
+    {
+        Difficulty = pMap->GetDifficulty();
+        Initialize();
     }
 
     uint32 m_auiEncounter[MAX_ENCOUNTERS+1];
@@ -167,23 +168,23 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader : public ScriptedInstance
     bool IsRaidWiped()
     {
        Map::PlayerList const &players = instance->GetPlayers();
-
        for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
-              {
-              if(Player* pPlayer = i->getSource())
-                    {
-                    if(pPlayer->isAlive())
-                    return false;
-                    }
-               }
-        return true;
+       {
+           if(Player* pPlayer = i->getSource())
+           {
+               if(pPlayer->isAlive())
+                   return false;
+           }
+       }
+       return true;
      }
 
     void OpenDoor(uint64 guid)
     {
         if(!guid) return;
         GameObject* pGo = instance->GetGameObject(guid);
-        if(pGo) pGo->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
+        if(pGo) 
+            pGo->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
     }
 
     void CloseDoor(uint64 guid)
