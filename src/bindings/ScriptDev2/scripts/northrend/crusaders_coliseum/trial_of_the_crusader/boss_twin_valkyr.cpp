@@ -85,7 +85,8 @@ struct MANGOS_DLL_DECL boss_fjolaAI : public BSWScriptedAI
 
     void Reset() 
     {
-        if(!m_pInstance) return;
+        if(!m_pInstance) 
+            return;
         SetEquipmentSlots(false, EQUIP_MAIN_1, EQUIP_OFFHAND_1, EQUIP_RANGED_1);
         m_creature->SetRespawnDelay(7*DAY);
         m_pInstance->SetData(DATA_CASTING_VALKYRS, SPELL_NONE);
@@ -94,7 +95,8 @@ struct MANGOS_DLL_DECL boss_fjolaAI : public BSWScriptedAI
 
     void JustReachedHome()
     {
-        if (!m_pInstance) return;
+        if (!m_pInstance) 
+            return;
         m_pInstance->SetData(TYPE_VALKIRIES, FAIL);
         m_pInstance->SetData(DATA_HEALTH_FJOLA, m_creature->GetMaxHealth());
         m_pInstance->SetData(DATA_CASTING_VALKYRS, SPELL_NONE);
@@ -103,7 +105,8 @@ struct MANGOS_DLL_DECL boss_fjolaAI : public BSWScriptedAI
 
     void JustDied(Unit* pKiller)
     {
-        if (!m_pInstance) return;
+        if (!m_pInstance) 
+            return;
         DoScriptText(-1713547,m_creature);
         if (Creature* pSister = m_pInstance->instance->GetCreature(m_pInstance->GetData64(NPC_DARKBANE)))
             if (!pSister->isAlive())
@@ -321,67 +324,67 @@ struct MANGOS_DLL_DECL boss_eydisAI : public BSWScriptedAI
                                       m_pInstance->GetData(DATA_HEALTH_FJOLA) != 0)
                 m_creature->SetHealth(m_pInstance->GetData(DATA_HEALTH_FJOLA));
 
-    switch (stage)
+        switch (stage)
         {
-         case 0:
-             timedCast(SPELL_TWIN_SPIKE_H, uiDiff);
+        case 0:
+            timedCast(SPELL_TWIN_SPIKE_H, uiDiff);
 
-             if (timedQuery(SPELL_DARK_TOUCH, uiDiff))
-             {
-                 if (Unit* pTarget = doSelectRandomPlayer(SPELL_DARK_ESSENCE, false, 50.0f))
-                     doCast(SPELL_DARK_TOUCH, pTarget);
-                 doCast(NPC_UNLEASHED_DARK);
-             }
-             if (m_pInstance->GetData(DATA_CASTING_VALKYRS) == SPELL_NONE )
-             {
-                 if (timedQuery(SPELL_DARK_VORTEX, uiDiff))
-                 {
-                     m_pInstance->SetData(DATA_CASTING_VALKYRS, SPELL_DARK_VORTEX);
-                     DoScriptText(-1713540,m_creature);
-                     stage = 1;
-                     break;
-                 }
-                 if (timedQuery(SPELL_TWIN_PACT_H, uiDiff)
-                     && m_creature->GetHealthPercent() <= 50.0f)
-                 {
-                     m_creature->InterruptNonMeleeSpells(true);
-                     doCast(SPELL_SHIELD_DARK);
-                     m_pInstance->SetData(DATA_CASTING_VALKYRS, SPELL_TWIN_PACT_H);
-                     DoScriptText(-1713539,m_creature);
-                     stage = 3;
-                     break;
-                 }
-             }
-             if (m_pInstance->GetData(DATA_CASTING_VALKYRS) == SPELL_TWIN_PACT_L)
-                 if (!m_creature->HasAura(SPELL_TWIN_POWER)) 
-                     doCast(SPELL_TWIN_POWER);
-             break;
-         case 1:
-             doCast(SPELL_DARK_VORTEX);
-             stage = 2;
-             break;
-         case 2:
-             if (!m_creature->HasAura(SPELL_DARK_VORTEX)
-                 && timedQuery(SPELL_SHIELD_DARK, uiDiff)) 
-             {
-                 m_pInstance->SetData(DATA_CASTING_VALKYRS, SPELL_NONE);
-                 stage = 0;
-             }
-             break;
-         case 3:
-             doCast(SPELL_TWIN_PACT_H);
-             stage = 4;
-             break;
-         case 4:
-             if (!m_creature->HasAura(SPELL_SHIELD_DARK)
-                 && timedQuery(SPELL_SHIELD_DARK, uiDiff)) 
-             {
-                 m_pInstance->SetData(DATA_CASTING_VALKYRS, SPELL_NONE);
-                 stage = 0;
-             };
-         default:
-             break;
-         }
+            if (timedQuery(SPELL_DARK_TOUCH, uiDiff))
+            {
+                if (Unit* pTarget = doSelectRandomPlayer(SPELL_DARK_ESSENCE, false, 50.0f))
+                    doCast(SPELL_DARK_TOUCH, pTarget);
+                doCast(NPC_UNLEASHED_DARK);
+            }
+            if (m_pInstance->GetData(DATA_CASTING_VALKYRS) == SPELL_NONE )
+            {
+                if (timedQuery(SPELL_DARK_VORTEX, uiDiff))
+                {
+                    m_pInstance->SetData(DATA_CASTING_VALKYRS, SPELL_DARK_VORTEX);
+                    DoScriptText(-1713540,m_creature);
+                    stage = 1;
+                    break;
+                }
+                if (timedQuery(SPELL_TWIN_PACT_H, uiDiff)
+                    && m_creature->GetHealthPercent() <= 50.0f)
+                {
+                    m_creature->InterruptNonMeleeSpells(true);
+                    doCast(SPELL_SHIELD_DARK);
+                    m_pInstance->SetData(DATA_CASTING_VALKYRS, SPELL_TWIN_PACT_H);
+                    DoScriptText(-1713539,m_creature);
+                    stage = 3;
+                    break;
+                }
+            }
+            if (m_pInstance->GetData(DATA_CASTING_VALKYRS) == SPELL_TWIN_PACT_L)
+                if (!m_creature->HasAura(SPELL_TWIN_POWER)) 
+                    doCast(SPELL_TWIN_POWER);
+            break;
+        case 1:
+            doCast(SPELL_DARK_VORTEX);
+            stage = 2;
+            break;
+        case 2:
+            if (!m_creature->HasAura(SPELL_DARK_VORTEX)
+                && timedQuery(SPELL_SHIELD_DARK, uiDiff)) 
+            {
+                m_pInstance->SetData(DATA_CASTING_VALKYRS, SPELL_NONE);
+                stage = 0;
+            }
+            break;
+        case 3:
+            doCast(SPELL_TWIN_PACT_H);
+            stage = 4;
+            break;
+        case 4:
+            if (!m_creature->HasAura(SPELL_SHIELD_DARK)
+                && timedQuery(SPELL_SHIELD_DARK, uiDiff)) 
+            {
+                m_pInstance->SetData(DATA_CASTING_VALKYRS, SPELL_NONE);
+                stage = 0;
+            };
+        default:
+            break;
+        }
 
         timedCast(SPELL_BERSERK, uiDiff);
 
@@ -406,7 +409,6 @@ struct MANGOS_DLL_DECL mob_light_essenceAI : public ScriptedAI
     {
         m_creature->SetRespawnDelay(DAY);
         m_creature->AddSplineFlag(SPLINEFLAG_WALKMODE);
-        m_creature->GetMotionMaster()->MoveRandom();
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -450,34 +452,35 @@ bool GossipHello_mob_light_essence(Player *player, Creature* pCreature)
 
 struct MANGOS_DLL_DECL mob_dark_essenceAI : public ScriptedAI
 {
-    mob_dark_essenceAI(Creature* pCreature) : ScriptedAI(pCreature) {
-    m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-    Reset();
+    mob_dark_essenceAI(Creature* pCreature) : ScriptedAI(pCreature) 
+    {
+        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        Reset();
     }
     ScriptedInstance* m_pInstance;
 
     void Reset() 
     {
-    m_creature->SetRespawnDelay(DAY);
-    m_creature->AddSplineFlag(SPLINEFLAG_WALKMODE);
-    m_creature->GetMotionMaster()->MoveRandom();
+        m_creature->SetRespawnDelay(DAY);
+        m_creature->AddSplineFlag(SPLINEFLAG_WALKMODE);
     }
 
     void UpdateAI(const uint32 uiDiff)
     {
         if (!m_pInstance) m_creature->ForcedDespawn();
-        if (m_pInstance->GetData(TYPE_VALKIRIES) != IN_PROGRESS) {
-                    Map* pMap = m_creature->GetMap();
-                    Map::PlayerList const &lPlayers = pMap->GetPlayers();
-                    for(Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
-                    {
-                        Unit* pPlayer = itr->getSource();
-                        if (!pPlayer) continue;
-                        if (pPlayer->isAlive())
-                             pPlayer->RemoveAurasDueToSpell(SPELL_DARK_ESSENCE);
-                    }
-            m_creature->ForcedDespawn();
+        if (m_pInstance->GetData(TYPE_VALKIRIES) != IN_PROGRESS) 
+        {
+            Map* pMap = m_creature->GetMap();
+            Map::PlayerList const &lPlayers = pMap->GetPlayers();
+            for(Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
+            {
+                Unit* pPlayer = itr->getSource();
+                if (!pPlayer) continue;
+                if (pPlayer->isAlive())
+                    pPlayer->RemoveAurasDueToSpell(SPELL_DARK_ESSENCE);
             }
+            m_creature->ForcedDespawn();
+        }
         return;
     }
 };
@@ -492,11 +495,11 @@ bool GossipHello_mob_dark_essence(Player *player, Creature* pCreature)
     ScriptedInstance *pInstance = (ScriptedInstance *) pCreature->GetInstanceData();
     if(!pInstance) return true;
     player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, pCreature->GetGUID());
-        player->RemoveAurasDueToSpell(SPELL_LIGHT_ESSENCE);
-//        player->CastSpell(player,SPELL_REMOVE_TOUCH,false); // Not worked now
-        player->CastSpell(player,SPELL_DARK_ESSENCE,false);
-            player->RemoveAurasDueToSpell(SPELL_DARK_TOUCH); // Override for REMOVE_TOUCH
-        player->CLOSE_GOSSIP_MENU();
+    player->RemoveAurasDueToSpell(SPELL_LIGHT_ESSENCE);
+    //        player->CastSpell(player,SPELL_REMOVE_TOUCH,false); // Not worked now
+    player->CastSpell(player,SPELL_DARK_ESSENCE,false);
+    player->RemoveAurasDueToSpell(SPELL_DARK_TOUCH); // Override for REMOVE_TOUCH
+    player->CLOSE_GOSSIP_MENU();
     return true;
 }
 
@@ -535,29 +538,29 @@ struct MANGOS_DLL_DECL mob_unleashed_darkAI : public ScriptedAI
  
         if (m_uiRangeCheck_Timer < uiDiff)
         {
-                    Map* pMap = m_creature->GetMap();
-                    Map::PlayerList const &lPlayers = pMap->GetPlayers();
-                    for(Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
-                    {
-                       Unit* pPlayer = itr->getSource();
-                       if (!pPlayer) continue;
-                           if (pPlayer->isAlive() && pPlayer->IsWithinDistInMap(m_creature, 2.0f))
-                                   {
-                                   m_creature->CastSpell(m_creature, SPELL_UNLEASHED_DARK, true);
-                                   m_creature->ForcedDespawn();
-                                   }
+            Map* pMap = m_creature->GetMap();
+            Map::PlayerList const &lPlayers = pMap->GetPlayers();
+            for(Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
+            {
+                Unit* pPlayer = itr->getSource();
+                if (!pPlayer) continue;
+                if (pPlayer->isAlive() && pPlayer->IsWithinDistInMap(m_creature, 2.0f))
+                {
+                    m_creature->CastSpell(m_creature, SPELL_UNLEASHED_DARK, true);
+                    m_creature->ForcedDespawn();
+                }
 
-                     }
-                    if (pboss1 && pboss1->isAlive() && pboss1->IsWithinDistInMap(m_creature, 2.0f))
-                                   {
-                                   m_creature->CastSpell(m_creature, SPELL_UNLEASHED_DARK, true);
-                                   m_creature->ForcedDespawn();
-                                   }
-                    if (pboss2 && pboss2->isAlive() && pboss2->IsWithinDistInMap(m_creature, 2.0f))
-                                   {
-                                   m_creature->CastSpell(m_creature, SPELL_UNLEASHED_DARK, true);
-                                   m_creature->ForcedDespawn();
-                                   }
+            }
+            if (pboss1 && pboss1->isAlive() && pboss1->IsWithinDistInMap(m_creature, 2.0f))
+            {
+                m_creature->CastSpell(m_creature, SPELL_UNLEASHED_DARK, true);
+                m_creature->ForcedDespawn();
+            }
+            if (pboss2 && pboss2->isAlive() && pboss2->IsWithinDistInMap(m_creature, 2.0f))
+            {
+                m_creature->CastSpell(m_creature, SPELL_UNLEASHED_DARK, true);
+                m_creature->ForcedDespawn();
+            }
             m_uiRangeCheck_Timer = 1000;
         }
         else m_uiRangeCheck_Timer -= uiDiff;
@@ -605,28 +608,28 @@ struct MANGOS_DLL_DECL mob_unleashed_lightAI : public ScriptedAI
  
         if (m_uiRangeCheck_Timer < uiDiff)
         {
-                    Map* pMap = m_creature->GetMap();
-                    Map::PlayerList const &lPlayers = pMap->GetPlayers();
-                    for(Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
-                    {
-                       Unit* pPlayer = itr->getSource();
-                       if (!pPlayer) continue;
-                           if (pPlayer->isAlive() && pPlayer->IsWithinDistInMap(m_creature, 2.0f))
-                                   {
-                                   m_creature->CastSpell(m_creature, SPELL_UNLEASHED_LIGHT, true);
-                                   m_creature->ForcedDespawn();
-                                   }
-                     }
-                    if (pboss1 && pboss1->isAlive() && pboss1->IsWithinDistInMap(m_creature, 2.0f))
-                                   {
-                                   m_creature->CastSpell(m_creature, SPELL_UNLEASHED_LIGHT, true);
-                                   m_creature->ForcedDespawn();
-                                   }
-                    if (pboss2 && pboss2->isAlive() && pboss2->IsWithinDistInMap(m_creature, 2.0f))
-                                   {
-                                   m_creature->CastSpell(m_creature, SPELL_UNLEASHED_LIGHT, true);
-                                   m_creature->ForcedDespawn();
-                                   }
+            Map* pMap = m_creature->GetMap();
+            Map::PlayerList const &lPlayers = pMap->GetPlayers();
+            for(Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
+            {
+                Unit* pPlayer = itr->getSource();
+                if (!pPlayer) continue;
+                if (pPlayer->isAlive() && pPlayer->IsWithinDistInMap(m_creature, 2.0f))
+                {
+                    m_creature->CastSpell(m_creature, SPELL_UNLEASHED_LIGHT, true);
+                    m_creature->ForcedDespawn();
+                }
+            }
+            if (pboss1 && pboss1->isAlive() && pboss1->IsWithinDistInMap(m_creature, 2.0f))
+            {
+                m_creature->CastSpell(m_creature, SPELL_UNLEASHED_LIGHT, true);
+                m_creature->ForcedDespawn();
+            }
+            if (pboss2 && pboss2->isAlive() && pboss2->IsWithinDistInMap(m_creature, 2.0f))
+            {
+                m_creature->CastSpell(m_creature, SPELL_UNLEASHED_LIGHT, true);
+                m_creature->ForcedDespawn();
+            }
             m_uiRangeCheck_Timer = 1000;
         }
         else m_uiRangeCheck_Timer -= uiDiff;
