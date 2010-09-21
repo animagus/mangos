@@ -46,7 +46,6 @@ _player(NULL), m_Socket(sock),_security(sec), _accountId(id), m_expansion(expans
 m_inQueue(false), m_playerLoading(false), m_playerLogout(false), m_playerRecentlyLogout(false), m_playerSave(false),
 m_sessionDbcLocale(sWorld.GetAvailableDbcLocale(locale)), m_sessionDbLocaleIndex(sObjectMgr.GetIndexForLocale(locale)),
 m_latency(0), m_tutorialState(TUTORIALDATA_UNCHANGED), m_isMpUsing(false)
->>>>>>> ae36d007fc9bdc93a89de4eacf273d1d054f48ce
 {
     if (sock)
     {
