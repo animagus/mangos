@@ -1495,6 +1495,12 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura
         {
             switch(dummySpell->Id)
             {
+                // Glyph of Starfire
+                case 54845:
+                {
+                    triggered_spell_id = 54846;
+                    break;
+                }
                 // Leader of the Pack
                 case 24932:
                 {
@@ -3350,6 +3356,10 @@ SpellAuraProcResult Unit::HandleProcTriggerSpellAuraProc(Unit *pVictim, uint32 d
                 trigger_spell_id = 31616;
                 target = this;
             }
+            else if (auraSpellInfo->Id == 71217)
+            {
+                trigger_spell_id = 71220;
+			}
             break;
         }
         case SPELLFAMILY_DEATHKNIGHT:
