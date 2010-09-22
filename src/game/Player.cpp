@@ -5265,19 +5265,36 @@ void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
 {
     m_baseRatingValue[cr]+=(apply ? value : -value);
 
+    float hastePctMod = 1.0f; 
+
+    // After 3.1.3 there was bonus from haste rating increased for specific classes (only for ranged and melee) 
+    switch(getClass()) 
+    { 
+        case CLASS_PALADIN: 
+        case CLASS_DEATH_KNIGHT: 
+        case CLASS_SHAMAN:
+        case CLASS_DRUID:
+        { 
+            hastePctMod = 1.3f; 
+            break; 
+        } 
+        default: 
+            break; 
+    }
+
     // explicit affected values
     switch (cr)
     {
         case CR_HASTE_MELEE:
         {
-            float RatingChange = value / GetRatingCoefficient(cr);
+            float RatingChange = hastePctMod * value / GetRatingCoefficient(cr);
             ApplyAttackTimePercentMod(BASE_ATTACK,RatingChange,apply);
             ApplyAttackTimePercentMod(OFF_ATTACK,RatingChange,apply);
             break;
         }
         case CR_HASTE_RANGED:
         {
-            float RatingChange = value / GetRatingCoefficient(cr);
+            float RatingChange = hastePctMod * value / GetRatingCoefficient(cr);
             ApplyAttackTimePercentMod(RANGED_ATTACK, RatingChange, apply);
             break;
         }
@@ -6676,6 +6693,11 @@ void Player::UpdateHonorFields()
 ///An exact honor value can also be given (overriding the calcs)
 bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor)
 {
+    
+    // do not reward honor when player has inactive aura
+    if(HasAura(43681))
+        return false;    
+    
     // do not reward honor in arenas, but enable onkill spellproc
     if(InArena())
     {
@@ -7764,7 +7786,57 @@ void Player::CastItemCombatSpell(Unit* Target, WeaponAttackType attType)
                 if(IsPositiveSpell(pEnchant->spellid[s]))
                     CastSpell(this, pEnchant->spellid[s], true, item);
                 else
+                {
                     CastSpell(Target, pEnchant->spellid[s], true, item);
+
+                    // Deadly Poison effect of applying second item poison
+                    if(pEnchant->aura_id == 26)
+                    {
+                        SpellEntry const * pSpellEntry = sSpellStore.LookupEntry(pEnchant->spellid[s]);
+                        if(!pSpellEntry || pSpellEntry->EffectApplyAuraName[0] != SPELL_AURA_PERIODIC_DAMAGE)
+                            return;
+
+                        Aura *poison = 0;
+                        // Lookup for Deadly poison (only attacker applied)
+                        Unit::AuraList const& auras = Target->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
+                        for(Unit::AuraList::const_iterator itr = auras.begin(); itr!=auras.end(); ++itr)
+                            if( (*itr)->GetSpellProto()->SpellFamilyName==SPELLFAMILY_ROGUE &&
+                                ((*itr)->GetSpellProto()->SpellFamilyFlags & UI64LIT(0x10000)) &&
+                                (*itr)->GetCasterGUID()== GetGUID() )
+                            {
+                                poison = *itr;
+                                break;
+                            }
+
+                        if(poison && poison->GetStackAmount() >= 5)
+                        {
+                            Item *item = GetWeaponForAttack(attType == BASE_ATTACK ? OFF_ATTACK : BASE_ATTACK );
+                            if (!item)
+                                return;
+
+                            // all poison enchantments is temporary
+                            uint32 enchant_id = item->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT);
+                            if (!enchant_id)
+                                return;
+
+                            SpellItemEnchantmentEntry const *pSecondEnchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
+                            if (!pSecondEnchant)
+                                return;
+
+                            for (uint8 s = 0; s < 3; ++s)
+                            {
+                                if (pSecondEnchant->type[s]!=ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
+                                    continue;
+
+                                SpellEntry const* combatEntry = sSpellStore.LookupEntry(pSecondEnchant->spellid[s]);
+                                if (!combatEntry || combatEntry->Dispel != DISPEL_POISON)
+                                    continue;
+
+                                    CastSpell(Target, combatEntry, true, item);
+                            }
+                        }
+                    }
+                }                    
             }
         }
     }
@@ -22470,8 +22542,15 @@ void Player::ActivateSpec(uint8 specNum)
 
     if(specNum >= GetSpecsCount())
         return;
-
+        
+    if (GetBattleGround() && GetBattleGround()->GetStatus() == STATUS_IN_PROGRESS)
+        return;
+         
+         
     UnsummonPetTemporaryIfAny();
+    UnsummonAllTotems();
+    RemoveAllEnchantments(TEMP_ENCHANTMENT_SLOT);
+    
 
     ApplyGlyphs(false);
 

@@ -2255,6 +2255,17 @@ void Unit::CalculateDamageAbsorbAndResist(Unit *pCaster, SpellSchoolMask schoolM
                     pCaster->DealDamage(caster, ab_damage, NULL, damagetype, schoolMask, 0, false);
                     continue;
                 }
+                // Will of Necropolis
+                if (spellProto->SpellIconID == 857)
+                {
+                    // Apply absorb only on damage below 35% hp
+                    int32 absorbableDamage = RemainingDamage + 0.35f * GetMaxHealth() - GetHealth();
+                    if (absorbableDamage > RemainingDamage)
+                        absorbableDamage = RemainingDamage;
+                    if (absorbableDamage > 0)
+                        RemainingDamage -= absorbableDamage * currentAbsorb / 100;
+                    continue;
+                }                
                 break;
             }
             default:
@@ -6992,7 +7003,13 @@ bool Unit::IsSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
     // not critting spell
     if((spellProto->AttributesEx2 & SPELL_ATTR_EX2_CANT_CRIT))
         return false;
-
+        
+    // Creatures cant crit with spells
+    if (GetTypeId() == TYPEID_UNIT && (((Creature*)this)->GetSubtype() == CREATURE_SUBTYPE_GENERIC // If its normal creature
+        || (((Creature*)this)->GetSubtype() == CREATURE_SUBTYPE_TEMPORARY_SUMMON && !((Creature*)this)->GetOwnerGUID()))  // or temporary summon without owner, hope this is correct
+        && spellProto->DmgClass == SPELL_DAMAGE_CLASS_MAGIC) // Also affect only magic
+        return false;
+        
     float crit_chance = 0.0f;
     switch(spellProto->DmgClass)
     {
