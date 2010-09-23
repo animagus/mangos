@@ -2227,6 +2227,42 @@
 						>
 					</File>
 				</Filter>
+				<Filter
+					Name="icecrown_citadel"
+					>
+					<Filter
+						Name="frozen_halls"
+						>
+						<Filter
+							Name="forge_of_souls"
+							>
+							<File
+								RelativePath="..\scripts\northrend\icecrown_citadel\frozen_halls\forge_of_souls\boss_bronjahm.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\scripts\northrend\icecrown_citadel\frozen_halls\forge_of_souls\boss_devourer_of_souls.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\scripts\northrend\icecrown_citadel\frozen_halls\forge_of_souls\def_forge.h"
+								>
+							</File>
+							<File
+								RelativePath="..\scripts\northrend\icecrown_citadel\frozen_halls\forge_of_souls\forge_of_souls.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\scripts\northrend\icecrown_citadel\frozen_halls\forge_of_souls\instance_forge_of_souls.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\scripts\northrend\icecrown_citadel\frozen_halls\forge_of_souls\trash_forge_of_souls.cpp"
+								>
+							</File>
+						</Filter>
+					</Filter>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="outland"
