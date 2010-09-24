@@ -155,17 +155,6 @@ struct SpellCooldown
 
 typedef std::map<uint32, SpellCooldown> SpellCooldowns;
 
-struct GlobalCooldown
-{
-    uint32 duration;
-    uint32 cast_time;
-
-    explicit GlobalCooldown(uint32 _dur = 0, uint32 _time = 0):
-        duration(_dur), cast_time(_time) {}
-};
-
-typedef UNORDERED_MAP<uint32 /*category*/, GlobalCooldown> GlobalCooldowns;
-
 enum TrainerSpellState
 {
     TRAINER_SPELL_GREEN = 0,
@@ -1753,11 +1742,7 @@ class MANGOS_DLL_SPEC Player : public Unit
         void RemoveSpellCategoryCooldown(uint32 cat, bool update = false);
         void SendClearCooldown( uint32 spell_id, Unit* target );
 
-        GlobalCooldowns const& GetGlobalCooldownMap() const { return m_globalCooldowns; }
-        bool HasGlobalCooldown(SpellEntry const* spellInfo) const;
-        uint32 GetGlobalCooldownDelay(SpellEntry const* spellInfo) const;
-        void AddGlobalCooldown(SpellEntry const* spellInfo);
-        void CancelGlobalCooldown(SpellEntry const* spellInfo);
+        GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
 
         void RemoveArenaSpellCooldowns();
         void RemoveAllSpellCooldown();
@@ -2579,8 +2564,9 @@ class MANGOS_DLL_SPEC Player : public Unit
         PlayerSpellMap m_spells;
         PlayerTalentMap m_talents[MAX_TALENT_SPEC_COUNT];
         SpellCooldowns m_spellCooldowns;
-        GlobalCooldowns m_globalCooldowns;
         uint32 m_lastPotionId;                              // last used health/mana potion in combat, that block next potion use
+
+        GlobalCooldownMgr m_GlobalCooldownMgr;
 
         uint8 m_activeSpec;
         uint8 m_specsCount;
