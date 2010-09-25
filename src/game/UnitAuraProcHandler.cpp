@@ -2937,9 +2937,9 @@ SpellAuraProcResult Unit::HandleProcTriggerSpellAuraProc(Unit *pVictim, uint32 d
                     {
                         CastSpell(target,trigger_spell_id,true,castItem,triggeredByAura);
                         CastSpell(target,trigger_spell_id,true,castItem,triggeredByAura);
-                        return true;
+                        return SPELL_AURA_PROC_OK;
                     }
-                    return false;
+                    return SPELL_AURA_PROC_FAILED;
                 }
                 case 49509:                                 // Scent of Blood - 3rd rank must apply 3 stacks instantly
                 {
@@ -2948,9 +2948,9 @@ SpellAuraProcResult Unit::HandleProcTriggerSpellAuraProc(Unit *pVictim, uint32 d
                         CastSpell(target,trigger_spell_id,true,castItem,triggeredByAura);
                         CastSpell(target,trigger_spell_id,true,castItem,triggeredByAura);
                         CastSpell(target,trigger_spell_id,true,castItem,triggeredByAura);
-                        return true;
+                        return SPELL_AURA_PROC_OK;
                     }
-                    return false;
+                    return SPELL_AURA_PROC_FAILED;
                 }
                 //case 50689: break;                        // Blood Presence (Rank 1)
                 //case 50844: break;                        // Blood Mirror
@@ -3067,7 +3067,7 @@ SpellAuraProcResult Unit::HandleProcTriggerSpellAuraProc(Unit *pVictim, uint32 d
             if (auraSpellInfo->Id == 50421)             // Scent of Blood
             {
                 trigger_spell_id = 50422;
-                RemoveSingleSpellAurasFromStack(50421);
+                RemoveAuraHolderFromStack(50421);
             }
             break;
         case SPELLFAMILY_WARLOCK:
