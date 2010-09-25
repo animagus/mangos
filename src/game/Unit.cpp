@@ -2290,7 +2290,7 @@ void Unit::CalculateDamageAbsorbAndResist(Unit *pCaster, SpellSchoolMask schoolM
                     if (absorbableDamage > 0)
                         RemainingDamage -= absorbableDamage * currentAbsorb / 100;
                     continue;
-                }                
+                }
                 break;
             }
             default:
