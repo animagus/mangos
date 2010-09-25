@@ -369,12 +369,8 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit *pVictim, SpellAuraHolder* holder, S
     if (!EventProcFlag)
         return false;
 
-    // Scent of Blood can trigger from taking direct damage and also from dodging and parrying
-    if (spellProto->EffectTriggerSpell[aura->GetEffIndex()] == 50421 && procExtra & (PROC_EX_DODGE | PROC_EX_PARRY))
-        active = true;
-
     // Check spellProcEvent data requirements
-    if(!SpellMgr::IsSpellProcEventCanTriggeredBy(spellProcEvent, EventProcFlag, procSpell, procFlag, procExtra))
+    if(!SpellMgr::IsSpellProcEventCanTriggeredBy(spellProcEvent, EventProcFlag, procSpell, procFlag, procExtra) || (!(holder->GetId() == 50421 && procExtra & (PROC_EX_DODGE | PROC_EX_PARRY))))
         return false;
 
     // In most cases req get honor or XP from kill
