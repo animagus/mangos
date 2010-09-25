@@ -4408,7 +4408,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         }
     }
 
-    if (m_caster->isInCombat() && IsNonCombatSpell(m_spellInfo) && !m_IsTriggeredSpell)
+    if (reqCombat && m_caster->isInCombat() && IsNonCombatSpell(m_spellInfo) && !m_IsTriggeredSpell)
         return SPELL_FAILED_AFFECTING_COMBAT;
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER && !((Player*)m_caster)->isGameMaster() &&
