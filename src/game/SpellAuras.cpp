@@ -313,10 +313,10 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleNoImmediateEffect,                         //260 SPELL_AURA_SCREEN_EFFECT (miscvalue = id in ScreenEffect.dbc) not required any code
     &Aura::HandlePhase,                                     //261 SPELL_AURA_PHASE undetactable invisibility?     implemented in Unit::isVisibleForOrDetect
     &Aura::HandleAbilityIgnoreAurastate,                    //262 SPELL_AURA_ABILITY_IGNORE_AURASTATE
-    &Aura::HandleAllowOnlyAbility,                          //263 SPELL_AURA_ALLOW_ONLY_ABILITY player can use only abilities set in SpellClassMask
-    &Aura::HandleUnused,                                    //264 unused (3.0.8a)
-    &Aura::HandleUnused,                                    //265 unused (3.0.8a)
-    &Aura::HandleUnused,                                    //266 unused (3.0.8a)
+    &Aura::HandleNoImmediateEffect,                         //263 SPELL_AURA_ALLOW_ONLY_ABILITY                   implemented in Spell::CheckCasterAuras
+    &Aura::HandleUnused,                                    //264 unused (3.0.8a-3.2.2a)
+    &Aura::HandleUnused,                                    //265 unused (3.0.8a-3.2.2a)
+    &Aura::HandleUnused,                                    //266 unused (3.0.8a-3.2.2a)
     &Aura::HandleNoImmediateEffect,                         //267 SPELL_AURA_MOD_IMMUNE_AURA_APPLY_SCHOOL         implemented in Unit::IsImmunedToSpellEffect
     &Aura::HandleAuraModAttackPowerOfStatPercent,           //268 SPELL_AURA_MOD_ATTACK_POWER_OF_STAT_PERCENT
     &Aura::HandleNoImmediateEffect,                         //269 SPELL_AURA_MOD_IGNORE_DAMAGE_REDUCTION_SCHOOL   implemented in Unit::CalcNotIgnoreDamageRedunction
@@ -8218,12 +8218,6 @@ void Aura::HandleAuraModAllCritChance(bool apply, bool Real)
 
     // included in Player::UpdateSpellCritChance calculation
     ((Player*)target)->UpdateAllSpellCritChances();
-}
-
-void Aura::HandleAllowOnlyAbility(bool /*apply*/, bool Real)
-{
-    if(!Real)
-        return;
 }
 
 void Aura::SetAuraMaxDuration( int32 duration )
