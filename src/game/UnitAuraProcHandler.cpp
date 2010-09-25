@@ -370,7 +370,7 @@ bool Unit::IsTriggeredAtSpellProcEvent(Unit *pVictim, SpellAuraHolder* holder, S
         return false;
 
     // Check spellProcEvent data requirements
-    if(!SpellMgr::IsSpellProcEventCanTriggeredBy(spellProcEvent, EventProcFlag, procSpell, procFlag, procExtra) || (!(holder->GetId() == 50421 && procExtra & (PROC_EX_DODGE | PROC_EX_PARRY))))
+    if(!SpellMgr::IsSpellProcEventCanTriggeredBy(spellProcEvent, EventProcFlag, procSpell, procFlag, procExtra))
         return false;
 
     // In most cases req get honor or XP from kill
