@@ -6823,6 +6823,11 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor)
 
     // add honor points
     ModifyHonorPoints(int32(honor));
+
+    // battleground update players honor in bg statistics
+    if (BattleGround *bg = GetBattleGround())
+        bg->UpdatePlayerScore(this, SCORE_BONUS_HONOR, honor);
+
     ApplyModUInt32Value(PLAYER_FIELD_TODAY_CONTRIBUTION, uint32(honor), true);
     return true;
 }
@@ -7397,6 +7402,9 @@ void Player::_ApplyItemBonuses(ItemPrototype const *proto, uint8 slot, bool appl
                 break;
             case ITEM_MOD_BLOCK_VALUE:
                 HandleBaseModValue(SHIELD_BLOCK_VALUE, FLAT_MOD, float(val), apply);
+                break;
+            case ITEM_MOD_SPELL_PENETRATION:
+                ApplyModInt32Value(PLAYER_FIELD_MOD_TARGET_RESISTANCE, int32(-val), apply);
                 break;
             // depricated item mods
             case ITEM_MOD_FERAL_ATTACK_POWER:
