@@ -25,6 +25,8 @@
 #define BG_WS_FLAG_RESPAWN_TIME   (23*IN_MILLISECONDS)
 #define BG_WS_FLAG_DROP_TIME      (10*IN_MILLISECONDS)
 #define BG_WS_TIME_LIMIT          (25*MINUTE*IN_MILLISECONDS)
+#define BG_WS_FOCUSED_ASSAULT     (5*MINUTE*IN_MILLISECONDS)
+#define BG_WS_BRUTAL_ASSAULT      (15*IN_MILLISECONDS)
 
 enum BG_WS_Sound
 {
@@ -42,7 +44,9 @@ enum BG_WS_SpellId
     BG_WS_SPELL_WARSONG_FLAG            = 23333,
     BG_WS_SPELL_WARSONG_FLAG_DROPPED    = 23334,
     BG_WS_SPELL_SILVERWING_FLAG         = 23335,
-    BG_WS_SPELL_SILVERWING_FLAG_DROPPED = 23336
+    BG_WS_SPELL_SILVERWING_FLAG_DROPPED = 23336,
+    BG_WS_SPELL_FOCUSED_ASSAULT         = 46392,
+    BG_WS_SPELL_BRUTAL_ASSAULT          = 46393
 };
 
 enum BG_WS_WorldStates
@@ -160,5 +164,6 @@ class BattleGroundWS : public BattleGround
         uint32 m_HonorEndKills;
         uint32 m_EndTimer;
         uint32 m_LastCapturedFlagTeam;
+        uint32 m_AssaultTimer;
 };
 #endif

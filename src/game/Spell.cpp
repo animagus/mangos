@@ -1534,6 +1534,8 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
                 case 64234:                                 // Gravity Bomb (h)
                 case 50988:                                 // Glare of the Tribunal (Halls of Stone)
                 case 59870:                                 // Glare of the Tribunal (h) (Halls of Stone)
+                case 68950:                                 // Fear (Icecrown Citadel: Forge of Souls)
+                case 55479:                                 // Forced Obedience (Naxxramas - Razovius encounter)
                     unMaxTargets = 1;
                     break;
                 case 28542:                                 // Life Drain
@@ -1558,8 +1560,24 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
                 case 54835:                                 // Curse of the Plaguebringer (h)
                     unMaxTargets = 10;
                     break;
+                case 69075:                                 // Bone Storm
+                case 70834:                                 
+                case 70835:                                 
+                case 70836:                                 
+                    radius = DEFAULT_VISIBILITY_INSTANCE;
+                    break;
                 case 25991:                                 // Poison Bolt Volley (Pincess Huhuran)
                     unMaxTargets = 15;
+                    break;
+                case 72350:                                 // Fury of Frostmourne (Icecrown Citadel: The Lich King)
+                case 72351:                                 
+                    radius = 300;
+                    break;
+				case 69278:                                 // Gas spore (Icecrown Citadel 10: Festergut)
+                    unMaxTargets = 2;
+                    break;
+                case 71221:                                 // Gas spore (Icecrown Citadel 25: Festergut)    
+                    unMaxTargets = 4;
                     break;
             }
             break;

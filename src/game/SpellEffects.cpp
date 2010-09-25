@@ -468,6 +468,16 @@ void Spell::EffectSchoolDMG(SpellEffectIndex effect_idx)
                     case 67485:
                         damage += uint32(0.5f * m_caster->GetTotalAttackPowerValue(BASE_ATTACK));
                         break;
+                    // Bone Storm
+                    case 69075:
+                    case 70834:
+                    case 70835:
+                    case 70836:
+                    {
+                        float distance = unitTarget->GetDistance2d(m_caster); 
+                        damage *= exp(-distance/(10.0f));
+                        break;
+                    }
                 }
                 break;
             }
@@ -1994,6 +2004,36 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
                         return;
 
                     m_caster->CastSpell(m_caster, spellShrink, true);
+                    return;
+                }
+                case 54850:                                 // Drakkari Colossus - Emerge
+                {
+                    m_caster->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+
+                    // Stun ourselves
+                    m_caster->CastSpell(m_caster, 52656, true);
+
+                    // Summon Drakkari Elemental
+                    m_caster->CastSpell(m_caster, 54851, true);
+                }
+                case 55804:                                 // Healing Finished (triggered by item spell Telluric Poultice)
+                {
+                    Unit* pCaster = GetAffectiveCaster();
+                    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT || unitTarget->isInCombat() || !pCaster || pCaster->GetTypeId() != TYPEID_PLAYER)
+                        return;
+
+                    switch(urand(0,3))
+                    {
+                        case 0: unitTarget->MonsterSay("Let us fight the Irons together!",LANG_UNIVERSAL,pCaster->GetGUID());break;
+                        case 1: unitTarget->MonsterSay("Thank you! I thought I was doomed.",LANG_UNIVERSAL,pCaster->GetGUID());break;
+                        case 2: unitTarget->MonsterSay("Let me fight by your side!",LANG_UNIVERSAL,pCaster->GetGUID());break;
+                        case 3: unitTarget->MonsterSay("I was certain I was going to die out here.",LANG_UNIVERSAL,pCaster->GetGUID());break;
+                    }
+                    ((Creature*)unitTarget)->ForcedDespawn(30000);
+                    unitTarget->SetByteValue(UNIT_FIELD_BYTES_1,0,UNIT_STAND_STATE_STAND);
+                    unitTarget->GetMotionMaster()->Clear();
+                    unitTarget->GetMotionMaster()->MoveFollow(pCaster,PET_FOLLOW_DIST,unitTarget->GetAngle(pCaster));
+                    ((Player*)pCaster)->KilledMonsterCredit(unitTarget->GetEntry(),unitTarget->GetGUID());
                     return;
                 }
                 case 55818:                                 // Hurl Boulder
@@ -6919,6 +6959,20 @@ void Spell::EffectScriptEffect(SpellEffectIndex eff_idx)
                         break;
                     }
                     unitTarget->CastSpell(unitTarget, trickspell, true);
+                    return;
+                }
+                case 68861:                                 // Consume Soul (The Forge of Souls: Bronjahm)
+                    {
+                         if (!unitTarget)
+                             return;
+                         unitTarget->CastSpell(unitTarget, 68858, true);
+                         return;
+                    }
+                case 69200:                                 // Raging Spirit (Icecrown Citadel: The Lich King)
+                {
+                    if (!unitTarget)
+                        return;
+                    unitTarget->CastSpell(unitTarget, 69201, true);
                     return;
                 }
             }

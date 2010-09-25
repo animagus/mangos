@@ -1055,9 +1055,17 @@ void Aura::HandleAddModifier(bool apply, bool Real)
 
     if (apply)
     {
-        // Add custom charges for some mod aura
+        Unit* caster = GetCaster();
         switch (GetSpellProto()->Id)
         {
+            // If player has Glyph of Eternal Water active - do not modify Water Elemental summon time
+            case 44557:
+            case 44560:
+            case 44561:
+                if (caster && caster->GetTypeId() == TYPEID_PLAYER && caster->HasAura(70937))
+                    return;
+                break;
+            // Add custom charges for some mod aura
             case 17941:                                     // Shadow Trance
             case 22008:                                     // Netherwind Focus
             case 31834:                                     // Light's Grace
@@ -2492,13 +2500,9 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                         ((Player*)caster)->CastSpell( caster, 50001, true );
                 return;
             }
-            /*case 34477: //Misdirection
-            case 57934: //Tricks of Trade
-            {
-                if(Unit * caster = GetCaster())
-                    caster->SetThreatRedirectionTarget(0, 0);
+            case 68839:                                     // Corrupt Soul
+                target->CastSpell(target, 68846, true, NULL, this);
                 return;
-            }*/
         }
 
         // Living Bomb
@@ -3130,8 +3134,74 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
             modelid = ssEntry->modelID_A;
         else
         {
-            // players are a bit different since the dbc has seldomly an horde modelid
-            if (Player::TeamForRace(target->getRace()) == HORDE)
+            // The following are the different shapeshifting models for cat/bear forms according
+            // to hair color for druids and skin tone for tauren introduced in patch 3.2
+            if (form == FORM_CAT || form == FORM_BEAR || form == FORM_DIREBEAR)
+            {
+                if (Player::TeamForRace(target->getRace()) == ALLIANCE)
+                {
+                    uint8 hairColour = target->GetByteValue(PLAYER_BYTES, 3);
+                    if (form == FORM_CAT)
+                    {
+                        if (hairColour >= 0 && hairColour <= 2) modelid = 29407;
+                        else if (hairColour == 3 || hairColour == 5) modelid = 29405;
+                        else if (hairColour == 6) modelid = 892;
+                        else if (hairColour == 7) modelid = 29406;
+                        else if (hairColour == 4) modelid = 29408;
+                    }
+                    else
+                    {
+                        if (hairColour >= 0 && hairColour <= 2) modelid = 29413;
+                        else if (hairColour == 3 || hairColour == 5) modelid = 29415;
+                        else if (hairColour == 6) modelid = 29414;
+                        else if (hairColour == 7) modelid = 29417;
+                        else if (hairColour == 4) modelid = 29416;
+                    }
+                } 
+                else if (Player::TeamForRace(target->getRace()) == HORDE)
+                {
+                    uint8 skinColour = target->GetByteValue(PLAYER_BYTES, 0);
+                    if (target->getGender() == GENDER_MALE)
+                    {
+                        if (form == FORM_CAT)
+                        {
+                            if (skinColour >= 0 && skinColour <= 5) modelid = 29412;
+                            else if (skinColour >= 6 && skinColour <= 8) modelid = 29411;
+                            else if (skinColour >= 9 && skinColour <= 11) modelid = 29410;
+                            else if (skinColour >= 12 && skinColour <= 14 || skinColour == 18) modelid = 29409;
+                            else if (skinColour >= 15 && skinColour <= 17) modelid = 8571;
+                        }
+                        else
+                        {
+                            if (skinColour >= 0 && skinColour <= 2) modelid = 29418;
+                            else if (skinColour >= 3 && skinColour <= 5 || skinColour >= 12 && skinColour <= 14) modelid = 29419;
+                            else if (skinColour >= 9 && skinColour <= 11 || skinColour >= 15 && skinColour <= 17) modelid = 29420;
+                            else if (skinColour >= 6 && skinColour <= 8) modelid = 2289;
+                            else if (skinColour == 18) modelid = 29421;
+                        }
+                    }
+                    else
+                    {
+                        if (form == FORM_CAT)
+                        {
+                            if (skinColour >= 0 && skinColour <= 3) modelid = 29412;
+                            else if (skinColour == 4 || skinColour == 5) modelid = 29411;
+                            else if (skinColour == 6 || skinColour == 7) modelid = 29410;
+                            else if (skinColour == 8 || skinColour == 9) modelid = 8571;
+                            else if (skinColour == 10) modelid = 29409;
+                        }
+                        else
+                        {
+                            if (skinColour == 0 || skinColour == 1) modelid = 29418;
+                            else if (skinColour == 2 || skinColour == 3) modelid = 29419;
+                            else if (skinColour == 4 || skinColour == 5) modelid = 2289;
+                            else if (skinColour >= 6 && skinColour <= 9) modelid = 29420;
+                            else if (skinColour == 10) modelid = 29421;
+                        }
+                    }
+                }
+            }
+            else if (!modelid && Player::TeamForRace(target->getRace()) == HORDE)
             {
                 if (ssEntry->modelID_H)
                     modelid = ssEntry->modelID_H;           // 3.2.3 only the moonkin form has this information
@@ -4540,13 +4610,18 @@ void Aura::HandleModTaunt(bool apply, bool Real)
 /*********************************************************/
 /***                  MODIFY SPEED                     ***/
 /*********************************************************/
-void Aura::HandleAuraModIncreaseSpeed(bool /*apply*/, bool Real)
+void Aura::HandleAuraModIncreaseSpeed(bool apply, bool Real)
 {
     // all applied/removed only at real aura add/remove
     if(!Real)
         return;
+        
+    Unit *target = GetTarget();
 
     GetTarget()->UpdateSpeed(MOVE_RUN, true);
+    
+    if (apply && GetSpellProto()->Id == 58875)
+        target->CastSpell(target, 58876, true);
 }
 
 void Aura::HandleAuraModIncreaseMountedSpeed(bool apply, bool Real)
@@ -6902,6 +6977,18 @@ void Aura::PeriodicTick()
                         }
                         break;
                     }
+                    case 70541:
+                    case 73779:
+                    case 73780:
+                    case 73781:
+                    {
+                        if(target->GetHealth() >= target->GetMaxHealth() * 0.9 )
+                        {
+                            target->RemoveAurasDueToSpell(GetId());
+                            return;
+                        }
+                        break;
+                    }
                     default:
                         break;
                 }
@@ -8791,6 +8878,13 @@ void SpellAuraHolder::HandleSpellSpecificBoosts(bool apply)
                     {
                         spellId1 = 72521;                   // Shadowmourne Visual Low
                         spellId2 = 72523;                   // Shadowmourne Visual High
+                    }
+                    else
+                case 69674:                                 // Mutated Infection
+                    if (!apply && m_removeMode == AURA_REMOVE_BY_DISPEL)
+                    {
+                        cast_at_remove = true;
+                        spellId1 = 69706;                   // Summon (36897)
                     }
                     else
                         return;
