@@ -4393,7 +4393,22 @@ SpellCastResult Spell::CheckCast(bool strict)
             if(bg->GetStatus() == STATUS_WAIT_LEAVE)
                 return SPELL_FAILED_DONT_REPORT;
 
-    if (m_caster->isInCombat() && IsNonCombatSpell(m_spellInfo) && !m_IsTriggeredSpell)
+    bool reqCombat=true;
+    bool reqDodge=true;
+    Unit::AuraList const& stateAuras = m_caster->GetAurasByType(SPELL_AURA_ABILITY_IGNORE_AURASTATE);
+    for(Unit::AuraList::const_iterator i = stateAuras.begin();i != stateAuras.end(); ++i)
+    {
+        if((*i)->isAffectedOnSpell(m_spellInfo))
+        {
+            if ((*i)->GetMiscValue()==1)
+                reqCombat=false;
+            else if ((*i)->GetSpellProto()->SpellIconID==2961)
+                reqDodge=false;
+            break;
+        }
+    }
+
+    if (reqCombat && m_caster->isInCombat() && IsNonCombatSpell(m_spellInfo) && !m_IsTriggeredSpell)
         return SPELL_FAILED_AFFECTING_COMBAT;
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER && !((Player*)m_caster)->isGameMaster() &&
@@ -4433,21 +4448,6 @@ SpellCastResult Spell::CheckCast(bool strict)
         }
     }
 
-	bool reqCombat=true;
-	bool reqDodge=true;
-    Unit::AuraList const& stateAuras = m_caster->GetAurasByType(SPELL_AURA_ABILITY_IGNORE_AURASTATE);
-    for(Unit::AuraList::const_iterator i = stateAuras.begin();i != stateAuras.end(); ++i)
-    {
-        if((*i)->isAffectedOnSpell(m_spellInfo))
-        {
-            if ((*i)->GetMiscValue()==1)
-				reqCombat=false;
-            else if ((*i)->GetSpellProto()->SpellIconID==2961)
-				reqDodge=false;
-			break;
-        }
-    }
-
 	if (!m_IsTriggeredSpell)
     {
         if(m_spellInfo->CasterAuraState && !m_caster->HasAuraState(AuraState(m_spellInfo->CasterAuraState), m_spellInfo, m_caster))
@@ -4470,9 +4470,6 @@ SpellCastResult Spell::CheckCast(bool strict)
 			else if(m_caster->HasAura(m_spellInfo->excludeCasterAuraSpell))
 				return SPELL_FAILED_CASTER_AURASTATE;
 		}
-
-        if(reqCombat && m_caster->isInCombat() && IsNonCombatSpell(m_spellInfo))
-            return SPELL_FAILED_AFFECTING_COMBAT;
     }
 
 	// Heroism not have excludeCasterAuraSpell
