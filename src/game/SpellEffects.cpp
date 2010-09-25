@@ -6922,11 +6922,17 @@ void Spell::EffectScriptEffect(SpellEffectIndex eff_idx)
                     return;
                 }
                 case 68861:                                 // Consume Soul (The Forge of Souls: Bronjahm)
+                    {
+                         if (!unitTarget)
+                             return;
+                         unitTarget->CastSpell(unitTarget, 68858, true);
+                         return;
+                    }
+                case 69200:                                 // Raging Spirit (Icecrown Citadel: The Lich King)
                 {
                     if (!unitTarget)
                         return;
-
-                    unitTarget->CastSpell(unitTarget, 68858, true);
+                    unitTarget->CastSpell(unitTarget, 69201, true);
                     return;
                 }
             }
