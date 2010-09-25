@@ -5174,6 +5174,10 @@ void Unit::RemoveAurasByDurationRemaining(int32 duration)
 
 void Unit::DelaySpellAuraHolder(uint32 spellId, int32 delaytime, uint64 casterGUID)
 {
+    // attempt to prevent Unit::GetSpellAuraHolderBounds() crash...
+    if(m_spellAuraHolders.empty())
+        return;
+
     SpellAuraHolderBounds bounds = GetSpellAuraHolderBounds(spellId);
     for (SpellAuraHolderMap::iterator iter = bounds.first; iter != bounds.second; ++iter)
     {
