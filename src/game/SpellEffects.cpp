@@ -6921,6 +6921,14 @@ void Spell::EffectScriptEffect(SpellEffectIndex eff_idx)
                     unitTarget->CastSpell(unitTarget, trickspell, true);
                     return;
                 }
+                case 68861:                                 // Consume Soul (The Forge of Souls: Bronjahm)
+                {
+                    if (!unitTarget)
+                        return;
+
+                    unitTarget->CastSpell(unitTarget, 68858, true);
+                    return;
+                }
             }
             break;
         }
