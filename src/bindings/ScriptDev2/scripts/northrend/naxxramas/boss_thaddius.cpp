@@ -99,9 +99,9 @@ struct MANGOS_DLL_DECL mob_stalaggAI : public ScriptedAI
         m_bIsDeath = false;
         m_bIsHold = false;
 
-        HomeX = 3450.45;
-        HomeY = -2931.42;
-        HomeZ = 312.091;
+        HomeX = 3450.45f;
+        HomeY = -2931.42f;
+        HomeZ = 312.091f;
 
         WarStomp_Timer = 8000+rand()%2000;
         PowerSurge_Timer = 10000+rand()%5000;
@@ -230,9 +230,9 @@ struct MANGOS_DLL_DECL mob_feugenAI : public ScriptedAI
         m_bIsDeath = false;
         m_bIsHold = false;
 
-        HomeX = 3508.14;
-        HomeY = -2988.65;
-        HomeZ = 312.092;
+        HomeX = 3508.14f;
+        HomeY = -2988.65f;
+        HomeZ = 312.092f;
 
         WarStomp_Timer = 8000+rand()%2000;
         StaticField_Timer = 10000+rand()%5000;

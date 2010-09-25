@@ -100,7 +100,7 @@ struct MANGOS_DLL_DECL netherspite_infernalAI : public ScriptedAI
 
     uint32 HellfireTimer;
     uint32 CleanupTimer;
-    ObjectGuid malchezaar;
+    uint64 malchezaar;
     InfernalPoint *point;
 
     void Reset() {}
@@ -367,7 +367,7 @@ struct MANGOS_DLL_DECL boss_malchezaarAI : public ScriptedAI
                 if (point)
                     pInfernalAI->point = point;
 
-                pInfernalAI->malchezaar = m_creature->GetObjectGuid();
+                pInfernalAI->malchezaar = m_creature->GetGUID();
             }
 
             infernals.push_back(Infernal->GetGUID());

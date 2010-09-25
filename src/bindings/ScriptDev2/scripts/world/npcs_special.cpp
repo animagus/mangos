@@ -2213,7 +2213,7 @@ struct MANGOS_DLL_DECL npc_spring_rabbitAI : public ScriptedAI
                     cell.SetNoCreate();
 
                     MaNGOS::AnyFriendlyUnitInObjectRangeCheck u_check(m_creature, 8.0f);
-                    MaNGOS::UnitListSearcher<MaNGOS::AnyFriendlyUnitInObjectRangeCheck> searcher(m_creature, targets, u_check);
+                    MaNGOS::UnitListSearcher<MaNGOS::AnyFriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
                     Cell::VisitAllObjects(m_creature, searcher, 8.0f);
 
                     for(std::list<Unit *>::iterator tIter = targets.begin(); tIter != targets.end(); tIter++)

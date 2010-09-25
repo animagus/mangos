@@ -53,7 +53,8 @@ enum
     MOB_CORPSE_SCARAB  = 16698,
 
 //Crypt Guard spells
-    SPELL_CG_ACID_SPIT  = 28969,
+    SPELL_ACID_SPIT             = 28969,
+    SPELL_ACID_SPIT_H           = 56098,
     SPELL_CG_CLEAVE     = 40504,
     SPELL_CG_FRENZY     = 8269,
     SPELL_SELF_SPAWN_10 = 28864                           //This spawns 10 corpse scarabs. This is used by the crypt guards when they die
@@ -120,11 +121,7 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
             guidCryptGuards[i] = 0;
         }
         //Remove all corpse scarabs
-
-        std::list<Creature*> CorpseScarabs = GetCreaturesByEntry(MOB_CORPSE_SCARAB);
-        if (!CorpseScarabs.empty())
-            for(std::list<Creature*>::iterator itr = CorpseScarabs.begin(); itr != CorpseScarabs.end(); ++itr)
-                (*itr)->AddObjectToRemoveList();
+        Despawnall();
     }
 
     void JustRespawned()
@@ -138,6 +135,17 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
             pInstance->SetData(ENCOUNT_ANUBREKHAN, NOT_STARTED);
     }
 
+    void Despawnall()
+    {
+        std::list<Creature*> m_pSmall;
+        GetCreatureListWithEntryInGrid(m_pSmall, m_creature, MOB_CORPSE_SCARAB, DEFAULT_VISIBILITY_INSTANCE);
+
+        if (!m_pSmall.empty())
+            for(std::list<Creature*>::iterator itr = m_pSmall.begin(); itr != m_pSmall.end(); ++itr)
+            {
+                (*itr)->ForcedDespawn();
+            }
+    }
 
     void JustDied(Unit*)
     {
@@ -231,24 +239,6 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
         
         ScriptedAI::MoveInLineOfSight(who);
     }
-    
-    std::list<Creature*> GetCreaturesByEntry(uint32 entry)
-    {
-        CellPair pair(MaNGOS::ComputeCellPair(m_creature->GetPositionX(), m_creature->GetPositionY()));
-        Cell cell(pair);
-        cell.data.Part.reserved = ALL_DISTRICT;
-        cell.SetNoCreate();
-
-        std::list<Creature*> creatureList;
-
-        AllCreaturesOfEntryInRange check(m_creature, entry, 100);
-        MaNGOS::CreatureListSearcher<AllCreaturesOfEntryInRange> searcher(m_creature, creatureList, check);
-        TypeContainerVisitor<MaNGOS::CreatureListSearcher<AllCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
-
-        cell.Visit(pair, visitor, *(m_creature->GetMap()));
-
-        return creatureList;
-    }
 
     void JustSummoned(Creature* temp) 
     {
@@ -308,14 +298,6 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
         if (RiseFromCorpse_Timer < diff)
         {
             RiseFromCorpse_Timer = 60000 + (rand()%10000);
-            std::list<Creature*> CryptGuards = GetCreaturesByEntry(MOB_CRYPT_GUARD);
-            if (!CryptGuards.empty())
-                for(std::list<Creature*>::iterator itr = CryptGuards.begin(); itr != CryptGuards.end(); ++itr)
-                    if ((*itr)->isDead())
-                    {
-                        (*itr)->CastSpell((*itr),SPELL_SELF_SPAWN_10,true);
-                        (*itr)->AddObjectToRemoveList();
-                    }
 
             const Map::PlayerList &players = m_creature->GetMap()->GetPlayers();
             if (players.isEmpty())
@@ -330,7 +312,6 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
                     if (pPlayer->isDead())
                         pPlayer->CastSpell(pPlayer,SPELL_SELF_SPAWN_5,true);
                 }
-            CryptGuards.clear();
         }else RiseFromCorpse_Timer -= diff;
 
         if(!swarm)
@@ -380,9 +361,80 @@ struct MANGOS_DLL_DECL boss_anubrekhanAI : public ScriptedAI
     }
 };
 
+struct MANGOS_DLL_DECL mob_crypt_guardAI : public ScriptedAI
+{
+    mob_crypt_guardAI(Creature* pCreature) : ScriptedAI(pCreature)
+    {
+        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
+        Reset();
+    }
+
+    ScriptedInstance* m_pInstance;
+    bool m_bIsRegularMode;
+
+    uint32 AcidSpit_Timer;
+    uint32 Cleave_Timer;
+    uint32 Berserk_Timer;
+
+    void Reset()
+    {
+        AcidSpit_Timer = 10000 + rand()%1000;
+        Cleave_Timer = 5000 + rand()%5000;
+        Berserk_Timer = 120000;
+    }
+
+    void JustDied(Unit* Killer)
+    {
+        m_creature->CastSpell(m_creature, SPELL_SELF_SPAWN_10, true);
+    }
+
+    void Aggro(Unit *who)
+    {
+        if (m_pInstance)
+        {
+            if (Creature* pAnubRekhan = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(GUID_ANUBREKHAN)))
+                if (pAnubRekhan->isAlive() && !pAnubRekhan->getVictim())
+                    pAnubRekhan->AI()->AttackStart(who);
+        }
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        if (Berserk_Timer)
+            if (Berserk_Timer < diff)
+            {
+                DoCast(m_creature, SPELL_CG_FRENZY);
+                Berserk_Timer = 0;
+            }else Berserk_Timer -= diff;
+
+        if (AcidSpit_Timer < diff)
+        {
+            DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_ACID_SPIT : SPELL_ACID_SPIT_H);
+            AcidSpit_Timer = 10000 + rand()%1000;
+        }else AcidSpit_Timer -= diff;
+
+        if (Cleave_Timer < diff)
+        {
+            DoCast(m_creature->getVictim(), SPELL_CG_CLEAVE);
+            Cleave_Timer = 5000 + rand()%5000;
+        }else Cleave_Timer -= diff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
 CreatureAI* GetAI_boss_anubrekhan(Creature *_Creature)
 {
     return new boss_anubrekhanAI (_Creature);
+}
+
+CreatureAI* GetAI_mob_crypt_guard(Creature* pCreature)
+{
+    return new mob_crypt_guardAI(pCreature);
 }
 
 void AddSC_boss_anubrekhan()
@@ -391,5 +443,10 @@ void AddSC_boss_anubrekhan()
     newscript = new Script;
     newscript->Name = "boss_anubrekhan";
     newscript->GetAI = &GetAI_boss_anubrekhan;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_crypt_guard";
+    newscript->GetAI = &GetAI_mob_crypt_guard;
     newscript->RegisterSelf();
 }

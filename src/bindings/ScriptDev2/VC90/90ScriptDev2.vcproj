@@ -68,15 +68,15 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="mangosd.lib ACEd.lib"
-				OutputFile="$(OutDir)/MaNGOSScript.dll"
+				OutputFile="$(OutDir)/mangosscript.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\..\..\win\VC90\mangosd__Win32_Debug;..\..\..\..\dep\lib\win32_debug\"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/MaNGOSScript.pdb"
+				ProgramDatabaseFile="$(OutDir)/mangosscript.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(OutDir)/MaNGOSScript.lib"
+				ImportLibrary="$(OutDir)/mangosscript.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -151,15 +151,15 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="mangosd.lib ACEd.lib"
-				OutputFile="$(OutDir)/MaNGOSScript.dll"
+				OutputFile="$(OutDir)/mangosscript.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\..\..\win\VC90\mangosd__x64_Debug;..\..\..\..\dep\lib\x64_Debug\"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/MaNGOSScript.pdb"
+				ProgramDatabaseFile="$(OutDir)/mangosscript.pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(OutDir)/MaNGOSScript.lib"
+				ImportLibrary="$(OutDir)/mangosscript.lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -232,7 +232,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="mangosd.lib ACE.lib"
-				OutputFile="$(OutDir)/MaNGOSScript.dll"
+				OutputFile="$(OutDir)/mangosscript.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\..\..\..\win\VC90\mangosd__Win32_Release;..\..\..\..\dep\lib\win32_release\"
 				GenerateDebugInformation="false"
@@ -241,7 +241,7 @@
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(OutDir)/MaNGOSScript.lib"
+				ImportLibrary="$(OutDir)/mangosscript.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -315,7 +315,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="mangosd.lib ACE.lib"
-				OutputFile="$(OutDir)/MaNGOSScript.dll"
+				OutputFile="$(OutDir)/mangosscript.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\..\..\..\win\VC90\mangosd__x64_Release;..\..\..\..\dep\lib\x64_release\"
 				GenerateDebugInformation="false"
@@ -324,7 +324,7 @@
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(OutDir)/MaNGOSScript.lib"
+				ImportLibrary="$(OutDir)/mangosscript.lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -638,6 +638,10 @@
 						RelativePath="..\scripts\eastern_kingdoms\blackrock_spire\instance_blackrock_spire.cpp"
 						>
 					</File>
+					<File
+						RelativePath="..\scripts\eastern_kingdoms\blackrock_spire\blackrock_spire.h"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="blackwing_lair"
@@ -702,6 +706,22 @@
 				<Filter
 					Name="gnomeregan"
 					>
+					<File
+						RelativePath="..\scripts\eastern_kingdoms\gnomeregan\boss_thermaplugg.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\eastern_kingdoms\gnomeregan\gnomeregan.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\eastern_kingdoms\gnomeregan\gnomeregan.h"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\eastern_kingdoms\gnomeregan\instance_gnomeregan.cpp"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="karazhan"
@@ -1558,6 +1578,14 @@
 						RelativePath="..\scripts\kalimdor\ruins_of_ahnqiraj\instance_ruins_of_ahnqiraj.cpp"
 						>
 					</File>
+					<File
+						RelativePath="..\scripts\kalimdor\ruins_of_ahnqiraj\ruins_of_ahnqiraj.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\kalimdor\ruins_of_ahnqiraj\ruins_of_ahnqiraj.h"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="temple_of_ahnqiraj"
@@ -1616,6 +1644,10 @@
 					>
 					<File
 						RelativePath="..\scripts\kalimdor\wailing_caverns\instance_wailing_caverns.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\kalimdor\wailing_caverns\wailing_caverns.h"
 						>
 					</File>
 				</Filter>
@@ -1918,6 +1950,10 @@
 						RelativePath="..\scripts\northrend\naxxramas\instance_naxxramas.cpp"
 						>
 					</File>
+					<File
+						RelativePath="..\scripts\northrend\naxxramas\naxxramas.h"
+						>
+					</File>
 				</Filter>
 				<Filter
 					Name="nexus"
@@ -1988,6 +2024,26 @@
 					</File>
 				</Filter>
 				<Filter
+					Name="ruby_sanctum"
+					>
+					<File
+						RelativePath="..\scripts\northrend\ruby_sanctum\boss_halion.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\northrend\ruby_sanctum\boss_saviana.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\northrend\ruby_sanctum\boss_baltharus.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\northrend\ruby_sanctum\boss_zarithian.cpp"
+						>
+					</File>
+				</Filter>
+				<Filter
 					Name="ulduar"
 					>
 					<Filter
@@ -2031,6 +2087,14 @@
 						</File>
 						<File
 							RelativePath="..\scripts\northrend\ulduar\halls_of_stone\halls_of_stone.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\ulduar\halls_of_stone\halls_of_stone.h"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\ulduar\halls_of_stone\instance_halls_of_stone.cpp"
 							>
 						</File>
 					</Filter>
@@ -2226,6 +2290,126 @@
 						RelativePath="..\scripts\northrend\violet_hold\violet_hold.h"
 						>
 					</File>
+				</Filter>
+				<Filter
+					Name="icecrown_citadel"
+					>
+					<Filter
+						Name="icecrown_citadel"
+						>
+						<File
+							RelativePath="..\scripts\northrend\icecrown_citadel\icecrown_citadel\blood_prince_council.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\icecrown_citadel\icecrown_citadel\boss_blood_queen_lanathel.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\icecrown_citadel\icecrown_citadel\boss_deathbringer_saurfang.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\icecrown_citadel\icecrown_citadel\boss_festergut.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\icecrown_citadel\icecrown_citadel\boss_lady_deathwhisper.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\icecrown_citadel\icecrown_citadel\boss_lord_marrowgar.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\icecrown_citadel\icecrown_citadel\boss_proffesor_putricide.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\icecrown_citadel\icecrown_citadel\boss_rotface.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\icecrown_citadel\icecrown_citadel\boss_sindragosa.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\icecrown_citadel\icecrown_citadel\boss_the_lich_king.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\icecrown_citadel\icecrown_citadel\boss_valithria_dreamwalker.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\icecrown_citadel\icecrown_citadel\gunship_battle.cpp"
+							>
+						</File>
+					</Filter>
+					<Filter
+						Name="frozen_halls"
+						>
+						<Filter
+							Name="pit_of_saron"
+							>
+							<File
+								RelativePath="..\scripts\northrend\icecrown_citadel\frozen_halls\pit_of_saron\boss_forgemaster_gafrost.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\scripts\northrend\icecrown_citadel\frozen_halls\pit_of_saron\boss_krick_and_ick.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\scripts\northrend\icecrown_citadel\frozen_halls\pit_of_saron\boss_scourgelord_tyrannus.cpp"
+								>
+							</File>
+						</Filter>
+						<Filter
+							Name="halls_of_reflection"
+							>
+							<File
+								RelativePath="..\scripts\northrend\icecrown_citadel\frozen_halls\halls_of_reflection\boss_falryn.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\scripts\northrend\icecrown_citadel\frozen_halls\halls_of_reflection\boss_lich_king.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\scripts\northrend\icecrown_citadel\frozen_halls\halls_of_reflection\boss_marwyn.cpp"
+								>
+							</File>
+						</Filter>
+						<Filter
+							Name="forge_of_souls"
+							>
+							<File
+								RelativePath="..\scripts\northrend\icecrown_citadel\frozen_halls\forge_of_souls\boss_bronjahm.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\scripts\northrend\icecrown_citadel\frozen_halls\forge_of_souls\boss_devourer_of_souls.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\scripts\northrend\icecrown_citadel\frozen_halls\forge_of_souls\def_forge.h"
+								>
+							</File>
+							<File
+								RelativePath="..\scripts\northrend\icecrown_citadel\frozen_halls\forge_of_souls\forge_of_souls.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\scripts\northrend\icecrown_citadel\frozen_halls\forge_of_souls\instance_forge_of_souls.cpp"
+								>
+							</File>
+							<File
+								RelativePath="..\scripts\northrend\icecrown_citadel\frozen_halls\forge_of_souls\trash_forge_of_souls.cpp"
+								>
+							</File>
+						</Filter>
+					</Filter>
 				</Filter>
 			</Filter>
 			<Filter
@@ -2433,10 +2617,6 @@
 					<Filter
 						Name="slave_pens"
 						>
-						<File
-							RelativePath="..\scripts\outland\coilfang_reservoir\slave_pens\boss_rokmar.cpp"
-							>
-						</File>
 					</Filter>
 					<Filter
 						Name="steam_vault"
