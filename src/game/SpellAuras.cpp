@@ -3197,10 +3197,8 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
                     }
                 }
             }
-            else
-            if (!modelid && Player::TeamForRace(target->getRace()) == HORDE)
+            else if (!modelid && Player::TeamForRace(target->getRace()) == HORDE)
             {
->>>>>>> c684100... [bws260] Implemented Druid skin tone and rewrite patch barbershop.
                 if (ssEntry->modelID_H)
                     modelid = ssEntry->modelID_H;           // 3.2.3 only the moonkin form has this information
                 else                                        // get model for race
