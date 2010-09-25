@@ -126,48 +126,48 @@ struct MANGOS_DLL_DECL npc_a_special_surpriseAI : public ScriptedAI
         m_uiPlayerGUID.Clear();
     }
 
-    bool MeetQuestCondition(Unit* pPlayer)
+    bool MeetQuestCondition(Player* pPlayer)
     {
         switch(m_creature->GetEntry())
         {
             case 29061:                                     // Ellen Stanbridge
-                if (((Player*)pPlayer)->GetQuestStatus(12742) == QUEST_STATUS_INCOMPLETE)
+                if (pPlayer->GetQuestStatus(12742) == QUEST_STATUS_INCOMPLETE)
                     return true;
                 break;
             case 29072:                                     // Kug Ironjaw
-                if (((Player*)pPlayer)->GetQuestStatus(12748) == QUEST_STATUS_INCOMPLETE)
+                if (pPlayer->GetQuestStatus(12748) == QUEST_STATUS_INCOMPLETE)
                     return true;
                 break;
             case 29067:                                     // Donovan Pulfrost
-                if (((Player*)pPlayer)->GetQuestStatus(12744) == QUEST_STATUS_INCOMPLETE)
+                if (pPlayer->GetQuestStatus(12744) == QUEST_STATUS_INCOMPLETE)
                     return true;
                 break;
             case 29065:                                     // Yazmina Oakenthorn
-                if (((Player*)pPlayer)->GetQuestStatus(12743) == QUEST_STATUS_INCOMPLETE)
+                if (pPlayer->GetQuestStatus(12743) == QUEST_STATUS_INCOMPLETE)
                     return true;
                 break;
             case 29071:                                     // Antoine Brack
-                if (((Player*)pPlayer)->GetQuestStatus(12750) == QUEST_STATUS_INCOMPLETE)
+                if (pPlayer->GetQuestStatus(12750) == QUEST_STATUS_INCOMPLETE)
                     return true;
                 break;
             case 29032:                                     // Malar Bravehorn
-                if (((Player*)pPlayer)->GetQuestStatus(12739) == QUEST_STATUS_INCOMPLETE)
+                if (pPlayer->GetQuestStatus(12739) == QUEST_STATUS_INCOMPLETE)
                     return true;
                 break;
             case 29068:                                     // Goby Blastenheimer
-                if (((Player*)pPlayer)->GetQuestStatus(12745) == QUEST_STATUS_INCOMPLETE)
+                if (pPlayer->GetQuestStatus(12745) == QUEST_STATUS_INCOMPLETE)
                     return true;
                 break;
             case 29073:                                     // Iggy Darktusk
-                if (((Player*)pPlayer)->GetQuestStatus(12749) == QUEST_STATUS_INCOMPLETE)
+                if (pPlayer->GetQuestStatus(12749) == QUEST_STATUS_INCOMPLETE)
                     return true;
                 break;
             case 29074:                                     // Lady Eonys
-                if (((Player*)pPlayer)->GetQuestStatus(12747) == QUEST_STATUS_INCOMPLETE)
+                if (pPlayer->GetQuestStatus(12747) == QUEST_STATUS_INCOMPLETE)
                     return true;
                 break;
             case 29070:                                     // Valok the Righteous
-                if (((Player*)pPlayer)->GetQuestStatus(12746) == QUEST_STATUS_INCOMPLETE)
+                if (pPlayer->GetQuestStatus(12746) == QUEST_STATUS_INCOMPLETE)
                     return true;
                 break;
         }
@@ -180,7 +180,7 @@ struct MANGOS_DLL_DECL npc_a_special_surpriseAI : public ScriptedAI
         if (!m_uiPlayerGUID.IsEmpty() || pWho->GetTypeId() != TYPEID_PLAYER || !pWho->IsWithinDist(m_creature, INTERACTION_DISTANCE))
             return;
 
-        if (MeetQuestCondition(pWho))
+        if (MeetQuestCondition((Player*)pWho))
             m_uiPlayerGUID = pWho->GetObjectGuid();
     }
 
@@ -908,11 +908,13 @@ struct MANGOS_DLL_DECL npc_unworthy_initiate_anchorAI : public ScriptedAI
     }
 
     uint64 m_uiMyInitiate;
+    uint64 m_uiMyPrisonGUID;
 
     void Reset() { }
 
-    void NotifyMe(Unit* pSource)
+    void NotifyMe(Unit* pSource, uint64 uiPrisonGuid)
     {
+        m_uiMyPrisonGUID = uiPrisonGuid;
         Creature* pInitiate = m_creature->GetMap()->GetCreature(m_uiMyInitiate);
 
         if (pInitiate && pSource)
@@ -925,6 +927,12 @@ struct MANGOS_DLL_DECL npc_unworthy_initiate_anchorAI : public ScriptedAI
     void RegisterCloseInitiate(uint64 uiGuid)
     {
         m_uiMyInitiate = uiGuid;
+    }
+
+    void ResetPrison()
+    {
+        if (GameObject* pPrison = m_creature->GetMap()->GetGameObject(m_uiMyPrisonGUID))
+            pPrison->ResetDoorOrButton();
     }
 };
 
@@ -961,6 +969,7 @@ struct MANGOS_DLL_DECL npc_unworthy_initiateAI : public ScriptedAI
 
     DisplayToSpell* m_pToTransform;
 
+    uint64 m_uiMyAnchorGUID;
     uint32 m_uiNormFaction;
     uint32 m_uiAnchorCheckTimer;
     uint32 m_uiPhase;
@@ -975,6 +984,7 @@ struct MANGOS_DLL_DECL npc_unworthy_initiateAI : public ScriptedAI
         if (m_creature->getFaction() != m_uiNormFaction)
             m_creature->setFaction(m_uiNormFaction);
 
+        m_uiMyAnchorGUID = 0;
         m_uiAnchorCheckTimer = 5000;
         m_uiPhase = PHASE_INACTIVE_OR_COMBAT;
         m_uiPhaseTimer = 7500;
@@ -989,14 +999,33 @@ struct MANGOS_DLL_DECL npc_unworthy_initiateAI : public ScriptedAI
         SetAnchor();
     }
 
+    void JustRespawned()
+    {
+        if (Creature* pAnchor = GetAnchor())
+        {
+            if (npc_unworthy_initiate_anchorAI* pAnchorAI = dynamic_cast<npc_unworthy_initiate_anchorAI*>(pAnchor->AI()))
+                pAnchorAI->ResetPrison();
+        }
+
+        Reset();
+    }
+
     int32 GetTextId()
     {
         return m_uiPhase == PHASE_DRESSUP ? SAY_START-rand()%8 : SAY_AGGRO-rand()%8;
     }
 
+    Creature* GetAnchor()
+    {
+        if (m_uiMyAnchorGUID)
+            return m_creature->GetMap()->GetCreature(m_uiMyAnchorGUID);
+        else
+            return GetClosestCreatureWithEntry(m_creature, NPC_ANCHOR, INTERACTION_DISTANCE*2);
+    }
+
     void SetAnchor()
     {
-        if (Creature* pAnchor = GetClosestCreatureWithEntry(m_creature, NPC_ANCHOR, INTERACTION_DISTANCE*2))
+        if (Creature* pAnchor = GetAnchor())
         {
             if (npc_unworthy_initiate_anchorAI* pAnchorAI = dynamic_cast<npc_unworthy_initiate_anchorAI*>(pAnchor->AI()))
                 pAnchorAI->RegisterCloseInitiate(m_creature->GetGUID());
@@ -1026,10 +1055,13 @@ struct MANGOS_DLL_DECL npc_unworthy_initiateAI : public ScriptedAI
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (m_uiAnchorCheckTimer && m_uiAnchorCheckTimer < uiDiff)
-            SetAnchor();
-        else
-            m_uiAnchorCheckTimer -= uiDiff;
+        if (m_uiAnchorCheckTimer)
+        {
+            if (m_uiAnchorCheckTimer <= uiDiff)
+                SetAnchor();
+            else
+                m_uiAnchorCheckTimer -= uiDiff;
+        }
 
         if (m_uiPhase == PHASE_INACTIVE_OR_COMBAT)
         {
@@ -1040,25 +1072,33 @@ struct MANGOS_DLL_DECL npc_unworthy_initiateAI : public ScriptedAI
             {
                 DoCastSpellIfCan(m_creature->getVictim(),SPELL_BLOOD_STRIKE);
                 m_uiBloodStrike_Timer = 9000;
-            }else m_uiBloodStrike_Timer -= uiDiff;
+            }
+            else
+                m_uiBloodStrike_Timer -= uiDiff;
 
             if (m_uiDeathCoil_Timer < uiDiff)
             {
                 DoCastSpellIfCan(m_creature->getVictim(),SPELL_DEATH_COIL);
                 m_uiDeathCoil_Timer = 8000;
-            }else m_uiDeathCoil_Timer -= uiDiff;
+            }
+            else
+                m_uiDeathCoil_Timer -= uiDiff;
 
             if (m_uiIcyTouch_Timer < uiDiff)
             {
                 DoCastSpellIfCan(m_creature->getVictim(),SPELL_ICY_TOUCH);
                 m_uiIcyTouch_Timer = 8000;
-            }else m_uiIcyTouch_Timer -= uiDiff;
+            }
+            else
+                m_uiIcyTouch_Timer -= uiDiff;
 
             if (m_uiPlagueStrike_Timer < uiDiff)
             {
                 DoCastSpellIfCan(m_creature->getVictim(),SPELL_PLAGUE_STRIKE);
                 m_uiPlagueStrike_Timer = 8000;
-            }else m_uiPlagueStrike_Timer -= uiDiff;
+            }
+            else
+                m_uiPlagueStrike_Timer -= uiDiff;
 
             DoMeleeAttackIfReady();
         }
@@ -1113,7 +1153,7 @@ bool GOHello_go_acherus_soul_prison(Player* pPlayer, GameObject* pGo)
     if (Creature* pAnchor = GetClosestCreatureWithEntry(pGo, NPC_ANCHOR, INTERACTION_DISTANCE))
     {
         if (npc_unworthy_initiate_anchorAI* pAnchorAI = dynamic_cast<npc_unworthy_initiate_anchorAI*>(pAnchor->AI()))
-            pAnchorAI->NotifyMe(pPlayer);
+            pAnchorAI->NotifyMe(pPlayer, pGo->GetGUID());
     }
 
     return false;
@@ -2906,55 +2946,55 @@ CreatureAI* GetAI_npc_crusade_persuaded(Creature* pCreature)
 
 void AddSC_ebon_hold()
 {
-    Script *newscript;
+    Script* pNewScript;
 
-    newscript = new Script;
-    newscript->Name = "npc_a_special_surprise";
-    newscript->GetAI = &GetAI_npc_a_special_surprise;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_a_special_surprise";
+    pNewScript->GetAI = &GetAI_npc_a_special_surprise;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_death_knight_initiate";
-    newscript->GetAI = &GetAI_npc_death_knight_initiate;
-    newscript->pGossipHello = &GossipHello_npc_death_knight_initiate;
-    newscript->pGossipSelect = &GossipSelect_npc_death_knight_initiate;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_death_knight_initiate";
+    pNewScript->GetAI = &GetAI_npc_death_knight_initiate;
+    pNewScript->pGossipHello = &GossipHello_npc_death_knight_initiate;
+    pNewScript->pGossipSelect = &GossipSelect_npc_death_knight_initiate;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_koltira_deathweaver";
-    newscript->GetAI = &GetAI_npc_koltira_deathweaver;
-    newscript->pQuestAccept = &QuestAccept_npc_koltira_deathweaver;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_koltira_deathweaver";
+    pNewScript->GetAI = &GetAI_npc_koltira_deathweaver;
+    pNewScript->pQuestAccept = &QuestAccept_npc_koltira_deathweaver;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_unworthy_initiate";
-    newscript->GetAI = &GetAI_npc_unworthy_initiate;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_unworthy_initiate";
+    pNewScript->GetAI = &GetAI_npc_unworthy_initiate;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_unworthy_initiate_anchor";
-    newscript->GetAI = &GetAI_npc_unworthy_initiate_anchor;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_unworthy_initiate_anchor";
+    pNewScript->GetAI = &GetAI_npc_unworthy_initiate_anchor;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "go_acherus_soul_prison";
-    newscript->pGOHello = &GOHello_go_acherus_soul_prison;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "go_acherus_soul_prison";
+    pNewScript->pGOHello = &GOHello_go_acherus_soul_prison;
+    pNewScript->RegisterSelf();
 	
-	newscript = new Script;
-	newscript->Name = "npc_crusade_persuaded";
-	newscript->GetAI = &GetAI_npc_crusade_persuaded;
-	newscript->RegisterSelf();
+	pNewScript = new Script;
+	pNewScript->Name = "npc_crusade_persuaded";
+	pNewScript->GetAI = &GetAI_npc_crusade_persuaded;
+	pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_highlord_darion_mograine";
-    newscript->GetAI = &GetAI_npc_highlord_darion_mograine;
-    newscript->pGossipHello =  &GossipHello_npc_highlord_darion_mograine;
-    newscript->pGossipSelect = &GossipSelect_npc_highlord_darion_mograine;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_highlord_darion_mograine";
+    pNewScript->GetAI = &GetAI_npc_highlord_darion_mograine;
+    pNewScript->pGossipHello =  &GossipHello_npc_highlord_darion_mograine;
+    pNewScript->pGossipSelect = &GossipSelect_npc_highlord_darion_mograine;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_the_lich_king_tirion_dawn";
-    newscript->GetAI = &GetAI_npc_the_lich_king_tirion_dawn;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_the_lich_king_tirion_dawn";
+    pNewScript->GetAI = &GetAI_npc_the_lich_king_tirion_dawn;
+    pNewScript->RegisterSelf();
 }
