@@ -710,6 +710,126 @@ bool ChooseReward_npc_rocknot(Player* pPlayer, Creature* pCreature, const Quest*
     return true;
 }
 
+/*########
+# npc_coren_direbrew
+#########*/
+
+struct MANGOS_DLL_DECL npc_coren_direbrewAI : public ScriptedAI
+{
+    npc_coren_direbrewAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+
+    uint32 DisarmTimer;
+    bool m_first_summon,m_second_summon;
+    uint32 m_summon_timer;
+    //uint32 IlsaTimer,UrsulaTimer;
+
+    void Reset()
+    {
+        m_creature->setFaction(35);
+        m_first_summon = false;
+        m_second_summon = false;
+        DisarmTimer = 10000;
+        m_summon_timer = 2000;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        //Return since we have no target
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        if (DisarmTimer <= diff)
+        {
+            DoCast(m_creature,47310);
+            DisarmTimer = 15000;
+        }
+        else DisarmTimer -= diff;
+
+        if (m_summon_timer <= diff)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                if (Creature* tmp = m_creature->SummonCreature(26776,m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ(),0,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,180000))
+                    if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                        tmp->AI()->AttackStart(target);
+            }
+            m_summon_timer = 20000;
+        } m_summon_timer -= diff;
+
+        if (!m_first_summon && m_creature->GetHealth() <= (m_creature->GetMaxHealth() * 0.66f))
+        {
+            m_first_summon = true;
+
+            if (Creature* tmp = m_creature->SummonCreature(26764,m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ(),0,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,180000))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    tmp->AI()->AttackStart(target);
+        }
+
+        if (!m_second_summon && m_creature->GetHealth() <= (m_creature->GetMaxHealth() * 0.33f))
+        {
+            m_second_summon = true;
+
+            if (Creature* tmp = m_creature->SummonCreature(26822,m_creature->GetPositionX(),m_creature->GetPositionY(),m_creature->GetPositionZ(),0,TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN,180000))
+                if (Unit* target = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+                    tmp->AI()->AttackStart(target);
+        }
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_coren_direbrew(Creature* pCreature)
+{
+    return new npc_coren_direbrewAI(pCreature);
+}
+
+bool ChooseReward_npc_coren_direbrew(Player* pPlayer, Creature* pCreature, const Quest* pQuest, uint32 item)
+{
+    if (pQuest->GetQuestId() == 12062)
+    {
+        pCreature->setFaction(14);
+        pCreature->AI()->AttackStart(pPlayer);
+    }
+
+    return true;
+}
+
+/*########
+# npc_direbrew_minion
+#########*/
+
+struct MANGOS_DLL_DECL npc_direbrew_minionAI : public ScriptedAI
+{
+    npc_direbrew_minionAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+
+    uint32 DisarmTimer;
+
+    void Reset()
+    {
+        DisarmTimer = 5000;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        //Return since we have no target
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        if (DisarmTimer <= diff)
+        {
+            DoCast(m_creature->getVictim(),50313);
+            DisarmTimer = 15000;
+        }
+        else DisarmTimer -= diff;
+        DoMeleeAttackIfReady();
+    }
+};
+
+CreatureAI* GetAI_npc_direbrew_minion(Creature* pCreature)
+{
+    return new npc_direbrew_minionAI(pCreature);
+}
+
 void AddSC_blackrock_depths()
 {
     Script* pNewScript;
@@ -750,5 +870,16 @@ void AddSC_blackrock_depths()
     pNewScript->Name = "npc_rocknot";
     pNewScript->GetAI = &GetAI_npc_rocknot;
     pNewScript->pChooseReward = &ChooseReward_npc_rocknot;
+    pNewScript->RegisterSelf();
+
+    pNewScript = new Script;
+    pNewScript->Name = "npc_coren_direbrew";
+    pNewScript->GetAI = &GetAI_npc_coren_direbrew;
+    pNewScript->pChooseReward = &ChooseReward_npc_coren_direbrew;
+    pNewScript->RegisterSelf();
+
+    pNewScript = new Script;
+    pNewScript->Name = "npc_direbrew_minion";
+    pNewScript->GetAI = &GetAI_npc_direbrew_minion;
     pNewScript->RegisterSelf();
 }
