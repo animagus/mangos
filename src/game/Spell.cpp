@@ -832,12 +832,16 @@ void Spell::AddUnitTarget(Unit* pVictim, SpellEffectIndex effIndex)
     bool canMiss = (m_triggeredByAuraSpell || !m_IsTriggeredSpell || m_spellInfo->Id == 75);
     target.missCondition = m_caster->SpellHitResult(pVictim, m_spellInfo, m_canReflect, canMiss);
 
+    // spell fly from visual cast object
+    WorldObject* affectiveObject = GetAffectiveCasterObject();
+
     // Spell have speed - need calculate incoming time
-    if (m_spellInfo->speed > 0.0f)
+    if (m_spellInfo->speed > 0.0f && affectiveObject && pVictim != affectiveObject)
     {
         // calculate spell incoming interval
-        float dist = m_caster->GetDistance(pVictim->GetPositionX(), pVictim->GetPositionY(), pVictim->GetPositionZ());
-        if (dist < 5.0f) dist = 5.0f;
+        float dist = affectiveObject->GetDistance(pVictim->GetPositionX(), pVictim->GetPositionY(), pVictim->GetPositionZ());
+        if (dist < 5.0f)
+            dist = 5.0f;
         target.timeDelay = (uint64) floor(dist / m_spellInfo->speed * 1000.0f);
 
         // Calculate minimum incoming time
@@ -897,11 +901,14 @@ void Spell::AddGOTarget(GameObject* pVictim, SpellEffectIndex effIndex)
     target.effectMask = (1 << effIndex);
     target.processed  = false;                              // Effects not apply on target
 
+    // spell fly from visual cast object
+    WorldObject* affectiveObject = GetAffectiveCasterObject();
+
     // Spell have speed - need calculate incoming time
-    if (m_spellInfo->speed > 0.0f)
+    if (m_spellInfo->speed > 0.0f && affectiveObject && pVictim != affectiveObject)
     {
         // calculate spell incoming interval
-        float dist = m_caster->GetDistance(pVictim->GetPositionX(), pVictim->GetPositionY(), pVictim->GetPositionZ());
+        float dist = affectiveObject->GetDistance(pVictim->GetPositionX(), pVictim->GetPositionY(), pVictim->GetPositionZ());
         if (dist < 5.0f)
             dist = 5.0f;
         target.timeDelay = (uint64) floor(dist / m_spellInfo->speed * 1000.0f);
@@ -1635,7 +1642,7 @@ void Spell::SetTargetMap(SpellEffectIndex effIndex, uint32 targetMode, UnitList&
             float angle = 2.0f * M_PI_F * rand_norm_f();
             float dest_x = m_targets.m_destX + cos(angle) * radius;
             float dest_y = m_targets.m_destY + sin(angle) * radius;
-            float dest_z = m_caster->GetPositionZ();
+            float dest_z = m_targets.m_destZ;
             m_caster->UpdateGroundPositionZ(dest_x, dest_y, dest_z);
             m_targets.setDestination(dest_x, dest_y, dest_z);
 

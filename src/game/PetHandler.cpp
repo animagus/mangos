@@ -325,6 +325,7 @@ void WorldSession::SendPetNameQuery( uint64 petguid, uint32 petnumber)
         _player->GetSession()->SendPacket(&data);
         return;
     }
+
     std::string name = pet->GetName();
 
     WorldPacket data(SMSG_PET_NAME_QUERY_RESPONSE, (4+4+name.size()+1));

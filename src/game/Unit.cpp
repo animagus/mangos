@@ -7161,27 +7161,26 @@ bool Unit::IsSpellCrit(Unit *pVictim, SpellEntry const *spellProto, SpellSchoolM
             break;
         }
         case SPELL_DAMAGE_CLASS_MELEE:
-        {
-            if (pVictim)
-                crit_chance = GetUnitCriticalChance(attackType, pVictim);
-
-            crit_chance+= GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);        
-
             // Rend and Tear crit chance with Ferocious Bite on bleeding target
-            if (spellProto->SpellFamilyName == SPELLFAMILY_DRUID &&
-                spellProto->SpellFamilyFlags & UI64LIT(0x0000000000800000) &&
-                pVictim->HasAuraState(AURA_STATE_MECHANIC_BLEED))
+            if (spellProto->SpellFamilyName == SPELLFAMILY_DRUID)
             {
-                Unit::AuraList const& aura = GetAurasByType(SPELL_AURA_DUMMY);
-                for(Unit::AuraList::const_iterator itr = aura.begin(); itr != aura.end(); ++itr)
-                    if ((*itr)->GetSpellProto()->SpellIconID == 2859 && (*itr)->GetEffIndex() == 1)
+                if(spellProto->SpellFamilyFlags & UI64LIT(0x0000000000800000))
+                {
+                    if(pVictim->HasAuraState(AURA_STATE_MECHANIC_BLEED))
                     {
-                        crit_chance += (*itr)->GetModifier()->m_amount;
-                        break;
+                        Unit::AuraList const& aura = GetAurasByType(SPELL_AURA_DUMMY);
+                        for(Unit::AuraList::const_iterator itr = aura.begin(); itr != aura.end(); ++itr)
+                        {
+                            if ((*itr)->GetSpellProto()->SpellIconID == 2859 && (*itr)->GetEffIndex() == 1)
+                            {
+                                crit_chance += (*itr)->GetModifier()->m_amount;
+                                break;
+                            }
+                        }
                     }
+                }
             }
-            break;
-        }
+            // do not use break here
         case SPELL_DAMAGE_CLASS_RANGED:
         {
             if (pVictim)
@@ -7624,8 +7623,8 @@ uint32 Unit::MeleeDamageBonusDone(Unit *pVictim, uint32 pdamage,WeaponAttackType
     uint32 schoolMask       = spellProto ? spellProto->SchoolMask : GetMeleeDamageSchoolMask();
     uint32 mechanicMask     = spellProto ? GetAllSpellMechanicMask(spellProto) : 0;
 
-    // Shred also have bonus as MECHANIC_BLEED damages
-    if (spellProto && spellProto->SpellFamilyName==SPELLFAMILY_DRUID && spellProto->SpellFamilyFlags & UI64LIT(0x00008000))
+    // Shred and Maul also have bonus as MECHANIC_BLEED damages
+    if (spellProto && spellProto->SpellFamilyName==SPELLFAMILY_DRUID && spellProto->SpellFamilyFlags & UI64LIT(0x00008800))
         mechanicMask |= (1 << (MECHANIC_BLEED-1));
 
 
@@ -7872,8 +7871,8 @@ uint32 Unit::MeleeDamageBonusTaken(Unit *pCaster, uint32 pdamage,WeaponAttackTyp
     uint32 schoolMask       = spellProto ? spellProto->SchoolMask : GetMeleeDamageSchoolMask();
     uint32 mechanicMask     = spellProto ? GetAllSpellMechanicMask(spellProto) : 0;
 
-    // Shred also have bonus as MECHANIC_BLEED damages
-    if (spellProto && spellProto->SpellFamilyName==SPELLFAMILY_DRUID && spellProto->SpellFamilyFlags & UI64LIT(0x00008000))
+    // Shred and Maul also have bonus as MECHANIC_BLEED damages
+    if (spellProto && spellProto->SpellFamilyName==SPELLFAMILY_DRUID && spellProto->SpellFamilyFlags & UI64LIT(0x00008800))
         mechanicMask |= (1 << (MECHANIC_BLEED-1));
 
 

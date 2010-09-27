@@ -5705,6 +5705,8 @@ void Aura::HandleModPowerRegen(bool apply, bool Real)       // drinking
         // Anger Management (only spell use this aura for rage)
         if (pt == POWER_RAGE)
             m_modifier.periodictime = 3000;
+        else if (pt == POWER_RUNIC_POWER)
+            m_modifier.periodictime = 5000;
         else
             m_modifier.periodictime = 2000;
     }
@@ -7518,6 +7520,9 @@ void Aura::PeriodicTick()
             // so 17 is rounded amount for 5 sec tick grow ~ 1 range grow in 3 sec
             if(pt == POWER_RAGE)
                 target->ModifyPower(pt, m_modifier.m_amount * 3 / 5);
+            // Butchery
+            else if(pt == POWER_RUNIC_POWER && target->isInCombat())
+                target->ModifyPower(pt, m_modifier.m_amount);
             break;
         }
         // Here tick dummy auras
@@ -8007,9 +8012,6 @@ void Aura::PeriodicDummyTick()
             // Summon Gargoyle
 //            if (spell->SpellFamilyFlags & UI64LIT(0x0000008000000000))
 //                return;
-            // Death Rune Mastery
-//            if (spell->SpellFamilyFlags & UI64LIT(0x0000000000004000))
-//                return;
             // Bladed Armor
             if (spell->SpellIconID == 2653)
             {
@@ -8019,12 +8021,26 @@ void Aura::PeriodicDummyTick()
                 target->CastCustomSpell(target, 61217, &apBonus, &apBonus, NULL, true, NULL, this);
                 return;
             }
+            // Death Rune Mastery
             // Reaping
-//            if (spell->SpellIconID == 22)
-//                return;
             // Blood of the North
-//            if (spell->SpellIconID == 30412)
-//                return;
+            if (spell->SpellIconID == 22 || spell->SpellIconID == 3041 || spell->SpellIconID == 30412)
+            {
+                if (target->GetTypeId() != TYPEID_PLAYER)
+                    return;
+                if (target->isInCombat())
+                    return;
+
+                Player *plr = (Player*)GetTarget();
+                for(uint32 i = 0; i < MAX_RUNES; ++i)
+                {
+                    RuneType rune = plr->GetCurrentRune(i);
+                    if (rune == RUNE_DEATH)
+                        plr->ConvertRune(i, plr->GetBaseRune(i));
+                }
+
+                return;
+            }
             break;
         }
         default:
@@ -8523,8 +8539,7 @@ void SpellAuraHolder::_AddSpellAuraHolder()
 
          // Mechanic bleed aura state
          if(GetAllSpellMechanicMask(m_spellProto) & (1 << (MECHANIC_BLEED-1)))
-            m_target->ModifyAuraState(AURA_STATE_MECHANIC_BLEED, true);
-
+             m_target->ModifyAuraState(AURA_STATE_MECHANIC_BLEED, true);
     }
 }
 
@@ -8578,6 +8593,10 @@ void SpellAuraHolder::_RemoveSpellAuraHolder()
         // Enrage aura state
         if(m_spellProto->Dispel == DISPEL_ENRAGE)
             m_target->ModifyAuraState(AURA_STATE_ENRAGE, false);
+
+        // Mechanic bleed aura state
+        if(GetAllSpellMechanicMask(m_spellProto) & (1 << (MECHANIC_BLEED-1)))
+            m_target->ModifyAuraState(AURA_STATE_MECHANIC_BLEED, false);
 
         uint32 removeState = 0;
         uint64 removeFamilyFlag = m_spellProto->SpellFamilyFlags;
