@@ -1674,7 +1674,7 @@ class MANGOS_DLL_SPEC Unit : public WorldObject
         void SetBaseWeaponDamage(WeaponAttackType attType ,WeaponDamageRange damageRange, float value) { m_weaponDamage[attType][damageRange] = value; }
 
         void SetInFront(Unit const* target);
-        void SetFacingTo(float ori);
+        void SetFacingTo(float ori, bool bToSelf = false);
         void SetFacingToObject(WorldObject* pObject);
 
         // Visibility system
@@ -1904,7 +1904,7 @@ class MANGOS_DLL_SPEC Unit : public WorldObject
         void SendPetCastFail(uint32 spellid, SpellCastResult msg);
         void SendPetActionFeedback (uint8 msg);
         void SendPetTalk (uint32 pettalk);
-        void SendPetAIReaction(uint64 guid);
+        void SendPetAIReaction();
         ///----------End of Pet responses methods----------
 
         void propagateSpeedChange() { GetMotionMaster()->propagateSpeedChange(); }

@@ -3850,7 +3850,7 @@ void Unit::SetInFront(Unit const* target)
     SetOrientation(GetAngle(target));
 }
 
-void Unit::SetFacingTo(float ori)
+void Unit::SetFacingTo(float ori, bool bToSelf /*= false*/)
 {
     // update orientation at server
     SetOrientation(ori);
@@ -3858,7 +3858,7 @@ void Unit::SetFacingTo(float ori)
     // and client
     WorldPacket data;
     BuildHeartBeatMsg(&data);
-    SendMessageToSet(&data, false);
+    SendMessageToSet(&data, bToSelf);
 }
 
 // Consider move this to Creature:: since only creature appear to be able to use this
@@ -10381,14 +10381,14 @@ void Unit::SendPetTalk (uint32 pettalk)
     ((Player*)owner)->GetSession()->SendPacket(&data);
 }
 
-void Unit::SendPetAIReaction(uint64 guid)
+void Unit::SendPetAIReaction()
 {
     Unit* owner = GetOwner();
     if(!owner || owner->GetTypeId() != TYPEID_PLAYER)
         return;
 
     WorldPacket data(SMSG_AI_REACTION, 8 + 4);
-    data << uint64(guid);
+    data << GetObjectGuid();
     data << uint32(AI_REACTION_HOSTILE);
     ((Player*)owner)->GetSession()->SendPacket(&data);
 }

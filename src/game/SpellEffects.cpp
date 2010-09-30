@@ -1715,11 +1715,6 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
 
                     return;
                 }
-                case 60932:                                 // Disengage (one from creature versions)
-                    if (!unitTarget)
-                        return;
-                    m_caster->CastSpell(unitTarget,60934,true,NULL);
-                    return;
                 case 26374:                                 // Elune's Candle
                     if (!unitTarget)
                         return;
@@ -2080,6 +2075,19 @@ void Spell::EffectDummy(SpellEffectIndex eff_idx)
                     }
 
                     m_caster->CastSpell(m_caster,spell_id,true,NULL);
+                    return;
+                }
+                case 60932:                                 // Disengage (one from creature versions)
+                {
+                    if (!unitTarget)
+                        return;
+
+                    m_caster->CastSpell(unitTarget,60934,true,NULL);
+                    return;
+                }
+                case 64385:                                 // Spinning (from Unusual Compass)
+                {
+                    m_caster->SetFacingTo(frand(0, M_PI_F*2), true);
                     return;
                 }
                 case 67019:                                 // Flask of the North
