@@ -95,9 +95,10 @@ struct MANGOS_DLL_DECL boss_gormokAI : public BSWScriptedAI
     ScriptedInstance* m_pInstance;
     uint8 SnoboldsCount;
 
-    void Reset() {
-
-        if(!m_pInstance) return;
+    void Reset() 
+    {
+        if(!m_pInstance) 
+            return;
         SetEquipmentSlots(false, EQUIP_MAIN, EQUIP_OFFHAND, EQUIP_RANGED);
         m_creature->SetRespawnDelay(7*DAY);
         m_creature->SetInCombatWithZone();
@@ -106,15 +107,18 @@ struct MANGOS_DLL_DECL boss_gormokAI : public BSWScriptedAI
 
     void JustDied(Unit* pKiller)
     {
-        if (!m_pInstance) return;
+        if (!m_pInstance) 
+            return;
         m_pInstance->SetData(TYPE_NORTHREND_BEASTS, GORMOK_DONE);
     }
 
     void JustReachedHome()
     {
-        if (!m_pInstance) return;
-            m_pInstance->SetData(TYPE_NORTHREND_BEASTS, FAIL);
-            m_creature->ForcedDespawn();
+        if (!m_pInstance) 
+            return;
+        
+        m_pInstance->SetData(TYPE_NORTHREND_BEASTS, FAIL);
+        m_creature->ForcedDespawn();
     }
 
     void Aggro(Unit* pWho)
@@ -165,7 +169,7 @@ struct MANGOS_DLL_DECL mob_snobold_vassalAI : public BSWScriptedAI
         defaultTarget = NULL;
         m_creature->SetInCombatWithZone();
         m_creature->SetRespawnDelay(DAY);
-        if (!m_pInstance)
+        if (m_pInstance)
             pBoss = m_pInstance->instance->GetCreature(m_pInstance->GetData64(NPC_GORMOK));
         if (pBoss) 
             doCast(SPELL_RISING_ANGER,pBoss);
@@ -525,7 +529,8 @@ struct MANGOS_DLL_DECL boss_icehowlAI : public BSWScriptedAI
 
     void Reset() 
     {
-        if(!m_pInstance) return;
+        if(!m_pInstance) 
+            return;
         m_creature->SetRespawnDelay(7*DAY);
         MovementStarted = false;
         stage = 0;

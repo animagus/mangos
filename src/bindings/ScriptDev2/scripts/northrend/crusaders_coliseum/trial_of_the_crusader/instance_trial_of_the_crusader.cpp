@@ -123,29 +123,29 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader : public ScriptedInstance
 
     void Initialize()
     {
-    for (uint8 i = 0; i < MAX_ENCOUNTERS; ++i)
+        for (uint8 i = 0; i < MAX_ENCOUNTERS; ++i)
             m_auiEncounter[i] = NOT_STARTED;
 
-            m_auiEncounter[0] = 0;
-            m_auiEncounter[7] = 50;
-            m_auiEncounter[8] = 0;
+        m_auiEncounter[0] = 0;
+        m_auiEncounter[7] = 50;
+        m_auiEncounter[8] = 0;
 
-    m_uiTributeChest1GUID = 0;
-    m_uiTributeChest2GUID = 0;
-    m_uiTributeChest3GUID = 0;
-    m_uiTributeChest4GUID = 0;
-    m_uiDataDamageFjola = 0;
-    m_uiDataDamageEydis = 0;
-    m_uiLich0GUID = 0;
-    m_uiLich1GUID = 0;
+        m_uiTributeChest1GUID = 0;
+        m_uiTributeChest2GUID = 0;
+        m_uiTributeChest3GUID = 0;
+        m_uiTributeChest4GUID = 0;
+        m_uiDataDamageFjola = 0;
+        m_uiDataDamageEydis = 0;
+        m_uiLich0GUID = 0;
+        m_uiLich1GUID = 0;
 
-    m_auiNorthrendBeasts = NOT_STARTED;
+        m_auiNorthrendBeasts = NOT_STARTED;
 
-    m_auiEventTimer = 1000;
+        m_auiEventTimer = 1000;
 
-    m_auiCrusadersCount = 6;
+        m_auiCrusadersCount = 6;
 
-    needsave = false;
+        needsave = false;
     }
 
     bool IsEncounterInProgress() const
@@ -181,7 +181,8 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader : public ScriptedInstance
 
     void OpenDoor(uint64 guid)
     {
-        if(!guid) return;
+        if(!guid) 
+            return;
         GameObject* pGo = instance->GetGameObject(guid);
         if(pGo) 
             pGo->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
@@ -189,16 +190,18 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader : public ScriptedInstance
 
     void CloseDoor(uint64 guid)
     {
-        if(!guid) return;
+        if(!guid) 
+            return;
         GameObject* pGo = instance->GetGameObject(guid);
-        if(pGo) pGo->SetGoState(GO_STATE_READY);
+        if(pGo) 
+            pGo->SetGoState(GO_STATE_READY);
     }
 
      void OnCreatureCreate(Creature* pCreature)
      {
         switch(pCreature->GetEntry())
         {
-         case NPC_BARRENT:  m_uiBarrentGUID = pCreature->GetGUID(); break;
+         case NPC_BARRENT:     m_uiBarrentGUID = pCreature->GetGUID(); break;
          case NPC_TIRION:      m_uiTirionGUID = pCreature->GetGUID(); break;
          case NPC_FIZZLEBANG:  m_uiFizzlebangGUID = pCreature->GetGUID(); break;
          case NPC_GARROSH:     m_uiGarroshGUID = pCreature->GetGUID(); break;
@@ -255,24 +258,24 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader : public ScriptedInstance
         switch(pGo->GetEntry())
         {
         case GO_CRUSADERS_CACHE_10:
-                                  if(Difficulty == RAID_DIFFICULTY_10MAN_NORMAL)
-                                  m_uiCrusadersCacheGUID = pGo->GetGUID(); 
-                                  break;
+            if(Difficulty == RAID_DIFFICULTY_10MAN_NORMAL)
+                m_uiCrusadersCacheGUID = pGo->GetGUID(); 
+            break;
         case GO_CRUSADERS_CACHE_25:
-                                  if(Difficulty == RAID_DIFFICULTY_25MAN_NORMAL)
-                                  m_uiCrusadersCacheGUID = pGo->GetGUID(); 
-                                  break;
+            if(Difficulty == RAID_DIFFICULTY_25MAN_NORMAL)
+                m_uiCrusadersCacheGUID = pGo->GetGUID(); 
+            break;
         case GO_CRUSADERS_CACHE_10_H:
-                                  if(Difficulty == RAID_DIFFICULTY_10MAN_HEROIC)
-                                  m_uiCrusadersCacheGUID = pGo->GetGUID(); 
-                                  break;
+            if(Difficulty == RAID_DIFFICULTY_10MAN_HEROIC)
+                m_uiCrusadersCacheGUID = pGo->GetGUID(); 
+            break;
         case GO_CRUSADERS_CACHE_25_H:
-                                  if(Difficulty == RAID_DIFFICULTY_25MAN_HEROIC)
-                                  m_uiCrusadersCacheGUID = pGo->GetGUID(); 
-                                  break;
+            if(Difficulty == RAID_DIFFICULTY_25MAN_HEROIC)
+                m_uiCrusadersCacheGUID = pGo->GetGUID(); 
+            break;
         case GO_ARGENT_COLISEUM_FLOOR: 
-                                  m_uiFloorGUID = pGo->GetGUID(); 
-                                  break;
+            m_uiFloorGUID = pGo->GetGUID(); 
+            break;
         case GO_MAIN_GATE_DOOR:   m_uiMainGateDoorGUID = pGo->GetGUID(); break;
 
         case GO_SOUTH_PORTCULLIS:  m_uiSouthPortcullisGUID = pGo->GetGUID(); break;
@@ -299,52 +302,59 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader : public ScriptedInstance
         case TYPE_BEASTS:    m_auiEncounter[1] = uiData; break;
         case TYPE_JARAXXUS:  m_auiEncounter[2] = uiData; break;
         case TYPE_CRUSADERS: if (uiData == FAIL && (m_auiEncounter[3] == FAIL || m_auiEncounter[3] == NOT_STARTED))
-                             m_auiEncounter[3] = NOT_STARTED;
+                                 m_auiEncounter[3] = NOT_STARTED;
                              else  m_auiEncounter[3] = uiData;
-                             if (uiData == DONE) {
-                                   if (GameObject* pChest = instance->GetGameObject(m_uiCrusadersCacheGUID))
-                                       if (pChest && !pChest->isSpawned())
-                                             pChest->SetRespawnTime(7*DAY);
-                                   };
+                             if (uiData == DONE) 
+                             {
+                                 if (GameObject* pChest = instance->GetGameObject(m_uiCrusadersCacheGUID))
+                                     if (pChest && !pChest->isSpawned())
+                                         pChest->SetRespawnTime(7*DAY);
+                             }
                              break;
-        case TYPE_CRUSADERS_COUNT:  if (uiData == 0) --m_auiCrusadersCount;
-                                         else m_auiCrusadersCount = uiData;
+        case TYPE_CRUSADERS_COUNT:  if (uiData == NOT_STARTED)
+                                        --m_auiCrusadersCount;
+                                    else m_auiCrusadersCount = uiData;
                                     break;
-        case TYPE_VALKIRIES: if (m_auiEncounter[4] == SPECIAL && uiData == SPECIAL) uiData = DONE;
+        case TYPE_VALKIRIES: if (m_auiEncounter[4] == SPECIAL && uiData == SPECIAL)
+                                 uiData = DONE;
                              m_auiEncounter[4] = uiData; break;
         case TYPE_LICH_KING: m_auiEncounter[5] = uiData; break;
         case TYPE_ANUBARAK:  m_auiEncounter[6] = uiData; 
-                            if (uiData == DONE) {
-                            if(Difficulty == RAID_DIFFICULTY_10MAN_HEROIC){
-                                if ( m_auiEncounter[7] >= 25) m_uiTributeChest1GUID = m_uiTC10h25GUID;
-                                if ( m_auiEncounter[7] >= 45) m_uiTributeChest2GUID = m_uiTC10h45GUID;
-                                if ( m_auiEncounter[7] >= 49) m_uiTributeChest3GUID = m_uiTC10h50GUID;
-                                m_uiTributeChest4GUID = m_uiTC10h99GUID;
-                            }
-                            if(Difficulty == RAID_DIFFICULTY_25MAN_HEROIC){
-                                if ( m_auiEncounter[7] >= 25) m_uiTributeChest1GUID = m_uiTC25h25GUID;
-                                if ( m_auiEncounter[7] >= 45) m_uiTributeChest2GUID = m_uiTC25h45GUID;
-                                if ( m_auiEncounter[7] >= 49) m_uiTributeChest3GUID = m_uiTC25h50GUID;
-                                m_uiTributeChest4GUID = m_uiTC25h99GUID;
-                            }
+                            if (uiData == DONE) 
+                            {
+                                if(Difficulty == RAID_DIFFICULTY_10MAN_HEROIC)
+                                {
+                                    if ( m_auiEncounter[7] >= 25) m_uiTributeChest1GUID = m_uiTC10h25GUID;
+                                    if ( m_auiEncounter[7] >= 45) m_uiTributeChest2GUID = m_uiTC10h45GUID;
+                                    if ( m_auiEncounter[7] >= 49) m_uiTributeChest3GUID = m_uiTC10h50GUID;
+                                    m_uiTributeChest4GUID = m_uiTC10h99GUID;
+                                }
+                                
+                                if(Difficulty == RAID_DIFFICULTY_25MAN_HEROIC)
+                                {
+                                    if ( m_auiEncounter[7] >= 25) m_uiTributeChest1GUID = m_uiTC25h25GUID;
+                                    if ( m_auiEncounter[7] >= 45) m_uiTributeChest2GUID = m_uiTC25h45GUID;
+                                    if ( m_auiEncounter[7] >= 49) m_uiTributeChest3GUID = m_uiTC25h50GUID;
+                                    m_uiTributeChest4GUID = m_uiTC25h99GUID;
+                                }
                             // Attention! It is (may be) not off-like, but  spawning all Tribute Chests is real
                             // reward for clearing TOC instance
                             if (m_uiTributeChest1GUID)
-                              if (GameObject* pChest1 = instance->GetGameObject(m_uiTributeChest1GUID))
-                                if (pChest1 && !pChest1->isSpawned()) pChest1->SetRespawnTime(7*DAY);
+                                if (GameObject* pChest1 = instance->GetGameObject(m_uiTributeChest1GUID))
+                                    if (pChest1 && !pChest1->isSpawned()) pChest1->SetRespawnTime(7*DAY);
                             if (m_uiTributeChest2GUID)
-                              if (GameObject* pChest2 = instance->GetGameObject(m_uiTributeChest2GUID))
-                                if (pChest2 && !pChest2->isSpawned()) pChest2->SetRespawnTime(7*DAY);
+                                if (GameObject* pChest2 = instance->GetGameObject(m_uiTributeChest2GUID))
+                                    if (pChest2 && !pChest2->isSpawned()) pChest2->SetRespawnTime(7*DAY);
                             if (m_uiTributeChest3GUID)
-                              if (GameObject* pChest3 = instance->GetGameObject(m_uiTributeChest3GUID))
-                                if (pChest3 && !pChest3->isSpawned()) pChest3->SetRespawnTime(7*DAY);
+                                if (GameObject* pChest3 = instance->GetGameObject(m_uiTributeChest3GUID))
+                                    if (pChest3 && !pChest3->isSpawned()) pChest3->SetRespawnTime(7*DAY);
                             if (m_uiTributeChest4GUID)
-                              if (GameObject* pChest4 = instance->GetGameObject(m_uiTributeChest4GUID))
-                                if (pChest4 && !pChest4->isSpawned()) pChest4->SetRespawnTime(7*DAY);
+                                if (GameObject* pChest4 = instance->GetGameObject(m_uiTributeChest4GUID))
+                                    if (pChest4 && !pChest4->isSpawned()) pChest4->SetRespawnTime(7*DAY);
                             };
         break;
-        case TYPE_COUNTER:   m_auiEncounter[7] = uiData; uiData = DONE; break;
-        case TYPE_EVENT:     m_auiEncounter[8] = uiData; uiData = NOT_STARTED; break;
+        case TYPE_COUNTER:          m_auiEncounter[7] = uiData; uiData = DONE; break;
+        case TYPE_EVENT:            m_auiEncounter[8] = uiData; uiData = NOT_STARTED; break;
         case TYPE_EVENT_TIMER:      m_auiEventTimer = uiData; uiData = NOT_STARTED; break;
         case TYPE_NORTHREND_BEASTS: m_auiNorthrendBeasts = uiData; break;
         case DATA_HEALTH_FJOLA:     m_uiDataDamageFjola = uiData; uiData = NOT_STARTED; break;
@@ -352,25 +362,32 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader : public ScriptedInstance
         case DATA_CASTING_VALKYRS:  m_uiValkyrsCasting = uiData; uiData = NOT_STARTED; break;
         }
 
-        if (IsEncounterInProgress()) {
-                                    CloseDoor(GetData64(GO_WEST_PORTCULLIS));
-                                    CloseDoor(GetData64(GO_NORTH_PORTCULLIS));
-//                                    CloseDoor(GetData64(GO_SOUTH_PORTCULLIS));
-                                    }
-                    else            {
-                                    OpenDoor(GetData64(GO_WEST_PORTCULLIS));
-                                    OpenDoor(GetData64(GO_NORTH_PORTCULLIS));
-//                                    OpenDoor(GetData64(GO_SOUTH_PORTCULLIS));
-                                    };
+        if (IsEncounterInProgress()) 
+        {
+
+            CloseDoor(GetData64(GO_WEST_PORTCULLIS));
+            CloseDoor(GetData64(GO_NORTH_PORTCULLIS));
+            //                                    CloseDoor(GetData64(GO_SOUTH_PORTCULLIS));
+        }
+        else
+        {
+
+            OpenDoor(GetData64(GO_WEST_PORTCULLIS));
+            OpenDoor(GetData64(GO_NORTH_PORTCULLIS));
+            //                                    OpenDoor(GetData64(GO_SOUTH_PORTCULLIS));
+        };
 
         if (uiData == FAIL && uiType != TYPE_STAGE
                            && uiType != TYPE_EVENT
                            && uiType != TYPE_COUNTER
                            && uiType != TYPE_EVENT_TIMER)
-        { if (IsRaidWiped()) { --m_auiEncounter[7];
-                               needsave = true;
-                             }
-                               uiData = NOT_STARTED;
+        {
+            if (IsRaidWiped()) 
+            {
+                --m_auiEncounter[7];
+                needsave = true;
+            }
+            uiData = NOT_STARTED;
         }
 
         if ((uiData == DONE && uiType != TYPE_STAGE
@@ -389,7 +406,7 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader : public ScriptedInstance
 
             SaveToDB();
             OUT_SAVE_INST_DATA_COMPLETE;
-        needsave = false;
+            needsave = false;
         }
     }
 
@@ -397,63 +414,62 @@ struct MANGOS_DLL_DECL instance_trial_of_the_crusader : public ScriptedInstance
     {
         switch(uiData)
         {
-         case NPC_BARRENT:  return m_uiBarrentGUID;
-         case NPC_TIRION:   return m_uiTirionGUID;
-         case NPC_FIZZLEBANG: return m_uiFizzlebangGUID;
-         case NPC_GARROSH:  return m_uiGarroshGUID;
-         case NPC_RINN:     return m_uiRinnGUID;
-         case NPC_LICH_KING_0: return m_uiLich0GUID;
-         case NPC_LICH_KING_1: return m_uiLich1GUID;
+        case NPC_BARRENT:  return m_uiBarrentGUID;
+        case NPC_TIRION:   return m_uiTirionGUID;
+        case NPC_FIZZLEBANG: return m_uiFizzlebangGUID;
+        case NPC_GARROSH:  return m_uiGarroshGUID;
+        case NPC_RINN:     return m_uiRinnGUID;
+        case NPC_LICH_KING_0: return m_uiLich0GUID;
+        case NPC_LICH_KING_1: return m_uiLich1GUID;
 
-         case NPC_GORMOK: return m_uiGormokGUID;
-         case NPC_ACIDMAW: return m_uiAcidmawGUID;
-         case NPC_DREADSCALE: return m_uiDreadscaleGUID;
-         case NPC_ICEHOWL: return m_uiIcehowlGUID;
-         case NPC_JARAXXUS: return  m_uiJaraxxusGUID;
-         case NPC_DARKBANE: return m_uiDarkbaneGUID;
-         case NPC_LIGHTBANE: return m_uiLightbaneGUID;
-         case NPC_ANUBARAK: return m_uiAnubarakGUID;
+        case NPC_GORMOK: return m_uiGormokGUID;
+        case NPC_ACIDMAW: return m_uiAcidmawGUID;
+        case NPC_DREADSCALE: return m_uiDreadscaleGUID;
+        case NPC_ICEHOWL: return m_uiIcehowlGUID;
+        case NPC_JARAXXUS: return  m_uiJaraxxusGUID;
+        case NPC_DARKBANE: return m_uiDarkbaneGUID;
+        case NPC_LIGHTBANE: return m_uiLightbaneGUID;
+        case NPC_ANUBARAK: return m_uiAnubarakGUID;
 
-         case NPC_CRUSADER_1_1: return m_uiCrusader11Guid;
-         case NPC_CRUSADER_1_2: return m_uiCrusader12Guid;
-         case NPC_CRUSADER_1_3: return m_uiCrusader13Guid;
-         case NPC_CRUSADER_1_4: return m_uiCrusader14Guid;
-         case NPC_CRUSADER_1_5: return m_uiCrusader15Guid;
-         case NPC_CRUSADER_1_6: return m_uiCrusader16Guid;
-         case NPC_CRUSADER_1_7: return m_uiCrusader17Guid;
-         case NPC_CRUSADER_1_8: return m_uiCrusader18Guid;
-         case NPC_CRUSADER_1_9: return m_uiCrusader19Guid;
-         case NPC_CRUSADER_1_10: return m_uiCrusader1aGuid;
-         case NPC_CRUSADER_1_11: return m_uiCrusader1bGuid;
-         case NPC_CRUSADER_1_12: return m_uiCrusader1cGuid;
-         case NPC_CRUSADER_1_13: return m_uiCrusader1dGuid;
-         case NPC_CRUSADER_1_14: return m_uiCrusader1eGuid;
+        case NPC_CRUSADER_1_1: return m_uiCrusader11Guid;
+        case NPC_CRUSADER_1_2: return m_uiCrusader12Guid;
+        case NPC_CRUSADER_1_3: return m_uiCrusader13Guid;
+        case NPC_CRUSADER_1_4: return m_uiCrusader14Guid;
+        case NPC_CRUSADER_1_5: return m_uiCrusader15Guid;
+        case NPC_CRUSADER_1_6: return m_uiCrusader16Guid;
+        case NPC_CRUSADER_1_7: return m_uiCrusader17Guid;
+        case NPC_CRUSADER_1_8: return m_uiCrusader18Guid;
+        case NPC_CRUSADER_1_9: return m_uiCrusader19Guid;
+        case NPC_CRUSADER_1_10: return m_uiCrusader1aGuid;
+        case NPC_CRUSADER_1_11: return m_uiCrusader1bGuid;
+        case NPC_CRUSADER_1_12: return m_uiCrusader1cGuid;
+        case NPC_CRUSADER_1_13: return m_uiCrusader1dGuid;
+        case NPC_CRUSADER_1_14: return m_uiCrusader1eGuid;
 
-         case NPC_CRUSADER_2_1: return m_uiCrusader21Guid;
-         case NPC_CRUSADER_2_2: return m_uiCrusader22Guid;
-         case NPC_CRUSADER_2_3: return m_uiCrusader23Guid;
-         case NPC_CRUSADER_2_4: return m_uiCrusader24Guid;
-         case NPC_CRUSADER_2_5: return m_uiCrusader25Guid;
-         case NPC_CRUSADER_2_6: return m_uiCrusader26Guid;
-         case NPC_CRUSADER_2_7: return m_uiCrusader27Guid;
-         case NPC_CRUSADER_2_8: return m_uiCrusader28Guid;
-         case NPC_CRUSADER_2_9: return m_uiCrusader29Guid;
-         case NPC_CRUSADER_2_10: return m_uiCrusader2aGuid;
-         case NPC_CRUSADER_2_11: return m_uiCrusader2bGuid;
-         case NPC_CRUSADER_2_12: return m_uiCrusader2cGuid;
-         case NPC_CRUSADER_2_13: return m_uiCrusader2dGuid;
-         case NPC_CRUSADER_2_14: return m_uiCrusader2eGuid;
+        case NPC_CRUSADER_2_1: return m_uiCrusader21Guid;
+        case NPC_CRUSADER_2_2: return m_uiCrusader22Guid;
+        case NPC_CRUSADER_2_3: return m_uiCrusader23Guid;
+        case NPC_CRUSADER_2_4: return m_uiCrusader24Guid;
+        case NPC_CRUSADER_2_5: return m_uiCrusader25Guid;
+        case NPC_CRUSADER_2_6: return m_uiCrusader26Guid;
+        case NPC_CRUSADER_2_7: return m_uiCrusader27Guid;
+        case NPC_CRUSADER_2_8: return m_uiCrusader28Guid;
+        case NPC_CRUSADER_2_9: return m_uiCrusader29Guid;
+        case NPC_CRUSADER_2_10: return m_uiCrusader2aGuid;
+        case NPC_CRUSADER_2_11: return m_uiCrusader2bGuid;
+        case NPC_CRUSADER_2_12: return m_uiCrusader2cGuid;
+        case NPC_CRUSADER_2_13: return m_uiCrusader2dGuid;
+        case NPC_CRUSADER_2_14: return m_uiCrusader2eGuid;
 
-         case NPC_CRUSADER_0_1: return m_uiCrusader01Guid;
-         case NPC_CRUSADER_0_2: return m_uiCrusader02Guid;
+        case NPC_CRUSADER_0_1: return m_uiCrusader01Guid;
+        case NPC_CRUSADER_0_2: return m_uiCrusader02Guid;
 
-         case GO_ARGENT_COLISEUM_FLOOR: return m_uiFloorGUID;
-         case GO_MAIN_GATE_DOOR:        return m_uiMainGateDoorGUID;
+        case GO_ARGENT_COLISEUM_FLOOR: return m_uiFloorGUID;
+        case GO_MAIN_GATE_DOOR:        return m_uiMainGateDoorGUID;
 
-         case GO_SOUTH_PORTCULLIS:       return m_uiSouthPortcullisGUID;
-         case GO_WEST_PORTCULLIS:        return m_uiWestPortcullisGUID;
-         case GO_NORTH_PORTCULLIS:       return m_uiNorthPortcullisGUID;
-
+        case GO_SOUTH_PORTCULLIS:       return m_uiSouthPortcullisGUID;
+        case GO_WEST_PORTCULLIS:        return m_uiWestPortcullisGUID;
+        case GO_NORTH_PORTCULLIS:       return m_uiNorthPortcullisGUID;
         }
         return 0;
     }
