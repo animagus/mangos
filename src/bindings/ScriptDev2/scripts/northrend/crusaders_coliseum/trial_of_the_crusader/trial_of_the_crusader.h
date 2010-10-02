@@ -74,6 +74,8 @@ enum
 
     NPC_LIGHTBANE               = 34497,
     NPC_DARKBANE                = 34496,
+    NPC_DARK_ESSENCE            = 34567,
+    NPC_LIGHT_ESSENCE           = 34568,
 
     NPC_ANUBARAK                = 34564,
 

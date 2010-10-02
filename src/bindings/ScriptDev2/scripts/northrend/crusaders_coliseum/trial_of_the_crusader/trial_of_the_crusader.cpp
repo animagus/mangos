@@ -1015,7 +1015,7 @@ struct MANGOS_DLL_DECL npc_tirion_tocAI : public ScriptedAI
                 }
                 pInstance->SetData(TYPE_CRUSADERS_COUNT,crusaderscount);
                 UpdateTimer = 3000;
-                pInstance->SetData(TYPE_EVENT,3095);
+                pInstance->SetData(TYPE_EVENT,0);
                 pInstance->DoUseDoorOrButton(pInstance->GetData64(GO_MAIN_GATE_DOOR));
                 pInstance->SetData(TYPE_CRUSADERS,IN_PROGRESS);
                 break;
@@ -1170,7 +1170,7 @@ struct MANGOS_DLL_DECL npc_tirion_tocAI : public ScriptedAI
                 }
                 pInstance->SetData(TYPE_CRUSADERS_COUNT,crusaderscount);
                 UpdateTimer = 3000;
-                pInstance->SetData(TYPE_EVENT,3095);
+                pInstance->SetData(TYPE_EVENT,0);
                 pInstance->DoUseDoorOrButton(pInstance->GetData64(GO_MAIN_GATE_DOOR));
                 pInstance->SetData(TYPE_CRUSADERS,IN_PROGRESS);
                 break;
@@ -1195,19 +1195,23 @@ struct MANGOS_DLL_DECL npc_tirion_tocAI : public ScriptedAI
             case 4015:
                 pInstance->SetData(TYPE_STAGE,7);
                 pInstance->SetData(TYPE_VALKIRIES,IN_PROGRESS);
+                m_creature->SummonCreature(NPC_LIGHT_ESSENCE, SpawnLoc[24].x, SpawnLoc[24].y, SpawnLoc[24].z, 0, TEMPSUMMON_MANUAL_DESPAWN, 5000);
+                m_creature->SummonCreature(NPC_LIGHT_ESSENCE, SpawnLoc[25].x, SpawnLoc[25].y, SpawnLoc[25].z, 0, TEMPSUMMON_MANUAL_DESPAWN, 5000);
                 m_creature->SummonCreature(NPC_LIGHTBANE, SpawnLoc[3].x, SpawnLoc[3].y, SpawnLoc[3].z, 5, TEMPSUMMON_CORPSE_TIMED_DESPAWN, DESPAWN_TIME);
                 if (Creature* pTemp = m_creature->GetMap()->GetCreature(pInstance->GetData64(NPC_LIGHTBANE))) 
                 {
                     pTemp->GetMotionMaster()->MovePoint(0, SpawnLoc[1].x, SpawnLoc[1].y, SpawnLoc[1].z);
                     pTemp->AddSplineFlag(SPLINEFLAG_WALKMODE);
-                    pTemp->SetInCombatWithZone();
+                    //pTemp->SetInCombatWithZone(); called in aggro
                 }
+                m_creature->SummonCreature(NPC_DARK_ESSENCE, SpawnLoc[22].x, SpawnLoc[22].y, SpawnLoc[22].z, 0, TEMPSUMMON_MANUAL_DESPAWN, 5000);
+                m_creature->SummonCreature(NPC_DARK_ESSENCE, SpawnLoc[23].x, SpawnLoc[23].y, SpawnLoc[23].z, 0, TEMPSUMMON_MANUAL_DESPAWN, 5000);
                 m_creature->SummonCreature(NPC_DARKBANE, SpawnLoc[4].x, SpawnLoc[4].y, SpawnLoc[4].z, 5, TEMPSUMMON_CORPSE_TIMED_DESPAWN, DESPAWN_TIME);
                 if (Creature* pTemp = m_creature->GetMap()->GetCreature(pInstance->GetData64(NPC_DARKBANE))) 
                 {
                     pTemp->GetMotionMaster()->MovePoint(0, SpawnLoc[1].x, SpawnLoc[1].y, SpawnLoc[1].z);
                     pTemp->AddSplineFlag(SPLINEFLAG_WALKMODE);
-                    pTemp->SetInCombatWithZone();
+                    //pTemp->SetInCombatWithZone(); called in aggro
                 }
                 UpdateTimer = 10000;
                 pInstance->SetData(TYPE_EVENT,4016);

@@ -100,7 +100,7 @@ struct MANGOS_DLL_DECL boss_gormokAI : public BSWScriptedAI
         if(!m_pInstance) 
             return;
         SetEquipmentSlots(false, EQUIP_MAIN, EQUIP_OFFHAND, EQUIP_RANGED);
-        m_creature->SetRespawnDelay(7*DAY);
+        m_creature->SetRespawnDelay(DAY);
         m_creature->SetInCombatWithZone();
         SnoboldsCount = 4;
     }
@@ -140,6 +140,7 @@ struct MANGOS_DLL_DECL boss_gormokAI : public BSWScriptedAI
             doCast(SUMMON_SNOBOLD);
             DoScriptText(-1713601,m_creature);
             --SnoboldsCount;
+            DoCast(m_creature, SPELL_RISING_ANGER, true);
         };
 
         DoMeleeAttackIfReady();
@@ -168,11 +169,7 @@ struct MANGOS_DLL_DECL mob_snobold_vassalAI : public BSWScriptedAI
         pBoss = NULL;
         defaultTarget = NULL;
         m_creature->SetInCombatWithZone();
-        m_creature->SetRespawnDelay(DAY);
-        if (m_pInstance)
-            pBoss = m_pInstance->instance->GetCreature(m_pInstance->GetData64(NPC_GORMOK));
-        if (pBoss) 
-            doCast(SPELL_RISING_ANGER,pBoss);
+        m_creature->SetRespawnDelay(DAY);            
     }
 
     void Aggro(Unit *who)
@@ -323,7 +320,7 @@ struct MANGOS_DLL_DECL boss_acidmawAI : public BSWScriptedAI
         if (m_pInstance->GetData(TYPE_NORTHREND_BEASTS) == SNAKES_SPECIAL && !enraged)
         {
             DoScriptText(-1713559,m_creature);
-            doRemove(SPELL_SUBMERGE_0);
+            m_creature->RemoveAurasDueToSpell(53421);
             m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             doCast(SPELL_ENRAGE);
             enraged = true;

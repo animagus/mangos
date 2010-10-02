@@ -40,9 +40,6 @@ enum Equipment
 
 enum Summons
 {
-    NPC_DARK_ESSENCE     = 34567,
-    NPC_LIGHT_ESSENCE    = 34568,
-
     NPC_UNLEASHED_DARK   = 34628,
     NPC_UNLEASHED_LIGHT  = 34630,
 };
@@ -118,7 +115,8 @@ struct MANGOS_DLL_DECL boss_fjolaAI : public BSWScriptedAI
 
     void KilledUnit(Unit* pVictim)
     {
-        if (!m_pInstance) return;
+        if (!m_pInstance) 
+            return;
         DoScriptText(-1713544,m_creature,pVictim);
     }
 
@@ -128,8 +126,6 @@ struct MANGOS_DLL_DECL boss_fjolaAI : public BSWScriptedAI
             return;
         m_creature->SetInCombatWithZone();
         m_pInstance->SetData(TYPE_VALKIRIES, IN_PROGRESS);
-        if (m_creature->isAlive()) m_creature->SummonCreature(NPC_LIGHT_ESSENCE, SpawnLoc[24].x, SpawnLoc[24].y, SpawnLoc[24].z, 0, TEMPSUMMON_MANUAL_DESPAWN, 5000);
-        if (m_creature->isAlive()) m_creature->SummonCreature(NPC_LIGHT_ESSENCE, SpawnLoc[25].x, SpawnLoc[25].y, SpawnLoc[25].z, 0, TEMPSUMMON_MANUAL_DESPAWN, 5000);
         DoScriptText(-1713541,m_creature);
         m_pInstance->SetData(DATA_HEALTH_FJOLA, m_creature->GetMaxHealth());
         doCast(SPELL_LIGHT_SURGE);
@@ -137,11 +133,13 @@ struct MANGOS_DLL_DECL boss_fjolaAI : public BSWScriptedAI
 
     void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
     {
-        if (!m_pInstance) return;
+        if (!m_pInstance) 
+            return;
         if (!m_creature || !m_creature->isAlive())
             return;
 
-        if(pDoneBy->GetGUID() == m_creature->GetGUID()) return;
+        if(pDoneBy->GetGUID() == m_creature->GetGUID()) 
+            return;
 
         if(pDoneBy->GetTypeId() == TYPEID_PLAYER)
         {
@@ -171,11 +169,11 @@ struct MANGOS_DLL_DECL boss_fjolaAI : public BSWScriptedAI
                 timedCast(SPELL_TWIN_SPIKE_L, uiDiff);
 
                 if (timedQuery(SPELL_LIGHT_TOUCH, uiDiff))
-                   {
-                       if (Unit* pTarget = doSelectRandomPlayer(SPELL_LIGHT_ESSENCE, false, 50.0f))
-                           doCast(SPELL_LIGHT_TOUCH, pTarget);
-                       doCast(NPC_UNLEASHED_LIGHT);
-                   }
+                {
+                    if (Unit* pTarget = doSelectRandomPlayer(SPELL_LIGHT_ESSENCE, false, 50.0f))
+                        doCast(SPELL_LIGHT_TOUCH, pTarget);
+                    doCast(NPC_UNLEASHED_LIGHT);
+                }
                 if (m_pInstance->GetData(DATA_CASTING_VALKYRS) == SPELL_NONE )
                 {
                     if (timedQuery(SPELL_LIGHT_VORTEX, uiDiff))
@@ -213,7 +211,8 @@ struct MANGOS_DLL_DECL boss_fjolaAI : public BSWScriptedAI
              }
              break;
          case 3:
-             doCast(SPELL_TWIN_PACT_L);
+             if (!m_creature->HasAura(65858))
+                 doCast(SPELL_TWIN_PACT_L);
              stage = 4;
              break;
          case 4:
@@ -251,7 +250,8 @@ struct MANGOS_DLL_DECL boss_eydisAI : public BSWScriptedAI
 
     void Reset() 
     {
-        if(!m_pInstance) return;
+        if(!m_pInstance) 
+            return;
         SetEquipmentSlots(false, EQUIP_MAIN_2, EQUIP_OFFHAND_2, EQUIP_RANGED_2);
         m_creature->SetRespawnDelay(7*DAY);
         m_pInstance->SetData(DATA_CASTING_VALKYRS, SPELL_NONE);
@@ -260,7 +260,8 @@ struct MANGOS_DLL_DECL boss_eydisAI : public BSWScriptedAI
 
     void JustReachedHome()
     {
-        if (!m_pInstance) return;
+        if (!m_pInstance) 
+            return;
         m_pInstance->SetData(TYPE_VALKIRIES, FAIL);
         m_pInstance->SetData(DATA_HEALTH_EYDIS, m_creature->GetMaxHealth());
         m_pInstance->SetData(DATA_CASTING_VALKYRS, SPELL_NONE);
@@ -269,12 +270,14 @@ struct MANGOS_DLL_DECL boss_eydisAI : public BSWScriptedAI
 
     void JustDied(Unit* pKiller)
     {
-        if (!m_pInstance) return;
+        if (!m_pInstance) 
+            return;
         DoScriptText(-1713547,m_creature);
         if (Creature* pSister = m_pInstance->instance->GetCreature(m_pInstance->GetData64(NPC_LIGHTBANE)))
             if (!pSister->isAlive())
                 m_pInstance->SetData(TYPE_VALKIRIES, DONE);
-            else m_pInstance->SetData(TYPE_VALKIRIES, SPECIAL);
+            else 
+                m_pInstance->SetData(TYPE_VALKIRIES, SPECIAL);
             m_pInstance->SetData(DATA_HEALTH_EYDIS, 0);
     }
 
@@ -290,8 +293,6 @@ struct MANGOS_DLL_DECL boss_eydisAI : public BSWScriptedAI
         m_creature->SetInCombatWithZone();
         m_pInstance->SetData(TYPE_VALKIRIES, IN_PROGRESS);
         DoScriptText(-1713741,m_creature);
-        if (m_creature->isAlive()) m_creature->SummonCreature(NPC_DARK_ESSENCE, SpawnLoc[22].x, SpawnLoc[22].y, SpawnLoc[22].z, 0, TEMPSUMMON_MANUAL_DESPAWN, 5000);
-        if (m_creature->isAlive()) m_creature->SummonCreature(NPC_DARK_ESSENCE, SpawnLoc[23].x, SpawnLoc[23].y, SpawnLoc[23].z, 0, TEMPSUMMON_MANUAL_DESPAWN, 5000);
         m_pInstance->SetData(DATA_HEALTH_EYDIS, m_creature->GetMaxHealth());
         doCast(SPELL_DARK_SURGE);
     }
@@ -399,21 +400,23 @@ CreatureAI* GetAI_boss_eydis(Creature* pCreature)
 
 struct MANGOS_DLL_DECL mob_light_essenceAI : public ScriptedAI
 {
-    mob_light_essenceAI(Creature* pCreature) : ScriptedAI(pCreature) {
-    m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
-    Reset();
+    mob_light_essenceAI(Creature* pCreature) : ScriptedAI(pCreature) 
+    {
+        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        Reset();
     }
     ScriptedInstance* m_pInstance;
 
     void Reset() 
     {
-        m_creature->SetRespawnDelay(DAY);
+        m_creature->SetRespawnDelay(3*MINUTE);
         m_creature->AddSplineFlag(SPLINEFLAG_WALKMODE);
     }
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (!m_pInstance) m_creature->ForcedDespawn();
+        if (!m_pInstance)
+            m_creature->ForcedDespawn();
         if (m_pInstance->GetData(TYPE_VALKIRIES) != IN_PROGRESS) 
         {
             Map* pMap = m_creature->GetMap();
@@ -440,13 +443,14 @@ CreatureAI* GetAI_mob_light_essence(Creature* pCreature)
 bool GossipHello_mob_light_essence(Player *player, Creature* pCreature)
 {
     ScriptedInstance *pInstance = (ScriptedInstance *) pCreature->GetInstanceData();
-    if(!pInstance) return true;
-        player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, pCreature->GetGUID());
-        player->RemoveAurasDueToSpell(SPELL_DARK_ESSENCE);
-//        player->CastSpell(player,SPELL_REMOVE_TOUCH,false); // Not worked now
-        player->CastSpell(player,SPELL_LIGHT_ESSENCE,false);
-            player->RemoveAurasDueToSpell(SPELL_LIGHT_TOUCH); // Override for REMOVE_TOUCH
-        player->CLOSE_GOSSIP_MENU();
+    if(!pInstance) 
+        return true;
+    player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, pCreature->GetGUID());
+    player->RemoveAurasDueToSpell(SPELL_DARK_ESSENCE);
+    //        player->CastSpell(player,SPELL_REMOVE_TOUCH,false); // Not worked now
+    player->CastSpell(player,SPELL_LIGHT_ESSENCE,false);
+    player->RemoveAurasDueToSpell(SPELL_LIGHT_TOUCH); // Override for REMOVE_TOUCH
+    player->CLOSE_GOSSIP_MENU();
     return true;
 };
 
@@ -461,13 +465,14 @@ struct MANGOS_DLL_DECL mob_dark_essenceAI : public ScriptedAI
 
     void Reset() 
     {
-        m_creature->SetRespawnDelay(DAY);
+        m_creature->SetRespawnDelay(3*MINUTE);
         m_creature->AddSplineFlag(SPLINEFLAG_WALKMODE);
     }
 
     void UpdateAI(const uint32 uiDiff)
     {
-        if (!m_pInstance) m_creature->ForcedDespawn();
+        if (!m_pInstance) 
+            m_creature->ForcedDespawn();
         if (m_pInstance->GetData(TYPE_VALKIRIES) != IN_PROGRESS) 
         {
             Map* pMap = m_creature->GetMap();
@@ -475,7 +480,8 @@ struct MANGOS_DLL_DECL mob_dark_essenceAI : public ScriptedAI
             for(Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
             {
                 Unit* pPlayer = itr->getSource();
-                if (!pPlayer) continue;
+                if (!pPlayer) 
+                    continue;
                 if (pPlayer->isAlive())
                     pPlayer->RemoveAurasDueToSpell(SPELL_DARK_ESSENCE);
             }
@@ -565,7 +571,6 @@ struct MANGOS_DLL_DECL mob_unleashed_darkAI : public ScriptedAI
         }
         else m_uiRangeCheck_Timer -= uiDiff;
     }
-
 };
 
 CreatureAI* GetAI_mob_unleashed_dark(Creature *pCreature)
@@ -677,6 +682,5 @@ void AddSC_twin_valkyr()
     newscript->GetAI = &GetAI_mob_dark_essence;
     newscript->pGossipHello = &GossipHello_mob_dark_essence;
     newscript->RegisterSelf();
-
 }
 
