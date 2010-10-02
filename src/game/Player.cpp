@@ -3623,18 +3623,25 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank, bo
         }
     }
 
-    if (CanTitanGrip())
+    // for Titan's Grip and shaman Dual-wield
+    if (CanDualWield() || CanTitanGrip())
     {
         SpellEntry const *spellInfo = sSpellStore.LookupEntry(spell_id);
-        if (IsSpellHaveEffect(spellInfo, SPELL_EFFECT_TITAN_GRIP))
+
+        if (CanDualWield() && IsSpellHaveEffect(spellInfo, SPELL_EFFECT_DUAL_WIELD))
+            SetCanDualWield(false);
+
+        if (CanTitanGrip() && IsSpellHaveEffect(spellInfo, SPELL_EFFECT_TITAN_GRIP))
         {
             SetCanTitanGrip(false);
             // Remove Titan's Grip damage penalty now
             RemoveAurasDueToSpell(49152);
-            if(sWorld.getConfig(CONFIG_BOOL_OFFHAND_CHECK_AT_TALENTS_RESET))
-                AutoUnequipOffhandIfNeed();
         }
     }
+
+    // for talents and normal spell unlearn that allow offhand use for some weapons
+    if(sWorld.getConfig(CONFIG_BOOL_OFFHAND_CHECK_AT_TALENTS_RESET))
+        AutoUnequipOffhandIfNeed();
 
     // remove from spell book if not replaced by lesser rank
     if (!prev_activate && sendUpdate)
@@ -17455,9 +17462,9 @@ void Player::_SaveAuras()
     for(SpellAuraHolderMap::const_iterator itr = auraHolders.begin(); itr != auraHolders.end(); ++itr)
     {
         SpellAuraHolder *holder = itr->second;
-        //skip all holders from spells that are passive
+        //skip all holders from spells that are passive or channeled
         //do not save single target holders (unless they were cast by the player)
-        if (!holder->IsPassive() && (holder->GetCasterGUID() == GetGUID() || !holder->IsSingleTarget()) && !IsChanneledSpell(holder->GetSpellProto()))
+        if (!holder->IsPassive() && !IsChanneledSpell(holder->GetSpellProto()) && (holder->GetCasterGUID() == GetGUID() || !holder->IsSingleTarget()))
         {
             int32 damage[MAX_EFFECT_INDEX];
             int32 remaintime[MAX_EFFECT_INDEX];
@@ -20661,7 +20668,7 @@ void Player::AutoUnequipOffhandIfNeed()
         return;
 
     // need unequip offhand for 2h-weapon without TitanGrip (in any from hands)
-    if (CanTitanGrip() || !((IsTwoHandUsedInDualWield() && offItem->GetProto()->InventoryType != INVTYPE_NON_EQUIP)  || offItem->GetProto()->InventoryType == INVTYPE_2HWEAPON))
+    if (CanDualWield() && (CanTitanGrip() || (offItem->GetProto()->InventoryType != INVTYPE_2HWEAPON && !IsTwoHandUsed())))
         return;
 
     ItemPosCountVec off_dest;
