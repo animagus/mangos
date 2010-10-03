@@ -587,6 +587,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\scripts\eastern_kingdoms\blackrock_spire\blackrock_spire.h"
+						>
+					</File>
+					<File
 						RelativePath="..\scripts\eastern_kingdoms\blackrock_spire\boss_drakkisath.cpp"
 						>
 					</File>
@@ -636,10 +640,6 @@
 					</File>
 					<File
 						RelativePath="..\scripts\eastern_kingdoms\blackrock_spire\instance_blackrock_spire.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\scripts\eastern_kingdoms\blackrock_spire\blackrock_spire.h"
 						>
 					</File>
 				</Filter>
@@ -2027,15 +2027,15 @@
 					Name="ruby_sanctum"
 					>
 					<File
+						RelativePath="..\scripts\northrend\ruby_sanctum\boss_baltharus.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\scripts\northrend\ruby_sanctum\boss_halion.cpp"
 						>
 					</File>
 					<File
 						RelativePath="..\scripts\northrend\ruby_sanctum\boss_saviana.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\scripts\northrend\ruby_sanctum\boss_baltharus.cpp"
 						>
 					</File>
 					<File
@@ -2232,6 +2232,14 @@
 					</File>
 					<File
 						RelativePath="..\scripts\northrend\vault_of_archavon\boss_emalon.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\northrend\vault_of_archavon\boss_koralon.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\northrend\vault_of_archavon\boss_toravon.cpp"
 						>
 					</File>
 					<File

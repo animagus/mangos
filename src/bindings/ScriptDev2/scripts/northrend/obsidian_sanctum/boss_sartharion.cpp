@@ -1486,9 +1486,7 @@ struct MANGOS_DLL_DECL mob_onyx_flight_captainAI : public ScriptedAI
                         m_creature->AI()->AttackStart(pSart->getVictim());
                         m_uiAggro = true;
                     }
-
                 }
-
             }
         }
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())

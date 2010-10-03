@@ -424,6 +424,8 @@ scripts/northrend/utgarde_keep/utgarde_pinnacle/instance_utgarde_pinnacle.cpp \
 scripts/northrend/utgarde_keep/utgarde_pinnacle/utgarde_pinnacle.h \
 scripts/northrend/vault_of_archavon/boss_archavon.cpp \
 scripts/northrend/vault_of_archavon/boss_emalon.cpp \
+scripts/northrend/vault_of_archavon/boss_koralon.cpp \
+scripts/northrend/vault_of_archavon/boss_toravon.cpp \
 scripts/northrend/vault_of_archavon/def_vault_of_archavon.h \
 scripts/northrend/vault_of_archavon/instance_vault_of_archavon.cpp \
 scripts/northrend/crusaders_coliseum/trial_of_the_champion/boss_argent_challenge.cpp \

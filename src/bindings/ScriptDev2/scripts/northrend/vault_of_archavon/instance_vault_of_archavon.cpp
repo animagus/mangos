@@ -1,4 +1,4 @@
-/* Copyright (C) 2006 - 2010 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
+/* Copyright (C) 2006 - 2009 ScriptDev2 <https://scriptdev2.svn.sourceforge.net/>
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -33,6 +33,7 @@ struct MANGOS_DLL_DECL instance_vault_of_archavon : public ScriptedInstance
 
     uint64 m_uiArchavonGUID;
     uint64 m_uiEmalonGUID;
+    uint64 m_uiKoralonGUID;
     uint64 m_uiTempestMinion1GUID;
     uint64 m_uiTempestMinion2GUID;
     uint64 m_uiTempestMinion3GUID;
@@ -44,20 +45,12 @@ struct MANGOS_DLL_DECL instance_vault_of_archavon : public ScriptedInstance
         memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
         m_uiArchavonGUID = 0;
         m_uiEmalonGUID = 0;
+        m_uiKoralonGUID = 0;
         m_uiTempestMinion1GUID = 0;
         m_uiTempestMinion2GUID = 0;
         m_uiTempestMinion3GUID = 0;
         m_uiTempestMinion4GUID = 0;
         m_uiMinion = 0;
-    }
-
-    bool IsEncounterInProgress() const
-    {
-        for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
-            if (m_auiEncounter[i] == IN_PROGRESS)
-                return true;
-
-        return false;
     }
 
     void OnCreatureCreate(Creature* pCreature)
@@ -69,6 +62,9 @@ struct MANGOS_DLL_DECL instance_vault_of_archavon : public ScriptedInstance
                 break;
             case NPC_EMALON:
                 m_uiEmalonGUID = pCreature->GetGUID();
+                break;
+            case NPC_KORALON:
+                m_uiKoralonGUID = pCreature->GetGUID();
                 break;
             case NPC_TEMPEST_MINION:
                 ++m_uiMinion;
@@ -104,13 +100,20 @@ struct MANGOS_DLL_DECL instance_vault_of_archavon : public ScriptedInstance
             case TYPE_EMALON:
                 m_auiEncounter[1] = uiData;
                 break;
+            case TYPE_KORALON:
+                m_auiEncounter[2] = uiData;
+                break;
+            case TYPE_TORAVON:
+                m_auiEncounter[3] = uiData;
+                break;
         }
+
         if (uiData == DONE)
         {
             OUT_SAVE_INST_DATA;
 
             std::ostringstream saveStream;
-            saveStream << m_auiEncounter[0] << " " << m_auiEncounter[1];
+            saveStream << m_auiEncounter[0] << " " << m_auiEncounter[1] << " " << m_auiEncounter[2] << " " << m_auiEncounter[3];
 
             strInstData = saveStream.str();
 
@@ -127,6 +130,10 @@ struct MANGOS_DLL_DECL instance_vault_of_archavon : public ScriptedInstance
                 return m_auiEncounter[0];
             case TYPE_EMALON:
                 return m_auiEncounter[1];
+            case TYPE_KORALON:
+                return m_auiEncounter[2];
+            case TYPE_TORAVON:
+                return m_auiEncounter[3];
         }
         return 0;
     }
@@ -139,6 +146,8 @@ struct MANGOS_DLL_DECL instance_vault_of_archavon : public ScriptedInstance
                 return m_uiArchavonGUID;
             case DATA_EMALON:
                 return m_uiEmalonGUID;
+            case DATA_KORALON:
+                return m_uiKoralonGUID;
             case DATA_TEMPEST_MINION_1:
                 return m_uiTempestMinion1GUID;
             case DATA_TEMPEST_MINION_2:
@@ -166,7 +175,7 @@ struct MANGOS_DLL_DECL instance_vault_of_archavon : public ScriptedInstance
         OUT_LOAD_INST_DATA(in);
 
         std::istringstream loadStream(in);
-        loadStream >> m_auiEncounter[0] >> m_auiEncounter[1];
+        loadStream >> m_auiEncounter[0] >> m_auiEncounter[1] >> m_auiEncounter[2] >> m_auiEncounter[3];
 
         for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
         {
@@ -175,6 +184,14 @@ struct MANGOS_DLL_DECL instance_vault_of_archavon : public ScriptedInstance
         }
 
         OUT_LOAD_INST_DATA_COMPLETE;
+    }
+
+    bool IsEncounterInProgress() const
+    {
+        for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
+            if (m_auiEncounter[i] == IN_PROGRESS)
+                return true;
+        return false;
     }
 };
 

@@ -379,6 +379,8 @@ extern void AddSC_violet_hold();
 
 extern void AddSC_boss_archavon();
 extern void AddSC_boss_emalon();
+extern void AddSC_boss_toravon();
+extern void AddSC_boss_koralon();
 extern void AddSC_instance_vault_of_archavon();
 
 extern void AddSC_borean_tundra();
@@ -847,6 +849,8 @@ void AddScripts()
 
     AddSC_boss_archavon();
     AddSC_boss_emalon();
+    AddSC_boss_koralon();
+    AddSC_boss_toravon();
     AddSC_instance_vault_of_archavon();
 
     AddSC_borean_tundra();

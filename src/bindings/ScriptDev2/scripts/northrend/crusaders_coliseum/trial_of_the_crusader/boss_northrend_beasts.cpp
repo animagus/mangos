@@ -206,7 +206,8 @@ struct MANGOS_DLL_DECL mob_snobold_vassalAI : public BSWScriptedAI
         if (timedCast(SPELL_FIRE_BOMB, uiDiff, m_creature->getVictim()) == CAST_OK) 
         {
             doCast(SPELL_FIRE_BOMB_1, m_creature->getVictim());
-            doCast(SPELL_FIRE_BOMB_DOT, m_creature->getVictim());
+            m_creature->SummonCreature(34854, m_creature->getVictim()->GetPositionX(),m_creature->getVictim()->GetPositionY(),m_creature->getVictim()->GetPositionZ(), m_creature->GetOrientation(),TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,61000);
+            //doCast(SPELL_FIRE_BOMB_DOT, m_creature->getVictim()); wrong
         }
 
         timedCast(SPELL_HEAD_CRACK, uiDiff);
@@ -218,6 +219,49 @@ struct MANGOS_DLL_DECL mob_snobold_vassalAI : public BSWScriptedAI
 CreatureAI* GetAI_mob_snobold_vassal(Creature* pCreature)
 {
     return new mob_snobold_vassalAI(pCreature);
+}
+
+/*######
+## Mob Fire Bomb
+######*/
+
+struct MANGOS_DLL_DECL mob_fire_bombAI : public ScriptedAI
+{
+    mob_fire_bombAI(Creature* pCreature) : ScriptedAI(pCreature) 
+    {
+        m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
+        Reset();         
+    }
+
+    uint32 m_uiDespawn;
+    bool m_bIsRegularMode;
+
+    void Aggro(Unit* who)
+    {
+        DoStopAttack();
+        SetCombatMovement(false);
+    }
+
+    void Reset()
+    {
+        m_uiDespawn = 60000;
+    }
+
+    void UpdateAI(const uint32 uiDiff)
+    {
+        if (!m_creature->HasAura(66318))
+            DoCast(m_creature,66318,true);
+
+        if (m_uiDespawn <= uiDiff)
+        {
+            m_creature->ForcedDespawn();
+        }else m_uiDespawn -= uiDiff;
+    }
+};
+
+CreatureAI* GetAI_mob_fire_bomb(Creature* pCreature)
+{
+    return new mob_fire_bombAI(pCreature);
 }
 
 struct MANGOS_DLL_DECL boss_acidmawAI : public BSWScriptedAI
@@ -714,6 +758,11 @@ void AddSC_northrend_beasts()
     newscript = new Script;
     newscript->Name = "mob_slime_pool";
     newscript->GetAI = &GetAI_mob_slime_pool;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "mob_fire_bomb";
+    newscript->GetAI = &GetAI_mob_fire_bomb;
     newscript->RegisterSelf();
 
 }

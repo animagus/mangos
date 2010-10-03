@@ -110,6 +110,7 @@ EndScriptData */
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
              return;
  
+        /* not needed
          if (m_uiEvadeCheckCooldown < uiDiff)
          {
              if (m_creature->GetDistance2d(-36.287f, -101.09f) > 80.0f)
@@ -118,6 +119,7 @@ EndScriptData */
          }
          else
              m_uiEvadeCheckCooldown -= uiDiff;
+             */
  
          if (m_bImpaleInProgress)
          {
