@@ -4276,8 +4276,9 @@ bool Unit::AddSpellAuraHolder(SpellAuraHolder *holder)
         {
             Modifier *i_mod = (*i)->GetModifier();
             Modifier *a_mod = holder->GetAuraByEffectIndex(SpellEffectIndex(j))->GetModifier();
-                if (i_mod->m_miscvalue != a_mod->m_miscvalue)
-                    continue;
+            
+            if (i_mod->m_miscvalue != a_mod->m_miscvalue)
+                continue;
 
             if (Unit *caster = (*i)->GetCaster())
                 if (!((Creature *)caster)->isTotem() && (*i)->GetHolder()->IsPassive())
@@ -4397,7 +4398,7 @@ void Unit::ReapplyModifers(Aura *Aur)
 
                 damage = (*i)->GetModifier()->m_amount2;
 
-                if (damage>damage_temp)
+                if (damage > damage_temp)
                 {
                     damage_temp = damage;
                     temp = (*i);
