@@ -4310,7 +4310,7 @@ bool Unit::AddSpellAuraHolder(SpellAuraHolder *holder)
                 {
                     if (i_mod->m_amount <= 0 || a_mod->m_amount < 0)     // don't check negative and proved auras
                         continue;
-                    if (i_mod->m_amount > a_mod->m_amount)
+                    if (i_mod->m_amount >= a_mod->m_amount)
                         holder->GetAuraByEffectIndex(SpellEffectIndex(j))->SetModifier(aurName,0,a_mod->periodictime,a_mod->m_miscvalue,a_mod->m_amount2);
                     else
                     {
