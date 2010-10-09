@@ -225,11 +225,14 @@ struct MANGOS_DLL_DECL mob_vh_dragonsAI : public ScriptedAI
                 m_pInstance->SetData(TYPE_DOOR,SPECIAL);
             }
         }
+      
         if(!IsWalking && !IsInCombat) 
         {
+            m_creature->SetInCombatWithZone();
+            if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+                return;
             if (Unit* m_uEmbraceTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0))
                 m_creature->GetMotionMaster()->MoveChase(m_uEmbraceTarget);
-            m_creature->SetInCombatWithZone();
             IsInCombat = true;
         }
 
