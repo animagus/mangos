@@ -516,12 +516,6 @@ struct GameObjectInfo
     }
 };
 
-struct GameObjectLocale
-{
-    std::vector<std::string> Name;
-    std::vector<std::string> CastBarCaption;
-};
-
 // GCC have alternative #pragma pack() syntax and old gcc version not support pack(pop), also any gcc version not support it at some platform
 #if defined( __GNUC__ )
 #pragma pack()
@@ -529,6 +523,11 @@ struct GameObjectLocale
 #pragma pack(pop)
 #endif
 
+struct GameObjectLocale
+{
+    std::vector<std::string> Name;
+    std::vector<std::string> CastBarCaption;
+};
 
 // client side GO show states
 enum GOState
