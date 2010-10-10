@@ -650,10 +650,10 @@ GameObject* GameObject::GetGameObject(WorldObject& object, uint64 guid)
 /*********************************************************/
 bool GameObject::hasQuest(uint32 quest_id) const
 {
-    QuestRelations const& qr = sObjectMgr.mGOQuestRelations;
-    for(QuestRelations::const_iterator itr = qr.lower_bound(GetEntry()); itr != qr.upper_bound(GetEntry()); ++itr)
+    QuestRelationsMapBounds bounds = sObjectMgr.GetGOQuestRelationsMapBounds(GetEntry());
+    for(QuestRelationsMap::const_iterator itr = bounds.first; itr != bounds.second; ++itr)
     {
-        if(itr->second==quest_id)
+        if (itr->second == quest_id)
             return true;
     }
     return false;
@@ -661,10 +661,10 @@ bool GameObject::hasQuest(uint32 quest_id) const
 
 bool GameObject::hasInvolvedQuest(uint32 quest_id) const
 {
-    QuestRelations const& qr = sObjectMgr.mGOQuestInvolvedRelations;
-    for(QuestRelations::const_iterator itr = qr.lower_bound(GetEntry()); itr != qr.upper_bound(GetEntry()); ++itr)
+    QuestRelationsMapBounds bounds = sObjectMgr.GetGOQuestInvolvedRelationsMapBounds(GetEntry());
+    for(QuestRelationsMap::const_iterator itr = bounds.first; itr != bounds.second; ++itr)
     {
-        if(itr->second==quest_id)
+        if (itr->second == quest_id)
             return true;
     }
     return false;
@@ -765,9 +765,9 @@ bool GameObject::ActivateToQuest(Player *pTarget)const
             // these conditions are not sufficient/will fail.
             // Never expect flags|4 for these GO's? (NF-note: It doesn't appear it's expected)
 
-            const QuestRelations &qRel = sObjectMgr.mGOQuestRelations;
+            QuestRelationsMapBounds bounds = sObjectMgr.GetGOQuestRelationsMapBounds(GetEntry());
 
-            for(QuestRelations::const_iterator itr = qRel.lower_bound(GetEntry()); itr != qRel.upper_bound(GetEntry()); ++itr)
+            for(QuestRelationsMap::const_iterator itr = bounds.first; itr != bounds.second; ++itr)
             {
                 const Quest *qInfo = sObjectMgr.GetQuestTemplate(itr->second);
 
@@ -775,9 +775,9 @@ bool GameObject::ActivateToQuest(Player *pTarget)const
                     return true;
             }
 
-            const QuestRelations &qInRel = sObjectMgr.mGOQuestInvolvedRelations;
+            bounds = sObjectMgr.GetGOQuestInvolvedRelationsMapBounds(GetEntry());
 
-            for(QuestRelations::const_iterator itr = qInRel.lower_bound(GetEntry()); itr != qInRel.upper_bound(GetEntry()); ++itr)
+            for(QuestRelationsMap::const_iterator itr = bounds.first; itr != bounds.second; ++itr)
             {
                 if ((pTarget->GetQuestStatus(itr->second) == QUEST_STATUS_INCOMPLETE || pTarget->GetQuestStatus(itr->second) == QUEST_STATUS_COMPLETE)
                     && !pTarget->GetQuestRewardStatus(itr->second))
