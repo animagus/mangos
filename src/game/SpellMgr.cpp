@@ -665,14 +665,6 @@ bool IsPositiveEffect(uint32 spellId, SpellEffectIndex effIndex)
 		case 45862:                                         // Blink
         case 43730:                                         // Electrified
         case 61716:                                         // Rabbit Costume
-        case 47540:                                         // Penance start dummy aura - Rank 1
-        case 53005:                                         // Penance start dummy aura - Rank 2
-        case 53006:                                         // Penance start dummy aura - Rank 3
-        case 53007:                                         // Penance start dummy aura - Rank 4
-        case 47757:                                         // Penance heal effect trigger - Rank 1
-        case 52986:                                         // Penance heal effect trigger - Rank 2
-        case 52987:                                         // Penance heal effect trigger - Rank 3
-        case 52988:                                         // Penance heal effect trigger - Rank 4
             return true;
     }
 
