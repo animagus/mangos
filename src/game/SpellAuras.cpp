@@ -796,7 +796,7 @@ void AreaAura::Update(uint32 diff)
                         for(Unit::AuraList::const_iterator i = mModStat.begin(); i != mModStat.end(); ++i)
                         {
                             Modifier *i_mod = (*i)->GetModifier();
-                            Modifier *a_mod = holder->GetAuraByEffectIndex(m_effIndex)->GetModifier();
+                            Modifier *a_mod = aur->GetModifier();
 
                             if (i_mod->m_miscvalue != a_mod->m_miscvalue)
                                 continue;
@@ -809,7 +809,7 @@ void AreaAura::Update(uint32 diff)
                                 if (!((Creature *)caster)->isTotem() && holder->IsPassive())
                                     continue;
 
-                            if (holder->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION || 
+                            if (actualSpellInfo->SpellFamilyName == SPELLFAMILY_POTION || 
                                 (*i)->GetSpellProto()->SpellFamilyName == SPELLFAMILY_POTION)
                                 continue;
                             if (sSpellMgr.GetSpellElixirSpecific((*i)->GetSpellProto()->Id) ||
@@ -832,7 +832,7 @@ void AreaAura::Update(uint32 diff)
                                     if (i_mod->m_amount <= 0 || a_mod->m_amount < 0)     // don't check negative and proved auras
                                         continue;
                                     if (i_mod->m_amount >= a_mod->m_amount)
-                                        holder->GetAuraByEffectIndex(m_effIndex)->SetModifier(aurName,0,a_mod->periodictime,a_mod->m_miscvalue,a_mod->m_amount2);
+                                        aur->SetModifier(aurName,0,a_mod->periodictime,a_mod->m_miscvalue,a_mod->m_amount2);
                                     else
                                     {
                                         (*i)->ApplyModifier(false,false);
