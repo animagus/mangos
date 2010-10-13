@@ -306,6 +306,11 @@ extern void AddSC_boss_bronjahm();
 extern void AddSC_trash_forge_of_souls();
 extern void AddSC_forge_of_souls();
 
+extern void AddSC_instance_pit_of_saron();
+extern void AddSC_pit_of_saron();
+extern void AddSC_boss_forgemaster_gafrost();
+extern void AddSC_boss_krick();
+extern void AddSC_boss_scourgelord_tyrannus();
 
 extern void AddSC_boss_anubrekhan();                        //naxxramas
 extern void AddSC_boss_grobbulus();
@@ -774,6 +779,12 @@ void AddScripts()
     AddSC_boss_bronjahm();
     AddSC_trash_forge_of_souls();
     AddSC_forge_of_souls();
+
+    AddSC_instance_pit_of_saron();
+    AddSC_pit_of_saron();
+    AddSC_boss_forgemaster_gafrost();
+    AddSC_boss_krick();
+    AddSC_boss_scourgelord_tyrannus();
 
     AddSC_boss_anubrekhan();                                //naxxramas
     AddSC_boss_four_horsemen();
