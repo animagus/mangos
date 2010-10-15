@@ -6873,7 +6873,7 @@ void ObjectMgr::LoadReputationOnKill()
 
     //                                                0            1                     2
     QueryResult *result = WorldDatabase.Query("SELECT creature_id, RewOnKillRepFaction1, RewOnKillRepFaction2,"
-    //   3             4             5                   6             7             8                   9
+    //   3             4             5                   6             7             8                   9            
         "IsTeamAward1, MaxStanding1, RewOnKillRepValue1, IsTeamAward2, MaxStanding2, RewOnKillRepValue2, TeamDependent "
         "FROM creature_onkill_reputation");
 
@@ -7973,6 +7973,46 @@ const char *ObjectMgr::GetMangosString(int32 entry, int locale_idx) const
     else
         sLog.outErrorDb("Mangos string entry %i not found in DB.",entry);
     return "<error>";
+}
+
+void ObjectMgr::LoadSpellDisabledEntrys()
+{
+    m_spell_disabled.clear();                                // need for reload case
+    QueryResult *result = WorldDatabase.Query("SELECT entry, ischeat_spell FROM spell_disabled where active=1");
+
+    uint32 total_count = 0;
+    uint32 cheat_spell_count=0;
+
+    if( !result )
+    {
+        barGoLink bar( 1 );
+        bar.step();
+
+        sLog.outString();
+        sLog.outString( ">> Loaded %u disabled spells", total_count );
+        return;
+    }
+
+    barGoLink bar( result->GetRowCount() );
+
+    Field* fields;
+    do
+    {
+        bar.step();
+        fields = result->Fetch();
+        uint32 spellid = fields[0].GetUInt32();
+        bool ischeater = fields[1].GetBool();
+        m_spell_disabled[spellid] = ischeater;
+        ++total_count;
+        if(ischeater)
+        ++cheat_spell_count;
+
+    } while ( result->NextRow() );
+
+    delete result;
+
+    sLog.outString();
+    sLog.outString( ">> Loaded %u disabled spells ( %u - is cheaters spells)", total_count, cheat_spell_count);
 }
 
 void ObjectMgr::LoadFishingBaseSkillLevel()
