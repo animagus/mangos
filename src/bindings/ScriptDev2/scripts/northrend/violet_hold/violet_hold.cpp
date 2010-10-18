@@ -490,13 +490,13 @@ struct MANGOS_DLL_DECL npc_violet_portalAI : public ScriptedAI
                 {
                     m_uiNextPortal_Timer = 5000;
                     debug_log("SD2: npc_time_rift: not casting anylonger, i need to die.");
-                    m_creature->setDeathState(JUST_DIED);
+                    m_creature->SetDeathState(JUST_DIED);
                 }*/
                 if (IsNoThereNearDefender()) // alt check
                 {
                     m_uiNextPortal_Timer = 5000;
                     debug_log("SD2: npc_time_rift: not casting anylonger, i need to die.");
-                    m_creature->setDeathState(JUST_DIED);
+                    m_creature->SetDeathState(JUST_DIED);
                 }
 
                 break;
@@ -512,7 +512,7 @@ struct MANGOS_DLL_DECL npc_violet_portalAI : public ScriptedAI
                     {
                         m_uiNextPortal_Timer = 5000;
                         debug_log("SD2: npc_time_rift: No elite, i need to die.");
-                        m_creature->setDeathState(JUST_DIED);
+                        m_creature->SetDeathState(JUST_DIED);
                     }
                     Check_Timer = 1000;
                 }else Check_Timer -= diff;
