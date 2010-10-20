@@ -65,7 +65,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
 	ScriptedInstance* m_pInstance;
 	IceBlockMap iceblocks;
 	bool m_bIsRegularMode;
-    uint32 Icebolt_Count;
+    int32 Icebolt_Count;
     uint32 Icebolt_Timer;
     uint32 FrostBreath_Timer;
     uint32 FrostBreath_Explo;
@@ -201,7 +201,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
         {
             m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LIFTOFF);
             m_creature->AddSplineFlag(SPLINEFLAG_FLYING);
-            m_creature->SendMovementFlagUpdate();
+            m_creature->SendHeartBeat(false);
             m_creature->GetMotionMaster()->Clear(false);
             m_creature->GetMotionMaster()->MoveIdle();
         }
@@ -306,7 +306,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
                     iceblocks.insert(std::make_pair((*itr)->GetObjectGuid(), 0));
                     DoCast(*itr, SPELL_ICEBOLT);
                     m_creature->AddSplineFlag(SPLINEFLAG_FLYING);
-                    m_creature->SendMovementFlagUpdate();
+                    m_creature->SendHeartBeat(false);
                     ++Icebolt_Count;
                 }
 
@@ -320,7 +320,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
                     DoScriptText(EMOTE_BREATH, m_creature);
                     DoCast(m_creature,SPELL_FROST_MISSILE);
                     m_creature->AddSplineFlag(SPLINEFLAG_FLYING);
-                    m_creature->SendMovementFlagUpdate();
+                    m_creature->SendHeartBeat(false);
                     land_Timer = 5000;
                     FrostBreath_Timer = 6000;
                 }else FrostBreath_Timer -= diff;
@@ -341,7 +341,7 @@ struct MANGOS_DLL_DECL boss_sapphironAI : public ScriptedAI
                     phase = 1;
                     m_creature->HandleEmoteCommand(EMOTE_ONESHOT_LAND);
                     m_creature->RemoveSplineFlag(SPLINEFLAG_FLYING);
-                    m_creature->SendMovementFlagUpdate();
+                    m_creature->SendHeartBeat(false);
                     m_creature->GetMotionMaster()->Clear(false);
                     m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
                     Fly_Timer = 67000;
