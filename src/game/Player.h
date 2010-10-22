@@ -1910,6 +1910,7 @@ class MANGOS_DLL_SPEC Player : public Unit
         void UpdateExpertise(WeaponAttackType attType);
         void UpdateArmorPenetration();
         void ApplyManaRegenBonus(int32 amount, bool apply);
+        void ApplyHealthRegenBonus(int32 amount, bool apply) { m_bonusHealthRegen+= apply ? amount : -amount; }
         void UpdateManaRegen();
 
         const uint64& GetLootGUID() const { return m_lootGuid.GetRawValue(); }
@@ -2584,6 +2585,7 @@ class MANGOS_DLL_SPEC Player : public Unit
         uint16 m_weaponFeralAP;
         uint16 m_weaponEnchantFeralAP;
         uint16 m_baseManaRegen;
+        uint16 m_bonusHealthRegen;
         float m_armorPenetrationPct;
 
         SpellModList m_spellMods[MAX_SPELLMOD];
