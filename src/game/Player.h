@@ -645,6 +645,8 @@ enum AtLoginFlags
     AT_LOGIN_FACTION_CHANGE    = 0x40,
     AT_LOGIN_RACE_CHANGE       = 0x80,
     AT_LOGIN_FIRST             = 0x20,
+    AT_LOGIN_CHANGE_FACTION	   = 0x40,
+    AT_LOGIN_CHANGE_RACE	   = 0x80
 };
 
 

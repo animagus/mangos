@@ -4049,7 +4049,8 @@ bool ChatHandler::HandleCharacterCustomizeCommand(char* args)
     return true;
 }
 
-bool ChatHandler::HandleCharacterFactionCommand(char* args)
+// change player faction
+bool ChatHandler::HandleCharacterChangeFactionCommand(char* args)
 {
     Player* target;
     uint64 target_guid;
@@ -4059,14 +4060,16 @@ bool ChatHandler::HandleCharacterFactionCommand(char* args)
 
     if(target)
     {
+        // TODO : add text into database
         PSendSysMessage(LANG_CUSTOMIZE_PLAYER, GetNameLink(target).c_str());
-        target->SetAtLoginFlag(AT_LOGIN_FACTION_CHANGE);
+        target->SetAtLoginFlag(AT_LOGIN_CHANGE_FACTION);
         CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '64' WHERE guid = '%u'", target->GetGUIDLow());
     }
     else
     {
         std::string oldNameLink = playerLink(target_name);
 
+        // TODO : add text into database
         PSendSysMessage(LANG_CUSTOMIZE_PLAYER_GUID, oldNameLink.c_str(), GUID_LOPART(target_guid));
         CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '64' WHERE guid = '%u'", GUID_LOPART(target_guid));
     }
@@ -4074,7 +4077,8 @@ bool ChatHandler::HandleCharacterFactionCommand(char* args)
     return true;
 }
 
-bool ChatHandler::HandleCharacterRaceCommand(char* args)
+// change player race
+bool ChatHandler::HandleCharacterChangeRaceCommand(char* args)
 {
     Player* target;
     uint64 target_guid;
@@ -4084,14 +4088,16 @@ bool ChatHandler::HandleCharacterRaceCommand(char* args)
 
     if(target)
     {
+        // TODO : add text into database
         PSendSysMessage(LANG_CUSTOMIZE_PLAYER, GetNameLink(target).c_str());
-        target->SetAtLoginFlag(AT_LOGIN_RACE_CHANGE);
+        target->SetAtLoginFlag(AT_LOGIN_CHANGE_RACE);
         CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '128' WHERE guid = '%u'", target->GetGUIDLow());
     }
     else
     {
         std::string oldNameLink = playerLink(target_name);
 
+        // TODO : add text into database
         PSendSysMessage(LANG_CUSTOMIZE_PLAYER_GUID, oldNameLink.c_str(), GUID_LOPART(target_guid));
         CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '128' WHERE guid = '%u'", GUID_LOPART(target_guid));
     }
