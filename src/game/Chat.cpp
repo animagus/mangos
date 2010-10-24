@@ -168,15 +168,13 @@ ChatCommand * ChatHandler::getCommandTable()
         { "achievements",   SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterAchievementsCommand,"",NULL },
         { "customize",      SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterCustomizeCommand,  "", NULL },
         { "deleted",        SEC_GAMEMASTER,     true,  NULL,                                           "", characterDeletedCommandTable},
-        { "changefaction",  SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleCharacterChangeFactionCommand, "", NULL },
-        { "changerace",     SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleCharacterChangeRaceCommand, "", NULL },
+        { "faction",        SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleCharacterChangeFactionCommand, "", NULL },
+        { "race",           SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleCharacterChangeRaceCommand, "", NULL },
         { "erase",          SEC_CONSOLE,        true,  &ChatHandler::HandleCharacterEraseCommand,      "", NULL },
         { "level",          SEC_ADMINISTRATOR,  true,  &ChatHandler::HandleCharacterLevelCommand,      "", NULL },
         { "rename",         SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterRenameCommand,     "", NULL },
         { "reputation",     SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterReputationCommand, "", NULL },
         { "titles",         SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterTitlesCommand,     "", NULL },
-        { "faction",        SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterFactionCommand,    "", NULL },
-        { "race",           SEC_GAMEMASTER,     true,  &ChatHandler::HandleCharacterRaceCommand,       "", NULL },
         { NULL,             0,                  false, NULL,                                           "", NULL }
     };
 
