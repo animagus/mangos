@@ -431,7 +431,6 @@ Player::Player (WorldSession *session): Unit(), m_mover(this), m_camera(this), m
     if(GetSession()->GetSecurity() == SEC_PLAYER)
         SetAcceptWhispers(true);
 
-    m_comboTarget = 0;
     m_comboPoints = 0;
 
     m_usedTalentCount = 0;
@@ -7168,14 +7167,14 @@ void Player::DuelComplete(DuelCompleteType type)
         RemoveAurasDueToSpell(auras2remove[i]);
 
     // cleanup combo points
-    if(GetComboTarget()==duel->opponent->GetGUID())
+    if (GetComboTargetGuid() == duel->opponent->GetObjectGuid())
         ClearComboPoints();
-    else if(GetComboTarget()==duel->opponent->GetPetGUID())
+    else if (GetComboTargetGuid().GetRawValue() == duel->opponent->GetPetGUID())
         ClearComboPoints();
 
-    if(duel->opponent->GetComboTarget()==GetGUID())
+    if (duel->opponent->GetComboTargetGuid() == GetObjectGuid())
         duel->opponent->ClearComboPoints();
-    else if(duel->opponent->GetComboTarget()==GetPetGUID())
+    else if (duel->opponent->GetComboTargetGuid().GetRawValue() == GetPetGUID())
         duel->opponent->ClearComboPoints();
 
     //cleanups
@@ -8864,17 +8863,17 @@ uint32 Player::GetXPRestBonus(uint32 xp)
     return rested_bonus;
 }
 
-void Player::SetBindPoint(uint64 guid)
+void Player::SetBindPoint(ObjectGuid guid)
 {
     WorldPacket data(SMSG_BINDER_CONFIRM, 8);
-    data << uint64(guid);
+    data << ObjectGuid(guid);
     GetSession()->SendPacket( &data );
 }
 
-void Player::SendTalentWipeConfirm(uint64 guid)
+void Player::SendTalentWipeConfirm(ObjectGuid guid)
 {
     WorldPacket data(MSG_TALENT_WIPE_CONFIRM, (8+4));
-    data << uint64(guid);
+    data << ObjectGuid(guid);
     data << uint32(resetTalentsCost());
     GetSession()->SendPacket( &data );
 }
@@ -13226,7 +13225,7 @@ void Player::PrepareGossipMenu(WorldObject *pSource, uint32 menuId)
                         canTalkToCredit = false;
                     break;
                 case GOSSIP_OPTION_QUESTGIVER:
-                    PrepareQuestMenu(pSource->GetGUID());
+                    PrepareQuestMenu(pSource->GetObjectGuid());
                     hasMenuItem = false;
                     break;
                 case GOSSIP_OPTION_ARMORER:
@@ -13291,7 +13290,7 @@ void Player::PrepareGossipMenu(WorldObject *pSource, uint32 menuId)
             {
                 case GOSSIP_OPTION_QUESTGIVER:
                     if (pGo->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER)
-                        PrepareQuestMenu(pSource->GetGUID());
+                        PrepareQuestMenu(pSource->GetObjectGuid());
                     hasMenuItem = false;
                     break;
                 case GOSSIP_OPTION_GOSSIP:
@@ -13363,7 +13362,7 @@ void Player::SendPreparedGossip(WorldObject *pSource)
         // in case no gossip flag and quest menu not empty, open quest menu (client expect gossip menu with this flag)
         if (!((Creature*)pSource)->HasFlag(UNIT_NPC_FLAGS,UNIT_NPC_FLAG_GOSSIP) && !PlayerTalkClass->GetQuestMenu().Empty())
         {
-            SendPreparedQuest(pSource->GetGUID());
+            SendPreparedQuest(pSource->GetObjectGuid());
             return;
         }
     }
@@ -13372,7 +13371,7 @@ void Player::SendPreparedGossip(WorldObject *pSource)
         // probably need to find a better way here
         if (!PlayerTalkClass->GetGossipMenu().GetMenuId() && !PlayerTalkClass->GetQuestMenu().Empty())
         {
-            SendPreparedQuest(pSource->GetGUID());
+            SendPreparedQuest(pSource->GetObjectGuid());
             return;
         }
     }
@@ -13402,7 +13401,7 @@ void Player::OnGossipSelect(WorldObject* pSource, uint32 gossipListId, uint32 me
     GossipMenuItem const&  menu_item = gossipmenu.GetItem(gossipListId);
 
     uint32 gossipOptionId = menu_item.m_gOptionId;
-    uint64 guid = pSource->GetGUID();
+    ObjectGuid guid = pSource->GetObjectGuid();
     uint32 moneyTake = menu_item.m_gBoxMoney;
 
     // if this function called and player have money for pay MoneyTake or cheating, proccess both cases
@@ -13558,7 +13557,7 @@ uint32 Player::GetDefaultGossipMenuForSource(WorldObject *pSource)
 /***                    QUEST SYSTEM                   ***/
 /*********************************************************/
 
-void Player::PrepareQuestMenu(uint64 guid)
+void Player::PrepareQuestMenu(ObjectGuid guid)
 {
     QuestRelationsMapBounds rbounds;
     QuestRelationsMapBounds irbounds;
@@ -13618,7 +13617,7 @@ void Player::PrepareQuestMenu(uint64 guid)
     }
 }
 
-void Player::SendPreparedQuest(uint64 guid)
+void Player::SendPreparedQuest(ObjectGuid guid)
 {
     QuestMenu& questMenu = PlayerTalkClass->GetQuestMenu();
 
@@ -13726,7 +13725,7 @@ bool Player::IsCurrentQuest( uint32 quest_id ) const
     return itr->second.m_status == QUEST_STATUS_INCOMPLETE || itr->second.m_status == QUEST_STATUS_COMPLETE && !itr->second.m_rewarded;
 }
 
-Quest const* Player::GetNextQuest(uint64 guid, Quest const *pQuest)
+Quest const* Player::GetNextQuest(ObjectGuid guid, Quest const *pQuest)
 {
     QuestRelationsMapBounds rbounds;
 
@@ -14064,8 +14063,6 @@ void Player::CompleteQuest(uint32 quest_id)
         {
             if (qInfo->HasFlag(QUEST_FLAGS_AUTO_REWARDED))
                 RewardQuest(qInfo, 0, this, false);
-            else
-                SendQuestComplete(quest_id);
         }
     }
 }
@@ -14803,7 +14800,10 @@ void Player::AreaExploredOrEventHappens( uint32 questId )
 
             if(!q_status.m_explored)
             {
+                SetQuestSlotState(log_slot, QUEST_STATE_COMPLETE);
+                SendQuestCompleteEvent(questId);
                 q_status.m_explored = true;
+
                 if (q_status.uState != QUEST_NEW)
                     q_status.uState = QUEST_CHANGED;
             }
@@ -15223,14 +15223,15 @@ bool Player::HasQuestForItem( uint32 itemid ) const
     return false;
 }
 
-void Player::SendQuestComplete( uint32 quest_id )
+// Used for quests having some event (explore, escort, "external event") as quest objective.
+void Player::SendQuestCompleteEvent(uint32 quest_id)
 {
-    if( quest_id )
+    if (quest_id)
     {
-        WorldPacket data( SMSG_QUESTUPDATE_COMPLETE, 4 );
+        WorldPacket data(SMSG_QUESTUPDATE_COMPLETE, 4);
         data << uint32(quest_id);
-        GetSession()->SendPacket( &data );
-        DEBUG_LOG( "WORLD: Sent SMSG_QUESTUPDATE_COMPLETE quest = %u", quest_id );
+        GetSession()->SendPacket(&data);
+        DEBUG_LOG("WORLD: Sent SMSG_QUESTUPDATE_COMPLETE quest = %u", quest_id);
     }
 }
 
@@ -16665,6 +16666,9 @@ void Player::_LoadQuestStatus(QueryResult *result)
                 {
                     SetQuestSlot(slot, quest_id, uint32(quest_time));
 
+                    if (questStatusData.m_explored)
+                        SetQuestSlotState(slot, QUEST_STATE_COMPLETE);
+
                     if (questStatusData.m_status == QUEST_STATUS_COMPLETE)
                         SetQuestSlotState(slot, QUEST_STATE_COMPLETE);
 
@@ -17070,7 +17074,7 @@ void Player::SendRaidInfo()
                 InstanceSave *save = itr->second.save;
                 data << uint32(save->GetMapId());           // map id
                 data << uint32(save->GetDifficulty());      // difficulty
-                data << uint64(save->GetInstanceId());      // instance id
+                data << ObjectGuid(save->GetInstanceGuid());// instance guid
                 data << uint8(1);                           // expired = 0
                 data << uint8(0);                           // extended = 1
                 data << uint32(save->GetResetTime() - now); // reset time
@@ -17939,11 +17943,11 @@ void Player::SetUInt32ValueInArray(Tokens& tokens,uint16 index, uint32 value)
     tokens[index] = buf;
 }
 
-void Player::Customize(uint64 guid, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair)
+void Player::Customize(ObjectGuid guid, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair)
 {
     //                                                     0
-    QueryResult* result = CharacterDatabase.PQuery("SELECT playerBytes2 FROM characters WHERE guid = '%u'", GUID_LOPART(guid));
-    if(!result)
+    QueryResult* result = CharacterDatabase.PQuery("SELECT playerBytes2 FROM characters WHERE guid = '%u'", guid.GetCounter());
+    if (!result)
         return;
 
     Field* fields = result->Fetch();
@@ -17952,7 +17956,7 @@ void Player::Customize(uint64 guid, uint8 gender, uint8 skin, uint8 face, uint8 
     player_bytes2 &= ~0xFF;
     player_bytes2 |= facialHair;
 
-    CharacterDatabase.PExecute("UPDATE characters SET gender = '%u', playerBytes = '%u', playerBytes2 = '%u' WHERE guid = '%u'", gender, skin | (face << 8) | (hairStyle << 16) | (hairColor << 24), player_bytes2, GUID_LOPART(guid));
+    CharacterDatabase.PExecute("UPDATE characters SET gender = '%u', playerBytes = '%u', playerBytes2 = '%u' WHERE guid = '%u'", gender, skin | (face << 8) | (hairStyle << 16) | (hairColor << 24), player_bytes2, guid.GetCounter());
 
     delete result;
 }
@@ -19952,7 +19956,7 @@ void Player::InitPrimaryProfessions()
 
 void Player::SendComboPoints()
 {
-    Unit *combotarget = ObjectAccessor::GetUnit(*this, m_comboTarget);
+    Unit *combotarget = ObjectAccessor::GetUnit(*this, m_comboTargetGuid);
     if (combotarget)
     {
         WorldPacket data(SMSG_UPDATE_COMBO_POINTS, combotarget->GetPackGUID().size()+1);
@@ -19970,17 +19974,17 @@ void Player::AddComboPoints(Unit* target, int8 count)
     // without combo points lost (duration checked in aura)
     RemoveSpellsCausingAura(SPELL_AURA_RETAIN_COMBO_POINTS);
 
-    if(target->GetGUID() == m_comboTarget)
+    if(target->GetObjectGuid() == m_comboTargetGuid)
     {
         m_comboPoints += count;
     }
     else
     {
-        if(m_comboTarget)
-            if(Unit* target2 = ObjectAccessor::GetUnit(*this,m_comboTarget))
+        if (!m_comboTargetGuid.IsEmpty())
+            if(Unit* target2 = ObjectAccessor::GetUnit(*this, m_comboTargetGuid))
                 target2->RemoveComboPointHolder(GetGUIDLow());
 
-        m_comboTarget = target->GetGUID();
+        m_comboTargetGuid = target->GetObjectGuid();
         m_comboPoints = count;
 
         target->AddComboPointHolder(GetGUIDLow());
@@ -19994,7 +19998,7 @@ void Player::AddComboPoints(Unit* target, int8 count)
 
 void Player::ClearComboPoints()
 {
-    if(!m_comboTarget)
+    if (m_comboTargetGuid.IsEmpty())
         return;
 
     // without combopoints lost (duration checked in aura)
@@ -20004,10 +20008,10 @@ void Player::ClearComboPoints()
 
     SendComboPoints();
 
-    if(Unit* target = ObjectAccessor::GetUnit(*this,m_comboTarget))
+    if(Unit* target = ObjectAccessor::GetUnit(*this,m_comboTargetGuid))
         target->RemoveComboPointHolder(GetGUIDLow());
 
-    m_comboTarget = 0;
+    m_comboTargetGuid.Clear();
 }
 
 void Player::SetGroup(Group *group, int8 subgroup)
@@ -20970,7 +20974,7 @@ uint32 Player::GetBaseWeaponSkillValue (WeaponAttackType attType) const
 void Player::ResurectUsingRequestData()
 {
     /// Teleport before resurrecting by player, otherwise the player might get attacked from creatures near his corpse
-    if(IS_PLAYER_GUID(m_resurrectGUID))
+    if (m_resurrectGuid.IsPlayer())
         TeleportTo(m_resurrectMap, m_resurrectX, m_resurrectY, m_resurrectZ, GetOrientation());
 
     //we cannot resurrect player when we triggered far teleport
@@ -22041,14 +22045,13 @@ void Player::LearnTalent(uint32 talentId, uint32 talentRank)
     DETAIL_LOG("TalentID: %u Rank: %u Spell: %u\n", talentId, talentRank, spellid);
 }
 
-void Player::LearnPetTalent(uint64 petGuid, uint32 talentId, uint32 talentRank)
+void Player::LearnPetTalent(ObjectGuid petGuid, uint32 talentId, uint32 talentRank)
 {
     Pet *pet = GetPet();
-
-    if(!pet)
+    if (!pet)
         return;
 
-    if(petGuid != pet->GetGUID())
+    if (petGuid != pet->GetObjectGuid())
         return;
 
     uint32 CurTalentPoints = pet->GetFreeTalentPoints();
@@ -22885,7 +22888,7 @@ void Player::RemoveRefundable(uint64 itemGUID)
     sObjectMgr.mItemRefundableMap.erase(itemGUID);
 }
 
-uint32 Player::LookupRefundable(uint64 itemGUID)
+uint32 Player::LookupRefundable(ObjectGuid itemGUID)
 {
     ItemRefundableMap::iterator itr;
     uint32 RefundableEntry = 0;

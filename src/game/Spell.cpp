@@ -4501,17 +4501,18 @@ SpellCastResult Spell::CheckCast(bool strict)
 			sSpellStore.LookupEntry(m_spellInfo->casterAuraSpell) &&
 			!m_caster->HasAura(m_spellInfo->casterAuraSpell))
 			return SPELL_FAILED_CASTER_AURASTATE;
-		if(m_spellInfo->excludeCasterAuraSpell)
-		{
-			// Special cases of non existing auras handling
-			if(m_spellInfo->excludeCasterAuraSpell == 61988)
-			{
-				if(m_caster->HasAura(61987))
-					return SPELL_FAILED_CASTER_AURASTATE;
-			}
-			else if(m_caster->HasAura(m_spellInfo->excludeCasterAuraSpell))
-				return SPELL_FAILED_CASTER_AURASTATE;
-		}
+        if(m_spellInfo->excludeCasterAuraSpell)
+        {
+            // Special cases of non existing auras handling
+            if(m_spellInfo->excludeCasterAuraSpell == 61988)
+            {
+                // Avenging Wrath Marker
+                if(m_caster->HasAura(61987))
+                    return SPELL_FAILED_CASTER_AURASTATE;
+            }
+            else if(m_caster->HasAura(m_spellInfo->excludeCasterAuraSpell))
+                return SPELL_FAILED_CASTER_AURASTATE;
+        }
     }
 
 	// Heroism not have excludeCasterAuraSpell
@@ -4520,14 +4521,23 @@ SpellCastResult Spell::CheckCast(bool strict)
     if (m_spellInfo->Id == 2825 && m_caster->HasAura(57724))
         return SPELL_FAILED_CASTER_AURASTATE;
 
-    // cancel autorepeat spells if cast start when moving
-    // (not wand currently autorepeat cast delayed to moving stop anyway in spell update code)
-    if( m_caster->GetTypeId() == TYPEID_PLAYER && ((Player*)m_caster)->isMoving() )
+
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
-        // skip stuck spell to allow use it in falling case and apply spell limitations at movement
-        if( (!((Player*)m_caster)->m_movementInfo.HasMovementFlag(MOVEFLAG_FALLINGFAR) || m_spellInfo->Effect[EFFECT_INDEX_0] != SPELL_EFFECT_STUCK) &&
-            (IsAutoRepeat() || (m_spellInfo->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED) != 0) )
-            return SPELL_FAILED_MOVING;
+        // cancel autorepeat spells if cast start when moving
+        // (not wand currently autorepeat cast delayed to moving stop anyway in spell update code)
+        if (((Player*)m_caster)->isMoving() )
+        {
+            // skip stuck spell to allow use it in falling case and apply spell limitations at movement
+            if ((!((Player*)m_caster)->m_movementInfo.HasMovementFlag(MOVEFLAG_FALLINGFAR) || m_spellInfo->Effect[EFFECT_INDEX_0] != SPELL_EFFECT_STUCK) &&
+                (IsAutoRepeat() || (m_spellInfo->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED) != 0))
+                return SPELL_FAILED_MOVING;
+        }
+
+        if (reqDodge && !m_IsTriggeredSpell && NeedsComboPoints(m_spellInfo) &&
+            (!m_targets.getUnitTarget() || m_targets.getUnitTarget()->GetObjectGuid() != ((Player*)m_caster)->GetComboTargetGuid()))
+            // warrior not have real combo-points at client side but use this way for mark allow Overpower use
+            return m_caster->getClass() == CLASS_WARRIOR ? SPELL_FAILED_CASTER_AURASTATE : SPELL_FAILED_NO_COMBO_POINTS;
     }
 
     if(Unit *target = m_targets.getUnitTarget())
@@ -4568,10 +4578,6 @@ SpellCastResult Spell::CheckCast(bool strict)
             // Not allow casting on flying player
             if (target->IsTaxiFlying())
                 return SPELL_FAILED_BAD_TARGETS;
-
-			//Check combo points (Overpower and etc)
-			if(reqDodge && !m_IsTriggeredSpell && NeedsComboPoints(m_spellInfo) && !((Player*)m_caster)->GetComboPoints())
-				return SPELL_FAILED_CASTER_AURASTATE;
 
             if(!m_IsTriggeredSpell && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOSInMap(target))
                 return SPELL_FAILED_LINE_OF_SIGHT;

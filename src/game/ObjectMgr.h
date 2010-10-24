@@ -591,7 +591,7 @@ struct GraveYardData
 typedef std::multimap<uint32, GraveYardData> GraveYardMap;
 typedef std::pair<GraveYardMap::const_iterator, GraveYardMap::const_iterator> GraveYardMapBounds;
 
-typedef std::map<uint64, uint32> ItemRefundableMap;
+typedef std::map<ObjectGuid, uint32> ItemRefundableMap;
 
 enum ConditionType
 {                                                           // value1       value2  for the Condition enumed
@@ -1328,6 +1328,7 @@ class ObjectMgr
         ObjectGuidGenerator<HIGHGUID_ITEM>       m_ItemGuids;
         ObjectGuidGenerator<HIGHGUID_GAMEOBJECT> m_GameobjectGuids;
         ObjectGuidGenerator<HIGHGUID_CORPSE>     m_CorpseGuids;
+        ObjectGuidGenerator<HIGHGUID_INSTANCE>   m_InstanceGuids;
 
         QuestMap            mQuestTemplates;
 
