@@ -170,8 +170,9 @@ struct MANGOS_DLL_DECL boss_fjolaAI : public BSWScriptedAI
 
                 if (timedQuery(SPELL_LIGHT_TOUCH, uiDiff))
                 {
-                    if (Unit* pTarget = doSelectRandomPlayer(SPELL_LIGHT_ESSENCE, false, 50.0f))
-                        doCast(SPELL_LIGHT_TOUCH, pTarget);
+                    if (currentDifficulty == RAID_DIFFICULTY_25MAN_HEROIC || RAID_DIFFICULTY_10MAN_HEROIC)
+                        if (Unit* pTarget = doSelectRandomPlayer(SPELL_LIGHT_ESSENCE, false, 50.0f))
+                            doCast(SPELL_LIGHT_TOUCH, pTarget);
                     doCast(NPC_UNLEASHED_LIGHT);
                 }
                 if (m_pInstance->GetData(DATA_CASTING_VALKYRS) == SPELL_NONE )
@@ -332,8 +333,9 @@ struct MANGOS_DLL_DECL boss_eydisAI : public BSWScriptedAI
 
             if (timedQuery(SPELL_DARK_TOUCH, uiDiff))
             {
-                if (Unit* pTarget = doSelectRandomPlayer(SPELL_DARK_ESSENCE, false, 50.0f))
-                    doCast(SPELL_DARK_TOUCH, pTarget);
+                if (currentDifficulty == RAID_DIFFICULTY_25MAN_HEROIC || RAID_DIFFICULTY_10MAN_HEROIC)
+                    if (Unit* pTarget = doSelectRandomPlayer(SPELL_DARK_ESSENCE, false, 50.0f))
+                        doCast(SPELL_DARK_TOUCH, pTarget);
                 doCast(NPC_UNLEASHED_DARK);
             }
             if (m_pInstance->GetData(DATA_CASTING_VALKYRS) == SPELL_NONE )
@@ -424,7 +426,8 @@ struct MANGOS_DLL_DECL mob_light_essenceAI : public ScriptedAI
             for(Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
             {
                 Unit* pPlayer = itr->getSource();
-                if (!pPlayer) continue;
+                if (!pPlayer) 
+                    continue;
                 if (pPlayer->isAlive())
                     pPlayer->RemoveAurasDueToSpell(SPELL_LIGHT_ESSENCE);
             }

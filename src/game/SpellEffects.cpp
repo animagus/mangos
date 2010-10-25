@@ -470,6 +470,14 @@ void Spell::EffectSchoolDMG(SpellEffectIndex effect_idx)
                     case 67485:
                         damage += uint32(0.5f * m_caster->GetTotalAttackPowerValue(BASE_ATTACK));
                         break;
+                    case 65951:
+                    case 65952:
+                        if (!unitTarget->HasAura(65684))
+                            return;
+                    case 66002:
+                    case 66003:
+                        if (!unitTarget->HasAura(65686))
+                            return;
                     // Bone Storm
                     case 69075:
                     case 70834:

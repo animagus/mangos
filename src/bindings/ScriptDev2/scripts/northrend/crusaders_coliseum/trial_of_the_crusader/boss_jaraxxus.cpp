@@ -78,6 +78,7 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI : public BSWScriptedAI
     uint8 substage;
     uint8 m_portalsCount;
     uint8 m_volcanoCount;
+    uint8 m_stackCount;
 
     void Reset() 
     {
@@ -94,6 +95,11 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI : public BSWScriptedAI
             m_portalsCount = 1;
             m_volcanoCount = 4;
         }
+
+        if (currentDifficulty == RAID_DIFFICULTY_10MAN_NORMAL || RAID_DIFFICULTY_10MAN_HEROIC)
+            m_stackCount = 5;
+        else
+            m_stackCount = 10;
         DoScriptText(-1713517,m_creature);
         m_creature->SetRespawnDelay(DAY);
     }
@@ -117,11 +123,13 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI : public BSWScriptedAI
 
     void Aggro(Unit* pWho)
     {
-        if (!m_pInstance) return;
+        if (!m_pInstance) 
+            return;
         m_creature->SetInCombatWithZone();
         m_pInstance->SetData(TYPE_JARAXXUS, IN_PROGRESS);
         DoScriptText(-1713514,m_creature);
-        doCast(SPELL_NETHER_POWER);
+        for (int i = 0; i < m_stackCount; i++)
+            DoCast(m_creature,SPELL_NETHER_POWER,true);
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -163,6 +171,9 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI : public BSWScriptedAI
             DoScriptText(-1713519,m_creature);
             if (doCast(NPC_NETHER_PORTAL) == CAST_OK)
                 --m_portalsCount;
+
+            for (int i = 0; i < m_stackCount; i++)
+                DoCast(m_creature,SPELL_NETHER_POWER,true);
         }
 
         DoMeleeAttackIfReady();
