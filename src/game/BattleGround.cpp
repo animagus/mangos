@@ -813,7 +813,8 @@ void BattleGround::EndBattleGround(uint32 winner)
 
             if (IsRandom() || BattleGroundMgr::IsBGWeekend(GetTypeID()))
             {
-                UpdatePlayerScore(plr, SCORE_BONUS_HONOR, GetBonusHonorFromKill(win_kills*4));
+				UpdatePlayerScore(plr, SCORE_BONUS_HONOR, GetBonusHonorFromKill(win_kills*4));
+				plr->ModifyHonorPoints(GetBonusHonorFromKill(win_kills*4));
                 plr->ModifyArenaPoints(win_arena);
                 if(!plr->GetRandomWinner())
                     plr->SetRandomWinner(true);
@@ -825,7 +826,10 @@ void BattleGround::EndBattleGround(uint32 winner)
         {
             RewardMark(plr,ITEM_LOSER_COUNT);
             if (IsRandom() || BattleGroundMgr::IsBGWeekend(GetTypeID()))
+            {
                 UpdatePlayerScore(plr, SCORE_BONUS_HONOR, GetBonusHonorFromKill(loos_kills*4));
+                plr->ModifyHonorPoints(GetBonusHonorFromKill(win_kills*4));
+            }
         }
 
         plr->CombatStopWithPets(true);
