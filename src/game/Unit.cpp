@@ -495,7 +495,47 @@ void Unit::RemoveSpellbyDamageTaken(AuraType auraType, uint32 damage)
     uint32 max_dmg = getLevel() > 8 ? 25 * getLevel() - 150 : 50;
     float chance = float(damage) / max_dmg * 100.0f;
     if (roll_chance_f(chance))
-        RemoveSpellsCausingAura(auraType);
+        if(auraType == SPELL_AURA_MOD_ROOT)
+	    {
+            AuraList::const_iterator iter, next;
+            for (iter = m_modAuras[auraType].begin(); iter != m_modAuras[auraType].end(); iter = next)
+            {
+                next = iter;
+                ++next;
+
+                if (*iter && !(*iter)->IsPositive())
+                {
+				    switch((*iter)->GetId())
+                    {
+                         case   23694: break;               //Improved Hamstring
+                         case   19185: break;               //Entrapment(1 rank)
+                         case   64803: break;               //Entrapment(2 rank)
+                         case   64804: break;               //Entrapment(3 rank)
+                         case   4167: break;                //Web(hunter's pet ability)
+                         case   54706: break;               //Venom Web Spray(hunter's pet ability rank 1)
+                         case   55505: break;               //Venom Web Spray(hunter's pet ability rank 2)
+                         case   55506: break;               //Venom Web Spray(hunter's pet ability rank 3)
+                         case   55507: break;               //Venom Web Spray(hunter's pet ability rank 4)
+                         case   54708: break;               //Venom Web Spray(hunter's pet ability rank 5)
+                         case   54709: break;               //Venom Web Spray(hunter's pet ability rank 6)
+                         case   53148: break;               //Charge(hunter's pet ability)
+                         case   45334: break;               //Feral Charge(Bear)
+                         default:
+				         {
+                             RemoveAurasDueToSpell((*iter)->GetId());
+                             if (!m_modAuras[auraType].empty())
+                                 next = m_modAuras[auraType].begin();
+                             else
+                                 return;
+			             }
+                    }
+                }
+            }
+	    }
+	    else
+	    {
+            RemoveSpellsCausingAura(auraType);
+	    }
 }
 
 void Unit::DealDamageMods(Unit *pVictim, uint32 &damage, uint32* absorb)
