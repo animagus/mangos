@@ -130,6 +130,8 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI : public BSWScriptedAI
         DoScriptText(-1713514,m_creature);
         for (int i = 0; i < m_stackCount; i++)
             DoCast(m_creature,SPELL_NETHER_POWER,true);
+        if (Creature* temp = GetClosestCreatureWithEntry(m_creature, NPC_FIZZLEBANG, 200))
+            m_creature->DealDamage(temp, temp->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
     }
 
     void UpdateAI(const uint32 uiDiff)
