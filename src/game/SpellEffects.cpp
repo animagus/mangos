@@ -476,7 +476,7 @@ void Spell::EffectSchoolDMG(SpellEffectIndex effect_idx)
                             return;
                         break;
                     case 66002:
-                    case 66003:
+                    case 66000:
                         if (!unitTarget->HasAura(65686))
                             return;
                         break;
