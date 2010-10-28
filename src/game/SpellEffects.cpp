@@ -6548,7 +6548,6 @@ void Spell::EffectScriptEffect(SpellEffectIndex eff_idx)
                         m_caster->CastSpell(charmed, 45838, true);
                     break;
                 }
-                // Goblin Weather Machine
                 case 45206:                                 // Copy Off-hand Weapon
                 {
                     if (m_caster->GetTypeId() != TYPEID_UNIT || !unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
@@ -7072,7 +7071,7 @@ void Spell::EffectScriptEffect(SpellEffectIndex eff_idx)
                     // Cool hack, bro!
                     if(!m_caster || m_caster->GetTypeId() != TYPEID_PLAYER)
                         return
-                    ((Player*)m_caster)->KilledMonsterCredit(24108, ObjectGuid());
+                    ((Player*)m_caster)->KilledMonsterCredit(24108);
                     return;
                 }
                 case 24719:
@@ -7169,6 +7168,21 @@ void Spell::EffectScriptEffect(SpellEffectIndex eff_idx)
                     unitTarget->CastSpell(unitTarget, trickspell, true);
                     return;
                 }
+                case 66870:                                    // Burning Bile (may be need add only one diff. spell?)
+                case 67621:
+                case 67622:
+                case 67623:
+                    {
+                        if (!unitTarget)
+                            return;
+
+                        // for different difficult (may be need one spell?)
+                        unitTarget->RemoveAurasDueToSpell(66823);
+                        unitTarget->RemoveAurasDueToSpell(67618);
+                        unitTarget->RemoveAurasDueToSpell(67619);
+                        unitTarget->RemoveAurasDueToSpell(67620);
+                        return;
+                    }
                 case 68861:                                 // Consume Soul (The Forge of Souls: Bronjahm)
                     {
                          if (!unitTarget)

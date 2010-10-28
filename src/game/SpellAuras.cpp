@@ -5193,7 +5193,7 @@ void Aura::HandleAuraPeriodicDummy(bool apply, bool Real)
     // For prevent double apply bonuses
     bool loading = (target->GetTypeId() == TYPEID_PLAYER && ((Player*)target)->GetSession()->PlayerLoading());
 
-    SpellEntry const*spell = GetSpellProto();
+    SpellEntry const* spell = GetSpellProto();
     switch( spell->SpellFamilyName)
     {
         case SPELLFAMILY_ROGUE:
@@ -7918,6 +7918,24 @@ void Aura::PeriodicDummyTick()
                         case 2: target->CastSpell(target, 55739, true); break;
                     }
                     return;
+                case 66823:
+                case 67618:
+                case 67619:
+                case 67620:
+                    {
+                        if (SpellAuraHolder* holder = target->GetSpellAuraHolder(spell->Id))
+                        {
+                            if(Aura* Aur = holder->GetAuraByEffectIndex(SpellEffectIndex(0)))
+                            {
+                                Modifier* mod = Aur->GetModifier();
+                                Aur->SetModifier(mod->m_auraname, mod->m_amount - 10, mod->periodictime, mod->m_miscvalue, mod->m_amount2);
+                                target->UpdateSpeed(MOVE_RUN, true);
+                                target->UpdateSpeed(MOVE_SWIM, true);
+                                target->UpdateSpeed(MOVE_FLIGHT, true);
+                            }
+                        }
+                        break;
+                    }
                 case 66118:                                 // Leeching Swarm 10 man
                 case 68646:
                 {
