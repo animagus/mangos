@@ -204,17 +204,13 @@ struct MANGOS_DLL_DECL mob_legion_flameAI : public BSWScriptedAI
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         m_creature->SetInCombatWithZone();
         m_creature->SetRespawnDelay(DAY);
-
-        if (Unit* pTarget= m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0) ) 
-        {
-            m_creature->GetMotionMaster()->MoveChase(pTarget);
-            m_creature->SetSpeedRate(MOVE_RUN, 0.5);
-        }
+        SetCombatMovement(false);
     }
 
     void KilledUnit(Unit* pVictim)
     {
-        if (pVictim->GetTypeId() != TYPEID_PLAYER) return;
+        if (pVictim->GetTypeId() != TYPEID_PLAYER) 
+            return;
     }
 
     void JustDied(Unit* Killer)
@@ -232,28 +228,8 @@ struct MANGOS_DLL_DECL mob_legion_flameAI : public BSWScriptedAI
         if (m_pInstance->GetData(TYPE_JARAXXUS) != IN_PROGRESS) 
             m_creature->ForcedDespawn();
 
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
-            return;
-
-        if (m_uiRangeCheck_Timer < uiDiff)
-        {
-            if (m_pInstance)
-            {
-                if (m_creature->IsWithinDist(m_creature->getVictim(), 4.0f, false))
-                {
-                    DoCast(m_creature,SPELL_LEGION_FLAME_0);
-                }
-            }
-            m_uiRangeCheck_Timer = 1000;
-            if (m_creature->getVictim()) 
-            {
-                m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim());
-                m_creature->SetSpeedRate(MOVE_RUN, 0.5);
-
-            }
-        }
-        else m_uiRangeCheck_Timer -= uiDiff;
-
+        if (!m_creature->HasAura(66201))
+            DoCast(m_creature,66201,true);
     }
 };
 

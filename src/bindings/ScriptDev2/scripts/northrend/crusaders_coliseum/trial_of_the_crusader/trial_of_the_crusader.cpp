@@ -556,12 +556,12 @@ struct MANGOS_DLL_DECL npc_fizzlebang_tocAI : public ScriptedAI
         DoScriptText(-1713715, m_creature, pKiller);
         pInstance->SetData(TYPE_EVENT, 1180);
         if (pPortal) 
-            pPortal->ForcedDespawn();
+            ((TemporarySummon *)pPortal)->UnSummon();
 
         if (pTrigger)
-            pTrigger->ForcedDespawn();
+            ((TemporarySummon *)pTrigger)->UnSummon();
         
-        m_creature->ForcedDespawn();
+        ((TemporarySummon *)m_creature)->UnSummon();
     }
 
     void Reset()
@@ -832,7 +832,7 @@ struct MANGOS_DLL_DECL npc_tirion_tocAI : public ScriptedAI
             case 1010:
                 DoScriptText(-1713510, m_creature);
                 UpdateTimer = 5000;
-                m_creature->SummonCreature(NPC_FIZZLEBANG, SpawnLoc[21].x, SpawnLoc[21].y, SpawnLoc[21].z, 2, TEMPSUMMON_CORPSE_TIMED_DESPAWN, DESPAWN_TIME);
+                m_creature->SummonCreature(NPC_FIZZLEBANG, SpawnLoc[21].x, SpawnLoc[21].y, SpawnLoc[21].z, 2, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000);
                 pInstance->SetData(TYPE_EVENT,1110);
                 break;
 
