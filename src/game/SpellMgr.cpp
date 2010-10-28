@@ -1924,6 +1924,11 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                 if( (spellInfo_1->Id == 52437 && spellInfo_2->Id == 60503) ||
                     (spellInfo_2->Id == 52437 && spellInfo_1->Id == 60503) )
                     return false;
+
+                // Sword and Board and Glyph of Revenge
+                if( (spellInfo_1->Id == 50227 && spellInfo_2->Id == 58363) ||
+                    (spellInfo_2->Id == 50227 && spellInfo_1->Id == 58363) )
+                    return false;
             }
             break;
         case SPELLFAMILY_PRIEST:
