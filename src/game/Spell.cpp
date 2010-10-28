@@ -3696,7 +3696,7 @@ void Spell::SendSpellGo()
         castFlags |= CAST_FLAG_UNKNOWN7;                    // rune cooldowns list
     }
 
-    Unit *caster = (m_originalCaster && m_IsTriggeredSpell) ? m_originalCaster : m_caster;
+    Unit *caster = /*(m_originalCaster && m_IsTriggeredSpell) ? m_originalCaster : */m_caster;
 
     WorldPacket data(SMSG_SPELL_GO, 50);                    // guess size
 
