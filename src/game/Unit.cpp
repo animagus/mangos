@@ -496,7 +496,7 @@ void Unit::RemoveSpellbyDamageTaken(AuraType auraType, uint32 damage)
     float chance = float(damage) / max_dmg * 100.0f;
     if (roll_chance_f(chance))
         if(auraType == SPELL_AURA_MOD_ROOT)
-	    {
+        {
             AuraList::const_iterator iter, next;
             for (iter = m_modAuras[auraType].begin(); iter != m_modAuras[auraType].end(); iter = next)
             {
@@ -505,7 +505,7 @@ void Unit::RemoveSpellbyDamageTaken(AuraType auraType, uint32 damage)
 
                 if (*iter && !(*iter)->IsPositive())
                 {
-				    switch((*iter)->GetId())
+                    switch((*iter)->GetId())
                     {
                          case   23694: break;               //Improved Hamstring
                          case   19185: break;               //Entrapment(1 rank)
@@ -520,14 +520,20 @@ void Unit::RemoveSpellbyDamageTaken(AuraType auraType, uint32 damage)
                          case   54709: break;               //Venom Web Spray(hunter's pet ability rank 6)
                          case   53148: break;               //Charge(hunter's pet ability)
                          case   45334: break;               //Feral Charge(Bear)
+                         case   19306: break;               //Counterattack(rank 1)
+                         case   20909: break;               //Counterattack(rank 2)
+                         case   20910: break;               //Counterattack(rank 3)
+                         case   27067: break;               //Counterattack(rank 4)
+                         case   48998: break;               //Counterattack(rank 5)
+                         case   48999: break;               //Counterattack(rank 6)
                          default:
-				         {
+                         {
                              RemoveAurasDueToSpell((*iter)->GetId());
                              if (!m_modAuras[auraType].empty())
                                  next = m_modAuras[auraType].begin();
                              else
                                  return;
-			             }
+                         }
                     }
                 }
             }
@@ -2823,8 +2829,8 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
 
     // parry & block chances
 
-    // check if attack comes from behind, nobody can parry or block if attacker is behind
-    if (!pVictim->HasInArc(M_PI_F,this))
+    // check if attack comes from behind, nobody can parry or block if attacker is behind but Deterrence does parry from behind
+    if (!pVictim->HasInArc(M_PI_F,this)&&!pVictim->HasAura(19263))
     {
         DEBUG_FILTER_LOG(LOG_FILTER_COMBAT, "RollMeleeOutcomeAgainst: attack came from behind.");
     }
@@ -3155,7 +3161,8 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellEntry const *spell, 
         if (GetTypeId() == TYPEID_PLAYER && pVictim->GetTypeId() == TYPEID_PLAYER)
             canDodge = false;
         // Can`t parry
-        canParry = false;
+        if(!pVictim->HasAura(19263))//Deterrence does parry from behind
+            canParry = false;
     }
     // Check creatures flags_extra for disable parry
     if(pVictim->GetTypeId()==TYPEID_UNIT)
