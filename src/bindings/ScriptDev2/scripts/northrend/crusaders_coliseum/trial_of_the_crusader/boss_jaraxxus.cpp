@@ -44,21 +44,21 @@ enum Summons
 
 enum BossSpells
 {
-SPELL_NETHER_POWER      = 67108,
-SPELL_INFERNAL          = 66258,
-SPELL_INFERNAL_ERUPTION = 66255,
-SPELL_FEL_FIREBALL      = 66532,
-SPELL_FEL_LIGHTING      = 66528,
-SPELL_INCINERATE_FLESH  = 66237,
-SPELL_BURNING_INFERNO   = 66242,
-SPELL_NETHER_PORTAL     = 66264,
-SPELL_LEGION_FLAME_0    = 66199,
-SPELL_LEGION_FLAME_1    = 66197,
-SPELL_SHIVAN_SLASH      = 67098,
-SPELL_SPINNING_STRIKE   = 66316,
-SPELL_FEL_INFERNO       = 67047,
-SPELL_FEL_STREAK        = 66494,
-SPELL_BERSERK           = 26662,
+    SPELL_NETHER_POWER      = 67108,
+    SPELL_INFERNAL          = 66258,
+    SPELL_INFERNAL_ERUPTION = 66255,
+    SPELL_FEL_FIREBALL      = 66532,
+    SPELL_FEL_LIGHTING      = 66528,
+    SPELL_INCINERATE_FLESH  = 66237,
+    SPELL_BURNING_INFERNO   = 66242,
+    SPELL_NETHER_PORTAL     = 66264,
+    SPELL_LEGION_FLAME_0    = 66199,
+    SPELL_LEGION_FLAME_1    = 66197,
+    SPELL_SHIVAN_SLASH      = 67098,
+    SPELL_SPINNING_STRIKE   = 66316,
+    SPELL_FEL_INFERNO       = 67047,
+    SPELL_FEL_STREAK        = 66494,
+    SPELL_BERSERK           = 26662,
 };
 
 /*######
@@ -109,6 +109,8 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI : public BSWScriptedAI
         if (!m_pInstance)
             return;
         m_pInstance->SetData(TYPE_JARAXXUS, FAIL);
+        if (Creature* temp = GetClosestCreatureWithEntry(m_creature, NPC_FIZZLEBANG, 200))
+            m_creature->DealDamage(temp, temp->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
         m_creature->ForcedDespawn();
     }
 
@@ -130,8 +132,6 @@ struct MANGOS_DLL_DECL boss_jaraxxusAI : public BSWScriptedAI
         DoScriptText(-1713514,m_creature);
         for (int i = 0; i < m_stackCount; i++)
             DoCast(m_creature,SPELL_NETHER_POWER,true);
-        if (Creature* temp = GetClosestCreatureWithEntry(m_creature, NPC_FIZZLEBANG, 200))
-            m_creature->DealDamage(temp, temp->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
     }
 
     void UpdateAI(const uint32 uiDiff)
