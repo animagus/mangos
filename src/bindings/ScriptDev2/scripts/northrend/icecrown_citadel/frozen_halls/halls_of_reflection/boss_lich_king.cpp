@@ -199,7 +199,7 @@ struct MANGOS_DLL_DECL boss_lich_king_hrAI : public npc_escortAI
       switch(Step)
       {
           case 0:
-            m_creature->SetSpeedRate(MOVE_WALK, 1.6f, true)
+            m_creature->SetSpeedRate(MOVE_WALK, 1.6f, true);
             m_pInstance->SetData(DATA_SUMMONS, 3);
             SetEscortPaused(true);
             DoCast(m_creature, SPELL_RAISE_DEAD);
