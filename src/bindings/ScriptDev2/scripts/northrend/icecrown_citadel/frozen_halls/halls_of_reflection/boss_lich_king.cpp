@@ -130,25 +130,19 @@ struct MANGOS_DLL_DECL boss_lich_king_hrAI : public npc_escortAI
          summoned->SetPhaseMask(65535, true);
          summoned->SetInCombatWithZone();
          summoned->SetActiveObjectState(true);
-         summoned->SetSpeedRate(MOVE_WALK, 2.0f, true);
-         summoned->SetSpeedRate(MOVE_RUN, 2.0f, true);
 
          m_pInstance->SetData(DATA_SUMMONS, 1);
 
          if (Creature* pLider = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(DATA_ESCAPE_LIDER)))
          {
-             summoned->AI()->AttackStart(pLider);
+               summoned->GetMotionMaster()->MoveChase(pLider);
+               summoned->AddThreat(pLider, 100.0f);
          }
     }
 
    void CallGuard(uint32 GuardID)
    {
-       if (Creature* temp = m_creature->SummonCreature(GuardID,(m_creature->GetPositionX()-15)+rand()%10, (m_creature->GetPositionY()-15)+rand()%10, m_creature->GetPositionZ(),4.17f,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,300000))
-       {
-           temp->SetActiveObjectState(true);
-           if (Creature* pLider = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(DATA_ESCAPE_LIDER)))
-               temp->AI()->AttackStart(pLider);
-       }
+       m_creature->SummonCreature(GuardID,(m_creature->GetPositionX()-15)+rand()%10, (m_creature->GetPositionY()-15)+rand()%10, m_creature->GetPositionZ(),4.17f,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,300000);
    }
 
    void Wall01()
@@ -176,7 +170,7 @@ struct MANGOS_DLL_DECL boss_lich_king_hrAI : public npc_escortAI
          case 3:
             DoCast(m_creature, SPELL_WINTER);
             DoScriptText(SAY_LICH_KING_WINTER, m_creature);
-            m_creature->SetSpeedRate(MOVE_WALK, 1.6f, true);
+            m_creature->SetSpeedRate(MOVE_WALK, 1.1f, true);
             StepTimer = 1000;
             ++Step;
             break;
@@ -199,7 +193,6 @@ struct MANGOS_DLL_DECL boss_lich_king_hrAI : public npc_escortAI
       switch(Step)
       {
           case 0:
-            m_creature->SetSpeedRate(MOVE_WALK, 1.6f, true);
             m_pInstance->SetData(DATA_SUMMONS, 3);
             SetEscortPaused(true);
             DoCast(m_creature, SPELL_RAISE_DEAD);
@@ -260,7 +253,7 @@ struct MANGOS_DLL_DECL boss_lich_king_hrAI : public npc_escortAI
            break;
          case 1:
             SetEscortPaused(false);
-            m_creature->SetSpeedRate(MOVE_WALK, 1.6f, true);
+            m_creature->SetSpeedRate(MOVE_WALK, 1.2f, true);
             CallGuard(NPC_RISEN_WITCH_DOCTOR);
             CallGuard(NPC_RISEN_WITCH_DOCTOR);
             CallGuard(NPC_RISEN_WITCH_DOCTOR);

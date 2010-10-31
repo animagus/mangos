@@ -640,8 +640,8 @@ bool GossipSelect_npc_jaina_and_sylvana_HRintro(Player* pPlayer, Creature* pCrea
     }
 
     if(pPlayer->GetTeam() == ALLIANCE)
-        m_pInstance->SetData(DATA_LIDER, 1);
-    else m_pInstance->SetData(DATA_LIDER, 2);
+            m_pInstance->SetData(DATA_LIDER, 1);
+       else m_pInstance->SetData(DATA_LIDER, 2);
 
     m_pInstance->SetData64(DATA_ESCAPE_LIDER,pCreature->GetGUID());
 
