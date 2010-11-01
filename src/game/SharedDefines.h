@@ -486,7 +486,6 @@ const uint32 ItemQualityColors[MAX_ITEM_QUALITY] = {
 #define SPELL_ATTR_EX7_UNK30                      0x40000000            // 30
 #define SPELL_ATTR_EX7_UNK31                      0x80000000            // 31
 
-
 #define MAX_TALENT_SPEC_COUNT   2
 #define MAX_GLYPH_SLOT_INDEX    6
 

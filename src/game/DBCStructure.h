@@ -1400,7 +1400,7 @@ struct SpellEntry
     uint32    AttributesEx4;                                // 8        m_attributesExD
     uint32    AttributesEx5;                                // 9        m_attributesExE
     uint32    AttributesEx6;                                // 10       m_attributesExF
-    uint32    AttributesEx7;                                // 11 m_attributesExG
+    uint32    AttributesEx7;                                // 11       m_attributesExG
     uint32    Stances;                                      // 12       m_shapeshiftMask
     // uint32 unk_320_1;                                    // 13       3.2.0
     uint32    StancesNot;                                   // 14       m_shapeshiftExclude
