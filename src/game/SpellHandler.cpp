@@ -222,7 +222,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
 
     // locked item
     uint32 lockId = proto->LockID;
-    if(lockId)
+    if(lockId && !pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_DYNFLAG_UNLOCKED))
     {
         LockEntry const *lockInfo = sLockStore.LookupEntry(lockId);
 
@@ -509,13 +509,13 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
         return;
     }
 
-    if (guid.GetRawValue() != GetPlayer()->GetPetGUID() && guid.GetRawValue() != GetPlayer()->GetCharmGUID())
+    if (guid != GetPlayer()->GetPetGuid() && guid != GetPlayer()->GetCharmGuid())
     {
         sLog.outError("HandlePetCancelAura. %s isn't pet of %s", guid.GetString().c_str(), GetPlayer()->GetObjectGuid().GetString().c_str());
         return;
     }
 
-    if(!pet->isAlive())
+    if (!pet->isAlive())
     {
         pet->SendPetActionFeedback(FEEDBACK_PET_DEAD);
         return;
@@ -619,7 +619,7 @@ void WorldSession::HandleMirrrorImageDataRequest( WorldPacket & recv_data )
 	if(!unit)
 		return;
 	// Get creator of the unit
-	Unit *creator = ObjectAccessor::GetUnitInWorld(*_player, unit->GetCreatorGUID());
+	Unit *creator = ObjectAccessor::GetUnitInWorld(*_player, unit->GetCreatorGuid());
 	if (!creator)
 		return;
 	WorldPacket data(SMSG_MIRRORIMAGE_DATA, 68);
