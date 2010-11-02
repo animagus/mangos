@@ -834,11 +834,7 @@ void BattleGround::EndBattleGround(uint32 winner)
             if (IsRandom() || BattleGroundMgr::IsBGWeekend(GetTypeID()))
             {
                 UpdatePlayerScore(plr, SCORE_BONUS_HONOR, GetBonusHonorFromKill(loos_kills*4));
-<<<<<<< HEAD
-                plr->ModifyHonorPoints(GetBonusHonorFromKill(win_kills*4));
-=======
                 plr->ModifyHonorPoints(GetBonusHonorFromKill(loos_kills*4));
->>>>>>> 3061ad9c79c98cb71ddb5fe25664876df1d59e3a
             }
         }
 
