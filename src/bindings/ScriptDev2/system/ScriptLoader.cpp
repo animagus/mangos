@@ -312,6 +312,12 @@ extern void AddSC_boss_forgemaster_gafrost();
 extern void AddSC_boss_krick();
 extern void AddSC_boss_scourgelord_tyrannus();
 
+extern void AddSC_instance_halls_of_reflection();
+extern void AddSC_halls_of_reflection();
+extern void AddSC_boss_falric();
+extern void AddSC_boss_marwyn();
+extern void AddSC_boss_lich_king_hr();
+
 extern void AddSC_boss_anubrekhan();                        //naxxramas
 extern void AddSC_boss_grobbulus();
 extern void AddSC_boss_thaddius();
@@ -786,6 +792,12 @@ void AddScripts()
     AddSC_boss_krick();
     AddSC_boss_scourgelord_tyrannus();
 
+    AddSC_instance_halls_of_reflection();
+    AddSC_halls_of_reflection();
+    AddSC_boss_falric();
+    AddSC_boss_marwyn();
+    AddSC_boss_lich_king_hr();
+
     AddSC_boss_anubrekhan();                                //naxxramas
     AddSC_boss_four_horsemen();
     AddSC_boss_faerlina();
@@ -847,7 +859,6 @@ void AddScripts()
     AddSC_instance_pinnacle();
     AddSC_instance_violet_hold();                           //violet_hold
     AddSC_violet_hold();
-
     AddSC_boss_cyanigosa();
     AddSC_boss_erekem();
     AddSC_boss_ichoron();
@@ -855,8 +866,6 @@ void AddScripts()
     AddSC_boss_moragg();
     AddSC_boss_xevozz();
     AddSC_boss_zuramat();
-    AddSC_instance_violet_hold();
-    AddSC_violet_hold();
 
     AddSC_boss_archavon();
     AddSC_boss_emalon();

@@ -186,7 +186,7 @@ template<>
 void Map::AddToGrid(Creature* obj, NGridType *grid, Cell const& cell)
 {
     // add to world object registry in grid
-    if(obj->isPet() || obj->isVehicle())
+    if(obj->IsPet() || obj->IsVehicle())
     {
         (*grid)(cell.CellX(), cell.CellY()).AddWorldObject<Creature>(obj);
         obj->SetCurrentCell(cell);
@@ -230,7 +230,7 @@ template<>
 void Map::RemoveFromGrid(Creature* obj, NGridType *grid, Cell const& cell)
 {
     // remove from world object registry in grid
-    if(obj->isPet() || obj->isVehicle())
+    if(obj->IsPet() || obj->IsVehicle())
     {
         (*grid)(cell.CellX(), cell.CellY()).RemoveWorldObject<Creature>(obj);
     }
@@ -722,7 +722,7 @@ Map::Remove(T *obj, bool remove)
     else
         obj->RemoveFromWorld();
 
-    UpdateObjectVisibility(obj,cell,p); // i think will be better to call this function while object still in grid, this changes nothing but logically is better(as for me)
+    UpdateObjectVisibility(obj,cell,p);                     // i think will be better to call this function while object still in grid, this changes nothing but logically is better(as for me)
     RemoveFromGrid(obj,grid,cell);
 
     obj->ResetMap();
@@ -753,10 +753,6 @@ Map::PlayerRelocation(Player *player, float x, float y, float z, float orientati
     if( old_cell.DiffGrid(new_cell) || old_cell.DiffCell(new_cell) )
     {
         DEBUG_FILTER_LOG(LOG_FILTER_PLAYER_MOVES, "Player %s relocation grid[%u,%u]cell[%u,%u]->grid[%u,%u]cell[%u,%u]", player->GetName(), old_cell.GridX(), old_cell.GridY(), old_cell.CellX(), old_cell.CellY(), new_cell.GridX(), new_cell.GridY(), new_cell.CellX(), new_cell.CellY());
-
-        // update player position for group at taxi flight
-        if(player->GetGroup() && player->IsTaxiFlying())
-            player->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_POSITION);
 
         NGridType* oldGrid = getNGrid(old_cell.GridX(), old_cell.GridY());
         RemoveFromGrid(player, oldGrid,old_cell);
@@ -1659,7 +1655,7 @@ void Map::AddToActive( WorldObject* obj )
     {
         Creature* c= (Creature*)obj;
 
-        if (!c->isPet() && c->GetDBTableGUIDLow())
+        if (!c->IsPet() && c->GetDBTableGUIDLow())
         {
             float x,y,z;
             c->GetRespawnCoord(x,y,z);
@@ -1694,7 +1690,7 @@ void Map::RemoveFromActive( WorldObject* obj )
     {
         Creature* c= (Creature*)obj;
 
-        if(!c->isPet() && c->GetDBTableGUIDLow())
+        if(!c->IsPet() && c->GetDBTableGUIDLow())
         {
             float x,y,z;
             c->GetRespawnCoord(x,y,z);
@@ -3501,6 +3497,28 @@ void Map::SendObjectUpdates()
         iter->first->GetSession()->SendPacket(&packet);
         packet.clear();                                     // clean the string
     }
+}
+
+bool Map::IsNextZcoordOK(float x, float y, float oldZ, float maxDiff) const
+{
+    // The fastest way to get an accurate result 90% of the time.
+    // Better result can be obtained like 99% accuracy with a ray light, but the cost is too high and the code is too long.
+    maxDiff = maxDiff >= 100.0f ? 10.0f : sqrtf(maxDiff);
+    bool useVmaps = false;
+    if( GetHeight(x, y, oldZ, false) <  GetHeight(x, y, oldZ, true) ) // check use of vmaps
+        useVmaps = true;
+
+    float newZ = GetHeight(x, y, oldZ+maxDiff-2.0f, useVmaps);
+
+    if (fabs(newZ-oldZ) > maxDiff)                              // bad...
+    {
+        useVmaps = !useVmaps;                                     // try change vmap use
+        newZ = GetHeight(x, y, oldZ+maxDiff-2.0f, useVmaps);
+
+        if (fabs(newZ-oldZ) > maxDiff)
+            return false;
+    }
+    return true;
 }
 
 uint32 Map::GenerateLocalLowGuid(HighGuid guidhigh)

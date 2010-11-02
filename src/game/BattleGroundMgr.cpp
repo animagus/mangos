@@ -171,9 +171,11 @@ GroupQueueInfo * BattleGroundQueue::AddGroup(Player *leader, Group* grp, BattleG
     //compute index (if group is premade or joined a rated match) to queues
     uint32 index = 0;
     if (!isRated && !isPremade)
-        index += BG_TEAMS_COUNT;
+        index += BG_TEAMS_COUNT;                            // BG_QUEUE_PREMADE_* -> BG_QUEUE_NORMAL_*
+
     if (ginfo->Team == HORDE)
-        index++;
+        index++;                                            // BG_QUEUE_*_ALLIANCE -> BG_QUEUE_*_HORDE
+
     DEBUG_LOG("Adding Group to BattleGroundQueue bgTypeId : %u, bracket_id : %u, index : %u", BgTypeId, bracketId, index);
 
     uint32 lastOnlineTime = getMSTime();
@@ -1500,7 +1502,7 @@ BattleGround * BattleGroundMgr::CreateNewBattleGround(BattleGroundTypeId bgTypeI
     if(bgTypeId==BATTLEGROUND_RB)
     {
         BattleGroundTypeId random_bgs[] = {BATTLEGROUND_AV, BATTLEGROUND_WS, BATTLEGROUND_AB, BATTLEGROUND_EY/*, BATTLEGROUND_SA, BATTLEGROUND_IC*/};
-        uint32 bg_num = urand(0,3/*5*/);
+        uint32 bg_num = urand(0, sizeof(random_bgs)/sizeof(BattleGroundTypeId)-1);
         bgTypeId = random_bgs[bg_num];
         bg_template = GetBattleGroundTemplate(bgTypeId);
         if (!bg_template)

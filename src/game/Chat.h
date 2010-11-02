@@ -163,9 +163,9 @@ class ChatHandler
         bool HandleCastTargetCommand(char* args);
 
         bool HandleCharacterAchievementsCommand(char* args);
+        bool HandleCharacterChangeFactionCommand(char* args);
+        bool HandleCharacterChangeRaceCommand(char* args);
         bool HandleCharacterCustomizeCommand(char* args);
-        bool HandleCharacterFactionCommand(char* args);
-        bool HandleCharacterRaceCommand(char* args);
         bool HandleCharacterDeletedDeleteCommand(char* args);
         bool HandleCharacterDeletedListCommand(char* args);
         bool HandleCharacterDeletedRestoreCommand(char* args);

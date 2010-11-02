@@ -33,12 +33,14 @@ typedef std::list<AchievementEntry const*>         AchievementEntryList;
 
 typedef std::map<uint32,AchievementCriteriaEntryList> AchievementCriteriaListByAchievement;
 typedef std::map<uint32,AchievementEntryList>         AchievementListByReferencedId;
+typedef std::map<uint32,time_t>                       AchievementCriteriaFailTimeMap;
 
 struct CriteriaProgress
 {
     uint32 counter;
     time_t date;
     bool changed;
+    bool timedCriteriaFailed;
 };
 
 enum AchievementCriteriaRequirementType
@@ -251,6 +253,7 @@ class AchievementMgr
         void ResetAchievementCriteria(AchievementCriteriaTypes type, uint32 miscvalue1=0, uint32 miscvalue2=0);
         void StartTimedAchievementCriteria(AchievementCriteriaTypes type, uint32 timedRequirementId, time_t startTime = 0);
         void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscvalue1=0, uint32 miscvalue2=0, Unit *unit=NULL, uint32 time=0, uint32 exception=0);
+        void DoFailedTimedAchievementCriterias();
         void CheckAllAchievementCriteria();
         void SendAllAchievementData();
         void CompletedAchievement(AchievementEntry const* entry);
@@ -293,6 +296,7 @@ class AchievementMgr
         Player* m_player;
         CriteriaProgressMap m_criteriaProgress;
         CompletedAchievementMap m_completedAchievements;
+        AchievementCriteriaFailTimeMap m_criteriaFailTimes;
 };
 
 class AchievementGlobalMgr

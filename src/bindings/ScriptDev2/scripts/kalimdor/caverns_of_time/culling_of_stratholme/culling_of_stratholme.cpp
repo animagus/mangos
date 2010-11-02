@@ -210,7 +210,7 @@ struct MANGOS_DLL_DECL npc_arthasAI : public npc_escortAI
 		if (!m_creature->hasUnitState(UNIT_STAT_STUNNED) && pWho->isTargetableForAttack() &&
 			m_creature->IsHostileTo(pWho) && pWho->isInAccessablePlaceFor(m_creature))
 		{
-			if (!m_creature->canFly() && m_creature->GetDistanceZ(pWho) > CREATURE_Z_ATTACK_RANGE)
+			if (!m_creature->CanFly() && m_creature->GetDistanceZ(pWho) > CREATURE_Z_ATTACK_RANGE)
 				return;
 
 			float attackRadius = m_creature->GetAttackDistance(pWho);
@@ -814,7 +814,7 @@ bool GossipHello_npc_arthas(Player *player, Creature *mCreature)
     {
         player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "We are ready to Final Combat!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
         player->SEND_GOSSIP_MENU(player->GetGossipTextId(mCreature), mCreature->GetGUID());
-        player->hasQuest(13151);
+        player->HasQuest(13151);
         return true;
     }
 	else

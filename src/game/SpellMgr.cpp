@@ -676,6 +676,8 @@ bool IsPositiveEffect(uint32 spellId, SpellEffectIndex effIndex)
             {
                 case 28441:                                 // AB Effect 000
                     return false;
+                case 54530:                                 // Opening
+                    return true;
                 default:
                     break;
             }
@@ -1857,6 +1859,10 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                     (spellInfo_2->SpellFamilyFlags & UI64LIT(0x0000000000010000)) && (spellInfo_1->SpellVisual[0] == 72 && spellInfo_1->SpellIconID == 1499) )
                     return false;
 
+                // Fingers of Frost effects
+                if( spellInfo_1->SpellIconID == 2947 && spellInfo_2->SpellIconID == 2947)
+                    return false;
+
                 // Living Bomb & Ignite (Dots)
                 if( (spellInfo_1->SpellFamilyFlags & UI64LIT(0x2000000000000)) && (spellInfo_2->SpellFamilyFlags & UI64LIT(0x8000000)) ||
                     (spellInfo_2->SpellFamilyFlags & UI64LIT(0x2000000000000)) && (spellInfo_1->SpellFamilyFlags & UI64LIT(0x8000000)) )
@@ -1917,6 +1923,11 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2) cons
                 // Taste of Blood and Sudden Death
                 if( (spellInfo_1->Id == 52437 && spellInfo_2->Id == 60503) ||
                     (spellInfo_2->Id == 52437 && spellInfo_1->Id == 60503) )
+                    return false;
+
+                // Sword and Board and Glyph of Revenge
+                if( (spellInfo_1->Id == 50227 && spellInfo_2->Id == 58363) ||
+                    (spellInfo_2->Id == 50227 && spellInfo_1->Id == 58363) )
                     return false;
             }
             break;
@@ -4009,6 +4020,9 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto
             // Wound poison - Limit to 10 seconds in PvP (No SpellFamilyFlags)
             else if (spellproto->SpellIconID == 1496)
                 return DIMINISHING_LIMITONLY;
+            // Charge - since 3.1.0
+            else if (spellproto->Id == 7922)
+                return DIMINISHING_CHARGE;
             break;
         }
         case SPELLFAMILY_HUNTER:
@@ -4148,6 +4162,7 @@ bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group)
         case DIMINISHING_CYCLONE:
         case DIMINISHING_BANISH:
         case DIMINISHING_LIMITONLY:
+        case DIMINISHING_CHARGE:
             return true;
         default:
             return false;
@@ -4162,6 +4177,7 @@ DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group)
         case DIMINISHING_CYCLONE:
         case DIMINISHING_TRIGGER_STUN:
         case DIMINISHING_CONTROL_STUN:
+        case DIMINISHING_CHARGE:
             return DRTYPE_ALL;
         case DIMINISHING_CONTROL_ROOT:
         case DIMINISHING_TRIGGER_ROOT:

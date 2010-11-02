@@ -883,9 +883,6 @@ void World::SetInitialWorldSettings()
     ///- Initialize config settings
     LoadConfigSettings();
 
-    ///- Init highest guids before any table loading to prevent using not initialized guids in some code.
-    sObjectMgr.SetHighestGuids();
-
     ///- Check the existence of the map files for all races' startup areas.
     if(   !MapManager::ExistMapAndVMap(0,-6240.32f, 331.033f)
         ||!MapManager::ExistMapAndVMap(0,-8949.95f,-132.493f)
@@ -938,13 +935,16 @@ void World::SetInitialWorldSettings()
 
     ///- Clean up and pack instances
     sLog.outString( "Cleaning up instances..." );
-    sInstanceSaveMgr.CleanupInstances();                // must be called before `creature_respawn`/`gameobject_respawn` tables
+    sInstanceSaveMgr.CleanupInstances();                    // must be called before `creature_respawn`/`gameobject_respawn` tables
 
     sLog.outString( "Packing instances..." );
     sInstanceSaveMgr.PackInstances();
 
     sLog.outString( "Packing groups..." );
-    sObjectMgr.PackGroupIds();
+    sObjectMgr.PackGroupIds();                              // must be after CleanupInstances
+
+    ///- Init highest guids before any guid using table loading to prevent using not initialized guids in some code.
+    sObjectMgr.SetHighestGuids();                           // must be after packing instances
 
     sLog.outString();
     sLog.outString( "Loading Localization strings..." );
@@ -1059,12 +1059,6 @@ void World::SetInitialWorldSettings()
     sLog.outString( "Loading Objects Pooling Data...");
     sPoolMgr.LoadFromDB();
 
-    sLog.outString( "Loading Game Event Data...");          // must be after sPoolMgr.LoadFromDB for proper load pool events
-    sLog.outString();
-    sGameEventMgr.LoadFromDB();
-    sLog.outString( ">>> Game Event Data loaded" );
-    sLog.outString();
-
     sLog.outString( "Loading Weather Data..." );
     sObjectMgr.LoadWeatherZoneChances();
 
@@ -1078,6 +1072,12 @@ void World::SetInitialWorldSettings()
     sLog.outString();
     sObjectMgr.LoadQuestRelations();                            // must be after quest load
     sLog.outString( ">>> Quests Relations loaded" );
+    sLog.outString();
+
+    sLog.outString( "Loading Game Event Data...");          // must be after sPoolMgr.LoadFromDB and quests to properly load pool events and quests for events
+    sLog.outString();
+    sGameEventMgr.LoadFromDB();
+    sLog.outString( ">>> Game Event Data loaded" );
     sLog.outString();
 
     sLog.outString( "Loading UNIT_NPC_FLAG_SPELLCLICK Data..." );
@@ -1279,9 +1279,9 @@ void World::SetInitialWorldSettings()
     m_timers[WUPDATE_SESSIONS].SetInterval(0);
     m_timers[WUPDATE_WEATHERS].SetInterval(1*IN_MILLISECONDS);
     m_timers[WUPDATE_AUCTIONS].SetInterval(MINUTE*IN_MILLISECONDS);
-    m_timers[WUPDATE_UPTIME].SetInterval(m_configUint32Values[CONFIG_UINT32_UPTIME_UPDATE]*MINUTE*IN_MILLISECONDS);
+    m_timers[WUPDATE_UPTIME].SetInterval(getConfig(CONFIG_UINT32_UPTIME_UPDATE)*MINUTE*IN_MILLISECONDS);
                                                             //Update "uptime" table based on configuration entry in minutes.
-    m_timers[WUPDATE_CORPSES].SetInterval(3*HOUR*IN_MILLISECONDS);
+    m_timers[WUPDATE_CORPSES].SetInterval(20*MINUTE*IN_MILLISECONDS);
     m_timers[WUPDATE_DELETECHARS].SetInterval(DAY*IN_MILLISECONDS); // check for chars to delete every day
 
     //to set mailtimer to return mails every day between 4 and 5 am
@@ -1323,6 +1323,9 @@ void World::SetInitialWorldSettings()
 
     sLog.outString("Calculate random battleground reset time..." );
     InitRandomBGResetTime();
+
+    sLog.outString("Calculate next monthly quest reset time..." );
+    SetMonthlyQuestResetTime();
 
     sLog.outString("Starting objects Pooling system..." );
     sPoolMgr.Initialize();
@@ -1410,6 +1413,10 @@ void World::Update(uint32 diff)
 
     if (m_gameTime > m_NextRandomBGReset)
         ResetRandomBG();
+
+    /// Handle monthly quests reset time
+    if (m_gameTime > m_NextMonthlyQuestReset)
+        ResetMonthlyQuests();
 
     /// <ul><li> Handle auctions when the timer has passed
     if (m_timers[WUPDATE_AUCTIONS].Passed())
@@ -2048,6 +2055,52 @@ void World::InitRandomBGResetTime()
         delete result;
 }
 
+void World::SetMonthlyQuestResetTime(bool initialize)
+{
+    if (initialize)
+    {
+        QueryResult * result = CharacterDatabase.Query("SELECT NextMonthlyQuestResetTime FROM saved_variables");
+
+        if (!result)
+            m_NextMonthlyQuestReset = time_t(time(NULL));
+        else
+            m_NextMonthlyQuestReset = time_t((*result)[0].GetUInt64());
+
+        delete result;
+    }
+
+    // generate time
+    time_t currentTime = time(NULL);
+    tm localTm = *localtime(&currentTime);
+
+    int month = localTm.tm_mon;
+    int year = localTm.tm_year;
+
+    ++month;
+
+    // month 11 is december, next is january (0)
+    if (month > 11)
+    {
+        month = 0;
+        year += 1;
+    }
+
+    // reset time for next month
+    localTm.tm_year = year;
+    localTm.tm_mon = month;
+    localTm.tm_mday = 1;                                    // don't know if we really need config option for day/hour
+    localTm.tm_hour = 0;
+    localTm.tm_min  = 0;
+    localTm.tm_sec  = 0;
+
+    time_t nextMonthResetTime = mktime(&localTm);
+
+    m_NextMonthlyQuestReset = (initialize && m_NextMonthlyQuestReset < nextMonthResetTime) ? m_NextMonthlyQuestReset : nextMonthResetTime;
+
+    // Row must exist for this to work. Currently row is added by InitDailyQuestResetTime(), called before this function
+    CharacterDatabase.PExecute("UPDATE saved_variables SET NextMonthlyQuestResetTime = '"UI64FMTD"'", uint64(m_NextMonthlyQuestReset));
+}
+
 void World::ResetDailyQuests()
 {
     DETAIL_LOG("Daily quests reset for all characters.");
@@ -2082,6 +2135,18 @@ void World::ResetRandomBG()
 
     m_NextRandomBGReset = time_t(m_NextRandomBGReset + DAY);
     CharacterDatabase.PExecute("UPDATE saved_variables SET NextRandomBGResetTime = '"UI64FMTD"'", uint64(m_NextRandomBGReset));
+}
+
+void World::ResetMonthlyQuests()
+{
+    DETAIL_LOG("Monthly quests reset for all characters.");
+    CharacterDatabase.Execute("TRUNCATE character_queststatus_monthly");
+
+    for(SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
+        if (itr->second->GetPlayer())
+            itr->second->GetPlayer()->ResetMonthlyQuestStatus();
+
+    SetMonthlyQuestResetTime(false);
 }
 
 void World::SetPlayerLimit( int32 limit, bool needUpdate )

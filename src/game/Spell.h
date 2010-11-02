@@ -269,6 +269,7 @@ class Spell
         void EffectSummonPet(SpellEffectIndex eff_idx);
         void EffectLearnPetSpell(SpellEffectIndex eff_idx);
         void EffectWeaponDmg(SpellEffectIndex eff_idx);
+        void EffectClearQuest(SpellEffectIndex eff_idx);
         void EffectForceCast(SpellEffectIndex eff_idx);
         void EffectTriggerSpell(SpellEffectIndex eff_idx);
         void EffectTriggerMissileSpell(SpellEffectIndex eff_idx);
@@ -734,7 +735,7 @@ namespace MaNGOS
                         break;
                     case SPELL_TARGETS_AOE_DAMAGE:
                     {
-                        if(itr->getSource()->GetTypeId()==TYPEID_UNIT && ((Creature*)itr->getSource())->isTotem())
+                        if(itr->getSource()->GetTypeId()==TYPEID_UNIT && ((Creature*)itr->getSource())->IsTotem())
                             continue;
 
                         if (i_playerControled)

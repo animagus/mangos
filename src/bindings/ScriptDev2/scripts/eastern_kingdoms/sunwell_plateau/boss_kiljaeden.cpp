@@ -496,7 +496,7 @@ struct MANGOS_DLL_DECL mob_sinister_reflectionAI : public ScriptedAI
                 if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE && b_needmove)
                 {
                     //Drop current movement gen
-                    m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim(), 14.0f, ((float)10/180)*M_PI);
+                    m_creature->GetMotionMaster()->MoveChase(m_creature->getVictim(), 14.0f, (float(10/180))*M_PI);
                     b_needmove = false;
                 }
 
@@ -678,7 +678,7 @@ struct MANGOS_DLL_DECL boss_kiljaedenAI : public Scripted_NoMovementAI
         // Reset the controller
         if(m_pInstance)
             m_pInstance->SetData(TYPE_KILJAEDEN, NOT_STARTED);
-		//m_creature->setDeathState(JUST_DIED);
+		//m_creature->SetDeathState(JUST_DIED);
 		((TemporarySummon *)m_creature)->UnSummon();
     }
 
@@ -1166,7 +1166,7 @@ struct MANGOS_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementAI
 
                 if (pKiljaeden && pKiljaeden->isAlive() && m_pInstance->GetData(TYPE_KILJAEDEN) == NOT_STARTED)
                 {
-                    pKiljaeden->setDeathState(JUST_DIED);
+                    pKiljaeden->SetDeathState(JUST_DIED);
                     pKiljaeden->RemoveCorpse();
 /*
                     std::list<Creature*> BlueFlightDragonList;
@@ -1297,7 +1297,7 @@ struct MANGOS_DLL_DECL mob_kiljaeden_controllerAI : public Scripted_NoMovementAI
                                 {
                                     pAnveena->CastSpell(pKiljaeden, SPELL_SACRIFICE_OF_ANVEENA, true);
 
-                                    pAnveena->setDeathState(JUST_DIED);
+                                    pAnveena->SetDeathState(JUST_DIED);
                                     pAnveena->RemoveCorpse();
                                     DoScriptText(SAY_KJ_LOST_POWER, pKiljaeden);
                                 }

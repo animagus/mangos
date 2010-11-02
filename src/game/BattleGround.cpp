@@ -792,6 +792,12 @@ void BattleGround::EndBattleGround(uint32 winner)
                     plr->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_WIN_RATED_ARENA, member->personal_rating);
 
                 winner_arena_team->MemberWon(plr,loser_rating);
+
+                if (member)
+                {
+                    plr->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_PERSONAL_RATING, GetArenaType(), member->personal_rating);
+                    plr->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_TEAM_RATING, GetArenaType(), winner_arena_team->GetStats().rating);
+                }
             }
             else
             {
@@ -828,7 +834,11 @@ void BattleGround::EndBattleGround(uint32 winner)
             if (IsRandom() || BattleGroundMgr::IsBGWeekend(GetTypeID()))
             {
                 UpdatePlayerScore(plr, SCORE_BONUS_HONOR, GetBonusHonorFromKill(loos_kills*4));
+<<<<<<< HEAD
                 plr->ModifyHonorPoints(GetBonusHonorFromKill(win_kills*4));
+=======
+                plr->ModifyHonorPoints(GetBonusHonorFromKill(loos_kills*4));
+>>>>>>> 3061ad9c79c98cb71ddb5fe25664876df1d59e3a
             }
         }
 
@@ -1076,10 +1086,6 @@ void BattleGround::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
                 plr->RemoveArenaAuras(true);                // removes debuffs / dots etc., we don't want the player to die after porting out
                 bgTypeId=BATTLEGROUND_AA;                   // set the bg type to all arenas (it will be used for queue refreshing)
 
-                // unsummon current and summon old pet if there was one and there isn't a current pet
-                plr->RemovePet(NULL, PET_SAVE_NOT_IN_SLOT);
-                plr->ResummonPetTemporaryUnSummonedIfAny();
-
                 if (isRated() && GetStatus() == STATUS_IN_PROGRESS)
                 {
                     //left a rated match while the encounter was in progress, consider as loser
@@ -1245,7 +1251,7 @@ void BattleGround::AddPlayer(Player *plr)
         }
 
         plr->DestroyConjuredItems(true);
-        plr->UnsummonPetTemporaryIfAny();
+        plr->RemovePet(NULL, PET_SAVE_NOT_IN_SLOT);
 
         if(GetStatus() == STATUS_WAIT_JOIN)                 // not started yet
         {
@@ -1648,8 +1654,8 @@ void BattleGround::SpawnBGCreature(uint64 const& guid, uint32 respawntime)
     else
     {
         map->Add(obj);
-        obj->setDeathState(JUST_DIED);
         obj->SetRespawnDelay(respawntime);
+        obj->SetDeathState(JUST_DIED);
         obj->RemoveCorpse();
     }
 }

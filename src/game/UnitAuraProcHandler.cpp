@@ -831,8 +831,7 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura
                             target = getVictim();
                             if(!target)
                             {
-                                uint64 selected_guid = ((Player *)this)->GetSelection();
-                                target = ObjectAccessor::GetUnit(*this,selected_guid);
+                                target = ObjectAccessor::GetUnit(*this,((Player *)this)->GetSelectionGuid());
                                 if(!target)
                                     return SPELL_AURA_PROC_FAILED;
                             }
@@ -964,6 +963,17 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura
                 // Glyph of Life Tap
                 case 63320:
                     triggered_spell_id = 63321;
+                    break;
+                // Purified Shard of the Scale - Equip Effect (10\25)
+                case 69739:
+                case 69755:
+                    if(GetTypeId() != TYPEID_PLAYER)
+                        return SPELL_AURA_PROC_FAILED;
+
+                    if (procFlag == PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL)
+                        triggered_spell_id = dummySpell->Id == 69739 ? 69734 : 69733;
+                    else if (procFlag = PROC_FLAG_SUCCESSFUL_NEGATIVE_SPELL_HIT)
+                        triggered_spell_id = dummySpell->Id == 69739 ? 69730 : 69729;
                     break;
                 // Item - Shadowmourne Legendary
                 case 71903:
@@ -1620,6 +1630,32 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura
                     triggered_spell_id = 54820;
                     break;
                 }
+                // King of the Jungle (Bear and Cat)
+                case 48492: // Rank  1
+                case 48494: // Rank  2
+                case 48495: // Rank  3
+                {
+                    if (!procSpell)
+                        return SPELL_AURA_PROC_FAILED;
+                    // Enrage (bear) - single rank - the aura for the bear form from the 2 existing kotj auras has a miscValue == 126
+                    if (procSpell->Id == 5229 && triggeredByAura->GetMiscValue() == 126)
+                    {
+                        // note : the remove part is done in spellAuras/HandlePeriodicEnergize as RemoveAurasDueToSpell
+                        basepoints[0] = triggerAmount;
+                        triggered_spell_id = 51185;
+                        target = this;
+                        break;
+                    }
+                    // Tiger Fury (cat) - all ranks - the aura for the cat form from the 2 existing kotj auras has a miscValue != 126
+                    if (procSpell->SpellFamilyFlags2 & 0x00000800  && triggeredByAura->GetMiscValue() != 126)
+                    {
+                        basepoints[0] = triggerAmount;
+                        triggered_spell_id = 51178;
+                        target = this;
+                        break;
+                    }
+                    break;
+                }
                 // Item - Druid T10 Restoration 4P Bonus (Rejuvenation)
                 case 70664:
                 {
@@ -1955,8 +1991,14 @@ SpellAuraProcResult Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura
                     if (this == pVictim)
                         return SPELL_AURA_PROC_FAILED;
 
-                    // heal amount
-                    basepoints[0] = triggerAmount*damage/100;
+                    // dont count overhealing
+                    uint32 diff = GetMaxHealth()-GetHealth();
+                    if (!diff)
+                        return SPELL_AURA_PROC_FAILED;
+                    if (damage > diff)
+                        basepoints[0] = triggerAmount*diff/100;
+                    else
+                        basepoints[0] = triggerAmount*damage/100;
                     target = this;
                     triggered_spell_id = 31786;
                     break;
